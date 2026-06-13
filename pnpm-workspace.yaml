@@ -1,0 +1,11 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+allowBuilds:
+  esbuild: true
+
+# Dependencies allowed to run install/build scripts. pnpm 10+ blocks these by
+# default; esbuild (via Vitest/Vite) needs its script to set up its binary.
+onlyBuiltDependencies:
+  - esbuild

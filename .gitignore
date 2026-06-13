@@ -168,5 +168,5 @@ coverage/
 playwright-report/
 test-results/
 
-# Claude Code local files (nie commituj kontekstu sesji)
+# Claude Code local files (do not commit session context)
 .claude/

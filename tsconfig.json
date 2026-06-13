@@ -1,0 +1,9 @@
+{
+  // Lightweight editor anchor for the workspace. Each package has its own
+  // tsconfig that extends tsconfig.base.json and is type-checked independently
+  // via its own `typecheck` script. We deliberately avoid TS project
+  // references: apps/web is built by Vite (noEmit) and can't be a `composite`
+  // project. Cross-package types resolve through package.json "exports".
+  "files": [],
+  "include": []
+}
