@@ -99,7 +99,7 @@ become the single source of truth for types and validation.
 - [ ] Workspace import working from apps/web and apps/api
 - [ ] Auth schemas (RegisterSchema, LoginSchema, UserSchema)
 - [ ] Training schemas (Exercise, TrainingPlan, WorkoutTemplate,
-  WorkoutSession, Set, etc.)
+      WorkoutSession, Set, etc.)
 - [ ] Nutrition schemas (Food, Recipe, FoodLog, DailyGoals)
 - [ ] Weight schemas (WeightEntry)
 - [ ] Constants exports (exercise categories enum, status enums)
@@ -186,7 +186,7 @@ Visualize progress over time. Pure aggregation functions
 testable in isolation.
 
 - [ ] Aggregation functions (pure): max weight per exercise,
-  total volume per session, weekly volume, etc.
+      total volume per session, weekly volume, etc.
 - [ ] Backend endpoints for aggregated data
 - [ ] Progress chart per exercise (Recharts line chart)
 - [ ] Volume chart (weekly bars)
@@ -250,7 +250,7 @@ Simple module: log weight, see trend over time, basic statistics.
 - [ ] Overlay: 7-day moving average line
 - [ ] Overlay: 30-day moving average line
 - [ ] Stats panel: current weight, change last 7d, change last 30d,
-  total change from first entry
+      total change from first entry
 - [ ] Date range selector for chart
 - [ ] Pure functions for moving averages (tested)
 
@@ -271,6 +271,7 @@ but the app works without them.
 Optional polish phase. Do these after MVP done.
 
 ### Stage 11 — Unified dashboard (2-3 days)
+
 - [ ] Today's workout card (if planned)
 - [ ] Daily calories consumed vs goal
 - [ ] Latest weight + weekly trend
@@ -279,6 +280,7 @@ Optional polish phase. Do these after MVP done.
 - [ ] Skeleton states per section
 
 ### Stage 12 — Performance pass (3-4 days)
+
 - [ ] React DevTools Profiler audit on key views
 - [ ] Virtualization for long lists (react-window)
 - [ ] Memoization where measured to help
@@ -288,6 +290,7 @@ Optional polish phase. Do these after MVP done.
 - [ ] Before/after metrics documented in README
 
 ### Stage 13 — Accessibility pass (2-3 days)
+
 - [ ] Keyboard navigation everywhere
 - [ ] Focus management for modals (focus trap)
 - [ ] ARIA labels and aria-live for toasts
@@ -297,6 +300,7 @@ Optional polish phase. Do these after MVP done.
 - [ ] Reduced motion support
 
 ### Stage 14 — Polish + animations + responsive (3-4 days)
+
 - [ ] Comprehensive empty states with illustrations or CTAs
 - [ ] Consistent error states with retry actions
 - [ ] Loading skeletons everywhere
@@ -307,6 +311,7 @@ Optional polish phase. Do these after MVP done.
 - [ ] Dark mode polish
 
 ### Stage 15 — Production deployment (1-2 days)
+
 - [ ] Deploy frontend to Vercel
 - [ ] Deploy backend to Fly.io
 - [ ] Configure production env vars
@@ -316,6 +321,7 @@ Optional polish phase. Do these after MVP done.
 - [ ] Smoke test on production
 
 ### Stage 16 — Full documentation (3-4 days)
+
 - [ ] README rewrite with screenshots, demo link, full stack details
 - [ ] ARCHITECTURE.md with diagrams (mermaid or excalidraw)
 - [ ] DECISIONS.md finalized (this file)

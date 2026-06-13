@@ -12,14 +12,17 @@ decisions are appended at the bottom.
 **Date:** 2026-06-13
 
 ### Context
+
 This is a portfolio frontend project. The default modern choice
 would be Next.js with App Router, but the app has no SEO needs
 and no public marketing pages. It's a behind-auth single-page app.
 
 ### Decision
+
 Use Vite + React 19 as a pure SPA.
 
 ### Consequences
+
 - Smaller scope to learn (no SSR, no RSC complexity)
 - Demonstrates that I know when NOT to reach for Next.js
 - Backend is separate (Hono) — clear frontend/backend separation
@@ -34,13 +37,16 @@ Use Vite + React 19 as a pure SPA.
 **Date:** 2026-06-13
 
 ### Context
+
 Need a backend framework for the API. Express is the safe,
 familiar choice but signals "stack from 2018" in 2026.
 
 ### Decision
+
 Use Hono.
 
 ### Consequences
+
 - Modern TypeScript-first DX
 - Smaller bundle, faster cold starts
 - Multi-runtime ready (currently Node, could move to Bun/edge later)
@@ -56,13 +62,16 @@ Use Hono.
 **Date:** 2026-06-13
 
 ### Context
+
 Need an ORM for PostgreSQL. Prisma is more popular but has
 its own DSL and generates code from schema.prisma.
 
 ### Decision
+
 Use Drizzle ORM.
 
 ### Consequences
+
 - TypeScript-first, no separate DSL
 - SQL-like syntax — easier to reason about queries
 - Lightweight, no code generation step
@@ -77,13 +86,16 @@ Use Drizzle ORM.
 **Date:** 2026-06-13
 
 ### Context
+
 Three logical packages: web frontend, api backend, shared Zod
 schemas. Could be separate repos or monorepo.
 
 ### Decision
+
 Monorepo with pnpm workspaces.
 
 ### Consequences
+
 - Shared Zod schemas are local imports — type safety end-to-end
   without publishing packages
 - Atomic changes across frontend and backend in one PR
@@ -99,14 +111,17 @@ Monorepo with pnpm workspaces.
 **Date:** 2026-06-13
 
 ### Context
+
 Need a UI component library. Options: build from scratch,
 use Material UI / Chakra, use Catalyst (paid Tailwind Labs kit),
 or shadcn/ui (OSS copy-paste model).
 
 ### Decision
+
 Use shadcn/ui.
 
 ### Consequences
+
 - MIT licensed, no licensing risk for public repo
 - Industry standard in 2026 React ecosystem
 - Copy-paste model means full control over components
@@ -122,13 +137,16 @@ Use shadcn/ui.
 **Date:** 2026-06-13
 
 ### Context
+
 Need a routing library for the SPA. React Router v7 is the
 mainstream choice but its type safety is opt-in and less complete.
 
 ### Decision
+
 Use TanStack Router v1.
 
 ### Consequences
+
 - Fully type-safe routes — params and search params inferred
 - Better DX with route definitions in code, not file system
 - Same team as TanStack Query (already in stack) — consistent API
@@ -142,14 +160,17 @@ Use TanStack Router v1.
 **Date:** 2026-06-13
 
 ### Context
+
 Need a state management solution. Options: Context API, Redux,
 Zustand, Jotai. Also need to decide what kind of state goes where.
 
 ### Decision
+
 Use Zustand v5, but STRICTLY for local UI state only.
 ALL server state lives in TanStack Query.
 
 ### Consequences
+
 - Clear separation: server state vs local UI state
 - No duplication of server data in Zustand
 - Smaller bundle than Redux, simpler than Context for global state
@@ -166,14 +187,17 @@ ALL server state lives in TanStack Query.
 **Date:** 2026-06-13
 
 ### Context
+
 Need authentication. Options for token storage: localStorage
 (XSS-vulnerable), HttpOnly cookie (XSS-safe but needs CSRF protection),
 session cookies. Token library: jsonwebtoken (legacy) or jose (modern).
 
 ### Decision
+
 JWT in HttpOnly cookie, signed with jose.
 
 ### Consequences
+
 - HttpOnly cookie not accessible from JS — XSS can't steal token
 - SameSite=Lax provides reasonable CSRF protection
 - jose is actively maintained, ESM-native, web crypto based
@@ -189,15 +213,18 @@ JWT in HttpOnly cookie, signed with jose.
 **Date:** 2026-06-13
 
 ### Context
+
 Best practice would be to deploy from Stage 1 onwards (continuous
 deployment from day one). Trade-off: 1-2 days of upfront work vs
 risk of deploy storm at the end.
 
 ### Decision
+
 Defer production deploy to Stage 15. Provide minimal README in
 Stage 2.5 to give context to anyone who finds the repo mid-build.
 
 ### Consequences
+
 - Faster path to MVP completion
 - Risk: deploy storm at the end may take 3-5 days
 - Mitigation: use .env.example from Stage 0, design API with
@@ -212,15 +239,18 @@ Stage 2.5 to give context to anyone who finds the repo mid-build.
 **Date:** 2026-06-13
 
 ### Context
+
 Options for new users: start with empty app, or pre-seed foods
 and exercises. Pre-seeding helps day-1 UX but couples the app
 to assumed data choices (language, regional foods).
 
 ### Decision
+
 New users start with completely empty app. They build their own
 exercise dictionary, food list, and recipes from scratch.
 
 ### Consequences
+
 - App is agnostic to user's language (food/exercise names are user input)
 - No maintenance of seed data sets
 - Demo account will be populated manually at the end of the project

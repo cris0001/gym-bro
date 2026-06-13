@@ -1,22 +1,26 @@
 # Fitness Tracker — Project Context
 
 ## What this is
+
 Personal portfolio project. Web app combining strength training,
 nutrition tracking (macros only), and weight tracking in one app.
 Built to demonstrate mid/senior frontend skills for 2026 job market.
 
 ## Single-user app
+
 Not multi-tenant SaaS. Designed for personal use + demo account for recruiters.
 
 ## Stack — committed decisions
 
 ### Monorepo
+
 - pnpm workspaces with apps/web, apps/api, packages/shared
 - Conventional Commits (feat:, fix:, chore:, refactor:, test:, docs:)
 - Husky + lint-staged for pre-commit hooks
 - ESLint + Prettier shared config
 
 ### Frontend (apps/web)
+
 - React 19
 - Vite (NOT Next.js — intentional SPA choice)
 - TypeScript strict — ZERO `any`
@@ -33,6 +37,7 @@ Not multi-tenant SaaS. Designed for personal use + demo account for recruiters.
 - Playwright for 2-3 e2e flows
 
 ### Backend (apps/api)
+
 - Hono (NOT Express)
 - Node.js 22 LTS
 - Drizzle ORM (NOT Prisma)
@@ -42,6 +47,7 @@ Not multi-tenant SaaS. Designed for personal use + demo account for recruiters.
 - bcrypt for passwords
 
 ### Shared (packages/shared)
+
 - Zod schemas as single source of truth
 - Inferred TypeScript types
 - Constants (exercise categories, statuses)
@@ -49,6 +55,7 @@ Not multi-tenant SaaS. Designed for personal use + demo account for recruiters.
 ## Architecture rules
 
 ### Frontend
+
 - Feature-based folder structure (Bulletproof React style)
 - Each feature folder: api/, hooks/, components/, types.ts, index.ts
 - ONLY exports go through index.ts
@@ -59,6 +66,7 @@ Not multi-tenant SaaS. Designed for personal use + demo account for recruiters.
 - Discriminated unions for loading states
 
 ### Backend
+
 - Layered: routes → services → repositories
 - Routes: validate with Zod + delegate to service
 - Services: pure business logic
@@ -67,6 +75,7 @@ Not multi-tenant SaaS. Designed for personal use + demo account for recruiters.
 - Consistent response shape: { data: T } or { error: { message, code } }
 
 ### Shared
+
 - Zod schemas exported from packages/shared/schemas
 - Backend uses them to validate request bodies
 - Frontend infers types via z.infer<typeof Schema>
@@ -79,12 +88,14 @@ primitives + Tailwind CSS. Components live in the project source,
 not as an npm dependency.
 
 ### Setup
+
 - Initialize via `pnpm dlx shadcn@latest init` in apps/web
 - Add components via `pnpm dlx shadcn@latest add button dialog input`
 - Components copied to `apps/web/src/components/ui/`
 - Tailwind config and CSS variables managed by shadcn init
 
 ### Rules
+
 - shadcn primitives live in `apps/web/src/components/ui/`
 - DO NOT manually edit shadcn files unless intentionally customizing —
   if customized, document why in a comment at top of file
@@ -95,13 +106,15 @@ not as an npm dependency.
 - Theme via CSS variables (shadcn manages this in globals.css)
 
 ### Component composition pattern
+
 - ui/ = shadcn primitives (Button, Dialog, Input, Select, etc.)
 - components/ = shared domain-agnostic components (EmptyState,
   ConfirmDialog, DataTable) built FROM ui/ primitives
-- features/*/components/ = domain-specific components (ExerciseCard,
+- features/\*/components/ = domain-specific components (ExerciseCard,
   WorkoutBuilder) built FROM components/ + ui/
 
 ### Folder structure
+
 ```
 apps/web/src/
 ├── components/
@@ -121,11 +134,13 @@ apps/web/src/
 ```
 
 ### Dark mode
+
 - shadcn supports dark mode via CSS variables out of the box
 - Theme stored via Zustand store with localStorage persistence
 - Apply theme by toggling `class="dark"` on `<html>` element
 
 ## What NOT to do
+
 - NO Axios — use native fetch
 - NO Express — using Hono
 - NO Prisma — using Drizzle
@@ -139,6 +154,7 @@ apps/web/src/
 - DO NOT generate pre-seeded foods or exercises — user adds own
 
 ## Language
+
 - ALL code, comments, commit messages: English
 - ALL UI labels: English
 - User-generated content (exercise names, food names, recipe names,
@@ -147,6 +163,7 @@ apps/web/src/
 ## Domain model overview
 
 ### Training
+
 - TrainingPlan (user can have multiple): "PPL", "Upper/Lower" etc.
 - WorkoutTemplate (within plan): "Push", "Pull", "Legs"
 - Exercise (user dictionary): "Bench Press" with category
@@ -157,15 +174,18 @@ apps/web/src/
 - Exercise swap during session: keep original_exercise_id + actual_exercise_id
 
 ### Nutrition
+
 - Food (user dictionary): name, brand, kcal/protein/fat/carbs per 100g
 - Recipe: list of foods with amounts, auto-calculated macros
 - FoodLog: daily diary, references food or recipe with amount
 - DailyGoals: kcal, protein, fat, carbs targets
 
 ### Weight
+
 - WeightEntry: date + weight_kg + notes (one per day, UNIQUE constraint)
 
 ## Auth
+
 - Email + password
 - bcrypt for hashing
 - JWT in HttpOnly cookie via jose
@@ -176,6 +196,7 @@ apps/web/src/
 DO NOT commit automatically. The user controls all commits.
 
 ### Rules for Claude Code
+
 - NEVER run `git commit` without explicit user request
 - NEVER run `git add` of multiple files without showing what's being staged
 - After completing work, summarize what changed and STOP — wait for user
@@ -184,6 +205,7 @@ DO NOT commit automatically. The user controls all commits.
 - Format suggestions as: `feat(training): add exercise CRUD endpoints`
 
 ### Conventional commit prefixes (when suggesting)
+
 - feat: new feature
 - fix: bug fix
 - chore: tooling, deps, config
@@ -194,9 +216,20 @@ DO NOT commit automatically. The user controls all commits.
 - style: formatting, no logic change
 
 ### When user is ready to commit, Claude can help by
+
 - Running `git status` and `git diff` to show what changed
 - Suggesting commit message based on changes
 - Running the commit only after user confirms message
 
+## Decision explanations
+
+For every non-trivial choice, briefly explain WHY in 1-3 sentences:
+
+- Pick between viable alternatives → state choice + reasoning
+- Non-obvious pattern or config → explain what it does
+- Trade-offs → name them
+- Trivial stuff (naming, basic syntax) → skip explanation
+
 ## Current stage
+
 Stage 0: Monorepo setup and tooling.
