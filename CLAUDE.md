@@ -232,4 +232,4 @@ For every non-trivial choice, briefly explain WHY in 1-3 sentences:
 
 ## Current stage
 
-Stage 0: Monorepo setup and tooling.
+Stage 1: backend foundation + auth (Hono + Drizzle + Neon + JWT)

@@ -14,17 +14,17 @@ and full production deployment.
 Foundation for the entire project. All tooling, structure, CI
 configured before writing any feature code.
 
-- [ ] pnpm workspaces structure (apps/web, apps/api, packages/shared)
-- [ ] Root package.json with workspace configuration
-- [ ] TypeScript strict config (shared base, extended per app)
-- [ ] Path aliases (@/ in web, @/ in api, @fit/shared)
-- [ ] ESLint shared config (root + per-app extends)
-- [ ] Prettier shared config
-- [ ] Husky + lint-staged for pre-commit hooks
-- [ ] Vitest setup in apps/web, apps/api, packages/shared
-- [ ] GitHub Actions CI workflow (lint + typecheck + test on PR)
-- [ ] .env.example files for apps/api
-- [ ] README placeholder
+- [x] pnpm workspaces structure (apps/web, apps/api, packages/shared)
+- [x] Root package.json with workspace configuration
+- [x] TypeScript strict config (shared base, extended per app)
+- [x] Path aliases (@/ in web, @/ in api, @gym-bro/shared)
+- [x] ESLint shared config (root + per-app extends)
+- [x] Prettier shared config
+- [x] Husky + lint-staged for pre-commit hooks
+- [x] Vitest setup in apps/web, apps/api, packages/shared
+- [x] GitHub Actions CI workflow (lint + typecheck + test on PR)
+- [x] .env.example files for apps/api
+- [x] README placeholder
 
 ---
 
