@@ -1,0 +1,3 @@
+# Normalize line endings to LF in the repo (matches .editorconfig and
+# Prettier endOfLine: lf). Prevents CRLF churn on Windows checkouts.
+* text=auto eol=lf
