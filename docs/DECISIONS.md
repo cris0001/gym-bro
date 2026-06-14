@@ -1,8 +1,7 @@
 # Architecture Decision Records
 
 This file documents significant architectural decisions made during
-the project, in ADR (Architecture Decision Record) format. New
-decisions are appended at the bottom.
+the project, in ADR (Architecture Decision Record) format.
 
 ---
 
@@ -13,9 +12,8 @@ decisions are appended at the bottom.
 
 ### Context
 
-This is a portfolio frontend project. The default modern choice
-would be Next.js with App Router, but the app has no SEO needs
-and no public marketing pages. It's a behind-auth single-page app.
+This is a frontend project with no SEO needs and no public marketing
+pages. It's a behind-auth single-page app.
 
 ### Decision
 
@@ -23,11 +21,11 @@ Use Vite + React 19 as a pure SPA.
 
 ### Consequences
 
-- Smaller scope to learn (no SSR, no RSC complexity)
-- Demonstrates that I know when NOT to reach for Next.js
+- Smaller scope (no SSR, no RSC complexity)
+- Demonstrates knowing when NOT to reach for Next.js
 - Backend is separate (Hono) — clear frontend/backend separation
-- Trade-off: no server components, no streaming SSR — acceptable
-  given this is an authenticated app, not public marketing
+- Trade-off: no server components, no streaming SSR — acceptable for
+  authenticated app
 
 ---
 
@@ -38,8 +36,7 @@ Use Vite + React 19 as a pure SPA.
 
 ### Context
 
-Need a backend framework for the API. Express is the safe,
-familiar choice but signals "stack from 2018" in 2026.
+Need a backend framework. Express signals "stack from 2018" in 2026.
 
 ### Decision
 
@@ -49,9 +46,8 @@ Use Hono.
 
 - Modern TypeScript-first DX
 - Smaller bundle, faster cold starts
-- Multi-runtime ready (currently Node, could move to Bun/edge later)
-- Express-like API so easy to read for anyone who knows Express
-- Signals modern stack awareness for portfolio reviewers
+- Multi-runtime ready (Node now, could move to Bun/edge later)
+- Express-like API — easy to read for anyone who knows Express
 - Trade-off: smaller ecosystem than Express, but enough for this scope
 
 ---
@@ -63,8 +59,7 @@ Use Hono.
 
 ### Context
 
-Need an ORM for PostgreSQL. Prisma is more popular but has
-its own DSL and generates code from schema.prisma.
+Need an ORM for PostgreSQL. Prisma has its own DSL.
 
 ### Decision
 
@@ -75,8 +70,7 @@ Use Drizzle ORM.
 - TypeScript-first, no separate DSL
 - SQL-like syntax — easier to reason about queries
 - Lightweight, no code generation step
-- Modern choice signaling 2026 stack awareness
-- Trade-off: smaller ecosystem than Prisma (acceptable for portfolio)
+- Trade-off: smaller ecosystem than Prisma
 
 ---
 
@@ -87,8 +81,7 @@ Use Drizzle ORM.
 
 ### Context
 
-Three logical packages: web frontend, api backend, shared Zod
-schemas. Could be separate repos or monorepo.
+Three logical packages: web frontend, api backend, shared Zod schemas.
 
 ### Decision
 
@@ -96,11 +89,9 @@ Monorepo with pnpm workspaces.
 
 ### Consequences
 
-- Shared Zod schemas are local imports — type safety end-to-end
-  without publishing packages
+- Shared Zod schemas as local imports — type safety end-to-end
 - Atomic changes across frontend and backend in one PR
 - Single git history, single CI/CD config
-- Demonstrates monorepo skills for portfolio
 - Trade-off: slightly more complex initial setup
 
 ---
@@ -112,21 +103,19 @@ Monorepo with pnpm workspaces.
 
 ### Context
 
-Need a UI component library. Options: build from scratch,
-use Material UI / Chakra, use Catalyst (paid Tailwind Labs kit),
-or shadcn/ui (OSS copy-paste model).
+Need a UI component library. Catalyst (paid) was considered but has
+licensing concerns for public repo.
 
 ### Decision
 
-Use shadcn/ui.
+Use shadcn/ui (MIT licensed, copy-paste model).
 
 ### Consequences
 
-- MIT licensed, no licensing risk for public repo
+- No licensing risk for public repo
 - Industry standard in 2026 React ecosystem
-- Copy-paste model means full control over components
+- Copy-paste model means full control
 - Built on Radix UI primitives (accessible by default)
-- Tailwind-based, matches our styling approach
 - Components live in source — can be customized as needed
 
 ---
@@ -136,11 +125,6 @@ Use shadcn/ui.
 **Status:** Accepted  
 **Date:** 2026-06-13
 
-### Context
-
-Need a routing library for the SPA. React Router v7 is the
-mainstream choice but its type safety is opt-in and less complete.
-
 ### Decision
 
 Use TanStack Router v1.
@@ -148,8 +132,7 @@ Use TanStack Router v1.
 ### Consequences
 
 - Fully type-safe routes — params and search params inferred
-- Better DX with route definitions in code, not file system
-- Same team as TanStack Query (already in stack) — consistent API
+- Same team as TanStack Query — consistent API
 - Trade-off: smaller community than React Router
 
 ---
@@ -159,25 +142,17 @@ Use TanStack Router v1.
 **Status:** Accepted  
 **Date:** 2026-06-13
 
-### Context
-
-Need a state management solution. Options: Context API, Redux,
-Zustand, Jotai. Also need to decide what kind of state goes where.
-
 ### Decision
 
-Use Zustand v5, but STRICTLY for local UI state only.
-ALL server state lives in TanStack Query.
+Use Zustand v5, STRICTLY for local UI state only. ALL server state
+lives in TanStack Query.
 
 ### Consequences
 
-- Clear separation: server state vs local UI state
+- Clear separation: server vs local state
 - No duplication of server data in Zustand
-- Smaller bundle than Redux, simpler than Context for global state
-- Common use cases: open modals, draft workout in progress,
-  theme preference, filters in lists
-- Demonstrates understanding that "global state" is not
-  one-size-fits-all in modern React
+- Common use cases: open modals, draft workout in progress, theme
+- Demonstrates that "global state" is not one-size-fits-all
 
 ---
 
@@ -185,12 +160,6 @@ ALL server state lives in TanStack Query.
 
 **Status:** Accepted  
 **Date:** 2026-06-13
-
-### Context
-
-Need authentication. Options for token storage: localStorage
-(XSS-vulnerable), HttpOnly cookie (XSS-safe but needs CSRF protection),
-session cookies. Token library: jsonwebtoken (legacy) or jose (modern).
 
 ### Decision
 
@@ -201,9 +170,7 @@ JWT in HttpOnly cookie, signed with jose.
 - HttpOnly cookie not accessible from JS — XSS can't steal token
 - SameSite=Lax provides reasonable CSRF protection
 - jose is actively maintained, ESM-native, web crypto based
-- Trade-off: cookie-based auth slightly more complex than
-  Authorization headers, but more secure
-- Note: requires CORS configuration with credentials: 'include'
+- Requires CORS configuration with credentials: 'include'
 
 ---
 
@@ -212,24 +179,16 @@ JWT in HttpOnly cookie, signed with jose.
 **Status:** Accepted  
 **Date:** 2026-06-13
 
-### Context
-
-Best practice would be to deploy from Stage 1 onwards (continuous
-deployment from day one). Trade-off: 1-2 days of upfront work vs
-risk of deploy storm at the end.
-
 ### Decision
 
-Defer production deploy to Stage 15. Provide minimal README in
-Stage 2.5 to give context to anyone who finds the repo mid-build.
+Defer production deploy to Stage 15. Minimal README in Stage 2.5.
 
 ### Consequences
 
 - Faster path to MVP completion
 - Risk: deploy storm at the end may take 3-5 days
-- Mitigation: use .env.example from Stage 0, design API with
-  CORS in mind from start, use Drizzle migrations from first table
-- Mitigation: README clearly marks status as work-in-progress
+- Mitigation: .env.example from Stage 0, CORS-aware API design,
+  Drizzle migrations from first table
 
 ---
 
@@ -238,21 +197,176 @@ Stage 2.5 to give context to anyone who finds the repo mid-build.
 **Status:** Accepted  
 **Date:** 2026-06-13
 
-### Context
-
-Options for new users: start with empty app, or pre-seed foods
-and exercises. Pre-seeding helps day-1 UX but couples the app
-to assumed data choices (language, regional foods).
-
 ### Decision
 
-New users start with completely empty app. They build their own
-exercise dictionary, food list, and recipes from scratch.
+New users start with completely empty app. Demo account populated
+manually at the end.
 
 ### Consequences
 
-- App is agnostic to user's language (food/exercise names are user input)
+- App is agnostic to user's language
 - No maintenance of seed data sets
-- Demo account will be populated manually at the end of the project
-- Trade-off: empty-state UX must be excellent (clear CTAs,
-  onboarding hints) since users see nothing initially
+- Trade-off: empty-state UX must be excellent
+
+---
+
+## ADR-011: English-only UI in MVP (no i18n)
+
+**Status:** Accepted  
+**Date:** 2026-06-13
+
+### Decision
+
+UI is English-only. User-generated content is language-agnostic.
+
+### Consequences
+
+- Saves ~8-12 dev days
+- Reduces per-feature overhead
+- Polish users can still use the app (write data in Polish)
+- Future work: add react-i18next as v2 feature
+
+---
+
+## ADR-012: Nutrition targets as historical data
+
+**Status:** Accepted  
+**Date:** 2026-06-13
+
+### Context
+
+User's nutrition targets change over time (bulk, cut, maintenance).
+
+### Decision
+
+Store nutrition targets as historical entries — one row per date
+change. "Current target" = most recent entry before/on today.
+
+### Consequences
+
+- Enables charting target history
+- Demonstrates senior thinking about temporal data
+- Same pattern used for body_measurements — consistent architecture
+- Trade-off: more complex query for "current target", acceptable
+
+---
+
+## ADR-013: Body measurements module (not just weight)
+
+**Status:** Accepted  
+**Date:** 2026-06-13
+
+### Decision
+
+One body_measurements table with weight as primary field and
+others (body_fat, biceps, chest, waist, hip, thigh) optional.
+
+### Consequences
+
+- Single table for all body data — simpler
+- All fields optional within an entry
+- UI stays clean for users tracking only weight (90% case)
+- Advanced users supported without UI clutter
+
+---
+
+## ADR-014: Mobile-first design throughout
+
+**Status:** Accepted  
+**Date:** 2026-06-13
+
+### Context
+
+Primary use case is mobile — logging workouts at the gym (often
+one-handed), tracking meals on-the-go.
+
+### Decision
+
+Design and build mobile-first from Stage 2 onwards. Base styles
+target mobile; scale UP for tablet/desktop.
+
+### Consequences
+
+- Touch targets ≥44px from the start
+- Modals use bottom-sheet pattern on mobile
+- Active workout view must be usable one-handed
+- All features tested on actual phone before "done"
+
+---
+
+## ADR-015: Feature-based co-location for both frontend and backend
+
+**Status:** Accepted  
+**Date:** 2026-06-13
+
+### Context
+
+Two organizational patterns considered:
+
+- Type-based (components/, hooks/, services/ at root) — split per file type
+- Feature-based co-location (features/auth/ has all auth-related code)
+
+### Decision
+
+Full feature-based co-location. Each feature folder contains
+everything specific to it: components, hooks, types, utils, stores,
+API calls. Shared code at root level only when used across 2+ features.
+
+### Consequences
+
+- High discoverability — everything for one feature in one place
+- Easy to delete a feature — one folder, gone
+- Forces clear boundaries between features
+- index.ts as public interface enforces encapsulation
+- Trade-off: occasional duplication if two features need similar
+  utility (acceptable — extract to root only when actual need arises)
+
+---
+
+## ADR-016: One file per step working style
+
+**Status:** Accepted  
+**Date:** 2026-06-13
+
+### Context
+
+Claude Code tends to batch many file creations in one go. This makes
+review harder and reduces user understanding of generated code.
+
+### Decision
+
+Enforce ONE FILE PER STEP when working with Claude Code. After each
+file, Claude stops and waits for user review.
+
+### Consequences
+
+- Slower velocity per session
+- Higher comprehension and quality
+- Better atomic commit history
+- Easier to course-correct mid-feature
+- Trade-off: more total session time, but better outcomes
+
+---
+
+## ADR-017: Architectural decisions require user input
+
+**Status:** Accepted  
+**Date:** 2026-06-13
+
+### Context
+
+AI tools default to making unilateral architectural decisions. This
+can lead to subtle inconsistencies or bad choices that surface later.
+
+### Decision
+
+For ANY non-trivial decision (schema design, API shape, state
+management approach, naming conventions), Claude presents 2-3 options
+with pros/cons and recommendation, then waits for user choice.
+
+### Consequences
+
+- User builds understanding of architecture
+- User can interview-explain every decision
+- Catches mistakes early (when fixable)
+- Trade-off: more friction in workflow, acceptable for portfolio quality
