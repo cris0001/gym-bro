@@ -1,6 +1,6 @@
 # Project Roadmap
 
-Estimated total: 8-10 weeks of focused work for MVP (Stages 0-10 + 2.5).
+Estimated total: 9-11 weeks of focused work for MVP (Stages 0-10 + 2.5).
 
 Stages 11-16 are post-MVP — optional polish, performance, a11y,
 and full production deployment.
@@ -9,10 +9,7 @@ and full production deployment.
 
 ## MVP Scope (Stages 0-10 + Stage 2.5)
 
-### Stage 0 — Monorepo setup (3-4 days)
-
-Foundation for the entire project. All tooling, structure, CI
-configured before writing any feature code.
+### Stage 0 — Monorepo setup (3-4 days) ✅ COMPLETE
 
 - [x] pnpm workspaces structure (apps/web, apps/api, packages/shared)
 - [x] Root package.json with workspace configuration
@@ -31,78 +28,79 @@ configured before writing any feature code.
 ### Stage 1 — Backend foundation + auth (4-5 days)
 
 Get the API skeleton up with working authentication. Database
-connection, first migrations, JWT in HttpOnly cookie.
+connection, first migrations, JWT in HttpOnly cookie. Users table
+includes optional profile fields.
 
 - [ ] Hono app skeleton in apps/api
 - [ ] Drizzle ORM setup
 - [ ] Neon Postgres connection (free tier)
 - [ ] Drizzle migrations infrastructure
-- [ ] users table schema + first migration
-- [ ] bcrypt password hashing utility
-- [ ] jose JWT signing utility
-- [ ] Auth service layer (register, login logic)
-- [ ] Auth repository layer (user queries)
+- [ ] users schema with optional profile fields
+      (birthdate, sex, height_cm) + first migration
+- [ ] bcrypt password hashing utility (lib/password.ts)
+- [ ] jose JWT signing utility (lib/jwt.ts)
+- [ ] Custom error classes (lib/errors.ts)
+- [ ] Global error handler middleware
+- [ ] Auth feature module:
+  - [ ] auth.repository.ts
+  - [ ] auth.service.ts
+  - [ ] auth.routes.ts
 - [ ] POST /api/auth/register endpoint
 - [ ] POST /api/auth/login endpoint (JWT in HttpOnly cookie)
 - [ ] POST /api/auth/logout endpoint
-- [ ] GET /api/auth/me endpoint (current user)
+- [ ] GET /api/auth/me endpoint
+- [ ] PATCH /api/auth/me endpoint (update profile fields)
 - [ ] Auth middleware for protected routes
-- [ ] Global error handler middleware
 - [ ] CORS configuration with credentials
-- [ ] Vitest tests for auth service (pure logic)
-- [ ] Integration test for at least register + login flow
+- [ ] Vitest tests for auth service
+- [ ] Integration test for register + login flow
 
 ---
 
-### Stage 2 — Frontend foundation + auth flow (4-5 days)
+### Stage 2 — Frontend foundation + auth flow + onboarding (4-5 days)
 
-Get the SPA running with working login. App shell, protected
-routes, communication with API.
+Get the SPA running with working login. Mobile-first design from day one.
 
 - [ ] Vite + React 19 + TypeScript strict setup
 - [ ] Tailwind CSS v4 setup with CSS variables
-- [ ] shadcn/ui initialization (`pnpm dlx shadcn@latest init`)
-- [ ] Add base shadcn components (button, input, label, form, dialog)
+- [ ] Mobile-first responsive setup (base mobile, sm/md/lg)
+- [ ] shadcn/ui initialization
+- [ ] Add base shadcn components (button, input, label, form, dialog,
+      sheet for mobile modals)
 - [ ] TanStack Router setup with route definitions
 - [ ] TanStack Query setup with QueryClient configuration
-- [ ] API client wrapper (fetch with credentials, error handling)
-- [ ] Protected route handling (redirect to login if no auth)
-- [ ] Login page with React Hook Form + Zod validation
-- [ ] Register page with React Hook Form + Zod validation
-- [ ] App shell layout (header with logout, main content area)
-- [ ] Logout flow (clear cookie, redirect to login)
-- [ ] Loading and error states for auth pages
-- [ ] Empty dashboard placeholder ("Welcome, more coming soon")
+- [ ] API client wrapper (lib/api-client.ts)
+- [ ] Protected route handling
+- [ ] Auth feature module (login/register components, hooks, api)
+- [ ] Login page
+- [ ] Register page
+- [ ] Onboarding feature: optional fields modal after first login
+- [ ] App shell layout (mobile-first)
+- [ ] Logout flow
+- [ ] Loading and error states
+- [ ] Empty dashboard placeholder
 
 ---
 
 ### Stage 2.5 — Minimal README (30 minutes)
 
-Quick win — give the repo context for anyone who finds it
-mid-development.
-
 - [ ] README with project description (2-3 sentences)
 - [ ] Status badge: "Work in Progress"
-- [ ] Tech stack list (concise)
+- [ ] Tech stack list
 - [ ] Roadmap checkboxes (synced with this file)
-- [ ] Link to repo (no live demo yet)
-- [ ] How to run locally (clone, install, env, dev commands)
+- [ ] How to run locally
 
 ---
 
 ### Stage 3 — Shared package (2-3 days)
 
-Build the bridge between frontend and backend. Zod schemas
-become the single source of truth for types and validation.
-
 - [ ] packages/shared/package.json setup
 - [ ] Workspace import working from apps/web and apps/api
-- [ ] Auth schemas (RegisterSchema, LoginSchema, UserSchema)
-- [ ] Training schemas (Exercise, TrainingPlan, WorkoutTemplate,
-      WorkoutSession, Set, etc.)
-- [ ] Nutrition schemas (Food, Recipe, FoodLog, DailyGoals)
-- [ ] Weight schemas (WeightEntry)
-- [ ] Constants exports (exercise categories enum, status enums)
+- [ ] Auth schemas
+- [ ] Training schemas
+- [ ] Nutrition schemas
+- [ ] Body measurements schema
+- [ ] Constants exports (exercise categories, session types, statuses)
 - [ ] Inferred type exports for all schemas
 - [ ] Refactor existing auth code to use shared schemas
 
@@ -110,21 +108,20 @@ become the single source of truth for types and validation.
 
 ### Stage 4 — Training backend (6-8 days)
 
-Full CRUD for the training domain. Plans, templates, exercises,
-template-exercise slots. All endpoints validated with Zod.
+Full CRUD for training domain. All endpoints validated with Zod.
 
-- [ ] training_plans table + migration
-- [ ] workout_templates table + migration
-- [ ] exercises table + migration
-- [ ] workout_template_exercises table + migration
-- [ ] TrainingPlan repository + service
-- [ ] WorkoutTemplate repository + service
-- [ ] Exercise repository + service
+- [ ] training_plans schema + migration
+- [ ] workout_templates schema + migration
+- [ ] exercises schema + migration (with category enum)
+- [ ] workout_template_exercises schema + migration
+- [ ] workout_tags schema + migration
+- [ ] Training feature module (routes/service/repository)
 - [ ] TrainingPlan CRUD endpoints
 - [ ] WorkoutTemplate CRUD endpoints (nested in plan)
 - [ ] Exercise CRUD endpoints
-- [ ] WorkoutTemplateExercise CRUD endpoints (slots in template)
-- [ ] Soft delete logic (is_active flag) for exercises and plans
+- [ ] WorkoutTemplateExercise CRUD endpoints
+- [ ] WorkoutTag CRUD endpoints
+- [ ] Soft delete logic (is_active flag)
 - [ ] Tests for each service
 - [ ] Integration tests for happy paths
 
@@ -132,19 +129,21 @@ template-exercise slots. All endpoints validated with Zod.
 
 ### Stage 5 — Training UI (8-12 days)
 
-User-facing training management. Plans, templates, exercises
-dictionary. Drag-and-drop reordering. Optimistic updates.
+Mobile-first design. Drag-and-drop with touch support.
+Optimistic updates.
 
-- [ ] Training plans list view
+- [ ] Training feature module (frontend)
+- [ ] Training plans list view (mobile-optimized)
 - [ ] Create/edit training plan form
-- [ ] Training plan detail view (shows templates inside)
+- [ ] Training plan detail view
 - [ ] Workout templates within plan: list, create, edit
-- [ ] Exercise dictionary list view
-- [ ] Create/edit exercise form (name + category from enum)
+- [ ] Exercise dictionary list view with search
+- [ ] Create/edit exercise form (name + category)
+- [ ] Workout tag CRUD UI with color picker (Settings)
 - [ ] Template builder: add exercises with target sets/reps
-- [ ] Drag-and-drop reordering of exercises in template (dnd-kit)
-- [ ] React Query hooks with optimistic updates for all CRUD
-- [ ] Empty states for each list (clear CTAs)
+- [ ] Drag-and-drop reordering with touch support (dnd-kit)
+- [ ] React Query hooks with optimistic updates
+- [ ] Empty states with clear CTAs
 - [ ] Loading skeletons
 - [ ] Error states with retry
 - [ ] Tests for key custom hooks
@@ -153,159 +152,150 @@ dictionary. Drag-and-drop reordering. Optimistic updates.
 
 ### Stage 6 — Calendar + workout sessions (8-12 days)
 
-The heart of the app. Plan workouts on the calendar, execute
-them, log sets with RIR, swap exercises during session.
+The heart of the app. Mobile-optimized active workout view
+(must work one-handed).
 
-- [ ] planned_sessions table + migration
-- [ ] workout_sessions table + migration
-- [ ] exercise_performances table + migration
-- [ ] sets table + migration
-- [ ] PlannedSession repository + service + endpoints
-- [ ] WorkoutSession repository + service + endpoints
-- [ ] Calendar view (week + month modes)
-- [ ] Dropdown to assign template to date (grouped by plan)
-- [ ] Drag-and-drop to reschedule planned sessions
-- [ ] "Start workout" flow (creates WorkoutSession from PlannedSession)
-- [ ] Ad-hoc workout flow (start from template without planning)
-- [ ] Active session UI: list of exercises, set logging
-- [ ] Set logging form (weight, reps, RIR optional, completed)
+- [ ] planned_sessions schema + migration
+- [ ] workout_sessions schema + migration
+      (with session_type, rating, duration_minutes)
+- [ ] exercise_performances schema + migration
+- [ ] sets schema + migration (with rir field)
+- [ ] workout_session_tags junction schema + migration
+- [ ] Backend endpoints for sessions
+- [ ] Calendar view (week + month modes), mobile-optimized
+- [ ] Display workout tags as colored markers on calendar
+- [ ] Assign template to date (grouped by plan)
+- [ ] Drag-and-drop to reschedule planned sessions (touch support)
+- [ ] "Start workout" flow from PlannedSession
+- [ ] Ad-hoc strength workout flow (start from template)
+- [ ] Quick log flow (ad-hoc cardio/other, no template, no exercises)
+- [ ] Active session UI: mobile-first, one-handed usable
+- [ ] Set logging: large +/- controls, weight/reps/RIR input
 - [ ] Exercise swap modal (filters to same category)
 - [ ] Track original_exercise_id vs actual_exercise_id
-- [ ] Session notes textarea
-- [ ] Per-exercise notes
-- [ ] Finish workout flow (set finished_at, calculate summary)
-- [ ] Workout history list
-- [ ] Workout history detail view
-- [ ] Zustand store for in-progress session (draft state)
+- [ ] Session and per-exercise notes
+- [ ] Finish workout flow: star rating, tag picker, final notes
+- [ ] Workout history list and detail view
+- [ ] Zustand store for in-progress session draft
 
 ---
 
 ### Stage 7 — Training stats (3-4 days)
 
-Visualize progress over time. Pure aggregation functions
-testable in isolation.
-
-- [ ] Aggregation functions (pure): max weight per exercise,
-      total volume per session, weekly volume, etc.
+- [ ] Pure aggregation functions (max weight, total volume, etc.)
 - [ ] Backend endpoints for aggregated data
-- [ ] Progress chart per exercise (Recharts line chart)
+- [ ] Progress chart per exercise (Recharts)
 - [ ] Volume chart (weekly bars)
+- [ ] Workout rating trend chart
 - [ ] Exercise selector for charts
-- [ ] Memoization where measured to actually help (with comments)
+- [ ] Memoization where measured to help (with comments)
 - [ ] Vitest tests for all aggregation functions
 
 ---
 
 ### Stage 8 — Nutrition backend (5-7 days)
 
-CRUD for foods, recipes (with macro auto-calculation), daily
-food log, daily goals.
-
-- [ ] foods table + migration
-- [ ] recipes table + migration
-- [ ] recipe_ingredients table + migration
-- [ ] food_log table + migration
-- [ ] daily_goals table + migration
-- [ ] Food repository + service + endpoints
-- [ ] Recipe repository + service (with auto-macro calculation)
-- [ ] Recipe endpoints (CRUD + auto-calculated macro response)
-- [ ] FoodLog repository + service + endpoints (per-day queries)
-- [ ] DailyGoals repository + service + endpoints
+- [ ] foods schema + migration
+- [ ] recipes schema + migration
+- [ ] recipe_ingredients schema + migration
+- [ ] food_log schema + migration
+- [ ] nutrition_targets schema + migration
+      (historical, UNIQUE per date)
+- [ ] Nutrition feature module (routes/service/repository)
+- [ ] Food CRUD endpoints
+- [ ] Recipe CRUD endpoints (with auto-macro calculation)
+- [ ] FoodLog CRUD endpoints (per-day queries)
+- [ ] NutritionTarget endpoints (current, history, create)
 - [ ] Pure functions for macro calculation (testable)
-- [ ] Tests for macro calculation logic
+- [ ] Tests for macro calculation and "current target" logic
 
 ---
 
 ### Stage 9 — Nutrition UI (8-12 days)
 
-Food dictionary, recipe builder, daily diary, goals settings.
-The most complex UI module of the app.
+Mobile-first. Most complex UI module.
 
+- [ ] Nutrition feature module (frontend)
 - [ ] Food dictionary list view with search
-- [ ] Create/edit food form (name, brand, per-100g macros)
+- [ ] Create/edit food form
 - [ ] Recipe list view
-- [ ] Recipe builder: select foods, set amounts, see live macros
-- [ ] Recipe detail with macro breakdown per serving
-- [ ] Daily diary view (today by default, date picker for history)
-- [ ] Add food/recipe to diary (search + amount input)
+- [ ] Recipe builder with live macro preview
+- [ ] Daily diary view (today by default)
+- [ ] Add food/recipe to diary
 - [ ] Remove food from diary
-- [ ] Daily summary (kcal/B/F/C totals)
-- [ ] Goals settings page (kcal, protein, fat, carbs targets)
-- [ ] Progress bars: consumed vs goal per macro
-- [ ] Empty states for each view
+- [ ] Daily summary (kcal/B/F/C vs current target)
+- [ ] Targets settings page (edit creates new historical entry)
+- [ ] Targets history view
+- [ ] Progress bars per macro
+- [ ] Empty states
 - [ ] Tests for key hooks and pure functions
 
 ---
 
-### Stage 10 — Weight tracking (3-4 days)
+### Stage 10 — Body measurements (3-4 days)
 
-Simple module: log weight, see trend over time, basic statistics.
-
-- [ ] weight_entries table + migration with UNIQUE(user_id, date)
-- [ ] WeightEntry repository + service + endpoints
-- [ ] Add weight form (date defaults to today, weight_kg, notes)
-- [ ] Weight entries list (paginated or virtualized if many)
+- [ ] body_measurements schema + migration (weight + body_fat +
+      optional biceps/chest/waist/hip/thigh; UNIQUE per date)
+- [ ] Body feature module (backend)
+- [ ] Body feature module (frontend)
+- [ ] Quick-add weight form (primary, prominent on mobile)
+- [ ] Expandable "Show more measurements" section
+- [ ] Body measurements list (paginated or virtualized)
 - [ ] Edit/delete entries
-- [ ] Trend chart with raw data points (Recharts)
-- [ ] Overlay: 7-day moving average line
-- [ ] Overlay: 30-day moving average line
-- [ ] Stats panel: current weight, change last 7d, change last 30d,
-      total change from first entry
-- [ ] Date range selector for chart
+- [ ] Trend chart per measurement
+- [ ] 7-day and 30-day moving averages overlay
+- [ ] Stats panel (current, last 7d change, last 30d change, total)
+- [ ] Date range selector
 - [ ] Pure functions for moving averages (tested)
+- [ ] Bonus: overlay nutrition target changes on weight chart
 
 ---
 
 ## MVP Complete
 
 After Stage 10, the app has all three modules functional.
-This is the minimum to call portfolio-ready.
-
-Stages 11-16 are polish — important for a great portfolio piece,
-but the app works without them.
 
 ---
 
 ## Post-MVP (Stages 11-16)
 
-Optional polish phase. Do these after MVP done.
-
 ### Stage 11 — Unified dashboard (2-3 days)
 
 - [ ] Today's workout card (if planned)
-- [ ] Daily calories consumed vs goal
+- [ ] Daily calories vs current target
 - [ ] Latest weight + weekly trend
-- [ ] Streak counter (days with logged activity)
-- [ ] Parallel data fetching with useQueries
+- [ ] Streak counter
+- [ ] Parallel data fetching (useQueries)
 - [ ] Skeleton states per section
 
 ### Stage 12 — Performance pass (3-4 days)
 
-- [ ] React DevTools Profiler audit on key views
-- [ ] Virtualization for long lists (react-window)
+- [ ] React DevTools Profiler audit
+- [ ] Virtualization for long lists
 - [ ] Memoization where measured to help
 - [ ] Code splitting per route
-- [ ] Lighthouse audit on all pages — target 95+
-- [ ] Bundle analysis (vite-bundle-visualizer)
-- [ ] Before/after metrics documented in README
+- [ ] Lighthouse audit — 95+ desktop, 90+ mobile
+- [ ] Bundle analysis
+- [ ] Before/after metrics in README
 
 ### Stage 13 — Accessibility pass (2-3 days)
 
 - [ ] Keyboard navigation everywhere
-- [ ] Focus management for modals (focus trap)
-- [ ] ARIA labels and aria-live for toasts
+- [ ] Focus management for modals
+- [ ] ARIA labels and aria-live
 - [ ] Contrast check WCAG AA
-- [ ] Screen reader test on key flows
+- [ ] Screen reader test
 - [ ] Skip links
 - [ ] Reduced motion support
+- [ ] Verify touch targets ≥44px
 
 ### Stage 14 — Polish + animations + responsive (3-4 days)
 
-- [ ] Comprehensive empty states with illustrations or CTAs
-- [ ] Consistent error states with retry actions
+- [ ] Comprehensive empty states
+- [ ] Consistent error states
 - [ ] Loading skeletons everywhere
-- [ ] Smooth transitions (transform/opacity only)
-- [ ] Mobile-first responsive design pass
+- [ ] Smooth transitions (transform/opacity)
+- [ ] Mobile responsive polish
 - [ ] Toast notification system
 - [ ] Confirm dialogs for destructive actions
 - [ ] Dark mode polish
@@ -314,39 +304,36 @@ Optional polish phase. Do these after MVP done.
 
 - [ ] Deploy frontend to Vercel
 - [ ] Deploy backend to Fly.io
-- [ ] Configure production env vars
-- [ ] GitHub Actions auto-deploy on main
-- [ ] Verify cookies work cross-origin (CORS + SameSite)
-- [ ] Demo account creation script
-- [ ] Smoke test on production
+- [ ] Production env vars
+- [ ] GitHub Actions auto-deploy
+- [ ] Verify cross-origin cookies
+- [ ] Demo account with test data
+- [ ] Smoke test
 
 ### Stage 16 — Full documentation (3-4 days)
 
-- [ ] README rewrite with screenshots, demo link, full stack details
-- [ ] ARCHITECTURE.md with diagrams (mermaid or excalidraw)
-- [ ] DECISIONS.md finalized (this file)
-- [ ] CONTRIBUTING.md (placeholder for now)
-- [ ] Demo account credentials prominently displayed
-- [ ] GIFs of key flows
+- [ ] README rewrite with screenshots, demo link
+- [ ] ARCHITECTURE.md with diagrams
+- [ ] DECISIONS.md finalized
+- [ ] Demo account credentials in README
+- [ ] GIFs of key flows (mobile)
 - [ ] Performance metrics screenshots
-- [ ] Architecture diagram
 
 ---
 
 ## Future considerations (not in scope)
 
-Things documented as roadmap but explicitly NOT in MVP:
-
-- OAuth (Google, GitHub) instead of email/password
-- Open Food Facts API integration with caching layer
-- Body measurements (biceps, chest, waist, hip circumference)
-- Multi-language UI (i18n with react-i18next)
+- OAuth (Google, GitHub)
+- Open Food Facts API integration
+- Multi-language UI (i18n)
 - Mobile app (React Native or PWA)
-- Workout sharing or social features
+- Workout sharing / social features
 - Exercise atlas with images/videos
-- AI-generated workout suggestions
+- AI-generated suggestions
 - Wearables integration (Apple Health, Google Fit)
-- Barcode scanner for food entry
-- Meal planning (weekly meal prep with shopping list)
+- Barcode scanner
+- Product images upload
+- Meal planning with shopping list
 - Macro cycling / refeed days
-- Periodization (deload weeks marked in plan)
+- Periodization tracking
+- Predefined exercise autocomplete suggestions
