@@ -103,7 +103,9 @@
 
   --popover-foreground: oklch(0.145 0 0);
 
-  --primary: oklch(0.205 0 0);
+  /* Brand color — Tailwind "sky". Swap these (and the .dark block below) to
+     blue/cyan oklch values to retheme the whole app. */
+  --primary: oklch(0.588 0.158 241.966); /* sky-600 */
 
   --primary-foreground: oklch(0.985 0 0);
 
@@ -125,7 +127,7 @@
 
   --input: oklch(0.922 0 0);
 
-  --ring: oklch(0.708 0 0);
+  --ring: oklch(0.685 0.169 237.323); /* sky-500 */
 
   --chart-1: oklch(0.87 0 0);
 
@@ -169,9 +171,9 @@
 
   --popover-foreground: oklch(0.985 0 0);
 
-  --primary: oklch(0.922 0 0);
+  --primary: oklch(0.685 0.169 237.323); /* sky-500 (brand) */
 
-  --primary-foreground: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
 
   --secondary: oklch(0.269 0 0);
 
@@ -191,7 +193,7 @@
 
   --input: oklch(1 0 0 / 15%);
 
-  --ring: oklch(0.556 0 0);
+  --ring: oklch(0.685 0.169 237.323); /* sky-500 */
 
   --chart-1: oklch(0.87 0 0);
 
