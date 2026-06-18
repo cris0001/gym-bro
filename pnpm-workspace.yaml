@@ -3,9 +3,15 @@ packages:
   - 'packages/*'
 
 allowBuilds:
+  bcrypt: true
   esbuild: true
 
+minimumReleaseAgeExclude:
+  - hono@4.12.26
+
 # Dependencies allowed to run install/build scripts. pnpm 10+ blocks these by
-# default; esbuild (via Vitest/Vite) needs its script to set up its binary.
+# default. esbuild (via Vitest/Vite) sets up its platform binary; bcrypt is a
+# native addon that compiles/fetches its prebuilt binding on install.
 onlyBuiltDependencies:
+  - bcrypt
   - esbuild
