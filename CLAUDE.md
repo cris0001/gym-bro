@@ -515,4 +515,5 @@ Migrations can destroy data. Rules:
 
 ## Current stage
 
-Stage 1: backend foundation + auth (Hono + Drizzle + Neon + JWT)
+Stage 2: frontend foundation + auth flow + onboarding
+(Vite + React 19 + Tailwind v4 + shadcn/ui + TanStack Router/Query)
