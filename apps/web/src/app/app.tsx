@@ -2,9 +2,9 @@
 // routing is wired in; for now it just confirms the app boots.
 export function App() {
   return (
-    <main>
-      <h1>GM</h1>
-      <p>Frontend foundation is up.</p>
+    <main className="flex min-h-dvh flex-col items-center justify-center gap-2 p-6">
+      <h1 className="text-2xl font-bold">GM</h1>
+      <p className="text-gray-500">Frontend foundation is up.</p>
     </main>
   );
 }
