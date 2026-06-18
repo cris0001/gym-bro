@@ -4,9 +4,11 @@
     "rootDir": ".",
     "baseUrl": ".",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    // Automatic JSX runtime — no `import React` needed (React 17+/19).
+    "jsx": "react-jsx",
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "vitest.config.ts"]
+  "include": ["src", "vitest.config.ts", "vite.config.ts"]
 }
