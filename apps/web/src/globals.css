@@ -1,0 +1,4 @@
+@import 'tailwindcss';
+
+/* shadcn/ui init will add the design-token theme (CSS variables) and dark-mode
+   layer here. Kept minimal for now so the Tailwind pipeline is wired up. */
