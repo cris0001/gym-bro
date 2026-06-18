@@ -25,35 +25,35 @@ and full production deployment.
 
 ---
 
-### Stage 1 — Backend foundation + auth (4-5 days)
+### Stage 1 — Backend foundation + auth (4-5 days) ✅ COMPLETE
 
 Get the API skeleton up with working authentication. Database
 connection, first migrations, JWT in HttpOnly cookie. Users table
 includes optional profile fields.
 
-- [ ] Hono app skeleton in apps/api
-- [ ] Drizzle ORM setup
-- [ ] Neon Postgres connection (free tier)
-- [ ] Drizzle migrations infrastructure
-- [ ] users schema with optional profile fields
+- [x] Hono app skeleton in apps/api
+- [x] Drizzle ORM setup
+- [x] Neon Postgres connection (free tier)
+- [x] Drizzle migrations infrastructure
+- [x] users schema with optional profile fields
       (birthdate, sex, height_cm) + first migration
-- [ ] bcrypt password hashing utility (lib/password.ts)
-- [ ] jose JWT signing utility (lib/jwt.ts)
-- [ ] Custom error classes (lib/errors.ts)
-- [ ] Global error handler middleware
-- [ ] Auth feature module:
-  - [ ] auth.repository.ts
-  - [ ] auth.service.ts
-  - [ ] auth.routes.ts
-- [ ] POST /api/auth/register endpoint
-- [ ] POST /api/auth/login endpoint (JWT in HttpOnly cookie)
-- [ ] POST /api/auth/logout endpoint
-- [ ] GET /api/auth/me endpoint
-- [ ] PATCH /api/auth/me endpoint (update profile fields)
-- [ ] Auth middleware for protected routes
-- [ ] CORS configuration with credentials
-- [ ] Vitest tests for auth service
-- [ ] Integration test for register + login flow
+- [x] bcrypt password hashing utility (lib/password.ts)
+- [x] jose JWT signing utility (lib/jwt.ts)
+- [x] Custom error classes (lib/errors.ts)
+- [x] Global error handler middleware
+- [x] Auth feature module:
+  - [x] auth.repository.ts
+  - [x] auth.service.ts
+  - [x] auth.routes.ts
+- [x] POST /api/auth/register endpoint
+- [x] POST /api/auth/login endpoint (JWT in HttpOnly cookie)
+- [x] POST /api/auth/logout endpoint
+- [x] GET /api/auth/me endpoint
+- [x] PATCH /api/auth/me endpoint (update profile fields)
+- [x] Auth middleware for protected routes
+- [x] CORS configuration with credentials
+- [x] Vitest tests for auth service
+- [x] Integration test for register + login flow
 
 ---
 
