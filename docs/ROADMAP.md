@@ -86,13 +86,11 @@ Get the SPA running with working login. Mobile-first design from day one.
 
 ---
 
-### Stage 2.5 — Minimal README (30 minutes)
+### Stage 2.5 — Minimal README [SKIPPED — full README done in Stage 16 after MVP]
 
-- [ ] README with project description (2-3 sentences)
-- [ ] Status badge: "Work in Progress"
-- [ ] Tech stack list
-- [ ] Roadmap checkboxes (synced with this file)
-- [ ] How to run locally
+Skipped intentionally: a placeholder README has no real audience
+mid-development. The full README (description, screenshots, demo link)
+is written in Stage 16, once the MVP is complete.
 
 ---
 

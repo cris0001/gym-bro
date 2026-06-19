@@ -515,5 +515,9 @@ Migrations can destroy data. Rules:
 
 ## Current stage
 
-Stage 2: frontend foundation + auth flow + onboarding
-(Vite + React 19 + Tailwind v4 + shadcn/ui + TanStack Router/Query)
+Stage 3: shared package (packages/shared)
+Zod schemas as single source of truth, inferred types, shared constants;
+refactor existing auth code (apps/api + apps/web) to consume them.
+
+(Stage 2 — frontend foundation + auth flow + onboarding — complete.
+Stage 2.5 minimal README skipped; full README lands in Stage 16.)
