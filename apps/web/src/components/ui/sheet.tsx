@@ -1,5 +1,7 @@
-// Customized from the shadcn default: the bottom variant has rounded top
-// corners (rounded-t-xl) for a native mobile bottom-sheet look.
+// Customized from the shadcn default: the bottom variant is a full-width,
+// rounded-top bottom sheet on mobile, and a centered, width-capped card lifted
+// off the bottom edge on sm+ screens (so it isn't an awkward full-width bar on
+// desktop).
 import * as React from 'react';
 import { Dialog as SheetPrimitive } from 'radix-ui';
 import { XIcon } from 'lucide-react';
@@ -60,7 +62,7 @@ function SheetContent({
           side === 'top' &&
             'data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top inset-x-0 top-0 h-auto border-b',
           side === 'bottom' &&
-            'data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom inset-x-0 bottom-0 h-auto rounded-t-xl border-t',
+            'data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom inset-x-0 bottom-0 h-auto rounded-t-xl border-t sm:bottom-4 sm:mx-auto sm:max-w-md sm:rounded-xl sm:border',
           className,
         )}
         {...props}
