@@ -22,6 +22,11 @@ export const updateProfileSchema = z.object({
   heightCm: z.number().int().min(50).max(300).nullable().optional(),
 });
 
+// Onboarding takes the same optional profile fields; the route additionally
+// stamps onboardedAt to mark the one-time flow done.
+export const onboardingSchema = updateProfileSchema;
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+export type OnboardingInput = z.infer<typeof onboardingSchema>;
