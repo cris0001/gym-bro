@@ -17,6 +17,7 @@ function fakeUser(overrides: Partial<User> = {}): User {
     birthdate: null,
     sex: null,
     heightCm: null,
+    onboardedAt: null,
     createdAt: new Date('2026-01-01T00:00:00Z'),
     updatedAt: new Date('2026-01-01T00:00:00Z'),
     ...overrides,
