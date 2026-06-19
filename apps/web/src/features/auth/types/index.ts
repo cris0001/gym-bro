@@ -37,6 +37,20 @@ export const registerSchema = z.object({
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 
+// Onboarding form values. All fields are skippable; '' means "unset" so the
+// segmented sex toggle can deselect and empty number/date inputs are valid.
+export const onboardingFormSchema = z.object({
+  birthdate: z.string(),
+  sex: z.union([z.literal(''), z.enum(['male', 'female'])]),
+  heightCm: z
+    .string()
+    .refine((v) => v === '' || (/^\d+$/.test(v) && Number(v) >= 50 && Number(v) <= 300), {
+      message: 'Enter a height between 50 and 300 cm',
+    }),
+});
+
+export type OnboardingFormValues = z.infer<typeof onboardingFormSchema>;
+
 // Partial profile update. Each field is optional (omit to leave unchanged) and
 // nullable (null clears it), mirroring the API's PATCH /me contract.
 export interface UpdateProfileInput {
