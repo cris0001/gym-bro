@@ -46,7 +46,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
                   type="email"
                   inputMode="email"
                   autoComplete="email"
-                  placeholder="you@example.com"
+                  placeholder=""
                   className="h-11"
                   {...field}
                 />
