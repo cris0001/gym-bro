@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 // Local auth types for Stage 2. The API (apps/api) is the source of truth for
 // these shapes today; Stage 3 moves the Zod schemas into packages/shared and
 // these get inferred from there instead of being hand-written.
@@ -17,15 +19,21 @@ export interface User {
   updatedAt: string;
 }
 
-export interface LoginInput {
-  email: string;
-  password: string;
-}
+// Client-side form validation, mirroring the API's auth.schema.ts so the rules
+// match on both sides. Input types are inferred — never hand-written.
+export const loginSchema = z.object({
+  email: z.email('Enter a valid email'),
+  password: z.string().min(1, 'Password is required'),
+});
 
-export interface RegisterInput {
-  email: string;
-  password: string;
-}
+export const registerSchema = z.object({
+  email: z.email('Enter a valid email'),
+  // Min 8 mirrors the API — a usable baseline for a personal app.
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+});
+
+export type LoginInput = z.infer<typeof loginSchema>;
+export type RegisterInput = z.infer<typeof registerSchema>;
 
 // Partial profile update. Each field is optional (omit to leave unchanged) and
 // nullable (null clears it), mirroring the API's PATCH /me contract.
