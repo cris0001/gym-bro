@@ -4,6 +4,7 @@
 export { LoginForm } from './components/login-form';
 export { RegisterForm } from './components/register-form';
 export { LogoutButton } from './components/logout-button';
+export { OnboardingSheet } from './components/onboarding-sheet';
 
 export { useCurrentUser, meQueryOptions, CURRENT_USER_KEY } from './hooks/use-current-user';
 export { useLogin } from './hooks/use-login';
