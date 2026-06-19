@@ -42,3 +42,18 @@ export async function updateProfile(id: string, profile: ProfileUpdate): Promise
     .returning();
   return user;
 }
+
+// Applies any provided profile fields and stamps onboardedAt, marking the
+// one-time onboarding as done (skip = empty profile, still stamps the flag).
+export async function completeOnboarding(
+  id: string,
+  profile: ProfileUpdate,
+): Promise<User | undefined> {
+  const now = new Date();
+  const [user] = await db
+    .update(users)
+    .set({ ...profile, onboardedAt: now, updatedAt: now })
+    .where(eq(users.id, id))
+    .returning();
+  return user;
+}
