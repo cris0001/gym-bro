@@ -57,28 +57,32 @@ includes optional profile fields.
 
 ---
 
-### Stage 2 — Frontend foundation + auth flow + onboarding (4-5 days)
+### Stage 2 — Frontend foundation + auth flow + onboarding (4-5 days) ✅ COMPLETE
 
 Get the SPA running with working login. Mobile-first design from day one.
 
-- [ ] Vite + React 19 + TypeScript strict setup
-- [ ] Tailwind CSS v4 setup with CSS variables
-- [ ] Mobile-first responsive setup (base mobile, sm/md/lg)
-- [ ] shadcn/ui initialization
-- [ ] Add base shadcn components (button, input, label, form, dialog,
-      sheet for mobile modals)
-- [ ] TanStack Router setup with route definitions
-- [ ] TanStack Query setup with QueryClient configuration
-- [ ] API client wrapper (lib/api-client.ts)
-- [ ] Protected route handling
-- [ ] Auth feature module (login/register components, hooks, api)
-- [ ] Login page
-- [ ] Register page
-- [ ] Onboarding feature: optional fields modal after first login
-- [ ] App shell layout (mobile-first)
-- [ ] Logout flow
-- [ ] Loading and error states
-- [ ] Empty dashboard placeholder
+- [x] Vite + React 19 + TypeScript strict setup
+- [x] Tailwind CSS v4 setup with CSS variables
+- [x] Mobile-first responsive setup (base mobile, sm/md/lg)
+- [x] shadcn/ui initialization
+- [x] Add base shadcn components (button, input, label, form, card,
+      sheet for mobile modals) — dialog deferred; Sheet covers modals
+- [x] TanStack Router setup with route definitions (file-based,
+      pathless `_auth`/`_app` layout groups)
+- [x] TanStack Query setup with QueryClient configuration
+- [x] API client wrapper (lib/api-client.ts)
+- [x] Protected route handling (beforeLoad guard + queryClient context)
+- [x] Auth feature module (login/register components, hooks, api)
+- [x] Login page
+- [x] Register page
+- [x] Onboarding feature: optional fields modal after first login
+  - [x] Backend: onboarded_at column + migration
+  - [x] Backend: POST /api/auth/onboarding endpoint + tests
+  - [x] Frontend: bottom-sheet form (birthdate, sex, height)
+- [x] App shell layout (mobile-first)
+- [x] Logout flow
+- [x] Loading and error states
+- [x] Empty dashboard placeholder
 
 ---
 
