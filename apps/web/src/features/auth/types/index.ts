@@ -15,6 +15,8 @@ export interface User {
   birthdate: string | null;
   sex: Sex | null;
   heightCm: number | null;
+  // null until the user finishes or skips onboarding; drives the sheet trigger.
+  onboardedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
