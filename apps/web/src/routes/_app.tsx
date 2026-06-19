@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
 
-import { LogoutButton, meQueryOptions } from '@/features/auth';
+import { LogoutButton, OnboardingSheet, meQueryOptions } from '@/features/auth';
 
 // Protected layout. beforeLoad resolves the current user from the shared cache
 // (fetching once if needed); a 401 throws and we redirect to /login before any
@@ -26,6 +26,7 @@ function AppLayout() {
       <main className="flex-1">
         <Outlet />
       </main>
+      <OnboardingSheet />
     </div>
   );
 }
