@@ -4,7 +4,7 @@ import type { User } from '../../db/schema/users';
 import { ConflictError, NotFoundError, UnauthorizedError } from '../../lib/errors';
 import { hashPassword } from '../../lib/password';
 import * as authRepository from './auth.repository';
-import { getProfile, login, register, updateProfile } from './auth.service';
+import { completeOnboarding, getProfile, login, register, updateProfile } from './auth.service';
 
 vi.mock('./auth.repository');
 const repo = vi.mocked(authRepository);
@@ -114,5 +114,25 @@ describe('updateProfile', () => {
     repo.updateProfile.mockResolvedValue(undefined);
 
     await expect(updateProfile('missing', { heightCm: 180 })).rejects.toBeInstanceOf(NotFoundError);
+  });
+});
+
+describe('completeOnboarding', () => {
+  it('returns the sanitized user with onboardedAt set', async () => {
+    repo.completeOnboarding.mockResolvedValue(
+      fakeUser({ heightCm: 182, onboardedAt: new Date('2026-06-19T00:00:00Z') }),
+    );
+
+    const user = await completeOnboarding('user-1', { heightCm: 182 });
+
+    expect(user.heightCm).toBe(182);
+    expect(user.onboardedAt).not.toBeNull();
+    expect(user).not.toHaveProperty('passwordHash');
+  });
+
+  it('throws NotFoundError when the user is gone', async () => {
+    repo.completeOnboarding.mockResolvedValue(undefined);
+
+    await expect(completeOnboarding('missing', {})).rejects.toBeInstanceOf(NotFoundError);
   });
 });
