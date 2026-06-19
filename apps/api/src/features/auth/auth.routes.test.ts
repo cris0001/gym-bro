@@ -138,4 +138,31 @@ describe('auth routes', () => {
     expect(res.status).toBe(200);
     expect(res.headers.get('set-cookie')).toContain('auth_token=');
   });
+
+  it('POST /onboarding without a cookie returns 401', async () => {
+    const res = await post('/api/auth/onboarding', { heightCm: 180 });
+
+    expect(res.status).toBe(401);
+  });
+
+  it('register then POST /onboarding stamps onboardedAt and applies fields', async () => {
+    repo.findByEmail.mockResolvedValue(undefined);
+    repo.create.mockResolvedValue(fakeUser());
+    const reg = await post('/api/auth/register', {
+      email: 'test@example.com',
+      password: 'password123',
+    });
+    const cookie = cookieFrom(reg);
+
+    repo.completeOnboarding.mockResolvedValue(
+      fakeUser({ heightCm: 180, onboardedAt: new Date('2026-06-19T00:00:00Z') }),
+    );
+    const res = await post('/api/auth/onboarding', { heightCm: 180 }, cookie);
+    const body = (await res.json()) as { data: { heightCm: number; onboardedAt: string | null } };
+
+    expect(res.status).toBe(200);
+    expect(repo.completeOnboarding).toHaveBeenCalledWith('user-1', { heightCm: 180 });
+    expect(body.data.heightCm).toBe(180);
+    expect(body.data.onboardedAt).not.toBeNull();
+  });
 });
