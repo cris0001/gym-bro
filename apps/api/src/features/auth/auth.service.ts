@@ -56,3 +56,11 @@ export async function updateProfile(userId: string, data: ProfileUpdate): Promis
   }
   return toPublicUser(user);
 }
+
+export async function completeOnboarding(userId: string, data: ProfileUpdate): Promise<PublicUser> {
+  const user = await authRepository.completeOnboarding(userId, data);
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+  return toPublicUser(user);
+}
