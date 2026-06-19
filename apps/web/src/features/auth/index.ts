@@ -1,6 +1,8 @@
 // Public interface of the auth feature. Everything outside this folder imports
-// from '@/features/auth' only — never from internal paths. Components (forms,
-// pages) get added here as they land.
+// from '@/features/auth' only — never from internal paths.
+
+export { LoginForm } from './components/login-form';
+export { RegisterForm } from './components/register-form';
 
 export { useCurrentUser, CURRENT_USER_KEY } from './hooks/use-current-user';
 export { useLogin } from './hooks/use-login';
