@@ -63,6 +63,26 @@ export default tseslint.config(
     },
   },
 
+  // TanStack Router signals navigation by throwing redirect()/notFound(), whose
+  // return types aren't Error subclasses. Allow that idiom in route files.
+  {
+    files: ['apps/web/src/routes/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/only-throw-error': [
+        'error',
+        {
+          allow: [
+            {
+              from: 'package',
+              package: '@tanstack/router-core',
+              name: ['Redirect', 'NotFoundError'],
+            },
+          ],
+        },
+      ],
+    },
+  },
+
   // Tooling/config files may use default exports and run in Node.
   {
     files: ['**/*.config.{js,ts,mts,cts}'],
