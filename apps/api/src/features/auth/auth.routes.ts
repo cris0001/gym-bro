@@ -4,7 +4,7 @@ import { deleteCookie, setCookie } from 'hono/cookie';
 import { AUTH_COOKIE_NAME, authCookieOptions } from '../../lib/auth-cookie';
 import { parseJson } from '../../lib/validate';
 import { requireAuth, type AppEnv } from '../../middleware/auth';
-import { loginSchema, registerSchema, updateProfileSchema } from './auth.schema';
+import { loginSchema, onboardingSchema, registerSchema, updateProfileSchema } from './auth.schema';
 import * as authService from './auth.service';
 
 // Thin handlers: validate, delegate to the service, format the response. The
@@ -38,5 +38,11 @@ authRoutes.get('/me', requireAuth, async (c) => {
 authRoutes.patch('/me', requireAuth, async (c) => {
   const data = await parseJson(c, updateProfileSchema);
   const user = await authService.updateProfile(c.get('userId'), data);
+  return c.json({ data: user });
+});
+
+authRoutes.post('/onboarding', requireAuth, async (c) => {
+  const data = await parseJson(c, onboardingSchema);
+  const user = await authService.completeOnboarding(c.get('userId'), data);
   return c.json({ data: user });
 });
