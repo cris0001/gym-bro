@@ -15,6 +15,13 @@
       "when": 1781853956254,
       "tag": "0001_red_pete_wisdom",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782119886173,
+      "tag": "0002_greedy_lifeguard",
+      "breakpoints": true
     }
   ]
 }
