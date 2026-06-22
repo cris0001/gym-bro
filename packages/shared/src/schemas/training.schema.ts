@@ -24,3 +24,23 @@ export const createPlanSchema = z.object({
 });
 
 export const updatePlanSchema = createPlanSchema.partial();
+
+// --- Workout templates (days within a plan) ---
+// planId comes from the URL; position is auto-assigned on create.
+
+export const createTemplateSchema = z.object({
+  name: z.string().trim().min(1, 'Name is required').max(100, 'Name is too long'),
+  description: z.string().trim().max(500, 'Description is too long').nullish(),
+});
+
+export const updateTemplateSchema = createTemplateSchema.partial();
+
+// --- Reordering ---
+// Shared by the template and template-exercise reorder endpoints (decision 3A):
+// the full ordered list of ids; the service renumbers position in one txn.
+export const reorderSchema = z.object({
+  orderedIds: z
+    .array(z.uuid())
+    .min(1, 'At least one id is required')
+    .refine((ids) => new Set(ids).size === ids.length, 'Duplicate ids are not allowed'),
+});
