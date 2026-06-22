@@ -74,3 +74,13 @@ export const updateTemplateExerciseSchema = templateExerciseBase
     (v) => v.targetRepsMin == null || v.targetRepsMax == null || v.targetRepsMax >= v.targetRepsMin,
     { message: REPS_RANGE_MESSAGE, path: ['targetRepsMax'] },
   );
+
+// --- Workout tags ---
+
+export const createTagSchema = z.object({
+  name: z.string().trim().min(1, 'Name is required').max(100, 'Name is too long'),
+  // 6-digit hex; mirrors the workout_tags_color_hex DB CHECK.
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Enter a valid hex color, e.g. #22c55e'),
+});
+
+export const updateTagSchema = createTagSchema.partial();
