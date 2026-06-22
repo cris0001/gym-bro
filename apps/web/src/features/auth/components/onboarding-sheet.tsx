@@ -22,9 +22,12 @@ import {
 
 import { useCompleteOnboarding } from '../hooks/use-complete-onboarding';
 import { useCurrentUser } from '../hooks/use-current-user';
-import { onboardingFormSchema, type OnboardingFormValues, type UpdateProfileInput } from '../types';
-
-const SEX_OPTIONS = ['male', 'female'] as const;
+import {
+  SEX_OPTIONS,
+  onboardingFormSchema,
+  type OnboardingFormValues,
+  type UpdateProfileInput,
+} from '../types';
 
 export function OnboardingSheet() {
   const { data: user } = useCurrentUser();

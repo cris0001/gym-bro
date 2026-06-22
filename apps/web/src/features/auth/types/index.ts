@@ -1,47 +1,25 @@
 import { z } from 'zod';
 
-// Local auth types for Stage 2. The API (apps/api) is the source of truth for
-// these shapes today; Stage 3 moves the Zod schemas into packages/shared and
-// these get inferred from there instead of being hand-written.
+import { SEX_OPTIONS } from '@gym-bro/shared';
 
-export type Sex = 'male' | 'female';
+// The auth contracts (schemas, inferred inputs, the user shape) live in
+// @gym-bro/shared so the web and API can't drift. Re-exported here under the
+// feature's local type barrel — PublicUser is surfaced as User for the client.
+export { loginSchema, registerSchema, SEX_OPTIONS } from '@gym-bro/shared';
+export type {
+  LoginInput,
+  RegisterInput,
+  UpdateProfileInput,
+  Sex,
+  PublicUser as User,
+} from '@gym-bro/shared';
 
-// Public user as returned by the API (never includes passwordHash). Date/time
-// columns arrive as ISO strings over JSON: birthdate is YYYY-MM-DD, the
-// timestamps are full ISO-8601.
-export interface User {
-  id: string;
-  email: string;
-  birthdate: string | null;
-  sex: Sex | null;
-  heightCm: number | null;
-  // null until the user finishes or skips onboarding; drives the sheet trigger.
-  onboardedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-// Client-side form validation, mirroring the API's auth.schema.ts so the rules
-// match on both sides. Input types are inferred — never hand-written.
-export const loginSchema = z.object({
-  email: z.email('Enter a valid email'),
-  password: z.string().min(1, 'Password is required'),
-});
-
-export const registerSchema = z.object({
-  email: z.email('Enter a valid email'),
-  // Min 8 mirrors the API — a usable baseline for a personal app.
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-});
-
-export type LoginInput = z.infer<typeof loginSchema>;
-export type RegisterInput = z.infer<typeof registerSchema>;
-
-// Onboarding form values. All fields are skippable; '' means "unset" so the
-// segmented sex toggle can deselect and empty number/date inputs are valid.
+// UI-only: the onboarding form binds to string inputs where '' means "unset",
+// so the segmented sex toggle can deselect and empty number/date fields stay
+// valid. This never crosses the wire — onSave maps it to UpdateProfileInput.
 export const onboardingFormSchema = z.object({
   birthdate: z.string(),
-  sex: z.union([z.literal(''), z.enum(['male', 'female'])]),
+  sex: z.union([z.literal(''), z.enum(SEX_OPTIONS)]),
   heightCm: z
     .string()
     .refine((v) => v === '' || (/^\d+$/.test(v) && Number(v) >= 50 && Number(v) <= 300), {
@@ -50,11 +28,3 @@ export const onboardingFormSchema = z.object({
 });
 
 export type OnboardingFormValues = z.infer<typeof onboardingFormSchema>;
-
-// Partial profile update. Each field is optional (omit to leave unchanged) and
-// nullable (null clears it), mirroring the API's PATCH /me contract.
-export interface UpdateProfileInput {
-  birthdate?: string | null;
-  sex?: Sex | null;
-  heightCm?: number | null;
-}
