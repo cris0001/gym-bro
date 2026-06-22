@@ -94,17 +94,22 @@ is written in Stage 16, once the MVP is complete.
 
 ---
 
-### Stage 3 — Shared package (2-3 days)
+### Stage 3 — Shared package (2-3 days) ✅ COMPLETE
 
-- [ ] packages/shared/package.json setup
-- [ ] Workspace import working from apps/web and apps/api
-- [ ] Auth schemas
-- [ ] Training schemas
-- [ ] Nutrition schemas
-- [ ] Body measurements schema
-- [ ] Constants exports (exercise categories, session types, statuses)
-- [ ] Inferred type exports for all schemas
-- [ ] Refactor existing auth code to use shared schemas
+The shared package and the source-of-truth pattern are in place via auth.
+Per-domain schemas land with their build stages (when their tables are
+designed) rather than being guessed up front:
+
+- [x] packages/shared/package.json setup
+- [x] Workspace import working from apps/web and apps/api
+- [x] Auth schemas
+- [~] Training schemas — deferred to Stage 4 (built with training tables)
+- [~] Nutrition schemas — deferred to Stage 8 (built with nutrition tables)
+- [~] Body measurements schema — deferred to Stage 10 (built with the table)
+- [x] Constants exports (auth: SEX_OPTIONS; domain constants ship with
+      their stages alongside the schemas above)
+- [x] Inferred type exports for all schemas (auth)
+- [x] Refactor existing auth code to use shared schemas (apps/api + apps/web)
 
 ---
 

@@ -515,9 +515,14 @@ Migrations can destroy data. Rules:
 
 ## Current stage
 
-Stage 3: shared package (packages/shared)
-Zod schemas as single source of truth, inferred types, shared constants;
-refactor existing auth code (apps/api + apps/web) to consume them.
+Stage 4: training backend (apps/api)
+Drizzle schemas + migrations for the training domain (plans, templates,
+exercises, template-exercises, tags), then the training feature module
+(routes/service/repository) with full CRUD validated by Zod.
 
-(Stage 2 — frontend foundation + auth flow + onboarding — complete.
-Stage 2.5 minimal README skipped; full README lands in Stage 16.)
+(Stage 3 — shared package — complete: the @gym-bro/shared package hosts
+the auth Zod schemas, inferred types, and SEX_OPTIONS as the single source
+of truth; both apps consume it. Per-domain schemas land with their build
+stages, so training/nutrition/body Zod schemas are added in Stages 4/8/10
+alongside their tables. Stage 2 complete; Stage 2.5 README skipped — full
+README lands in Stage 16.)
