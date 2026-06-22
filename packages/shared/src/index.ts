@@ -1,3 +1,4 @@
-// Placeholder barrel. Stage 3 replaces this with the Zod schemas (single
-// source of truth), inferred types, and shared constants.
-export const SHARED_PACKAGE = '@gym-bro/shared';
+// Public interface of @gym-bro/shared. Both apps import from here only.
+export * from './schemas/auth.schema';
+export * from './types/auth.types';
+export * from './constants/auth.constants';
