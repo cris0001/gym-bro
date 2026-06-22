@@ -14,3 +14,13 @@ export const createExerciseSchema = z.object({
 
 // PATCH accepts any subset of the creatable fields.
 export const updateExerciseSchema = createExerciseSchema.partial();
+
+// --- Training plans ---
+
+export const createPlanSchema = z.object({
+  name: z.string().trim().min(1, 'Name is required').max(100, 'Name is too long'),
+  // nullish: omit on create, or send null to clear on update.
+  description: z.string().trim().max(500, 'Description is too long').nullish(),
+});
+
+export const updatePlanSchema = createPlanSchema.partial();
