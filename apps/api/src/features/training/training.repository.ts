@@ -8,6 +8,13 @@ import { exercises, type Exercise } from '../../db/schema/exercises';
 
 type ExerciseCategory = Exercise['category'];
 
+// Fields editable via PATCH; undefined-able to line up with the Zod-inferred
+// input under exactOptionalPropertyTypes (same as auth's ProfileUpdate).
+interface ExerciseUpdate {
+  name?: string | undefined;
+  category?: ExerciseCategory | undefined;
+}
+
 // --- Exercises ---
 
 // Active exercises only (decision 5A), case-insensitive name order, optionally
@@ -55,7 +62,7 @@ export async function createExercise(data: {
 export async function updateExercise(
   userId: string,
   id: string,
-  data: Partial<{ name: string; category: ExerciseCategory }>,
+  data: ExerciseUpdate,
 ): Promise<Exercise | undefined> {
   const [exercise] = await db
     .update(exercises)
