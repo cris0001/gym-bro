@@ -12,6 +12,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@gym-bro/shared": "workspace:*",
     "@hono/node-server": "^2.0.5",
     "@neondatabase/serverless": "^1.1.0",
     "bcrypt": "^6.0.0",

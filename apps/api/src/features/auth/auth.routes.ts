@@ -1,10 +1,15 @@
 import { Hono } from 'hono';
 import { deleteCookie, setCookie } from 'hono/cookie';
+import {
+  loginSchema,
+  onboardingSchema,
+  registerSchema,
+  updateProfileSchema,
+} from '@gym-bro/shared';
 
 import { AUTH_COOKIE_NAME, authCookieOptions } from '../../lib/auth-cookie';
 import { parseJson } from '../../lib/validate';
 import { requireAuth, type AppEnv } from '../../middleware/auth';
-import { loginSchema, onboardingSchema, registerSchema, updateProfileSchema } from './auth.schema';
 import * as authService from './auth.service';
 
 // Thin handlers: validate, delegate to the service, format the response. The
