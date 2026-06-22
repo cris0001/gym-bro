@@ -2,3 +2,4 @@
 export * from './schemas/auth.schema';
 export * from './types/auth.types';
 export * from './constants/auth.constants';
+export * from './constants/training.constants';
