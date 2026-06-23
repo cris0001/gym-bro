@@ -113,24 +113,34 @@ designed) rather than being guessed up front:
 
 ---
 
-### Stage 4 — Training backend (6-8 days)
+### Stage 4 — Training backend (6-8 days) ✅ COMPLETE
 
-Full CRUD for training domain. All endpoints validated with Zod.
+Full CRUD for the training domain, built as five vertical slices
+(repository → service → routes → tests). All endpoints validated with Zod
+and scoped per user; one migration applied to Neon. 96 route tests passing.
 
-- [ ] training_plans schema + migration
-- [ ] workout_templates schema + migration
-- [ ] exercises schema + migration (with category enum)
-- [ ] workout_template_exercises schema + migration
-- [ ] workout_tags schema + migration
-- [ ] Training feature module (routes/service/repository)
-- [ ] TrainingPlan CRUD endpoints
-- [ ] WorkoutTemplate CRUD endpoints (nested in plan)
-- [ ] Exercise CRUD endpoints
-- [ ] WorkoutTemplateExercise CRUD endpoints
-- [ ] WorkoutTag CRUD endpoints
-- [ ] Soft delete logic (is_active flag)
-- [ ] Tests for each service
-- [ ] Integration tests for happy paths
+- [x] training_plans schema + migration
+- [x] workout_templates schema + migration
+- [x] exercises schema + migration (with category enum)
+- [x] workout_template_exercises schema + migration
+- [x] workout_tags schema + migration
+- [x] Training feature module (routes/service/repository)
+- [x] TrainingPlan CRUD endpoints (list with templateCount, detail embeds
+      ordered templates)
+- [x] WorkoutTemplate CRUD endpoints (nested create in plan, transactional
+      reorder, detail embeds ordered exercises)
+- [x] Exercise CRUD endpoints (category filter)
+- [x] WorkoutTemplateExercise CRUD endpoints (nested create with ownership
+      chain, transactional reorder)
+- [x] WorkoutTag CRUD endpoints (hex-color validation)
+- [x] Soft delete logic (is_active flag) — exercises + tags; plans,
+      templates, and template-exercises are hard-deleted by design
+- [x] Tests for each service — covered by route tests that drive the real
+      service over a mocked repository (per the testing convention; no
+      separate service-unit-test layer)
+- [~] Integration tests for happy paths — proved via live smoke tests
+  against Neon (reorder, ownership chain, soft-delete surfacing);
+  committed automated DB-integration tests intentionally skipped
 
 ---
 
