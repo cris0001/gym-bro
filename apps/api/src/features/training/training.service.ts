@@ -1,11 +1,14 @@
-import { ConflictError, NotFoundError } from '../../lib/errors';
+import { ConflictError, NotFoundError, ValidationError } from '../../lib/errors';
 import type {
   CreateExerciseInput,
   CreatePlanInput,
   CreateTagInput,
+  CreateTemplateInput,
+  ReorderInput,
   UpdateExerciseInput,
   UpdatePlanInput,
   UpdateTagInput,
+  UpdateTemplateInput,
 } from '@gym-bro/shared';
 
 import type { Exercise } from '../../db/schema/exercises';
@@ -196,4 +199,85 @@ export async function deletePlan(userId: string, id: string): Promise<void> {
   if (!deleted) {
     throw new NotFoundError('Plan not found');
   }
+}
+
+// --- Templates ---
+
+// Nested create: the template lands in the parent plan, so the plan must exist
+// and belong to the user. Position is auto-assigned to the end of the plan.
+export async function createTemplate(
+  userId: string,
+  planId: string,
+  input: CreateTemplateInput,
+): Promise<WorkoutTemplate> {
+  const plan = await trainingRepository.findPlanById(userId, planId);
+  if (!plan) {
+    throw new NotFoundError('Plan not found');
+  }
+  const position = await trainingRepository.getNextTemplatePosition(planId);
+  try {
+    return await trainingRepository.createTemplate({
+      trainingPlanId: planId,
+      userId,
+      ...input,
+      position,
+    });
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      throw new ConflictError('A template with this name already exists in this plan');
+    }
+    throw error;
+  }
+}
+
+export async function updateTemplate(
+  userId: string,
+  id: string,
+  input: UpdateTemplateInput,
+): Promise<WorkoutTemplate> {
+  const existing = await trainingRepository.findTemplateById(userId, id);
+  if (!existing) {
+    throw new NotFoundError('Template not found');
+  }
+  try {
+    const updated = await trainingRepository.updateTemplate(userId, id, input);
+    if (!updated) {
+      throw new NotFoundError('Template not found');
+    }
+    return updated;
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      throw new ConflictError('A template with this name already exists in this plan');
+    }
+    throw error;
+  }
+}
+
+export async function deleteTemplate(userId: string, id: string): Promise<void> {
+  const deleted = await trainingRepository.deleteTemplate(userId, id);
+  if (!deleted) {
+    throw new NotFoundError('Template not found');
+  }
+}
+
+// Reorder requires the complete set of the plan's templates (decision: full-set
+// reorder). Validate ownership and that orderedIds matches the plan's current
+// templates exactly before renumbering in a transaction.
+export async function reorderTemplates(
+  userId: string,
+  planId: string,
+  input: ReorderInput,
+): Promise<WorkoutTemplate[]> {
+  const plan = await trainingRepository.findPlanById(userId, planId);
+  if (!plan) {
+    throw new NotFoundError('Plan not found');
+  }
+  const current = await trainingRepository.listTemplatesByPlan(userId, planId);
+  const currentIds = new Set(current.map((template) => template.id));
+  const sameSize = input.orderedIds.length === currentIds.size;
+  const allKnown = input.orderedIds.every((id) => currentIds.has(id));
+  if (!sameSize || !allKnown) {
+    throw new ValidationError('orderedIds must list every template in this plan exactly once');
+  }
+  return trainingRepository.reorderTemplates(userId, planId, input.orderedIds);
 }

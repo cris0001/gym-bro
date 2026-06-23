@@ -5,9 +5,12 @@ import {
   createExerciseSchema,
   createPlanSchema,
   createTagSchema,
+  createTemplateSchema,
+  reorderSchema,
   updateExerciseSchema,
   updatePlanSchema,
   updateTagSchema,
+  updateTemplateSchema,
 } from '@gym-bro/shared';
 
 import { NotFoundError, ValidationError } from '../../lib/errors';
@@ -120,5 +123,35 @@ trainingRoutes.patch('/plans/:id', requireAuth, async (c) => {
 trainingRoutes.delete('/plans/:id', requireAuth, async (c) => {
   const id = parseUuidParam(c, 'id');
   await trainingService.deletePlan(c.get('userId'), id);
+  return c.json({ data: { success: true } });
+});
+
+// --- Templates ---
+
+// Nested under the plan for create/list/reorder; mutated by their own id.
+trainingRoutes.post('/plans/:planId/templates', requireAuth, async (c) => {
+  const planId = parseUuidParam(c, 'planId');
+  const input = await parseJson(c, createTemplateSchema);
+  const template = await trainingService.createTemplate(c.get('userId'), planId, input);
+  return c.json({ data: template }, 201);
+});
+
+trainingRoutes.patch('/plans/:planId/templates/order', requireAuth, async (c) => {
+  const planId = parseUuidParam(c, 'planId');
+  const input = await parseJson(c, reorderSchema);
+  const templates = await trainingService.reorderTemplates(c.get('userId'), planId, input);
+  return c.json({ data: templates });
+});
+
+trainingRoutes.patch('/templates/:id', requireAuth, async (c) => {
+  const id = parseUuidParam(c, 'id');
+  const input = await parseJson(c, updateTemplateSchema);
+  const template = await trainingService.updateTemplate(c.get('userId'), id, input);
+  return c.json({ data: template });
+});
+
+trainingRoutes.delete('/templates/:id', requireAuth, async (c) => {
+  const id = parseUuidParam(c, 'id');
+  await trainingService.deleteTemplate(c.get('userId'), id);
   return c.json({ data: { success: true } });
 });
