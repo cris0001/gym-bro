@@ -1,7 +1,13 @@
 import { ConflictError, NotFoundError } from '../../lib/errors';
-import type { CreateExerciseInput, UpdateExerciseInput } from '@gym-bro/shared';
+import type {
+  CreateExerciseInput,
+  CreateTagInput,
+  UpdateExerciseInput,
+  UpdateTagInput,
+} from '@gym-bro/shared';
 
 import type { Exercise } from '../../db/schema/exercises';
+import type { WorkoutTag } from '../../db/schema/workout-tags';
 import * as trainingRepository from './training.repository';
 
 // Business logic for the training domain — ownership checks, conflict mapping,
@@ -73,5 +79,52 @@ export async function deleteExercise(userId: string, id: string): Promise<void> 
   const deleted = await trainingRepository.softDeleteExercise(userId, id);
   if (!deleted) {
     throw new NotFoundError('Exercise not found');
+  }
+}
+
+// --- Tags ---
+
+export function listTags(userId: string): Promise<WorkoutTag[]> {
+  return trainingRepository.listTags(userId);
+}
+
+export async function createTag(userId: string, input: CreateTagInput): Promise<WorkoutTag> {
+  try {
+    return await trainingRepository.createTag({ userId, ...input });
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      throw new ConflictError('A tag with this name already exists');
+    }
+    throw error;
+  }
+}
+
+export async function updateTag(
+  userId: string,
+  id: string,
+  input: UpdateTagInput,
+): Promise<WorkoutTag> {
+  const existing = await trainingRepository.findTagById(userId, id);
+  if (!existing) {
+    throw new NotFoundError('Tag not found');
+  }
+  try {
+    const updated = await trainingRepository.updateTag(userId, id, input);
+    if (!updated) {
+      throw new NotFoundError('Tag not found');
+    }
+    return updated;
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      throw new ConflictError('A tag with this name already exists');
+    }
+    throw error;
+  }
+}
+
+export async function deleteTag(userId: string, id: string): Promise<void> {
+  const deleted = await trainingRepository.softDeleteTag(userId, id);
+  if (!deleted) {
+    throw new NotFoundError('Tag not found');
   }
 }
