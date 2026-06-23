@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { app } from '../../app';
 import type { Exercise } from '../../db/schema/exercises';
+import type { TrainingPlan } from '../../db/schema/training-plans';
+import type { WorkoutTemplate } from '../../db/schema/workout-templates';
 import type { WorkoutTag } from '../../db/schema/workout-tags';
 import { AUTH_COOKIE_NAME } from '../../lib/auth-cookie';
 import { signToken } from '../../lib/jwt';
@@ -33,6 +35,32 @@ function fakeTag(overrides: Partial<WorkoutTag> = {}): WorkoutTag {
     name: 'PR',
     color: '#22c55e',
     isActive: true,
+    createdAt: new Date('2026-01-01T00:00:00Z'),
+    updatedAt: new Date('2026-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+function fakePlan(overrides: Partial<TrainingPlan> = {}): TrainingPlan {
+  return {
+    id: '33333333-3333-4333-8333-333333333333',
+    userId: 'user-1',
+    name: 'PPL',
+    description: null,
+    createdAt: new Date('2026-01-01T00:00:00Z'),
+    updatedAt: new Date('2026-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+function fakeTemplate(overrides: Partial<WorkoutTemplate> = {}): WorkoutTemplate {
+  return {
+    id: '44444444-4444-4444-8444-444444444444',
+    trainingPlanId: fakePlan().id,
+    userId: 'user-1',
+    name: 'Push',
+    description: null,
+    position: 0,
     createdAt: new Date('2026-01-01T00:00:00Z'),
     updatedAt: new Date('2026-01-01T00:00:00Z'),
     ...overrides,
@@ -326,6 +354,152 @@ describe('tag routes', () => {
     repo.softDeleteTag.mockResolvedValue(undefined);
 
     const res = await request('DELETE', `/api/tags/${fakeTag().id}`, {
+      cookie: await authCookie(),
+    });
+
+    expect(res.status).toBe(404);
+  });
+});
+
+describe('plan routes', () => {
+  it('GET /api/plans without a cookie returns 401', async () => {
+    const res = await request('GET', '/api/plans');
+
+    expect(res.status).toBe(401);
+    expect(repo.listPlansWithTemplateCount).not.toHaveBeenCalled();
+  });
+
+  it('GET /api/plans returns plans with their template counts', async () => {
+    repo.listPlansWithTemplateCount.mockResolvedValue([{ ...fakePlan(), templateCount: 2 }]);
+
+    const res = await request('GET', '/api/plans', { cookie: await authCookie() });
+    const body = (await res.json()) as { data: (TrainingPlan & { templateCount: number })[] };
+
+    expect(res.status).toBe(200);
+    expect(body.data[0]?.templateCount).toBe(2);
+    expect(repo.listPlansWithTemplateCount).toHaveBeenCalledWith('user-1');
+  });
+
+  it('GET /api/plans/:id returns the plan with its ordered templates', async () => {
+    repo.findPlanById.mockResolvedValue(fakePlan());
+    repo.listTemplatesByPlan.mockResolvedValue([
+      fakeTemplate({ name: 'Push', position: 0 }),
+      fakeTemplate({ id: '44444444-4444-4444-8444-444444444445', name: 'Pull', position: 1 }),
+    ]);
+
+    const res = await request('GET', `/api/plans/${fakePlan().id}`, { cookie: await authCookie() });
+    const body = (await res.json()) as { data: TrainingPlan & { templates: WorkoutTemplate[] } };
+
+    expect(res.status).toBe(200);
+    expect(body.data.templates).toHaveLength(2);
+    expect(body.data.templates[0]?.name).toBe('Push');
+    expect(repo.listTemplatesByPlan).toHaveBeenCalledWith('user-1', fakePlan().id);
+  });
+
+  it('GET /api/plans/:id on a missing plan returns 404 without loading templates', async () => {
+    repo.findPlanById.mockResolvedValue(undefined);
+
+    const res = await request('GET', `/api/plans/${fakePlan().id}`, { cookie: await authCookie() });
+
+    expect(res.status).toBe(404);
+    expect(repo.listTemplatesByPlan).not.toHaveBeenCalled();
+  });
+
+  it('GET /api/plans/:id with a non-uuid id returns 404 without querying', async () => {
+    const res = await request('GET', '/api/plans/not-a-uuid', { cookie: await authCookie() });
+
+    expect(res.status).toBe(404);
+    expect(repo.findPlanById).not.toHaveBeenCalled();
+  });
+
+  it('POST /api/plans creates a plan scoped to the user and returns 201', async () => {
+    repo.createPlan.mockResolvedValue(fakePlan({ description: 'Push pull legs' }));
+
+    const res = await request('POST', '/api/plans', {
+      cookie: await authCookie(),
+      body: { name: 'PPL', description: 'Push pull legs' },
+    });
+    const body = (await res.json()) as { data: TrainingPlan };
+
+    expect(res.status).toBe(201);
+    expect(body.data.name).toBe('PPL');
+    expect(repo.createPlan).toHaveBeenCalledWith({
+      userId: 'user-1',
+      name: 'PPL',
+      description: 'Push pull legs',
+    });
+  });
+
+  it('POST /api/plans maps a duplicate name (drizzle-wrapped 23505) to 409', async () => {
+    repo.createPlan.mockRejectedValue(uniqueViolation);
+
+    const res = await request('POST', '/api/plans', {
+      cookie: await authCookie(),
+      body: { name: 'PPL' },
+    });
+    const body = (await res.json()) as { error: { code: string } };
+
+    expect(res.status).toBe(409);
+    expect(body.error.code).toBe('CONFLICT');
+  });
+
+  it('POST /api/plans with an empty name returns 400 with field details', async () => {
+    const res = await request('POST', '/api/plans', {
+      cookie: await authCookie(),
+      body: { name: '' },
+    });
+    const body = (await res.json()) as {
+      error: { code: string; details?: Record<string, string[]> };
+    };
+
+    expect(res.status).toBe(400);
+    expect(body.error.code).toBe('VALIDATION_ERROR');
+    expect(body.error.details).toHaveProperty('name');
+    expect(repo.createPlan).not.toHaveBeenCalled();
+  });
+
+  it('PATCH /api/plans/:id updates an existing plan', async () => {
+    repo.findPlanById.mockResolvedValue(fakePlan());
+    repo.updatePlan.mockResolvedValue(fakePlan({ name: 'Upper/Lower' }));
+
+    const res = await request('PATCH', `/api/plans/${fakePlan().id}`, {
+      cookie: await authCookie(),
+      body: { name: 'Upper/Lower' },
+    });
+    const body = (await res.json()) as { data: TrainingPlan };
+
+    expect(res.status).toBe(200);
+    expect(body.data.name).toBe('Upper/Lower');
+  });
+
+  it('PATCH /api/plans/:id on a missing plan returns 404', async () => {
+    repo.findPlanById.mockResolvedValue(undefined);
+
+    const res = await request('PATCH', `/api/plans/${fakePlan().id}`, {
+      cookie: await authCookie(),
+      body: { name: 'Upper/Lower' },
+    });
+
+    expect(res.status).toBe(404);
+    expect(repo.updatePlan).not.toHaveBeenCalled();
+  });
+
+  it('DELETE /api/plans/:id hard-deletes and returns success', async () => {
+    repo.deletePlan.mockResolvedValue(fakePlan());
+
+    const res = await request('DELETE', `/api/plans/${fakePlan().id}`, {
+      cookie: await authCookie(),
+    });
+    const body = (await res.json()) as { data: { success: boolean } };
+
+    expect(res.status).toBe(200);
+    expect(body.data.success).toBe(true);
+  });
+
+  it('DELETE /api/plans/:id on a missing plan returns 404', async () => {
+    repo.deletePlan.mockResolvedValue(undefined);
+
+    const res = await request('DELETE', `/api/plans/${fakePlan().id}`, {
       cookie: await authCookie(),
     });
 

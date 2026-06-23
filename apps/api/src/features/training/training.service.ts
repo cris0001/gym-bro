@@ -1,12 +1,16 @@
 import { ConflictError, NotFoundError } from '../../lib/errors';
 import type {
   CreateExerciseInput,
+  CreatePlanInput,
   CreateTagInput,
   UpdateExerciseInput,
+  UpdatePlanInput,
   UpdateTagInput,
 } from '@gym-bro/shared';
 
 import type { Exercise } from '../../db/schema/exercises';
+import type { TrainingPlan } from '../../db/schema/training-plans';
+import type { WorkoutTemplate } from '../../db/schema/workout-templates';
 import type { WorkoutTag } from '../../db/schema/workout-tags';
 import * as trainingRepository from './training.repository';
 
@@ -126,5 +130,70 @@ export async function deleteTag(userId: string, id: string): Promise<void> {
   const deleted = await trainingRepository.softDeleteTag(userId, id);
   if (!deleted) {
     throw new NotFoundError('Tag not found');
+  }
+}
+
+// --- Plans ---
+
+interface PlanListItem extends TrainingPlan {
+  templateCount: number;
+}
+
+interface PlanWithTemplates extends TrainingPlan {
+  templates: WorkoutTemplate[];
+}
+
+export function listPlans(userId: string): Promise<PlanListItem[]> {
+  return trainingRepository.listPlansWithTemplateCount(userId);
+}
+
+// Detail view (decision 4A): the plan with its templates ordered by position.
+export async function getPlan(userId: string, id: string): Promise<PlanWithTemplates> {
+  const plan = await trainingRepository.findPlanById(userId, id);
+  if (!plan) {
+    throw new NotFoundError('Plan not found');
+  }
+  const templates = await trainingRepository.listTemplatesByPlan(userId, id);
+  return { ...plan, templates };
+}
+
+export async function createPlan(userId: string, input: CreatePlanInput): Promise<TrainingPlan> {
+  try {
+    return await trainingRepository.createPlan({ userId, ...input });
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      throw new ConflictError('A plan with this name already exists');
+    }
+    throw error;
+  }
+}
+
+export async function updatePlan(
+  userId: string,
+  id: string,
+  input: UpdatePlanInput,
+): Promise<TrainingPlan> {
+  const existing = await trainingRepository.findPlanById(userId, id);
+  if (!existing) {
+    throw new NotFoundError('Plan not found');
+  }
+  try {
+    const updated = await trainingRepository.updatePlan(userId, id, input);
+    if (!updated) {
+      throw new NotFoundError('Plan not found');
+    }
+    return updated;
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      throw new ConflictError('A plan with this name already exists');
+    }
+    throw error;
+  }
+}
+
+export async function deletePlan(userId: string, id: string): Promise<void> {
+  const deleted = await trainingRepository.deletePlan(userId, id);
+  if (!deleted) {
+    throw new NotFoundError('Plan not found');
   }
 }

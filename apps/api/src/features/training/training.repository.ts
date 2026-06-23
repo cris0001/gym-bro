@@ -1,7 +1,9 @@
-import { and, eq, sql } from 'drizzle-orm';
+import { and, count, eq, sql } from 'drizzle-orm';
 
 import { db } from '../../db/client';
 import { exercises, type Exercise } from '../../db/schema/exercises';
+import { trainingPlans, type TrainingPlan } from '../../db/schema/training-plans';
+import { workoutTemplates, type WorkoutTemplate } from '../../db/schema/workout-templates';
 import { workoutTags, type WorkoutTag } from '../../db/schema/workout-tags';
 
 // Drizzle queries for the training domain — return plain rows, no business
@@ -150,4 +152,94 @@ export async function softDeleteTag(userId: string, id: string): Promise<Workout
     )
     .returning();
   return tag;
+}
+
+// --- Plans ---
+
+// Editable via PATCH; description is nullable so it can be cleared.
+interface PlanUpdate {
+  name?: string | undefined;
+  description?: string | null | undefined;
+}
+
+// A plan row with its number of templates, for the list view (decision 4A).
+interface PlanListRow extends TrainingPlan {
+  templateCount: number;
+}
+
+// Plans are hard-deleted (no is_active), so the list is every plan the user
+// owns. LEFT JOIN keeps plans with zero templates; group by the PK is enough
+// since the other columns are functionally dependent on it.
+export async function listPlansWithTemplateCount(userId: string): Promise<PlanListRow[]> {
+  return db
+    .select({
+      id: trainingPlans.id,
+      userId: trainingPlans.userId,
+      name: trainingPlans.name,
+      description: trainingPlans.description,
+      createdAt: trainingPlans.createdAt,
+      updatedAt: trainingPlans.updatedAt,
+      templateCount: count(workoutTemplates.id),
+    })
+    .from(trainingPlans)
+    .leftJoin(workoutTemplates, eq(workoutTemplates.trainingPlanId, trainingPlans.id))
+    .where(eq(trainingPlans.userId, userId))
+    .groupBy(trainingPlans.id)
+    .orderBy(sql`lower(${trainingPlans.name})`);
+}
+
+export async function findPlanById(userId: string, id: string): Promise<TrainingPlan | undefined> {
+  const [plan] = await db
+    .select()
+    .from(trainingPlans)
+    .where(and(eq(trainingPlans.id, id), eq(trainingPlans.userId, userId)))
+    .limit(1);
+  return plan;
+}
+
+// Templates of a plan, ordered for the plan detail embed (decision 4A). Scoped
+// by user as a defense-in-depth check on top of the plan ownership lookup.
+export async function listTemplatesByPlan(
+  userId: string,
+  planId: string,
+): Promise<WorkoutTemplate[]> {
+  return db
+    .select()
+    .from(workoutTemplates)
+    .where(and(eq(workoutTemplates.trainingPlanId, planId), eq(workoutTemplates.userId, userId)))
+    .orderBy(workoutTemplates.position);
+}
+
+export async function createPlan(data: {
+  userId: string;
+  name: string;
+  description?: string | null | undefined;
+}): Promise<TrainingPlan> {
+  const [plan] = await db.insert(trainingPlans).values(data).returning();
+  if (!plan) {
+    throw new Error('Plan insert returned no row');
+  }
+  return plan;
+}
+
+export async function updatePlan(
+  userId: string,
+  id: string,
+  data: PlanUpdate,
+): Promise<TrainingPlan | undefined> {
+  const [plan] = await db
+    .update(trainingPlans)
+    .set({ ...data, updatedAt: new Date() })
+    .where(and(eq(trainingPlans.id, id), eq(trainingPlans.userId, userId)))
+    .returning();
+  return plan;
+}
+
+// Hard delete; cascades to the plan's templates and their template-exercises.
+export async function deletePlan(userId: string, id: string): Promise<TrainingPlan | undefined> {
+  const [plan] = await db
+    .delete(trainingPlans)
+    .where(and(eq(trainingPlans.id, id), eq(trainingPlans.userId, userId)))
+    .returning();
+  return plan;
 }
