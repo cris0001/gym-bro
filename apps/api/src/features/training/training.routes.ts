@@ -3,8 +3,10 @@ import { z } from 'zod';
 import {
   EXERCISE_CATEGORIES,
   createExerciseSchema,
+  createPlanSchema,
   createTagSchema,
   updateExerciseSchema,
+  updatePlanSchema,
   updateTagSchema,
 } from '@gym-bro/shared';
 
@@ -86,5 +88,37 @@ trainingRoutes.patch('/tags/:id', requireAuth, async (c) => {
 trainingRoutes.delete('/tags/:id', requireAuth, async (c) => {
   const id = parseUuidParam(c, 'id');
   await trainingService.deleteTag(c.get('userId'), id);
+  return c.json({ data: { success: true } });
+});
+
+// --- Plans ---
+
+trainingRoutes.get('/plans', requireAuth, async (c) => {
+  const plans = await trainingService.listPlans(c.get('userId'));
+  return c.json({ data: plans });
+});
+
+trainingRoutes.get('/plans/:id', requireAuth, async (c) => {
+  const id = parseUuidParam(c, 'id');
+  const plan = await trainingService.getPlan(c.get('userId'), id);
+  return c.json({ data: plan });
+});
+
+trainingRoutes.post('/plans', requireAuth, async (c) => {
+  const input = await parseJson(c, createPlanSchema);
+  const plan = await trainingService.createPlan(c.get('userId'), input);
+  return c.json({ data: plan }, 201);
+});
+
+trainingRoutes.patch('/plans/:id', requireAuth, async (c) => {
+  const id = parseUuidParam(c, 'id');
+  const input = await parseJson(c, updatePlanSchema);
+  const plan = await trainingService.updatePlan(c.get('userId'), id, input);
+  return c.json({ data: plan });
+});
+
+trainingRoutes.delete('/plans/:id', requireAuth, async (c) => {
+  const id = parseUuidParam(c, 'id');
+  await trainingService.deletePlan(c.get('userId'), id);
   return c.json({ data: { success: true } });
 });
