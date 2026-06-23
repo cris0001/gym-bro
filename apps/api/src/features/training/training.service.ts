@@ -9,10 +9,21 @@ import * as trainingRepository from './training.repository';
 
 type ExerciseCategory = Exercise['category'];
 
-// Postgres unique_violation (e.g. a duplicate name within the user's scope).
-// Mapped to a 409 so the client can show a friendly message.
+function hasPgCode(value: unknown, code: string): boolean {
+  return typeof value === 'object' && value !== null && 'code' in value && value.code === code;
+}
+
+// Postgres unique_violation (e.g. a duplicate name within the user's scope),
+// mapped to a 409. Drizzle wraps the driver error, so the pg code lives on the
+// cause; check both levels.
 function isUniqueViolation(error: unknown): boolean {
-  return typeof error === 'object' && error !== null && 'code' in error && error.code === '23505';
+  if (hasPgCode(error, '23505')) {
+    return true;
+  }
+  if (typeof error === 'object' && error !== null && 'cause' in error) {
+    return hasPgCode(error.cause, '23505');
+  }
+  return false;
 }
 
 // --- Exercises ---

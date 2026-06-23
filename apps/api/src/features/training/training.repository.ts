@@ -36,13 +36,12 @@ export async function listExercises(
     .orderBy(sql`lower(${exercises.name})`);
 }
 
-// Scoped by user; returns the row regardless of is_active so the service can
-// distinguish "not yours / missing" (404) from soft-deleted.
+// Active row scoped by user; a soft-deleted exercise reads as not found.
 export async function findExerciseById(userId: string, id: string): Promise<Exercise | undefined> {
   const [exercise] = await db
     .select()
     .from(exercises)
-    .where(and(eq(exercises.id, id), eq(exercises.userId, userId)))
+    .where(and(eq(exercises.id, id), eq(exercises.userId, userId), eq(exercises.isActive, true)))
     .limit(1);
   return exercise;
 }
@@ -67,7 +66,7 @@ export async function updateExercise(
   const [exercise] = await db
     .update(exercises)
     .set({ ...data, updatedAt: new Date() })
-    .where(and(eq(exercises.id, id), eq(exercises.userId, userId)))
+    .where(and(eq(exercises.id, id), eq(exercises.userId, userId), eq(exercises.isActive, true)))
     .returning();
   return exercise;
 }
@@ -79,7 +78,7 @@ export async function softDeleteExercise(
   const [exercise] = await db
     .update(exercises)
     .set({ isActive: false, updatedAt: new Date() })
-    .where(and(eq(exercises.id, id), eq(exercises.userId, userId)))
+    .where(and(eq(exercises.id, id), eq(exercises.userId, userId), eq(exercises.isActive, true)))
     .returning();
   return exercise;
 }
