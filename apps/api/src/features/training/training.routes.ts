@@ -5,11 +5,13 @@ import {
   createExerciseSchema,
   createPlanSchema,
   createTagSchema,
+  createTemplateExerciseSchema,
   createTemplateSchema,
   reorderSchema,
   updateExerciseSchema,
   updatePlanSchema,
   updateTagSchema,
+  updateTemplateExerciseSchema,
   updateTemplateSchema,
 } from '@gym-bro/shared';
 
@@ -143,6 +145,13 @@ trainingRoutes.patch('/plans/:planId/templates/order', requireAuth, async (c) =>
   return c.json({ data: templates });
 });
 
+// Detail embeds the template's ordered exercises (decision 4A).
+trainingRoutes.get('/templates/:id', requireAuth, async (c) => {
+  const id = parseUuidParam(c, 'id');
+  const template = await trainingService.getTemplate(c.get('userId'), id);
+  return c.json({ data: template });
+});
+
 trainingRoutes.patch('/templates/:id', requireAuth, async (c) => {
   const id = parseUuidParam(c, 'id');
   const input = await parseJson(c, updateTemplateSchema);
@@ -153,5 +162,35 @@ trainingRoutes.patch('/templates/:id', requireAuth, async (c) => {
 trainingRoutes.delete('/templates/:id', requireAuth, async (c) => {
   const id = parseUuidParam(c, 'id');
   await trainingService.deleteTemplate(c.get('userId'), id);
+  return c.json({ data: { success: true } });
+});
+
+// --- Template exercises ---
+
+// Nested under the template for create/reorder; mutated by their own id.
+trainingRoutes.post('/templates/:templateId/template-exercises', requireAuth, async (c) => {
+  const templateId = parseUuidParam(c, 'templateId');
+  const input = await parseJson(c, createTemplateExerciseSchema);
+  const row = await trainingService.createTemplateExercise(c.get('userId'), templateId, input);
+  return c.json({ data: row }, 201);
+});
+
+trainingRoutes.patch('/templates/:templateId/template-exercises/order', requireAuth, async (c) => {
+  const templateId = parseUuidParam(c, 'templateId');
+  const input = await parseJson(c, reorderSchema);
+  const rows = await trainingService.reorderTemplateExercises(c.get('userId'), templateId, input);
+  return c.json({ data: rows });
+});
+
+trainingRoutes.patch('/template-exercises/:id', requireAuth, async (c) => {
+  const id = parseUuidParam(c, 'id');
+  const input = await parseJson(c, updateTemplateExerciseSchema);
+  const row = await trainingService.updateTemplateExercise(c.get('userId'), id, input);
+  return c.json({ data: row });
+});
+
+trainingRoutes.delete('/template-exercises/:id', requireAuth, async (c) => {
+  const id = parseUuidParam(c, 'id');
+  await trainingService.deleteTemplateExercise(c.get('userId'), id);
   return c.json({ data: { success: true } });
 });

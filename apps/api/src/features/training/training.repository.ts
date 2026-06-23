@@ -4,6 +4,10 @@ import { db } from '../../db/client';
 import { exercises, type Exercise } from '../../db/schema/exercises';
 import { trainingPlans, type TrainingPlan } from '../../db/schema/training-plans';
 import { workoutTemplates, type WorkoutTemplate } from '../../db/schema/workout-templates';
+import {
+  workoutTemplateExercises,
+  type WorkoutTemplateExercise,
+} from '../../db/schema/workout-template-exercises';
 import { workoutTags, type WorkoutTag } from '../../db/schema/workout-tags';
 
 // Drizzle queries for the training domain — return plain rows, no business
@@ -352,5 +356,171 @@ export async function reorderTemplates(
       .from(workoutTemplates)
       .where(and(eq(workoutTemplates.trainingPlanId, planId), eq(workoutTemplates.userId, userId)))
       .orderBy(workoutTemplates.position);
+  });
+}
+
+// --- Template exercises ---
+
+// Editable via PATCH; exercise_id is fixed once added (swap = delete + add). All
+// nullable so a field can be cleared back to "no target".
+interface TemplateExerciseUpdate {
+  targetSets?: number | null | undefined;
+  targetRepsMin?: number | null | undefined;
+  targetRepsMax?: number | null | undefined;
+  notes?: string | null | undefined;
+}
+
+// A template-exercise joined with its exercise's identity, for the template
+// detail embed (decision 4A). exercise.isActive surfaces a soft-deleted exercise
+// that a template still references.
+interface TemplateExerciseWithExerciseRow extends WorkoutTemplateExercise {
+  exercise: Pick<Exercise, 'id' | 'name' | 'category' | 'isActive'>;
+}
+
+export async function findTemplateExerciseById(
+  userId: string,
+  id: string,
+): Promise<WorkoutTemplateExercise | undefined> {
+  const [row] = await db
+    .select()
+    .from(workoutTemplateExercises)
+    .where(and(eq(workoutTemplateExercises.id, id), eq(workoutTemplateExercises.userId, userId)))
+    .limit(1);
+  return row;
+}
+
+// Ordered exercises of a template for the detail embed. INNER JOIN is safe:
+// exercise_id is NOT NULL and ON DELETE RESTRICT, so the exercise always exists
+// (it may be soft-deleted, which is exactly what exercise.isActive reports).
+export async function listTemplateExercisesWithExercise(
+  userId: string,
+  templateId: string,
+): Promise<TemplateExerciseWithExerciseRow[]> {
+  return db
+    .select({
+      id: workoutTemplateExercises.id,
+      workoutTemplateId: workoutTemplateExercises.workoutTemplateId,
+      exerciseId: workoutTemplateExercises.exerciseId,
+      userId: workoutTemplateExercises.userId,
+      targetSets: workoutTemplateExercises.targetSets,
+      targetRepsMin: workoutTemplateExercises.targetRepsMin,
+      targetRepsMax: workoutTemplateExercises.targetRepsMax,
+      notes: workoutTemplateExercises.notes,
+      position: workoutTemplateExercises.position,
+      createdAt: workoutTemplateExercises.createdAt,
+      updatedAt: workoutTemplateExercises.updatedAt,
+      exercise: {
+        id: exercises.id,
+        name: exercises.name,
+        category: exercises.category,
+        isActive: exercises.isActive,
+      },
+    })
+    .from(workoutTemplateExercises)
+    .innerJoin(exercises, eq(exercises.id, workoutTemplateExercises.exerciseId))
+    .where(
+      and(
+        eq(workoutTemplateExercises.workoutTemplateId, templateId),
+        eq(workoutTemplateExercises.userId, userId),
+      ),
+    )
+    .orderBy(workoutTemplateExercises.position);
+}
+
+// Next append position within a template: one past the current max, or 0.
+export async function getNextTemplateExercisePosition(templateId: string): Promise<number> {
+  const [row] = await db
+    .select({ next: sql<number>`coalesce(max(${workoutTemplateExercises.position}) + 1, 0)` })
+    .from(workoutTemplateExercises)
+    .where(eq(workoutTemplateExercises.workoutTemplateId, templateId));
+  return row?.next ?? 0;
+}
+
+export async function createTemplateExercise(data: {
+  workoutTemplateId: string;
+  exerciseId: string;
+  userId: string;
+  targetSets?: number | null | undefined;
+  targetRepsMin?: number | null | undefined;
+  targetRepsMax?: number | null | undefined;
+  notes?: string | null | undefined;
+  position: number;
+}): Promise<WorkoutTemplateExercise> {
+  const [row] = await db.insert(workoutTemplateExercises).values(data).returning();
+  if (!row) {
+    throw new Error('Template exercise insert returned no row');
+  }
+  return row;
+}
+
+export async function updateTemplateExercise(
+  userId: string,
+  id: string,
+  data: TemplateExerciseUpdate,
+): Promise<WorkoutTemplateExercise | undefined> {
+  const [row] = await db
+    .update(workoutTemplateExercises)
+    .set({ ...data, updatedAt: new Date() })
+    .where(and(eq(workoutTemplateExercises.id, id), eq(workoutTemplateExercises.userId, userId)))
+    .returning();
+  return row;
+}
+
+// Hard delete (scaffolding, not history).
+export async function deleteTemplateExercise(
+  userId: string,
+  id: string,
+): Promise<WorkoutTemplateExercise | undefined> {
+  const [row] = await db
+    .delete(workoutTemplateExercises)
+    .where(and(eq(workoutTemplateExercises.id, id), eq(workoutTemplateExercises.userId, userId)))
+    .returning();
+  return row;
+}
+
+// Renumber a template's exercises to match orderedIds — same two-phase offset
+// in a transaction as reorderTemplates, dodging the unique(template, position).
+export async function reorderTemplateExercises(
+  userId: string,
+  templateId: string,
+  orderedIds: string[],
+): Promise<WorkoutTemplateExercise[]> {
+  return db.transaction(async (tx) => {
+    await tx
+      .update(workoutTemplateExercises)
+      .set({
+        position: sql`${workoutTemplateExercises.position} + ${REORDER_OFFSET}`,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(workoutTemplateExercises.workoutTemplateId, templateId),
+          eq(workoutTemplateExercises.userId, userId),
+        ),
+      );
+
+    for (const [index, id] of orderedIds.entries()) {
+      await tx
+        .update(workoutTemplateExercises)
+        .set({ position: index, updatedAt: new Date() })
+        .where(
+          and(
+            eq(workoutTemplateExercises.id, id),
+            eq(workoutTemplateExercises.workoutTemplateId, templateId),
+            eq(workoutTemplateExercises.userId, userId),
+          ),
+        );
+    }
+
+    return tx
+      .select()
+      .from(workoutTemplateExercises)
+      .where(
+        and(
+          eq(workoutTemplateExercises.workoutTemplateId, templateId),
+          eq(workoutTemplateExercises.userId, userId),
+        ),
+      )
+      .orderBy(workoutTemplateExercises.position);
   });
 }
