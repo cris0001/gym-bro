@@ -1,6 +1,12 @@
 import { Hono, type Context } from 'hono';
 import { z } from 'zod';
-import { EXERCISE_CATEGORIES, createExerciseSchema, updateExerciseSchema } from '@gym-bro/shared';
+import {
+  EXERCISE_CATEGORIES,
+  createExerciseSchema,
+  createTagSchema,
+  updateExerciseSchema,
+  updateTagSchema,
+} from '@gym-bro/shared';
 
 import { NotFoundError, ValidationError } from '../../lib/errors';
 import { parseJson } from '../../lib/validate';
@@ -54,5 +60,31 @@ trainingRoutes.patch('/exercises/:id', requireAuth, async (c) => {
 trainingRoutes.delete('/exercises/:id', requireAuth, async (c) => {
   const id = parseUuidParam(c, 'id');
   await trainingService.deleteExercise(c.get('userId'), id);
+  return c.json({ data: { success: true } });
+});
+
+// --- Tags ---
+
+trainingRoutes.get('/tags', requireAuth, async (c) => {
+  const tags = await trainingService.listTags(c.get('userId'));
+  return c.json({ data: tags });
+});
+
+trainingRoutes.post('/tags', requireAuth, async (c) => {
+  const input = await parseJson(c, createTagSchema);
+  const tag = await trainingService.createTag(c.get('userId'), input);
+  return c.json({ data: tag }, 201);
+});
+
+trainingRoutes.patch('/tags/:id', requireAuth, async (c) => {
+  const id = parseUuidParam(c, 'id');
+  const input = await parseJson(c, updateTagSchema);
+  const tag = await trainingService.updateTag(c.get('userId'), id, input);
+  return c.json({ data: tag });
+});
+
+trainingRoutes.delete('/tags/:id', requireAuth, async (c) => {
+  const id = parseUuidParam(c, 'id');
+  await trainingService.deleteTag(c.get('userId'), id);
   return c.json({ data: { success: true } });
 });

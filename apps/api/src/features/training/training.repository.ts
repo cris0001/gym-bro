@@ -2,6 +2,7 @@ import { and, eq, sql } from 'drizzle-orm';
 
 import { db } from '../../db/client';
 import { exercises, type Exercise } from '../../db/schema/exercises';
+import { workoutTags, type WorkoutTag } from '../../db/schema/workout-tags';
 
 // Drizzle queries for the training domain — return plain rows, no business
 // logic. Every query is scoped by userId. Grown per resource.
@@ -81,4 +82,72 @@ export async function softDeleteExercise(
     .where(and(eq(exercises.id, id), eq(exercises.userId, userId), eq(exercises.isActive, true)))
     .returning();
   return exercise;
+}
+
+// --- Tags ---
+
+// Fields editable via PATCH; undefined-able to line up with the Zod-inferred
+// input under exactOptionalPropertyTypes.
+interface TagUpdate {
+  name?: string | undefined;
+  color?: string | undefined;
+}
+
+// Active tags only, case-insensitive name order.
+export async function listTags(userId: string): Promise<WorkoutTag[]> {
+  return db
+    .select()
+    .from(workoutTags)
+    .where(and(eq(workoutTags.userId, userId), eq(workoutTags.isActive, true)))
+    .orderBy(sql`lower(${workoutTags.name})`);
+}
+
+// Active row scoped by user; a soft-deleted tag reads as not found.
+export async function findTagById(userId: string, id: string): Promise<WorkoutTag | undefined> {
+  const [tag] = await db
+    .select()
+    .from(workoutTags)
+    .where(
+      and(eq(workoutTags.id, id), eq(workoutTags.userId, userId), eq(workoutTags.isActive, true)),
+    )
+    .limit(1);
+  return tag;
+}
+
+export async function createTag(data: {
+  userId: string;
+  name: string;
+  color: string;
+}): Promise<WorkoutTag> {
+  const [tag] = await db.insert(workoutTags).values(data).returning();
+  if (!tag) {
+    throw new Error('Tag insert returned no row');
+  }
+  return tag;
+}
+
+export async function updateTag(
+  userId: string,
+  id: string,
+  data: TagUpdate,
+): Promise<WorkoutTag | undefined> {
+  const [tag] = await db
+    .update(workoutTags)
+    .set({ ...data, updatedAt: new Date() })
+    .where(
+      and(eq(workoutTags.id, id), eq(workoutTags.userId, userId), eq(workoutTags.isActive, true)),
+    )
+    .returning();
+  return tag;
+}
+
+export async function softDeleteTag(userId: string, id: string): Promise<WorkoutTag | undefined> {
+  const [tag] = await db
+    .update(workoutTags)
+    .set({ isActive: false, updatedAt: new Date() })
+    .where(
+      and(eq(workoutTags.id, id), eq(workoutTags.userId, userId), eq(workoutTags.isActive, true)),
+    )
+    .returning();
+  return tag;
 }
