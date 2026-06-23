@@ -243,3 +243,114 @@ export async function deletePlan(userId: string, id: string): Promise<TrainingPl
     .returning();
   return plan;
 }
+
+// --- Templates ---
+
+// Editable via PATCH; description is nullable so it can be cleared.
+interface TemplateUpdate {
+  name?: string | undefined;
+  description?: string | null | undefined;
+}
+
+// Large enough that offset positions can't collide with final 0..n-1 values
+// during a reorder (we always renumber down to a dense 0-based range).
+const REORDER_OFFSET = 1_000_000;
+
+export async function findTemplateById(
+  userId: string,
+  id: string,
+): Promise<WorkoutTemplate | undefined> {
+  const [template] = await db
+    .select()
+    .from(workoutTemplates)
+    .where(and(eq(workoutTemplates.id, id), eq(workoutTemplates.userId, userId)))
+    .limit(1);
+  return template;
+}
+
+// Next append position for a plan: one past the current max, or 0 when empty.
+export async function getNextTemplatePosition(planId: string): Promise<number> {
+  const [row] = await db
+    .select({ next: sql<number>`coalesce(max(${workoutTemplates.position}) + 1, 0)` })
+    .from(workoutTemplates)
+    .where(eq(workoutTemplates.trainingPlanId, planId));
+  return row?.next ?? 0;
+}
+
+export async function createTemplate(data: {
+  trainingPlanId: string;
+  userId: string;
+  name: string;
+  description?: string | null | undefined;
+  position: number;
+}): Promise<WorkoutTemplate> {
+  const [template] = await db.insert(workoutTemplates).values(data).returning();
+  if (!template) {
+    throw new Error('Template insert returned no row');
+  }
+  return template;
+}
+
+export async function updateTemplate(
+  userId: string,
+  id: string,
+  data: TemplateUpdate,
+): Promise<WorkoutTemplate | undefined> {
+  const [template] = await db
+    .update(workoutTemplates)
+    .set({ ...data, updatedAt: new Date() })
+    .where(and(eq(workoutTemplates.id, id), eq(workoutTemplates.userId, userId)))
+    .returning();
+  return template;
+}
+
+// Hard delete; cascades to the template's template-exercise rows.
+export async function deleteTemplate(
+  userId: string,
+  id: string,
+): Promise<WorkoutTemplate | undefined> {
+  const [template] = await db
+    .delete(workoutTemplates)
+    .where(and(eq(workoutTemplates.id, id), eq(workoutTemplates.userId, userId)))
+    .returning();
+  return template;
+}
+
+// Renumber a plan's templates to match orderedIds (0-based, dense). Two phases
+// in one transaction: first shift every row past the final range so the
+// unique(plan_id, position) index can't collide mid-update, then set the final
+// positions. Returns the templates in their new order.
+export async function reorderTemplates(
+  userId: string,
+  planId: string,
+  orderedIds: string[],
+): Promise<WorkoutTemplate[]> {
+  return db.transaction(async (tx) => {
+    await tx
+      .update(workoutTemplates)
+      .set({
+        position: sql`${workoutTemplates.position} + ${REORDER_OFFSET}`,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(workoutTemplates.trainingPlanId, planId), eq(workoutTemplates.userId, userId)));
+
+    for (const [index, id] of orderedIds.entries()) {
+      await tx
+        .update(workoutTemplates)
+        .set({ position: index, updatedAt: new Date() })
+        .where(
+          and(
+            eq(workoutTemplates.id, id),
+            eq(workoutTemplates.trainingPlanId, planId),
+            eq(workoutTemplates.userId, userId),
+          ),
+        );
+    }
+
+    return tx
+      .select()
+      .from(workoutTemplates)
+      .where(and(eq(workoutTemplates.trainingPlanId, planId), eq(workoutTemplates.userId, userId)))
+      .orderBy(workoutTemplates.position);
+  });
+}
