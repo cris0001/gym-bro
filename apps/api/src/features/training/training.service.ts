@@ -3,17 +3,20 @@ import type {
   CreateExerciseInput,
   CreatePlanInput,
   CreateTagInput,
+  CreateTemplateExerciseInput,
   CreateTemplateInput,
   ReorderInput,
   UpdateExerciseInput,
   UpdatePlanInput,
   UpdateTagInput,
+  UpdateTemplateExerciseInput,
   UpdateTemplateInput,
 } from '@gym-bro/shared';
 
 import type { Exercise } from '../../db/schema/exercises';
 import type { TrainingPlan } from '../../db/schema/training-plans';
 import type { WorkoutTemplate } from '../../db/schema/workout-templates';
+import type { WorkoutTemplateExercise } from '../../db/schema/workout-template-exercises';
 import type { WorkoutTag } from '../../db/schema/workout-tags';
 import * as trainingRepository from './training.repository';
 
@@ -280,4 +283,99 @@ export async function reorderTemplates(
     throw new ValidationError('orderedIds must list every template in this plan exactly once');
   }
   return trainingRepository.reorderTemplates(userId, planId, input.orderedIds);
+}
+
+// --- Template exercises ---
+
+interface TemplateExerciseWithExercise extends WorkoutTemplateExercise {
+  exercise: Pick<Exercise, 'id' | 'name' | 'category' | 'isActive'>;
+}
+
+interface TemplateWithExercises extends WorkoutTemplate {
+  exercises: TemplateExerciseWithExercise[];
+}
+
+// Deferred detail embed (decision 4A): the template with its ordered exercises,
+// each joined to the exercise's identity.
+export async function getTemplate(userId: string, id: string): Promise<TemplateWithExercises> {
+  const template = await trainingRepository.findTemplateById(userId, id);
+  if (!template) {
+    throw new NotFoundError('Template not found');
+  }
+  const exercises = await trainingRepository.listTemplateExercisesWithExercise(userId, id);
+  return { ...template, exercises };
+}
+
+// The ownership chain: the template must belong to the user, and the referenced
+// exercise must be one of the user's active exercises (the FK only enforces
+// existence, not ownership). Position is auto-assigned to the end.
+export async function createTemplateExercise(
+  userId: string,
+  templateId: string,
+  input: CreateTemplateExerciseInput,
+): Promise<WorkoutTemplateExercise> {
+  const template = await trainingRepository.findTemplateById(userId, templateId);
+  if (!template) {
+    throw new NotFoundError('Template not found');
+  }
+  const exercise = await trainingRepository.findExerciseById(userId, input.exerciseId);
+  if (!exercise) {
+    throw new ValidationError('Exercise not found or unavailable');
+  }
+  const position = await trainingRepository.getNextTemplateExercisePosition(templateId);
+  try {
+    return await trainingRepository.createTemplateExercise({
+      workoutTemplateId: templateId,
+      userId,
+      ...input,
+      position,
+    });
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      throw new ConflictError('This exercise is already in the template');
+    }
+    throw error;
+  }
+}
+
+export async function updateTemplateExercise(
+  userId: string,
+  id: string,
+  input: UpdateTemplateExerciseInput,
+): Promise<WorkoutTemplateExercise> {
+  const existing = await trainingRepository.findTemplateExerciseById(userId, id);
+  if (!existing) {
+    throw new NotFoundError('Template exercise not found');
+  }
+  const updated = await trainingRepository.updateTemplateExercise(userId, id, input);
+  if (!updated) {
+    throw new NotFoundError('Template exercise not found');
+  }
+  return updated;
+}
+
+export async function deleteTemplateExercise(userId: string, id: string): Promise<void> {
+  const deleted = await trainingRepository.deleteTemplateExercise(userId, id);
+  if (!deleted) {
+    throw new NotFoundError('Template exercise not found');
+  }
+}
+
+export async function reorderTemplateExercises(
+  userId: string,
+  templateId: string,
+  input: ReorderInput,
+): Promise<WorkoutTemplateExercise[]> {
+  const template = await trainingRepository.findTemplateById(userId, templateId);
+  if (!template) {
+    throw new NotFoundError('Template not found');
+  }
+  const current = await trainingRepository.listTemplateExercisesWithExercise(userId, templateId);
+  const currentIds = new Set(current.map((row) => row.id));
+  const sameSize = input.orderedIds.length === currentIds.size;
+  const allKnown = input.orderedIds.every((id) => currentIds.has(id));
+  if (!sameSize || !allKnown) {
+    throw new ValidationError('orderedIds must list every exercise in this template exactly once');
+  }
+  return trainingRepository.reorderTemplateExercises(userId, templateId, input.orderedIds);
 }

@@ -4,6 +4,7 @@ import { app } from '../../app';
 import type { Exercise } from '../../db/schema/exercises';
 import type { TrainingPlan } from '../../db/schema/training-plans';
 import type { WorkoutTemplate } from '../../db/schema/workout-templates';
+import type { WorkoutTemplateExercise } from '../../db/schema/workout-template-exercises';
 import type { WorkoutTag } from '../../db/schema/workout-tags';
 import { AUTH_COOKIE_NAME } from '../../lib/auth-cookie';
 import { signToken } from '../../lib/jwt';
@@ -60,6 +61,25 @@ function fakeTemplate(overrides: Partial<WorkoutTemplate> = {}): WorkoutTemplate
     userId: 'user-1',
     name: 'Push',
     description: null,
+    position: 0,
+    createdAt: new Date('2026-01-01T00:00:00Z'),
+    updatedAt: new Date('2026-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+function fakeTemplateExercise(
+  overrides: Partial<WorkoutTemplateExercise> = {},
+): WorkoutTemplateExercise {
+  return {
+    id: '55555555-5555-4555-8555-555555555555',
+    workoutTemplateId: fakeTemplate().id,
+    exerciseId: fakeExercise().id,
+    userId: 'user-1',
+    targetSets: 3,
+    targetRepsMin: 8,
+    targetRepsMax: 12,
+    notes: null,
     position: 0,
     createdAt: new Date('2026-01-01T00:00:00Z'),
     updatedAt: new Date('2026-01-01T00:00:00Z'),
@@ -697,5 +717,259 @@ describe('template routes', () => {
 
     expect(res.status).toBe(400);
     expect(repo.findPlanById).not.toHaveBeenCalled();
+  });
+});
+
+// Tests focus on what's new in this slice: the plan->template->exercise
+// ownership chain, the GET detail embed, and reorder. Generic CRUD-404/401
+// boilerplate already proven on the other four resources is asserted once, not
+// repeated per verb.
+describe('template-exercise routes', () => {
+  const templateId = fakeTemplate().id;
+  const exerciseId = fakeExercise().id;
+  const teA = fakeTemplateExercise({ id: '55555555-5555-4555-8555-555555555555', position: 0 });
+  const teB = fakeTemplateExercise({ id: '55555555-5555-4555-8555-555555555556', position: 1 });
+
+  it('GET /api/templates/:id embeds ordered exercises and surfaces a soft-deleted one', async () => {
+    repo.findTemplateById.mockResolvedValue(fakeTemplate());
+    repo.listTemplateExercisesWithExercise.mockResolvedValue([
+      {
+        ...teA,
+        exercise: { id: exerciseId, name: 'Bench Press', category: 'Chest', isActive: true },
+      },
+      {
+        ...teB,
+        exercise: {
+          id: '11111111-1111-4111-8111-111111111112',
+          name: 'Retired Lift',
+          category: 'Back',
+          isActive: false,
+        },
+      },
+    ]);
+
+    const res = await request('GET', `/api/templates/${templateId}`, {
+      cookie: await authCookie(),
+    });
+    const body = (await res.json()) as {
+      data: WorkoutTemplate & {
+        exercises: (WorkoutTemplateExercise & { exercise: { isActive: boolean } })[];
+      };
+    };
+
+    expect(res.status).toBe(200);
+    expect(body.data.exercises).toHaveLength(2);
+    expect(body.data.exercises[1]?.exercise.isActive).toBe(false);
+  });
+
+  it('GET /api/templates/:id on a template you do not own returns 404', async () => {
+    repo.findTemplateById.mockResolvedValue(undefined);
+
+    const res = await request('GET', `/api/templates/${templateId}`, {
+      cookie: await authCookie(),
+    });
+
+    expect(res.status).toBe(404);
+    expect(repo.listTemplateExercisesWithExercise).not.toHaveBeenCalled();
+  });
+
+  it('POST /api/templates/:templateId/template-exercises without a cookie returns 401', async () => {
+    const res = await request('POST', `/api/templates/${templateId}/template-exercises`, {
+      body: { exerciseId },
+    });
+
+    expect(res.status).toBe(401);
+    expect(repo.findTemplateById).not.toHaveBeenCalled();
+  });
+
+  it('POST /api/templates/:templateId/template-exercises adds the exercise at the next position', async () => {
+    repo.findTemplateById.mockResolvedValue(fakeTemplate());
+    repo.findExerciseById.mockResolvedValue(fakeExercise());
+    repo.getNextTemplateExercisePosition.mockResolvedValue(2);
+    repo.createTemplateExercise.mockResolvedValue(fakeTemplateExercise({ position: 2 }));
+
+    const res = await request('POST', `/api/templates/${templateId}/template-exercises`, {
+      cookie: await authCookie(),
+      body: { exerciseId, targetSets: 3, targetRepsMin: 8, targetRepsMax: 12 },
+    });
+    const body = (await res.json()) as { data: WorkoutTemplateExercise };
+
+    expect(res.status).toBe(201);
+    expect(body.data.position).toBe(2);
+    expect(repo.createTemplateExercise).toHaveBeenCalledWith({
+      workoutTemplateId: templateId,
+      userId: 'user-1',
+      exerciseId,
+      targetSets: 3,
+      targetRepsMin: 8,
+      targetRepsMax: 12,
+      position: 2,
+    });
+  });
+
+  it('POST /api/templates/:templateId/template-exercises on a template you do not own returns 404', async () => {
+    repo.findTemplateById.mockResolvedValue(undefined);
+
+    const res = await request('POST', `/api/templates/${templateId}/template-exercises`, {
+      cookie: await authCookie(),
+      body: { exerciseId },
+    });
+
+    expect(res.status).toBe(404);
+    expect(repo.findExerciseById).not.toHaveBeenCalled();
+    expect(repo.createTemplateExercise).not.toHaveBeenCalled();
+  });
+
+  it('POST /api/templates/:templateId/template-exercises rejects an exercise the user does not own with 400', async () => {
+    repo.findTemplateById.mockResolvedValue(fakeTemplate());
+    // findExerciseById is owned+active scoped, so a foreign or soft-deleted
+    // exercise reads as undefined — the hole the FK alone would not close.
+    repo.findExerciseById.mockResolvedValue(undefined);
+
+    const res = await request('POST', `/api/templates/${templateId}/template-exercises`, {
+      cookie: await authCookie(),
+      body: { exerciseId },
+    });
+    const body = (await res.json()) as { error: { code: string } };
+
+    expect(res.status).toBe(400);
+    expect(body.error.code).toBe('VALIDATION_ERROR');
+    expect(repo.createTemplateExercise).not.toHaveBeenCalled();
+  });
+
+  it('POST /api/templates/:templateId/template-exercises maps a duplicate exercise to 409', async () => {
+    repo.findTemplateById.mockResolvedValue(fakeTemplate());
+    repo.findExerciseById.mockResolvedValue(fakeExercise());
+    repo.getNextTemplateExercisePosition.mockResolvedValue(0);
+    repo.createTemplateExercise.mockRejectedValue(uniqueViolation);
+
+    const res = await request('POST', `/api/templates/${templateId}/template-exercises`, {
+      cookie: await authCookie(),
+      body: { exerciseId },
+    });
+    const body = (await res.json()) as { error: { code: string } };
+
+    expect(res.status).toBe(409);
+    expect(body.error.code).toBe('CONFLICT');
+  });
+
+  it('POST /api/templates/:templateId/template-exercises rejects an inverted rep range with 400', async () => {
+    const res = await request('POST', `/api/templates/${templateId}/template-exercises`, {
+      cookie: await authCookie(),
+      body: { exerciseId, targetRepsMin: 12, targetRepsMax: 8 },
+    });
+    const body = (await res.json()) as {
+      error: { code: string; details?: Record<string, string[]> };
+    };
+
+    expect(res.status).toBe(400);
+    expect(body.error.code).toBe('VALIDATION_ERROR');
+    expect(body.error.details).toHaveProperty('targetRepsMax');
+    expect(repo.findTemplateById).not.toHaveBeenCalled();
+  });
+
+  it('PATCH /api/template-exercises/:id updates targets', async () => {
+    repo.findTemplateExerciseById.mockResolvedValue(teA);
+    repo.updateTemplateExercise.mockResolvedValue(fakeTemplateExercise({ targetSets: 5 }));
+
+    const res = await request('PATCH', `/api/template-exercises/${teA.id}`, {
+      cookie: await authCookie(),
+      body: { targetSets: 5 },
+    });
+    const body = (await res.json()) as { data: WorkoutTemplateExercise };
+
+    expect(res.status).toBe(200);
+    expect(body.data.targetSets).toBe(5);
+  });
+
+  it('PATCH /api/template-exercises/:id on a missing row returns 404 (find-then-404 path)', async () => {
+    repo.findTemplateExerciseById.mockResolvedValue(undefined);
+
+    const res = await request('PATCH', `/api/template-exercises/${teA.id}`, {
+      cookie: await authCookie(),
+      body: { targetSets: 5 },
+    });
+
+    expect(res.status).toBe(404);
+    expect(repo.updateTemplateExercise).not.toHaveBeenCalled();
+  });
+
+  it('DELETE /api/template-exercises/:id hard-deletes and returns success', async () => {
+    repo.deleteTemplateExercise.mockResolvedValue(teA);
+
+    const res = await request('DELETE', `/api/template-exercises/${teA.id}`, {
+      cookie: await authCookie(),
+    });
+    const body = (await res.json()) as { data: { success: boolean } };
+
+    expect(res.status).toBe(200);
+    expect(body.data.success).toBe(true);
+  });
+
+  it('PATCH /api/templates/:templateId/template-exercises/order renumbers and returns the new order', async () => {
+    repo.findTemplateById.mockResolvedValue(fakeTemplate());
+    repo.listTemplateExercisesWithExercise.mockResolvedValue([
+      {
+        ...teA,
+        exercise: { id: exerciseId, name: 'Bench Press', category: 'Chest', isActive: true },
+      },
+      {
+        ...teB,
+        exercise: { id: exerciseId, name: 'Bench Press', category: 'Chest', isActive: true },
+      },
+    ]);
+    repo.reorderTemplateExercises.mockResolvedValue([
+      fakeTemplateExercise({ id: teB.id, position: 0 }),
+      fakeTemplateExercise({ id: teA.id, position: 1 }),
+    ]);
+
+    const res = await request('PATCH', `/api/templates/${templateId}/template-exercises/order`, {
+      cookie: await authCookie(),
+      body: { orderedIds: [teB.id, teA.id] },
+    });
+    const body = (await res.json()) as { data: WorkoutTemplateExercise[] };
+
+    expect(res.status).toBe(200);
+    expect(body.data[0]?.id).toBe(teB.id);
+    expect(repo.reorderTemplateExercises).toHaveBeenCalledWith('user-1', templateId, [
+      teB.id,
+      teA.id,
+    ]);
+  });
+
+  it('PATCH /api/templates/:templateId/template-exercises/order on a template you do not own returns 404', async () => {
+    repo.findTemplateById.mockResolvedValue(undefined);
+
+    const res = await request('PATCH', `/api/templates/${templateId}/template-exercises/order`, {
+      cookie: await authCookie(),
+      body: { orderedIds: [teA.id] },
+    });
+
+    expect(res.status).toBe(404);
+    expect(repo.reorderTemplateExercises).not.toHaveBeenCalled();
+  });
+
+  it('PATCH /api/templates/:templateId/template-exercises/order rejects an incomplete id set with 400', async () => {
+    repo.findTemplateById.mockResolvedValue(fakeTemplate());
+    repo.listTemplateExercisesWithExercise.mockResolvedValue([
+      {
+        ...teA,
+        exercise: { id: exerciseId, name: 'Bench Press', category: 'Chest', isActive: true },
+      },
+      {
+        ...teB,
+        exercise: { id: exerciseId, name: 'Bench Press', category: 'Chest', isActive: true },
+      },
+    ]);
+
+    const res = await request('PATCH', `/api/templates/${templateId}/template-exercises/order`, {
+      cookie: await authCookie(),
+      body: { orderedIds: [teA.id] },
+    });
+    const body = (await res.json()) as { error: { code: string } };
+
+    expect(res.status).toBe(400);
+    expect(body.error.code).toBe('VALIDATION_ERROR');
+    expect(repo.reorderTemplateExercises).not.toHaveBeenCalled();
   });
 });
