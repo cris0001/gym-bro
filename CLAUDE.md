@@ -502,6 +502,35 @@ This keeps the codebase maintainable — every architectural decision
 should be understandable from reading the code and surrounding context,
 not require tribal knowledge.
 
+## Testing approach
+
+Selective testing — test by value/risk, not for coverage. Add tests
+where they catch real bugs and security issues; skip them where they
+add maintenance burden without value.
+
+### Backend
+
+- Route tests cover auth/ownership checks, conflict (4xx) responses,
+  and critical happy paths
+- Mock the repository (Drizzle boundary) so tests drive real Hono +
+  service code over fake rows — no DB in unit tests
+- Repository SQL is proved by live smoke tests, not unit tests
+- Don't re-prove the same pattern on every resource — test each
+  distinct branch once where the logic is shared
+
+### Frontend (when relevant in later stages)
+
+- Test pure functions (macro calculations, moving averages, date helpers)
+- Test critical user flows as integration tests (form + hook + mocked API)
+- Skip: shadcn primitives, snapshot tests, trivial rendering checks,
+  implementation details
+
+### Litmus test
+
+If refactoring the internals breaks the test → bad test (testing
+implementation). If refactoring works and the test still passes →
+good test (testing behavior).
+
 ## Database migrations — extra caution
 
 Migrations can destroy data. Rules:
@@ -515,14 +544,18 @@ Migrations can destroy data. Rules:
 
 ## Current stage
 
-Stage 4: training backend (apps/api)
-Drizzle schemas + migrations for the training domain (plans, templates,
-exercises, template-exercises, tags), then the training feature module
-(routes/service/repository) with full CRUD validated by Zod.
+Stage 5: training UI (apps/web)
+The training frontend feature (apps/web/src/features/training) consuming
+the Stage 4 API: managing plans, templates, exercises, and tags, plus the
+workout-template builder with drag-and-drop reorder (dnd-kit). All server
+state via TanStack Query; local UI state (drafts, modals) via Zustand.
 
-(Stage 3 — shared package — complete: the @gym-bro/shared package hosts
-the auth Zod schemas, inferred types, and SEX_OPTIONS as the single source
-of truth; both apps consume it. Per-domain schemas land with their build
-stages, so training/nutrition/body Zod schemas are added in Stages 4/8/10
-alongside their tables. Stage 2 complete; Stage 2.5 README skipped — full
-README lands in Stage 16.)
+(Stage 4 — training backend — complete: the @gym-bro/api training module
+ships full CRUD plus reorder for exercises, tags, plans, templates, and
+template-exercises across the repository/service/routes layers, with the
+training Zod schemas/types in @gym-bro/shared and the migration applied to
+Neon. 96 passing route tests. Stage 3 — shared package — complete: the
+@gym-bro/shared package hosts the auth + training Zod schemas, inferred
+types, and constants as the single source of truth; both apps consume it.
+Per-domain nutrition/body Zod schemas land in Stages 8/10 with their tables.
+Stage 2 complete; Stage 2.5 README skipped — full README lands in Stage 16.)
