@@ -2,6 +2,7 @@
 // imports from '@/features/training' only — never from internal paths.
 
 export { ExercisesPage } from './components/exercises-page';
+export { TagsPage } from './components/tags-page';
 
 export { useExercises, exercisesQueryOptions, exerciseKeys } from './hooks/use-exercises';
 export { useCreateExercise } from './hooks/use-create-exercise';

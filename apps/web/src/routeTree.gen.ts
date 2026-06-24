@@ -14,6 +14,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as AppTagsRouteImport } from './routes/_app/tags'
 import { Route as AppExercisesRouteImport } from './routes/_app/exercises'
 
 const AuthRoute = AuthRouteImport.update({
@@ -39,6 +40,11 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => AuthRoute,
 } as any)
+const AppTagsRoute = AppTagsRouteImport.update({
+  id: '/tags',
+  path: '/tags',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppExercisesRoute = AppExercisesRouteImport.update({
   id: '/exercises',
   path: '/exercises',
@@ -48,12 +54,14 @@ const AppExercisesRoute = AppExercisesRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/exercises': typeof AppExercisesRoute
+  '/tags': typeof AppTagsRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/exercises': typeof AppExercisesRoute
+  '/tags': typeof AppTagsRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
 }
@@ -62,20 +70,22 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
   '/_app/exercises': typeof AppExercisesRoute
+  '/_app/tags': typeof AppTagsRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
   '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/exercises' | '/login' | '/register'
+  fullPaths: '/' | '/exercises' | '/tags' | '/login' | '/register'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/exercises' | '/login' | '/register'
+  to: '/' | '/exercises' | '/tags' | '/login' | '/register'
   id:
     | '__root__'
     | '/_app'
     | '/_auth'
     | '/_app/exercises'
+    | '/_app/tags'
     | '/_auth/login'
     | '/_auth/register'
     | '/_app/'
@@ -123,6 +133,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/_app/tags': {
+      id: '/_app/tags'
+      path: '/tags'
+      fullPath: '/tags'
+      preLoaderRoute: typeof AppTagsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/exercises': {
       id: '/_app/exercises'
       path: '/exercises'
@@ -135,11 +152,13 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppExercisesRoute: typeof AppExercisesRoute
+  AppTagsRoute: typeof AppTagsRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppExercisesRoute: AppExercisesRoute,
+  AppTagsRoute: AppTagsRoute,
   AppIndexRoute: AppIndexRoute,
 }
 
