@@ -21,3 +21,8 @@ export { usePlan, planQueryOptions } from './hooks/use-plan';
 export { useCreatePlan } from './hooks/use-create-plan';
 export { useUpdatePlan } from './hooks/use-update-plan';
 export { useDeletePlan } from './hooks/use-delete-plan';
+
+export { useCreateTemplate } from './hooks/use-create-template';
+export { useUpdateTemplate } from './hooks/use-update-template';
+export { useDeleteTemplate } from './hooks/use-delete-template';
+export { useReorderTemplates } from './hooks/use-reorder-templates';
