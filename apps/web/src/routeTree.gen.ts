@@ -16,6 +16,8 @@ import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AppTagsRouteImport } from './routes/_app/tags'
 import { Route as AppExercisesRouteImport } from './routes/_app/exercises'
+import { Route as AppPlansIndexRouteImport } from './routes/_app/plans/index'
+import { Route as AppPlansPlanIdRouteImport } from './routes/_app/plans/$planId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/_auth',
@@ -50,6 +52,16 @@ const AppExercisesRoute = AppExercisesRouteImport.update({
   path: '/exercises',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPlansIndexRoute = AppPlansIndexRouteImport.update({
+  id: '/plans/',
+  path: '/plans/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPlansPlanIdRoute = AppPlansPlanIdRouteImport.update({
+  id: '/plans/$planId',
+  path: '/plans/$planId',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -57,6 +69,8 @@ export interface FileRoutesByFullPath {
   '/tags': typeof AppTagsRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/plans/$planId': typeof AppPlansPlanIdRoute
+  '/plans/': typeof AppPlansIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
@@ -64,6 +78,8 @@ export interface FileRoutesByTo {
   '/tags': typeof AppTagsRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/plans/$planId': typeof AppPlansPlanIdRoute
+  '/plans': typeof AppPlansIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -74,12 +90,28 @@ export interface FileRoutesById {
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/plans/$planId': typeof AppPlansPlanIdRoute
+  '/_app/plans/': typeof AppPlansIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/exercises' | '/tags' | '/login' | '/register'
+  fullPaths:
+    | '/'
+    | '/exercises'
+    | '/tags'
+    | '/login'
+    | '/register'
+    | '/plans/$planId'
+    | '/plans/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/exercises' | '/tags' | '/login' | '/register'
+  to:
+    | '/'
+    | '/exercises'
+    | '/tags'
+    | '/login'
+    | '/register'
+    | '/plans/$planId'
+    | '/plans'
   id:
     | '__root__'
     | '/_app'
@@ -89,6 +121,8 @@ export interface FileRouteTypes {
     | '/_auth/login'
     | '/_auth/register'
     | '/_app/'
+    | '/_app/plans/$planId'
+    | '/_app/plans/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -147,6 +181,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppExercisesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/plans/': {
+      id: '/_app/plans/'
+      path: '/plans'
+      fullPath: '/plans/'
+      preLoaderRoute: typeof AppPlansIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/plans/$planId': {
+      id: '/_app/plans/$planId'
+      path: '/plans/$planId'
+      fullPath: '/plans/$planId'
+      preLoaderRoute: typeof AppPlansPlanIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -154,12 +202,16 @@ interface AppRouteChildren {
   AppExercisesRoute: typeof AppExercisesRoute
   AppTagsRoute: typeof AppTagsRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppPlansPlanIdRoute: typeof AppPlansPlanIdRoute
+  AppPlansIndexRoute: typeof AppPlansIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppExercisesRoute: AppExercisesRoute,
   AppTagsRoute: AppTagsRoute,
   AppIndexRoute: AppIndexRoute,
+  AppPlansPlanIdRoute: AppPlansPlanIdRoute,
+  AppPlansIndexRoute: AppPlansIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
