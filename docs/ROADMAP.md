@@ -9,7 +9,7 @@ and full production deployment.
 
 ## MVP Scope (Stages 0-10 + Stage 2.5)
 
-### Stage 0 — Monorepo setup (3-4 days) ✅ COMPLETE
+### Stage 0 — Monorepo setup ✅ COMPLETE
 
 - [x] pnpm workspaces structure (apps/web, apps/api, packages/shared)
 - [x] Root package.json with workspace configuration
@@ -25,7 +25,7 @@ and full production deployment.
 
 ---
 
-### Stage 1 — Backend foundation + auth (4-5 days) ✅ COMPLETE
+### Stage 1 — Backend foundation + auth ✅ COMPLETE
 
 Get the API skeleton up with working authentication. Database
 connection, first migrations, JWT in HttpOnly cookie. Users table
@@ -57,7 +57,7 @@ includes optional profile fields.
 
 ---
 
-### Stage 2 — Frontend foundation + auth flow + onboarding (4-5 days) ✅ COMPLETE
+### Stage 2 — Frontend foundation + auth flow + onboarding ✅ COMPLETE
 
 Get the SPA running with working login. Mobile-first design from day one.
 
@@ -94,7 +94,7 @@ is written in Stage 16, once the MVP is complete.
 
 ---
 
-### Stage 3 — Shared package (2-3 days) ✅ COMPLETE
+### Stage 3 — Shared package ✅ COMPLETE
 
 The shared package and the source-of-truth pattern are in place via auth.
 Per-domain schemas land with their build stages (when their tables are
@@ -113,7 +113,7 @@ designed) rather than being guessed up front:
 
 ---
 
-### Stage 4 — Training backend (6-8 days) ✅ COMPLETE
+### Stage 4 — Training backend ✅ COMPLETE
 
 Full CRUD for the training domain, built as five vertical slices
 (repository → service → routes → tests). All endpoints validated with Zod
@@ -144,7 +144,7 @@ and scoped per user; one migration applied to Neon. 96 route tests passing.
 
 ---
 
-### Stage 5 — Training UI (8-12 days)
+### Stage 5 — Training UI
 
 Mobile-first design. Drag-and-drop with touch support.
 Optimistic updates.
@@ -167,7 +167,7 @@ Optimistic updates.
 
 ---
 
-### Stage 6 — Calendar + workout sessions (8-12 days)
+### Stage 6 — Calendar + workout sessions
 
 The heart of the app. Mobile-optimized active workout view
 (must work one-handed).
@@ -197,7 +197,7 @@ The heart of the app. Mobile-optimized active workout view
 
 ---
 
-### Stage 7 — Training stats (3-4 days)
+### Stage 7 — Training stats
 
 - [ ] Pure aggregation functions (max weight, total volume, etc.)
 - [ ] Backend endpoints for aggregated data
@@ -210,7 +210,7 @@ The heart of the app. Mobile-optimized active workout view
 
 ---
 
-### Stage 8 — Nutrition backend (5-7 days)
+### Stage 8 — Nutrition backend
 
 - [ ] foods schema + migration
 - [ ] recipes schema + migration
@@ -228,7 +228,7 @@ The heart of the app. Mobile-optimized active workout view
 
 ---
 
-### Stage 9 — Nutrition UI (8-12 days)
+### Stage 9 — Nutrition UI
 
 Mobile-first. Most complex UI module.
 
@@ -249,7 +249,7 @@ Mobile-first. Most complex UI module.
 
 ---
 
-### Stage 10 — Body measurements (3-4 days)
+### Stage 10 — Body measurements
 
 - [ ] body_measurements schema + migration (weight + body_fat +
       optional biceps/chest/waist/hip/thigh; UNIQUE per date)
@@ -276,7 +276,7 @@ After Stage 10, the app has all three modules functional.
 
 ## Post-MVP (Stages 11-16)
 
-### Stage 11 — Unified dashboard (2-3 days)
+### Stage 11 — Unified dashboard
 
 - [ ] Today's workout card (if planned)
 - [ ] Daily calories vs current target
@@ -285,7 +285,7 @@ After Stage 10, the app has all three modules functional.
 - [ ] Parallel data fetching (useQueries)
 - [ ] Skeleton states per section
 
-### Stage 12 — Performance pass (3-4 days)
+### Stage 12 — Performance pass
 
 - [ ] React DevTools Profiler audit
 - [ ] Virtualization for long lists
@@ -295,7 +295,7 @@ After Stage 10, the app has all three modules functional.
 - [ ] Bundle analysis
 - [ ] Before/after metrics in README
 
-### Stage 13 — Accessibility pass (2-3 days)
+### Stage 13 — Accessibility pass
 
 - [ ] Keyboard navigation everywhere
 - [ ] Focus management for modals
@@ -306,7 +306,7 @@ After Stage 10, the app has all three modules functional.
 - [ ] Reduced motion support
 - [ ] Verify touch targets ≥44px
 
-### Stage 14 — Polish + animations + responsive (3-4 days)
+### Stage 14 — Polish + animations + responsive
 
 - [ ] Comprehensive empty states
 - [ ] Consistent error states
@@ -317,7 +317,7 @@ After Stage 10, the app has all three modules functional.
 - [ ] Confirm dialogs for destructive actions
 - [ ] Dark mode polish
 
-### Stage 15 — Production deployment (1-2 days)
+### Stage 15 — Production deployment
 
 - [ ] Deploy frontend to Vercel
 - [ ] Deploy backend to Fly.io
@@ -327,7 +327,7 @@ After Stage 10, the app has all three modules functional.
 - [ ] Demo account with test data
 - [ ] Smoke test
 
-### Stage 16 — Full documentation (3-4 days)
+### Stage 16 — Full documentation
 
 - [ ] README rewrite with screenshots, demo link
 - [ ] ARCHITECTURE.md with diagrams
