@@ -3,6 +3,8 @@
 
 export { ExercisesPage } from './components/exercises-page';
 export { TagsPage } from './components/tags-page';
+export { PlansPage } from './components/plans-page';
+export { PlanDetail } from './components/plan-detail';
 
 export { useExercises, exercisesQueryOptions, exerciseKeys } from './hooks/use-exercises';
 export { useCreateExercise } from './hooks/use-create-exercise';
