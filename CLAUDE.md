@@ -414,6 +414,15 @@ can be skipped and edited later in Settings:
 - Finish workout: optional star rating (1-5) and optional tags
 - Workout tags: user-defined labels with colors. App starts with no tags.
   Tags displayed on calendar as colored markers. Many tags per session.
+- Calendar scheduling: any template from any plan can be assigned
+  to any date (e.g., main PPL plan templates on weekdays, vacation
+  bodyweight plan templates when traveling). User has one "active
+  plan" for default UI prominence, but all plans' templates are
+  accessible.
+- Set logging during workout: two "add set" actions available —
+  "Add empty set" (blank fields) and "Copy last set" (prefills
+  weight/reps/RIR from the previous set). User edits before marking
+  complete. Set 1 only shows "Add empty" since there's nothing to copy.
 
 ### Nutrition
 
@@ -544,13 +553,22 @@ Migrations can destroy data. Rules:
 
 ## Current stage
 
-Stage 5: training UI (apps/web)
-The training frontend feature (apps/web/src/features/training) consuming
-the Stage 4 API: managing plans, templates, exercises, and tags, plus the
-workout-template builder with drag-and-drop reorder (dnd-kit). All server
-state via TanStack Query; local UI state (drafts, modals) via Zustand.
+Stage 6: calendar + workout sessions (apps/api + apps/web)
+The heart of the app — planned sessions on a calendar, the active workout view
+(one-handed, mobile-first), set logging (weight × reps × optional RIR with
+"Add empty"/"Copy last set"), exercise swap (keep original + actual), finish-
+workout (star rating + tags), and workout history. New tables: planned_sessions,
+workout_sessions, exercise_performances, sets, and the workout_session_tags
+junction. An "active plan" pointer (e.g. users.active_plan_id) is a new schema
+decision to settle here. In-progress session draft persists via Zustand.
 
-(Stage 4 — training backend — complete: the @gym-bro/api training module
+(Stage 5 — training UI — complete: the apps/web training feature ships the full
+data layer + UI for exercises, tags, plans, templates, and the template-exercise
+builder — dnd-kit reorder with optimistic updates, all server state via TanStack
+Query and local UI state via Zustand; routes /exercises, /tags, and
+/plans → /plans/$planId → /templates/$templateId. Not yet linked from navigation
+(no bottom-nav chrome until a later stage). Stage 4 — training backend — complete:
+the @gym-bro/api training module
 ships full CRUD plus reorder for exercises, tags, plans, templates, and
 template-exercises across the repository/service/routes layers, with the
 training Zod schemas/types in @gym-bro/shared and the migration applied to

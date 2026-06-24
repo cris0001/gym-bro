@@ -144,26 +144,40 @@ and scoped per user; one migration applied to Neon. 96 route tests passing.
 
 ---
 
-### Stage 5 — Training UI
+### Stage 5 — Training UI ✅ COMPLETE
 
-Mobile-first design. Drag-and-drop with touch support.
-Optimistic updates.
+Mobile-first design. Drag-and-drop with touch support. Optimistic updates.
+Built as five vertical slices (data layer → UI), one per resource: exercises,
+tags, plans, templates, and the template-exercise builder. Functional scope is
+complete; visual polish (skeletons, designed empty/error states, toasts) is
+deliberately deferred to Stage 14.
 
-- [ ] Training feature module (frontend)
-- [ ] Training plans list view (mobile-optimized)
-- [ ] Create/edit training plan form
-- [ ] Training plan detail view
-- [ ] Workout templates within plan: list, create, edit
-- [ ] Exercise dictionary list view with search
-- [ ] Create/edit exercise form (name + category)
-- [ ] Workout tag CRUD UI with color picker (Settings)
-- [ ] Template builder: add exercises with target sets/reps
-- [ ] Drag-and-drop reordering with touch support (dnd-kit)
-- [ ] React Query hooks with optimistic updates
-- [ ] Empty states with clear CTAs
-- [ ] Loading skeletons
-- [ ] Error states with retry
-- [ ] Tests for key custom hooks
+- [x] Training feature module (frontend)
+- [x] Training plans list view (mobile-optimized) — /plans
+- [x] Create/edit training plan form (bottom-sheet)
+- [x] Training plan detail view — /plans/$planId
+- [x] Workout templates within plan: list, create, edit (+ dnd reorder)
+- [~] Exercise dictionary list view — list shipped at /exercises; search lives
+  in the builder's exercise picker, not yet on the library page itself
+- [x] Create/edit exercise form (name + category)
+- [~] Workout tag CRUD UI with color picker — shipped at a standalone /tags
+  route (swatch grid + custom hex); folds into Settings when that page lands
+- [x] Template builder: add exercises with target sets/reps —
+      /templates/$templateId
+- [x] Drag-and-drop reordering with touch support (dnd-kit) — templates and
+      template-exercises, drag-handle, optimistic cache updates
+- [x] React Query hooks with optimistic updates (reorder)
+- [~] Empty states with clear CTAs — plain-text empty states present; designed
+  treatment deferred to Stage 14
+- [ ] Loading skeletons — deferred to Stage 14 (plain-text loaders for now)
+- [~] Error states with retry — inline error messages present; retry UI in
+  Stage 14
+- [ ] Tests for key custom hooks — none written; the slice is mostly CRUD wiring
+      with little pure logic. Revisit per the selective-testing convention when
+      there's behavior worth locking down
+
+Pages are not yet linked from navigation (no bottom-nav chrome until a later
+stage).
 
 ---
 
