@@ -9,7 +9,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import {
   createTemplateExerciseSchema,
@@ -20,6 +19,7 @@ import {
 import { useCreateTemplateExercise } from '../hooks/use-create-template-exercise';
 import { useUpdateTemplateExercise } from '../hooks/use-update-template-exercise';
 import { ExercisePicker } from './exercise-picker';
+import { NumberField } from './number-field';
 
 const textareaClassName =
   'min-h-20 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1.5 text-base transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-input/30';
@@ -127,47 +127,11 @@ export function TemplateExerciseForm({
           />
         )}
 
-        <FormField
-          control={form.control}
-          name="targetSets"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Sets (optional)</FormLabel>
-              <FormControl>
-                <Input type="number" inputMode="numeric" min={1} className="h-11" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <NumberField control={form.control} name="targetSets" label="Sets (optional)" />
 
         <div className="grid grid-cols-2 gap-2">
-          <FormField
-            control={form.control}
-            name="targetRepsMin"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Reps min</FormLabel>
-                <FormControl>
-                  <Input type="number" inputMode="numeric" min={1} className="h-11" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="targetRepsMax"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Reps max</FormLabel>
-                <FormControl>
-                  <Input type="number" inputMode="numeric" min={1} className="h-11" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <NumberField control={form.control} name="targetRepsMin" label="Reps min" />
+          <NumberField control={form.control} name="targetRepsMax" label="Reps max" />
         </div>
 
         <FormField
