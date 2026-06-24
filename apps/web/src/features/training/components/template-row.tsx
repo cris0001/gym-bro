@@ -1,5 +1,6 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { Link } from '@tanstack/react-router';
 import { GripVertical, Pencil, Trash2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -44,12 +45,16 @@ export function TemplateRow({ template }: TemplateRowProps) {
         <GripVertical className="mx-auto size-4" />
       </button>
 
-      <div className="min-w-0 flex-1">
+      <Link
+        to="/templates/$templateId"
+        params={{ templateId: template.id }}
+        className="min-w-0 flex-1"
+      >
         <p className="truncate font-medium">{template.name}</p>
         {template.description ? (
           <p className="text-muted-foreground truncate text-sm">{template.description}</p>
         ) : null}
-      </div>
+      </Link>
 
       <Button
         type="button"

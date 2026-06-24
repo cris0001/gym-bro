@@ -17,6 +17,7 @@ import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AppTagsRouteImport } from './routes/_app/tags'
 import { Route as AppExercisesRouteImport } from './routes/_app/exercises'
 import { Route as AppPlansIndexRouteImport } from './routes/_app/plans/index'
+import { Route as AppTemplatesTemplateIdRouteImport } from './routes/_app/templates/$templateId'
 import { Route as AppPlansPlanIdRouteImport } from './routes/_app/plans/$planId'
 
 const AuthRoute = AuthRouteImport.update({
@@ -57,6 +58,11 @@ const AppPlansIndexRoute = AppPlansIndexRouteImport.update({
   path: '/plans/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppTemplatesTemplateIdRoute = AppTemplatesTemplateIdRouteImport.update({
+  id: '/templates/$templateId',
+  path: '/templates/$templateId',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppPlansPlanIdRoute = AppPlansPlanIdRouteImport.update({
   id: '/plans/$planId',
   path: '/plans/$planId',
@@ -70,6 +76,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/plans/$planId': typeof AppPlansPlanIdRoute
+  '/templates/$templateId': typeof AppTemplatesTemplateIdRoute
   '/plans/': typeof AppPlansIndexRoute
 }
 export interface FileRoutesByTo {
@@ -79,6 +86,7 @@ export interface FileRoutesByTo {
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/plans/$planId': typeof AppPlansPlanIdRoute
+  '/templates/$templateId': typeof AppTemplatesTemplateIdRoute
   '/plans': typeof AppPlansIndexRoute
 }
 export interface FileRoutesById {
@@ -91,6 +99,7 @@ export interface FileRoutesById {
   '/_auth/register': typeof AuthRegisterRoute
   '/_app/': typeof AppIndexRoute
   '/_app/plans/$planId': typeof AppPlansPlanIdRoute
+  '/_app/templates/$templateId': typeof AppTemplatesTemplateIdRoute
   '/_app/plans/': typeof AppPlansIndexRoute
 }
 export interface FileRouteTypes {
@@ -102,6 +111,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/plans/$planId'
+    | '/templates/$templateId'
     | '/plans/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/plans/$planId'
+    | '/templates/$templateId'
     | '/plans'
   id:
     | '__root__'
@@ -122,6 +133,7 @@ export interface FileRouteTypes {
     | '/_auth/register'
     | '/_app/'
     | '/_app/plans/$planId'
+    | '/_app/templates/$templateId'
     | '/_app/plans/'
   fileRoutesById: FileRoutesById
 }
@@ -188,6 +200,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPlansIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/templates/$templateId': {
+      id: '/_app/templates/$templateId'
+      path: '/templates/$templateId'
+      fullPath: '/templates/$templateId'
+      preLoaderRoute: typeof AppTemplatesTemplateIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/plans/$planId': {
       id: '/_app/plans/$planId'
       path: '/plans/$planId'
@@ -203,6 +222,7 @@ interface AppRouteChildren {
   AppTagsRoute: typeof AppTagsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppPlansPlanIdRoute: typeof AppPlansPlanIdRoute
+  AppTemplatesTemplateIdRoute: typeof AppTemplatesTemplateIdRoute
   AppPlansIndexRoute: typeof AppPlansIndexRoute
 }
 
@@ -211,6 +231,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppTagsRoute: AppTagsRoute,
   AppIndexRoute: AppIndexRoute,
   AppPlansPlanIdRoute: AppPlansPlanIdRoute,
+  AppTemplatesTemplateIdRoute: AppTemplatesTemplateIdRoute,
   AppPlansIndexRoute: AppPlansIndexRoute,
 }
 
