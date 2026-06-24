@@ -26,3 +26,9 @@ export { useCreateTemplate } from './hooks/use-create-template';
 export { useUpdateTemplate } from './hooks/use-update-template';
 export { useDeleteTemplate } from './hooks/use-delete-template';
 export { useReorderTemplates } from './hooks/use-reorder-templates';
+
+export { useTemplate, templateQueryOptions, templateKeys } from './hooks/use-template';
+export { useCreateTemplateExercise } from './hooks/use-create-template-exercise';
+export { useUpdateTemplateExercise } from './hooks/use-update-template-exercise';
+export { useDeleteTemplateExercise } from './hooks/use-delete-template-exercise';
+export { useReorderTemplateExercises } from './hooks/use-reorder-template-exercises';
