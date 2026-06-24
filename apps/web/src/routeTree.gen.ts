@@ -14,6 +14,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as AppExercisesRouteImport } from './routes/_app/exercises'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/_auth',
@@ -38,14 +39,21 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => AuthRoute,
 } as any)
+const AppExercisesRoute = AppExercisesRouteImport.update({
+  id: '/exercises',
+  path: '/exercises',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
+  '/exercises': typeof AppExercisesRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
+  '/exercises': typeof AppExercisesRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
 }
@@ -53,19 +61,21 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
+  '/_app/exercises': typeof AppExercisesRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
   '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/register'
+  fullPaths: '/' | '/exercises' | '/login' | '/register'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/register'
+  to: '/' | '/exercises' | '/login' | '/register'
   id:
     | '__root__'
     | '/_app'
     | '/_auth'
+    | '/_app/exercises'
     | '/_auth/login'
     | '/_auth/register'
     | '/_app/'
@@ -113,14 +123,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/_app/exercises': {
+      id: '/_app/exercises'
+      path: '/exercises'
+      fullPath: '/exercises'
+      preLoaderRoute: typeof AppExercisesRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
+  AppExercisesRoute: typeof AppExercisesRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppExercisesRoute: AppExercisesRoute,
   AppIndexRoute: AppIndexRoute,
 }
 
