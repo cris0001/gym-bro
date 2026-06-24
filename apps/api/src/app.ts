@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 
 import { authRoutes } from './features/auth/auth.routes';
+import { sessionsRoutes } from './features/sessions/sessions.routes';
 import { trainingRoutes } from './features/training/training.routes';
 import { env } from './lib/env';
 import { errorHandler } from './middleware/error';
@@ -26,3 +27,6 @@ app.route('/api/auth', authRoutes);
 // Training routes self-define their own /exercises, /plans, etc. paths and
 // apply requireAuth per route, so they mount at the shared /api prefix.
 app.route('/api', trainingRoutes);
+// Sessions routes (/planned-sessions, /workout-sessions) likewise self-define
+// their paths with per-route auth, mounted at the shared /api prefix.
+app.route('/api', sessionsRoutes);
