@@ -22,6 +22,13 @@
       "when": 1782119886173,
       "tag": "0002_greedy_lifeguard",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1782298028255,
+      "tag": "0003_furry_morgan_stark",
+      "breakpoints": true
     }
   ]
 }
