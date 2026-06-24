@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import {
+  type AnyPgColumn,
   check,
   date,
   pgEnum,
@@ -10,6 +11,8 @@ import {
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
+
+import { trainingPlans } from './training-plans';
 
 // Closed set — drives BMR-type calculations later, so the values are fixed.
 export const sexEnum = pgEnum('sex', ['male', 'female']);
@@ -33,6 +36,12 @@ export const users = pgTable(
     // NULL until the user finishes or skips onboarding; the timestamp also
     // records when, hence timestamptz rather than a boolean.
     onboardedAt: timestamp('onboarded_at', { withTimezone: true }),
+    // The plan surfaced by default in the UI. Nullable; ON DELETE SET NULL so
+    // deleting the active plan just clears the pointer. Circular FK with
+    // training_plans, resolved via a lazy AnyPgColumn thunk.
+    activePlanId: uuid('active_plan_id').references((): AnyPgColumn => trainingPlans.id, {
+      onDelete: 'set null',
+    }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     // Service sets this to now() on every update (no DB trigger).
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
