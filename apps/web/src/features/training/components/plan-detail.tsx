@@ -1,5 +1,5 @@
 import { Link, useNavigate } from '@tanstack/react-router';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Plus } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
@@ -8,18 +8,21 @@ import type { PlanWithTemplates } from '@gym-bro/shared';
 import { useDeletePlan } from '../hooks/use-delete-plan';
 import { usePlan } from '../hooks/use-plan';
 import { usePlanUiStore } from '../stores/plan-ui.store';
+import { useTemplateUiStore } from '../stores/template-ui.store';
 import { PlanSheet } from './plan-sheet';
+import { TemplateList } from './template-list';
+import { TemplateSheet } from './template-sheet';
 
 interface PlanDetailProps {
   planId: string;
 }
 
-// Plan detail: header (name/description + edit/delete) and a read-only list of
-// the plan's templates. Template create/edit/delete/reorder arrives in the
-// templates slice, layered onto this same templates section.
+// Plan detail: header (name/description + edit/delete) and the plan's templates
+// with create/edit/delete and drag-to-reorder.
 export function PlanDetail({ planId }: PlanDetailProps) {
   const { data: plan, isPending, isError, error } = usePlan(planId);
   const openEdit = usePlanUiStore((s) => s.openEdit);
+  const openCreateTemplate = useTemplateUiStore((s) => s.openCreate);
   const remove = useDeletePlan();
   const navigate = useNavigate();
 
@@ -76,28 +79,30 @@ export function PlanDetail({ planId }: PlanDetailProps) {
         </div>
       </div>
 
-      <div className="px-4">
-        <h2 className="text-muted-foreground mb-1 text-xs font-semibold tracking-wide uppercase">
+      <div className="flex items-center justify-between px-4">
+        <h2 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
           Templates
         </h2>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-9"
+          onClick={() => openCreateTemplate(plan.id)}
+        >
+          <Plus className="size-4" />
+          Add
+        </Button>
       </div>
 
       {plan.templates.length === 0 ? (
         <p className="text-muted-foreground px-4 py-3 text-sm">No templates yet.</p>
       ) : (
-        <ul className="divide-y border-t">
-          {plan.templates.map((template) => (
-            <li key={template.id} className="px-4 py-3">
-              <p className="truncate font-medium">{template.name}</p>
-              {template.description ? (
-                <p className="text-muted-foreground truncate text-sm">{template.description}</p>
-              ) : null}
-            </li>
-          ))}
-        </ul>
+        <TemplateList planId={plan.id} templates={plan.templates} />
       )}
 
       <PlanSheet />
+      <TemplateSheet />
     </div>
   );
 }
