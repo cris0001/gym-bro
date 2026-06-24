@@ -1,7 +1,14 @@
-import { and, between, eq } from 'drizzle-orm';
+import { and, between, count, desc, eq, inArray } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 
 import { db } from '../../db/client';
+import { exercisePerformances } from '../../db/schema/exercise-performances';
+import { exercises } from '../../db/schema/exercises';
 import { plannedSessions, type PlannedSession } from '../../db/schema/planned-sessions';
+import { sets } from '../../db/schema/sets';
+import { workoutSessionTags } from '../../db/schema/workout-session-tags';
+import { workoutSessions, type WorkoutSession } from '../../db/schema/workout-sessions';
+import { workoutTags } from '../../db/schema/workout-tags';
 import { workoutTemplates } from '../../db/schema/workout-templates';
 
 // Drizzle queries for the sessions domain — plain rows, no business logic. Every
@@ -95,6 +102,340 @@ export async function deletePlannedSession(
   const [row] = await db
     .delete(plannedSessions)
     .where(and(eq(plannedSessions.id, id), eq(plannedSessions.userId, userId)))
+    .returning();
+  return row;
+}
+
+// --- Workout sessions (writes) ---
+
+// Caller passes already-validated, already-ordered data; weight arrives as a
+// number and is stringified for the numeric column here at the boundary.
+interface SetInput {
+  weight: number | null;
+  reps: number | null;
+  rir: number | null;
+}
+
+interface PerformanceInput {
+  originalExerciseId: string;
+  actualExerciseId: string;
+  notes: string | null;
+  sets: SetInput[];
+}
+
+interface CreateStrengthSessionData {
+  userId: string;
+  plannedSessionId: string | null;
+  workoutTemplateId: string | null;
+  name: string;
+  performedDate: string;
+  durationMinutes: number | null;
+  rating: number | null;
+  notes: string | null;
+  performances: PerformanceInput[];
+  tagIds: string[];
+}
+
+interface CreateActivitySessionData {
+  userId: string;
+  name: string;
+  performedDate: string;
+  durationMinutes: number | null;
+  rating: number | null;
+  notes: string | null;
+  tagIds: string[];
+}
+
+// The atomic "finish workout" write: session → performances → sets → tag links,
+// plus marking a fulfilled planned session completed — all in one transaction so
+// a partial workout never lands. Performance/set order comes from array index.
+export async function createStrengthSession(
+  data: CreateStrengthSessionData,
+): Promise<WorkoutSession> {
+  return db.transaction(async (tx) => {
+    const [session] = await tx
+      .insert(workoutSessions)
+      .values({
+        userId: data.userId,
+        plannedSessionId: data.plannedSessionId,
+        workoutTemplateId: data.workoutTemplateId,
+        sessionType: 'strength',
+        name: data.name,
+        performedDate: data.performedDate,
+        durationMinutes: data.durationMinutes,
+        rating: data.rating,
+        notes: data.notes,
+      })
+      .returning();
+    if (!session) {
+      throw new Error('Workout session insert returned no row');
+    }
+
+    for (const [position, performance] of data.performances.entries()) {
+      const [perfRow] = await tx
+        .insert(exercisePerformances)
+        .values({
+          workoutSessionId: session.id,
+          userId: data.userId,
+          originalExerciseId: performance.originalExerciseId,
+          actualExerciseId: performance.actualExerciseId,
+          notes: performance.notes,
+          position,
+        })
+        .returning();
+      if (!perfRow) {
+        throw new Error('Exercise performance insert returned no row');
+      }
+      if (performance.sets.length > 0) {
+        await tx.insert(sets).values(
+          performance.sets.map((set, setPosition) => ({
+            exercisePerformanceId: perfRow.id,
+            userId: data.userId,
+            position: setPosition,
+            weight: set.weight === null ? null : set.weight.toString(),
+            reps: set.reps,
+            rir: set.rir,
+          })),
+        );
+      }
+    }
+
+    if (data.tagIds.length > 0) {
+      await tx.insert(workoutSessionTags).values(
+        data.tagIds.map((workoutTagId) => ({
+          workoutSessionId: session.id,
+          workoutTagId,
+          userId: data.userId,
+        })),
+      );
+    }
+
+    if (data.plannedSessionId) {
+      await tx
+        .update(plannedSessions)
+        .set({ status: 'completed', updatedAt: new Date() })
+        .where(
+          and(
+            eq(plannedSessions.id, data.plannedSessionId),
+            eq(plannedSessions.userId, data.userId),
+          ),
+        );
+    }
+
+    return session;
+  });
+}
+
+// Ad-hoc activity log: session + tag links in one transaction (no exercises).
+export async function createActivitySession(
+  data: CreateActivitySessionData,
+): Promise<WorkoutSession> {
+  return db.transaction(async (tx) => {
+    const [session] = await tx
+      .insert(workoutSessions)
+      .values({
+        userId: data.userId,
+        plannedSessionId: null,
+        workoutTemplateId: null,
+        sessionType: 'activity',
+        name: data.name,
+        performedDate: data.performedDate,
+        durationMinutes: data.durationMinutes,
+        rating: data.rating,
+        notes: data.notes,
+      })
+      .returning();
+    if (!session) {
+      throw new Error('Workout session insert returned no row');
+    }
+
+    if (data.tagIds.length > 0) {
+      await tx.insert(workoutSessionTags).values(
+        data.tagIds.map((workoutTagId) => ({
+          workoutSessionId: session.id,
+          workoutTagId,
+          userId: data.userId,
+        })),
+      );
+    }
+
+    return session;
+  });
+}
+
+// --- Workout sessions (reads, update, delete) ---
+
+// Two aliased joins to `exercises` so a performance resolves both the actual and
+// the originally-prescribed exercise identity in one query.
+const actualExercise = alias(exercises, 'actual_exercise');
+const originalExercise = alias(exercises, 'original_exercise');
+
+// Editable metadata; all optional to line up with the Zod-inferred input under
+// exactOptionalPropertyTypes. Tag replacement is handled separately.
+interface WorkoutSessionMetaUpdate {
+  name?: string | undefined;
+  rating?: number | null | undefined;
+  notes?: string | null | undefined;
+  durationMinutes?: number | null | undefined;
+}
+
+export async function findWorkoutSessionById(
+  userId: string,
+  id: string,
+): Promise<WorkoutSession | undefined> {
+  const [row] = await db
+    .select()
+    .from(workoutSessions)
+    .where(and(eq(workoutSessions.id, id), eq(workoutSessions.userId, userId)))
+    .limit(1);
+  return row;
+}
+
+// One page of history, newest first (createdAt breaks ties within a day).
+export async function listWorkoutSessionsPage(
+  userId: string,
+  limit: number,
+  offset: number,
+): Promise<WorkoutSession[]> {
+  return db
+    .select()
+    .from(workoutSessions)
+    .where(eq(workoutSessions.userId, userId))
+    .orderBy(desc(workoutSessions.performedDate), desc(workoutSessions.createdAt))
+    .limit(limit)
+    .offset(offset);
+}
+
+export async function countWorkoutSessions(userId: string): Promise<number> {
+  const [row] = await db
+    .select({ value: count() })
+    .from(workoutSessions)
+    .where(eq(workoutSessions.userId, userId));
+  return row?.value ?? 0;
+}
+
+// Tag links for a set of sessions, joined to the tag identity — attaches tags to
+// history items and the detail view without an N+1.
+export async function listTagsForSessions(userId: string, sessionIds: string[]) {
+  if (sessionIds.length === 0) {
+    return [];
+  }
+  return db
+    .select({
+      workoutSessionId: workoutSessionTags.workoutSessionId,
+      id: workoutTags.id,
+      name: workoutTags.name,
+      color: workoutTags.color,
+      isActive: workoutTags.isActive,
+    })
+    .from(workoutSessionTags)
+    .innerJoin(workoutTags, eq(workoutSessionTags.workoutTagId, workoutTags.id))
+    .where(
+      and(
+        inArray(workoutSessionTags.workoutSessionId, sessionIds),
+        eq(workoutSessionTags.userId, userId),
+      ),
+    );
+}
+
+// A session's performances, ordered, each with its actual + original exercise
+// identity (isActive surfaces a soft-deleted-but-referenced exercise).
+export async function listPerformancesForSession(userId: string, sessionId: string) {
+  return db
+    .select({
+      id: exercisePerformances.id,
+      workoutSessionId: exercisePerformances.workoutSessionId,
+      userId: exercisePerformances.userId,
+      originalExerciseId: exercisePerformances.originalExerciseId,
+      actualExerciseId: exercisePerformances.actualExerciseId,
+      position: exercisePerformances.position,
+      notes: exercisePerformances.notes,
+      createdAt: exercisePerformances.createdAt,
+      updatedAt: exercisePerformances.updatedAt,
+      actual: {
+        id: actualExercise.id,
+        name: actualExercise.name,
+        category: actualExercise.category,
+        isActive: actualExercise.isActive,
+      },
+      original: {
+        id: originalExercise.id,
+        name: originalExercise.name,
+        category: originalExercise.category,
+        isActive: originalExercise.isActive,
+      },
+    })
+    .from(exercisePerformances)
+    .innerJoin(actualExercise, eq(exercisePerformances.actualExerciseId, actualExercise.id))
+    .innerJoin(originalExercise, eq(exercisePerformances.originalExerciseId, originalExercise.id))
+    .where(
+      and(
+        eq(exercisePerformances.workoutSessionId, sessionId),
+        eq(exercisePerformances.userId, userId),
+      ),
+    )
+    .orderBy(exercisePerformances.position);
+}
+
+// A session's sets across all its performances, ordered, with weight coerced
+// from the numeric column's string back to a number for the API contract.
+export async function listSetsForSession(userId: string, sessionId: string) {
+  const rows = await db
+    .select({
+      id: sets.id,
+      exercisePerformanceId: sets.exercisePerformanceId,
+      userId: sets.userId,
+      position: sets.position,
+      weight: sets.weight,
+      reps: sets.reps,
+      rir: sets.rir,
+      createdAt: sets.createdAt,
+      updatedAt: sets.updatedAt,
+    })
+    .from(sets)
+    .innerJoin(exercisePerformances, eq(sets.exercisePerformanceId, exercisePerformances.id))
+    .where(and(eq(exercisePerformances.workoutSessionId, sessionId), eq(sets.userId, userId)))
+    .orderBy(sets.position);
+  return rows.map((row) => ({ ...row, weight: row.weight === null ? null : Number(row.weight) }));
+}
+
+// Update metadata; when tagIds is provided, replace the whole tag set. One
+// transaction so the metadata change and tag replacement commit together.
+export async function updateWorkoutSession(
+  userId: string,
+  id: string,
+  meta: WorkoutSessionMetaUpdate,
+  tagIds: string[] | undefined,
+): Promise<WorkoutSession | undefined> {
+  return db.transaction(async (tx) => {
+    const [session] = await tx
+      .update(workoutSessions)
+      .set({ ...meta, updatedAt: new Date() })
+      .where(and(eq(workoutSessions.id, id), eq(workoutSessions.userId, userId)))
+      .returning();
+    if (!session) {
+      return undefined;
+    }
+    if (tagIds !== undefined) {
+      await tx.delete(workoutSessionTags).where(eq(workoutSessionTags.workoutSessionId, id));
+      if (tagIds.length > 0) {
+        await tx
+          .insert(workoutSessionTags)
+          .values(tagIds.map((workoutTagId) => ({ workoutSessionId: id, workoutTagId, userId })));
+      }
+    }
+    return session;
+  });
+}
+
+// Hard delete; cascades to performances, sets, and tag links.
+export async function deleteWorkoutSession(
+  userId: string,
+  id: string,
+): Promise<WorkoutSession | undefined> {
+  const [row] = await db
+    .delete(workoutSessions)
+    .where(and(eq(workoutSessions.id, id), eq(workoutSessions.userId, userId)))
     .returning();
   return row;
 }

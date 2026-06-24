@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { app } from '../../app';
+import type { Exercise } from '../../db/schema/exercises';
 import type { PlannedSession } from '../../db/schema/planned-sessions';
+import type { WorkoutSession } from '../../db/schema/workout-sessions';
 import type { WorkoutTemplate } from '../../db/schema/workout-templates';
 import { AUTH_COOKIE_NAME } from '../../lib/auth-cookie';
 import { signToken } from '../../lib/jwt';
@@ -19,6 +21,10 @@ const trainingRepo = vi.mocked(trainingRepository);
 
 const TEMPLATE_ID = '44444444-4444-4444-8444-444444444444';
 const PLANNED_ID = '66666666-6666-4666-8666-666666666666';
+const EXERCISE_ID = '11111111-1111-4111-8111-111111111111';
+const TAG_ID = '22222222-2222-4222-8222-222222222222';
+const SESSION_ID = '77777777-7777-4777-8777-777777777777';
+const PERF_ID = '88888888-8888-4888-8888-888888888888';
 
 function fakeTemplate(overrides: Partial<WorkoutTemplate> = {}): WorkoutTemplate {
   return {
@@ -41,6 +47,37 @@ function fakePlanned(overrides: Partial<PlannedSession> = {}): PlannedSession {
     workoutTemplateId: TEMPLATE_ID,
     scheduledDate: '2026-06-29',
     status: 'planned',
+    createdAt: new Date('2026-01-01T00:00:00Z'),
+    updatedAt: new Date('2026-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+function fakeExercise(overrides: Partial<Exercise> = {}): Exercise {
+  return {
+    id: EXERCISE_ID,
+    userId: 'user-1',
+    name: 'Bench Press',
+    category: 'Chest',
+    isActive: true,
+    createdAt: new Date('2026-01-01T00:00:00Z'),
+    updatedAt: new Date('2026-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+function fakeWorkoutSession(overrides: Partial<WorkoutSession> = {}): WorkoutSession {
+  return {
+    id: SESSION_ID,
+    userId: 'user-1',
+    plannedSessionId: null,
+    workoutTemplateId: null,
+    sessionType: 'strength',
+    name: 'Push',
+    performedDate: '2026-06-29',
+    durationMinutes: null,
+    rating: null,
+    notes: null,
     createdAt: new Date('2026-01-01T00:00:00Z'),
     updatedAt: new Date('2026-01-01T00:00:00Z'),
     ...overrides,
@@ -197,6 +234,211 @@ describe('planned session routes', () => {
     repo.deletePlannedSession.mockResolvedValue(undefined);
 
     const res = await request('DELETE', `/api/planned-sessions/${PLANNED_ID}`, {
+      cookie: await authCookie(),
+    });
+
+    expect(res.status).toBe(404);
+  });
+});
+
+describe('workout session routes', () => {
+  const strengthBody = {
+    name: 'Push',
+    performedDate: '2026-06-29',
+    performances: [
+      {
+        originalExerciseId: EXERCISE_ID,
+        actualExerciseId: EXERCISE_ID,
+        sets: [{ weight: 100, reps: 8, rir: 2 }],
+      },
+    ],
+  };
+
+  it('POST /api/workout-sessions/strength writes the session when all references are owned', async () => {
+    trainingRepo.findExerciseById.mockResolvedValue(fakeExercise());
+    repo.createStrengthSession.mockResolvedValue(fakeWorkoutSession());
+
+    const res = await request('POST', '/api/workout-sessions/strength', {
+      cookie: await authCookie(),
+      body: strengthBody,
+    });
+    const body = (await res.json()) as { data: WorkoutSession };
+
+    expect(res.status).toBe(201);
+    expect(body.data.id).toBe(SESSION_ID);
+    expect(repo.createStrengthSession).toHaveBeenCalledOnce();
+  });
+
+  it('POST /api/workout-sessions/strength with an exercise the user does not own returns 400', async () => {
+    trainingRepo.findExerciseById.mockResolvedValue(undefined);
+
+    const res = await request('POST', '/api/workout-sessions/strength', {
+      cookie: await authCookie(),
+      body: strengthBody,
+    });
+
+    expect(res.status).toBe(400);
+    expect(repo.createStrengthSession).not.toHaveBeenCalled();
+  });
+
+  it('POST /api/workout-sessions/strength with a tag the user does not own returns 400', async () => {
+    trainingRepo.findExerciseById.mockResolvedValue(fakeExercise());
+    trainingRepo.findTagById.mockResolvedValue(undefined);
+
+    const res = await request('POST', '/api/workout-sessions/strength', {
+      cookie: await authCookie(),
+      body: { ...strengthBody, tagIds: [TAG_ID] },
+    });
+
+    expect(res.status).toBe(400);
+    expect(repo.createStrengthSession).not.toHaveBeenCalled();
+  });
+
+  it('POST /api/workout-sessions/strength with a planned session the user does not own returns 400', async () => {
+    repo.findPlannedSessionById.mockResolvedValue(undefined);
+
+    const res = await request('POST', '/api/workout-sessions/strength', {
+      cookie: await authCookie(),
+      body: { ...strengthBody, plannedSessionId: PLANNED_ID },
+    });
+
+    expect(res.status).toBe(400);
+    expect(repo.createStrengthSession).not.toHaveBeenCalled();
+  });
+
+  it('POST /api/workout-sessions/activity logs an ad-hoc activity', async () => {
+    repo.createActivitySession.mockResolvedValue(
+      fakeWorkoutSession({ sessionType: 'activity', name: 'Morning run', durationMinutes: 30 }),
+    );
+
+    const res = await request('POST', '/api/workout-sessions/activity', {
+      cookie: await authCookie(),
+      body: { name: 'Morning run', performedDate: '2026-06-29', durationMinutes: 30 },
+    });
+    const body = (await res.json()) as { data: WorkoutSession };
+
+    expect(res.status).toBe(201);
+    expect(body.data.sessionType).toBe('activity');
+  });
+
+  it('GET /api/workout-sessions returns a page with totals and tags', async () => {
+    repo.listWorkoutSessionsPage.mockResolvedValue([fakeWorkoutSession()]);
+    repo.countWorkoutSessions.mockResolvedValue(1);
+    repo.listTagsForSessions.mockResolvedValue([
+      { workoutSessionId: SESSION_ID, id: TAG_ID, name: 'PR', color: '#22c55e', isActive: true },
+    ]);
+
+    const res = await request('GET', '/api/workout-sessions?limit=20&offset=0', {
+      cookie: await authCookie(),
+    });
+    const body = (await res.json()) as {
+      data: { items: { id: string; tags: { id: string }[] }[]; total: number };
+    };
+
+    expect(res.status).toBe(200);
+    expect(body.data.total).toBe(1);
+    expect(body.data.items[0]?.tags).toHaveLength(1);
+  });
+
+  it('GET /api/workout-sessions/:id returns the assembled detail', async () => {
+    repo.findWorkoutSessionById.mockResolvedValue(fakeWorkoutSession());
+    repo.listPerformancesForSession.mockResolvedValue([
+      {
+        id: PERF_ID,
+        workoutSessionId: SESSION_ID,
+        userId: 'user-1',
+        originalExerciseId: EXERCISE_ID,
+        actualExerciseId: EXERCISE_ID,
+        position: 0,
+        notes: null,
+        createdAt: new Date('2026-01-01T00:00:00Z'),
+        updatedAt: new Date('2026-01-01T00:00:00Z'),
+        actual: { id: EXERCISE_ID, name: 'Bench Press', category: 'Chest', isActive: true },
+        original: { id: EXERCISE_ID, name: 'Bench Press', category: 'Chest', isActive: true },
+      },
+    ]);
+    repo.listSetsForSession.mockResolvedValue([
+      {
+        id: '99999999-9999-4999-8999-999999999999',
+        exercisePerformanceId: PERF_ID,
+        userId: 'user-1',
+        position: 0,
+        weight: 100,
+        reps: 8,
+        rir: 2,
+        createdAt: new Date('2026-01-01T00:00:00Z'),
+        updatedAt: new Date('2026-01-01T00:00:00Z'),
+      },
+    ]);
+    repo.listTagsForSessions.mockResolvedValue([]);
+
+    const res = await request('GET', `/api/workout-sessions/${SESSION_ID}`, {
+      cookie: await authCookie(),
+    });
+    const body = (await res.json()) as {
+      data: { performances: { exercise: { name: string }; sets: { weight: number }[] }[] };
+    };
+
+    expect(res.status).toBe(200);
+    expect(body.data.performances[0]?.exercise.name).toBe('Bench Press');
+    expect(body.data.performances[0]?.sets[0]?.weight).toBe(100);
+  });
+
+  it('GET /api/workout-sessions/:id the user does not own returns 404', async () => {
+    repo.findWorkoutSessionById.mockResolvedValue(undefined);
+
+    const res = await request('GET', `/api/workout-sessions/${SESSION_ID}`, {
+      cookie: await authCookie(),
+    });
+
+    expect(res.status).toBe(404);
+  });
+
+  it('PATCH /api/workout-sessions/:id updates metadata and returns the refreshed detail', async () => {
+    // findWorkoutSessionById backs both the ownership check and the refreshed
+    // detail returned after the update, so it reflects the new rating.
+    repo.findWorkoutSessionById.mockResolvedValue(fakeWorkoutSession({ rating: 5 }));
+    repo.updateWorkoutSession.mockResolvedValue(fakeWorkoutSession({ rating: 5 }));
+    repo.listPerformancesForSession.mockResolvedValue([]);
+    repo.listSetsForSession.mockResolvedValue([]);
+    repo.listTagsForSessions.mockResolvedValue([]);
+
+    const res = await request('PATCH', `/api/workout-sessions/${SESSION_ID}`, {
+      cookie: await authCookie(),
+      body: { rating: 5 },
+    });
+    const body = (await res.json()) as { data: { rating: number | null } };
+
+    expect(res.status).toBe(200);
+    expect(body.data.rating).toBe(5);
+  });
+
+  it('PATCH /api/workout-sessions/:id the user does not own returns 404', async () => {
+    repo.findWorkoutSessionById.mockResolvedValue(undefined);
+
+    const res = await request('PATCH', `/api/workout-sessions/${SESSION_ID}`, {
+      cookie: await authCookie(),
+      body: { rating: 5 },
+    });
+
+    expect(res.status).toBe(404);
+    expect(repo.updateWorkoutSession).not.toHaveBeenCalled();
+  });
+
+  it('DELETE /api/workout-sessions/:id removes an owned session', async () => {
+    repo.deleteWorkoutSession.mockResolvedValue(fakeWorkoutSession());
+
+    const res = await request('DELETE', `/api/workout-sessions/${SESSION_ID}`, {
+      cookie: await authCookie(),
+    });
+
+    expect(res.status).toBe(200);
+  });
+
+  it('DELETE /api/workout-sessions/:id the user does not own returns 404', async () => {
+    repo.deleteWorkoutSession.mockResolvedValue(undefined);
+
+    const res = await request('DELETE', `/api/workout-sessions/${SESSION_ID}`, {
       cookie: await authCookie(),
     });
 

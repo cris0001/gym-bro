@@ -1,11 +1,16 @@
 import { ConflictError, NotFoundError, ValidationError } from '../../lib/errors';
 import type {
   CalendarRangeInput,
+  CreateActivitySessionInput,
   CreatePlannedSessionInput,
+  CreateStrengthSessionInput,
   UpdatePlannedSessionInput,
+  UpdateWorkoutSessionInput,
+  WorkoutHistoryQueryInput,
 } from '@gym-bro/shared';
 
 import type { PlannedSession } from '../../db/schema/planned-sessions';
+import type { WorkoutSession } from '../../db/schema/workout-sessions';
 import type { WorkoutTemplate } from '../../db/schema/workout-templates';
 import * as trainingRepository from '../training/training.repository';
 import * as sessionsRepository from './sessions.repository';
@@ -104,5 +109,190 @@ export async function deletePlannedSession(userId: string, id: string): Promise<
   const deleted = await sessionsRepository.deletePlannedSession(userId, id);
   if (!deleted) {
     throw new NotFoundError('Planned session not found');
+  }
+}
+
+// --- Workout sessions ---
+
+// Body references must belong to the user (the FKs only enforce existence). A bad
+// reference is a 400, not a 404 — it's invalid input, not a missing endpoint.
+async function assertExercisesOwned(userId: string, exerciseIds: Set<string>): Promise<void> {
+  for (const id of exerciseIds) {
+    const exercise = await trainingRepository.findExerciseById(userId, id);
+    if (!exercise) {
+      throw new ValidationError('One or more exercises are not available');
+    }
+  }
+}
+
+async function assertTagsOwned(userId: string, tagIds: string[]): Promise<void> {
+  for (const id of tagIds) {
+    const tag = await trainingRepository.findTagById(userId, id);
+    if (!tag) {
+      throw new ValidationError('One or more tags are not available');
+    }
+  }
+}
+
+interface SessionTagRow {
+  workoutSessionId: string;
+  id: string;
+  name: string;
+  color: string;
+  isActive: boolean;
+}
+
+function groupTagsBySession(
+  rows: SessionTagRow[],
+): Map<string, Omit<SessionTagRow, 'workoutSessionId'>[]> {
+  const map = new Map<string, Omit<SessionTagRow, 'workoutSessionId'>[]>();
+  for (const { workoutSessionId, ...tag } of rows) {
+    const existing = map.get(workoutSessionId) ?? [];
+    existing.push(tag);
+    map.set(workoutSessionId, existing);
+  }
+  return map;
+}
+
+// Finish a strength workout: validate every body reference (planned session,
+// template, each exercise of the swap pair, each tag), then write the whole graph
+// atomically in the repository transaction.
+export async function createStrengthSession(
+  userId: string,
+  input: CreateStrengthSessionInput,
+): Promise<WorkoutSession> {
+  if (input.plannedSessionId != null) {
+    const planned = await sessionsRepository.findPlannedSessionById(userId, input.plannedSessionId);
+    if (!planned) {
+      throw new ValidationError('Planned session not found');
+    }
+  }
+  if (input.workoutTemplateId != null) {
+    const template = await trainingRepository.findTemplateById(userId, input.workoutTemplateId);
+    if (!template) {
+      throw new ValidationError('Template not found or unavailable');
+    }
+  }
+  const exerciseIds = new Set<string>();
+  for (const performance of input.performances) {
+    exerciseIds.add(performance.originalExerciseId);
+    exerciseIds.add(performance.actualExerciseId);
+  }
+  await assertExercisesOwned(userId, exerciseIds);
+  await assertTagsOwned(userId, input.tagIds);
+
+  return sessionsRepository.createStrengthSession({
+    userId,
+    plannedSessionId: input.plannedSessionId ?? null,
+    workoutTemplateId: input.workoutTemplateId ?? null,
+    name: input.name,
+    performedDate: input.performedDate,
+    durationMinutes: input.durationMinutes ?? null,
+    rating: input.rating ?? null,
+    notes: input.notes ?? null,
+    performances: input.performances.map((performance) => ({
+      originalExerciseId: performance.originalExerciseId,
+      actualExerciseId: performance.actualExerciseId,
+      notes: performance.notes ?? null,
+      sets: performance.sets.map((set) => ({
+        weight: set.weight ?? null,
+        reps: set.reps ?? null,
+        rir: set.rir ?? null,
+      })),
+    })),
+    tagIds: input.tagIds,
+  });
+}
+
+export async function createActivitySession(
+  userId: string,
+  input: CreateActivitySessionInput,
+): Promise<WorkoutSession> {
+  await assertTagsOwned(userId, input.tagIds);
+  return sessionsRepository.createActivitySession({
+    userId,
+    name: input.name,
+    performedDate: input.performedDate,
+    durationMinutes: input.durationMinutes ?? null,
+    rating: input.rating ?? null,
+    notes: input.notes ?? null,
+    tagIds: input.tagIds,
+  });
+}
+
+// One page of history with each session's tags attached.
+export async function listWorkoutSessions(userId: string, query: WorkoutHistoryQueryInput) {
+  const [items, total] = await Promise.all([
+    sessionsRepository.listWorkoutSessionsPage(userId, query.limit, query.offset),
+    sessionsRepository.countWorkoutSessions(userId),
+  ]);
+  const tagsBySession = groupTagsBySession(
+    await sessionsRepository.listTagsForSessions(
+      userId,
+      items.map((session) => session.id),
+    ),
+  );
+  return {
+    items: items.map((session) => ({ ...session, tags: tagsBySession.get(session.id) ?? [] })),
+    total,
+  };
+}
+
+// The full session graph: performances (with exercise identity) grouped with
+// their ordered sets, plus the session's tags.
+export async function getWorkoutSession(userId: string, id: string) {
+  const session = await sessionsRepository.findWorkoutSessionById(userId, id);
+  if (!session) {
+    throw new NotFoundError('Workout session not found');
+  }
+  const [performanceRows, setRows, tagRows] = await Promise.all([
+    sessionsRepository.listPerformancesForSession(userId, id),
+    sessionsRepository.listSetsForSession(userId, id),
+    sessionsRepository.listTagsForSessions(userId, [id]),
+  ]);
+
+  const setsByPerformance = new Map<string, typeof setRows>();
+  for (const set of setRows) {
+    const existing = setsByPerformance.get(set.exercisePerformanceId) ?? [];
+    existing.push(set);
+    setsByPerformance.set(set.exercisePerformanceId, existing);
+  }
+
+  const performances = performanceRows.map(({ actual, original, ...performance }) => ({
+    ...performance,
+    exercise: actual,
+    originalExercise: original,
+    sets: setsByPerformance.get(performance.id) ?? [],
+  }));
+  const tags = groupTagsBySession(tagRows).get(id) ?? [];
+
+  return { ...session, performances, tags };
+}
+
+// Edit metadata and/or replace the tag set. Returns the refreshed detail.
+export async function updateWorkoutSession(
+  userId: string,
+  id: string,
+  input: UpdateWorkoutSessionInput,
+) {
+  const existing = await sessionsRepository.findWorkoutSessionById(userId, id);
+  if (!existing) {
+    throw new NotFoundError('Workout session not found');
+  }
+  const { tagIds, ...meta } = input;
+  if (tagIds !== undefined) {
+    await assertTagsOwned(userId, tagIds);
+  }
+  const updated = await sessionsRepository.updateWorkoutSession(userId, id, meta, tagIds);
+  if (!updated) {
+    throw new NotFoundError('Workout session not found');
+  }
+  return getWorkoutSession(userId, id);
+}
+
+export async function deleteWorkoutSession(userId: string, id: string): Promise<void> {
+  const deleted = await sessionsRepository.deleteWorkoutSession(userId, id);
+  if (!deleted) {
+    throw new NotFoundError('Workout session not found');
   }
 }

@@ -11,6 +11,7 @@ import type {
   setActivePlanSchema,
   updatePlannedSessionSchema,
   updateWorkoutSessionSchema,
+  workoutHistoryQuerySchema,
 } from '../schemas/sessions.schema';
 import type { Exercise, WorkoutTag, WorkoutTemplate } from './training.types';
 
@@ -25,6 +26,7 @@ export type CreatePlannedSessionInput = z.infer<typeof createPlannedSessionSchem
 export type UpdatePlannedSessionInput = z.infer<typeof updatePlannedSessionSchema>;
 export type CalendarRangeInput = z.infer<typeof calendarRangeSchema>;
 export type SetActivePlanInput = z.infer<typeof setActivePlanSchema>;
+export type WorkoutHistoryQueryInput = z.infer<typeof workoutHistoryQuerySchema>;
 
 export type SessionType = (typeof SESSION_TYPES)[number];
 export type PlannedStatus = (typeof PLANNED_STATUSES)[number];
@@ -106,6 +108,12 @@ export interface WorkoutSessionDetail extends WorkoutSession {
 // History list item — a session with just its tags (no performances/sets).
 export interface WorkoutSessionListItem extends WorkoutSession {
   tags: Pick<WorkoutTag, 'id' | 'name' | 'color' | 'isActive'>[];
+}
+
+// GET /api/workout-sessions — one page of history plus the total for paging.
+export interface WorkoutHistoryPage {
+  items: WorkoutSessionListItem[];
+  total: number;
 }
 
 // A calendar entry: a planned session with its template's name for display.
