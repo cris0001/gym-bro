@@ -17,6 +17,9 @@ export { useCreateTag } from './hooks/use-create-tag';
 export { useUpdateTag } from './hooks/use-update-tag';
 export { useDeleteTag } from './hooks/use-delete-tag';
 
+export { useActivePlan, activePlanQueryOptions, activePlanKeys } from './hooks/use-active-plan';
+export { useSetActivePlan } from './hooks/use-set-active-plan';
+
 export { usePlans, plansQueryOptions, planKeys } from './hooks/use-plans';
 export { usePlan, planQueryOptions } from './hooks/use-plan';
 export { useCreatePlan } from './hooks/use-create-plan';
