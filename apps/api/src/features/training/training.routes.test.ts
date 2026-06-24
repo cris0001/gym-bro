@@ -973,3 +973,68 @@ describe('template-exercise routes', () => {
     expect(repo.reorderTemplateExercises).not.toHaveBeenCalled();
   });
 });
+
+describe('active plan routes', () => {
+  const planId = fakePlan().id;
+
+  it('GET /api/active-plan returns the active plan when one is set', async () => {
+    repo.getActivePlanId.mockResolvedValue(planId);
+    repo.findPlanById.mockResolvedValue(fakePlan());
+
+    const res = await request('GET', '/api/active-plan', { cookie: await authCookie() });
+    const body = (await res.json()) as { data: TrainingPlan | null };
+
+    expect(res.status).toBe(200);
+    expect(body.data?.id).toBe(planId);
+  });
+
+  it('GET /api/active-plan returns null when none is set', async () => {
+    repo.getActivePlanId.mockResolvedValue(null);
+
+    const res = await request('GET', '/api/active-plan', { cookie: await authCookie() });
+    const body = (await res.json()) as { data: TrainingPlan | null };
+
+    expect(res.status).toBe(200);
+    expect(body.data).toBeNull();
+    expect(repo.findPlanById).not.toHaveBeenCalled();
+  });
+
+  it('PUT /api/active-plan sets a plan the user owns and returns it', async () => {
+    repo.findPlanById.mockResolvedValue(fakePlan());
+
+    const res = await request('PUT', '/api/active-plan', {
+      cookie: await authCookie(),
+      body: { activePlanId: planId },
+    });
+    const body = (await res.json()) as { data: TrainingPlan | null };
+
+    expect(res.status).toBe(200);
+    expect(body.data?.id).toBe(planId);
+    expect(repo.setActivePlanId).toHaveBeenCalledWith('user-1', planId);
+  });
+
+  it('PUT /api/active-plan with a plan the user does not own returns 404', async () => {
+    repo.findPlanById.mockResolvedValue(undefined);
+
+    const res = await request('PUT', '/api/active-plan', {
+      cookie: await authCookie(),
+      body: { activePlanId: '99999999-9999-4999-8999-999999999999' },
+    });
+
+    expect(res.status).toBe(404);
+    expect(repo.setActivePlanId).not.toHaveBeenCalled();
+  });
+
+  it('PUT /api/active-plan with null clears the active plan', async () => {
+    const res = await request('PUT', '/api/active-plan', {
+      cookie: await authCookie(),
+      body: { activePlanId: null },
+    });
+    const body = (await res.json()) as { data: TrainingPlan | null };
+
+    expect(res.status).toBe(200);
+    expect(body.data).toBeNull();
+    expect(repo.setActivePlanId).toHaveBeenCalledWith('user-1', null);
+    expect(repo.findPlanById).not.toHaveBeenCalled();
+  });
+});
