@@ -3,6 +3,7 @@ import { and, count, eq, sql } from 'drizzle-orm';
 import { db } from '../../db/client';
 import { exercises, type Exercise } from '../../db/schema/exercises';
 import { trainingPlans, type TrainingPlan } from '../../db/schema/training-plans';
+import { users } from '../../db/schema/users';
 import { workoutTemplates, type WorkoutTemplate } from '../../db/schema/workout-templates';
 import {
   workoutTemplateExercises,
@@ -246,6 +247,24 @@ export async function deletePlan(userId: string, id: string): Promise<TrainingPl
     .where(and(eq(trainingPlans.id, id), eq(trainingPlans.userId, userId)))
     .returning();
   return plan;
+}
+
+// --- Active plan ---
+
+// The user's active_plan_id pointer (NULL when none set). The service resolves
+// the actual plan via findPlanById so ownership/existence is re-checked there.
+export async function getActivePlanId(userId: string): Promise<string | null> {
+  const [row] = await db
+    .select({ activePlanId: users.activePlanId })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  return row?.activePlanId ?? null;
+}
+
+// Set (with a uuid) or clear (with null) the user's active plan.
+export async function setActivePlanId(userId: string, activePlanId: string | null): Promise<void> {
+  await db.update(users).set({ activePlanId, updatedAt: new Date() }).where(eq(users.id, userId));
 }
 
 // --- Templates ---

@@ -8,6 +8,7 @@ import {
   createTemplateExerciseSchema,
   createTemplateSchema,
   reorderSchema,
+  setActivePlanSchema,
   updateExerciseSchema,
   updatePlanSchema,
   updateTagSchema,
@@ -126,6 +127,19 @@ trainingRoutes.delete('/plans/:id', requireAuth, async (c) => {
   const id = parseUuidParam(c, 'id');
   await trainingService.deletePlan(c.get('userId'), id);
   return c.json({ data: { success: true } });
+});
+
+// --- Active plan ---
+
+trainingRoutes.get('/active-plan', requireAuth, async (c) => {
+  const plan = await trainingService.getActivePlan(c.get('userId'));
+  return c.json({ data: plan });
+});
+
+trainingRoutes.put('/active-plan', requireAuth, async (c) => {
+  const input = await parseJson(c, setActivePlanSchema);
+  const plan = await trainingService.setActivePlan(c.get('userId'), input);
+  return c.json({ data: plan });
 });
 
 // --- Templates ---

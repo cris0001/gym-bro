@@ -6,6 +6,7 @@ import type {
   CreateTemplateExerciseInput,
   CreateTemplateInput,
   ReorderInput,
+  SetActivePlanInput,
   UpdateExerciseInput,
   UpdatePlanInput,
   UpdateTagInput,
@@ -202,6 +203,36 @@ export async function deletePlan(userId: string, id: string): Promise<void> {
   if (!deleted) {
     throw new NotFoundError('Plan not found');
   }
+}
+
+// --- Active plan ---
+
+// The plan surfaced by default in the UI, or null if none is set (or the
+// pointer dangles, which findPlanById turns into null).
+export async function getActivePlan(userId: string): Promise<TrainingPlan | null> {
+  const activePlanId = await trainingRepository.getActivePlanId(userId);
+  if (!activePlanId) {
+    return null;
+  }
+  const plan = await trainingRepository.findPlanById(userId, activePlanId);
+  return plan ?? null;
+}
+
+// Set the active plan (must belong to the user) or clear it with null.
+export async function setActivePlan(
+  userId: string,
+  input: SetActivePlanInput,
+): Promise<TrainingPlan | null> {
+  if (input.activePlanId === null) {
+    await trainingRepository.setActivePlanId(userId, null);
+    return null;
+  }
+  const plan = await trainingRepository.findPlanById(userId, input.activePlanId);
+  if (!plan) {
+    throw new NotFoundError('Plan not found');
+  }
+  await trainingRepository.setActivePlanId(userId, input.activePlanId);
+  return plan;
 }
 
 // --- Templates ---
