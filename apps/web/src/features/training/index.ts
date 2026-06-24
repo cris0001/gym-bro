@@ -7,3 +7,8 @@ export { useExercises, exercisesQueryOptions, exerciseKeys } from './hooks/use-e
 export { useCreateExercise } from './hooks/use-create-exercise';
 export { useUpdateExercise } from './hooks/use-update-exercise';
 export { useDeleteExercise } from './hooks/use-delete-exercise';
+
+export { useTags, tagsQueryOptions, tagKeys } from './hooks/use-tags';
+export { useCreateTag } from './hooks/use-create-tag';
+export { useUpdateTag } from './hooks/use-update-tag';
+export { useDeleteTag } from './hooks/use-delete-tag';
