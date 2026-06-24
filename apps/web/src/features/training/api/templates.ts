@@ -1,6 +1,17 @@
 import { apiFetch } from '@/lib/api-client';
 
-import type { CreateTemplateInput, UpdateTemplateInput, WorkoutTemplate } from '@gym-bro/shared';
+import type {
+  CreateTemplateInput,
+  TemplateWithExercises,
+  UpdateTemplateInput,
+  WorkoutTemplate,
+} from '@gym-bro/shared';
+
+// GET /api/templates/:id — a template with its ordered exercises, each joined to
+// its exercise's identity (name/category/isActive). Drives the builder page.
+export function getTemplate(id: string): Promise<TemplateWithExercises> {
+  return apiFetch<TemplateWithExercises>(`/api/templates/${id}`);
+}
 
 // POST /api/plans/:planId/templates — create a template at the end of the plan.
 export function createTemplate(
