@@ -2,6 +2,7 @@
 // Everything outside this folder imports from '@/features/sessions' only.
 
 export { CalendarPage } from './components/calendar-page';
+export { ActiveSessionPage } from './components/active-session-page';
 
 export {
   usePlannedSessions,
