@@ -52,6 +52,9 @@ export function ActiveSessionPage() {
   }
 
   const isEditing = draft.editingSessionId !== null;
+  // A template-started session takes the template's name; only ad-hoc sessions
+  // (started empty) get a free, editable name.
+  const isTemplateBased = draft.workoutTemplateId !== null;
 
   function handleDiscard() {
     const message = isEditing
@@ -63,12 +66,16 @@ export function ActiveSessionPage() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-4 pb-28">
       <header className="flex flex-col gap-2">
-        <Input
-          aria-label="Workout name"
-          className="h-11 text-lg font-semibold"
-          value={draft.name}
-          onChange={(e) => setName(e.target.value)}
-        />
+        {isTemplateBased ? (
+          <h1 className="flex h-11 items-center text-lg font-semibold">{draft.name}</h1>
+        ) : (
+          <Input
+            aria-label="Workout name"
+            className="h-11 text-lg font-semibold"
+            value={draft.name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        )}
         <label className="text-muted-foreground flex items-center gap-2 text-sm">
           Date
           <input
