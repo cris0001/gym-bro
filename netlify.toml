@@ -19,8 +19,15 @@
   directory = "apps/api/netlify/functions"
   node_bundler = "esbuild"
 
-# SPA fallback: serve the app shell for any non-asset path. The API needs no
-# redirect here — the function self-routes via its inline config.path = "/api/*".
+# API: rewrite every /api/* request to the function. status 200 keeps the
+# original URL in event.rawUrl so Hono matches the real path. MUST come before the
+# SPA fallback below — the first matching redirect wins.
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api"
+  status = 200
+
+# SPA fallback: serve the app shell for any other path.
 [[redirects]]
   from = "/*"
   to = "/index.html"
