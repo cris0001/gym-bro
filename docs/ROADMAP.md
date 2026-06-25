@@ -181,7 +181,7 @@ stage).
 
 ---
 
-### Stage 6 — Calendar + workout sessions
+### Stage 6 — Calendar + workout sessions ✅ COMPLETE
 
 The heart of the app. Mobile-optimized active workout view
 (must work one-handed).
