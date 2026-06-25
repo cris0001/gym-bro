@@ -1,8 +1,10 @@
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
-// Work factor for bcrypt. 12 is the common 2026 baseline: meaningfully harder
-// to brute-force than the default 10, with login latency that is irrelevant for
-// a single-user app.
+// bcryptjs (pure JS) instead of native bcrypt so the API can run on a serverless
+// Netlify Function (no native binaries). The API and hash format are identical
+// and cross-compatible. Work factor 12 is the common 2026 baseline: meaningfully
+// harder to brute-force than the default 10, with login latency that is
+// irrelevant for a single-user app (slightly slower in pure JS on a cold start).
 const BCRYPT_COST = 12;
 
 // Hash a plaintext password for storage. bcrypt embeds the salt and cost in the

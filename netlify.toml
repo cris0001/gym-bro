@@ -1,0 +1,27 @@
+# Netlify deployment config for the gym-bro monorepo.
+# Frontend (apps/web) ships as a static SPA; the backend (apps/api) runs as a
+# single Netlify Function over the Hono app. Database stays on Neon (pooled).
+
+[build]
+  # Only the SPA needs a build step. The function and its TS imports (Hono app +
+  # @gym-bro/shared) are bundled by Netlify's esbuild at deploy time, and
+  # @gym-bro/shared has no build (it exports its TS source directly).
+  command = "pnpm --filter @gym-bro/web build"
+  publish = "apps/web/dist"
+
+[build.environment]
+  # pnpm comes from the repo's package.json "packageManager" field (pnpm@11.6.0)
+  # via Corepack, so we don't pin PNPM_VERSION here (pinning 9 would mismatch the
+  # pnpm-11 lockfile).
+  NODE_VERSION = "22"
+
+[functions]
+  directory = "apps/api/netlify/functions"
+  node_bundler = "esbuild"
+
+# SPA fallback: serve the app shell for any non-asset path. The API needs no
+# redirect here — the function self-routes via its inline config.path = "/api/*".
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
