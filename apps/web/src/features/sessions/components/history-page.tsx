@@ -1,33 +1,64 @@
 import { Link } from '@tanstack/react-router';
-import { format, parseISO } from 'date-fns';
+import { addWeeks, format, parseISO, subWeeks } from 'date-fns';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 
-import { useWorkoutSessions } from '../hooks/use-workout-sessions';
+import { useWorkoutsByWeek, weekRange } from '../hooks/use-workouts-by-week';
 
-const PAGE_SIZE = 20;
-
-// Workout history: a paginated list of finished sessions, newest first (the API
-// orders by performed date). Each row links to the detail view. Paging is
-// offset-based; keepPreviousData on the query avoids flicker between pages.
+// Workout history, browsed a week at a time. The week's sessions are listed
+// chronologically (Mon→Sun); each links to the detail view. Prev/next move one
+// week; Today jumps back to the current week.
 export function HistoryPage() {
-  const [offset, setOffset] = useState(0);
-  const { data, isLoading } = useWorkoutSessions(PAGE_SIZE, offset);
+  const [cursor, setCursor] = useState(() => new Date());
+  const { from, to } = weekRange(cursor);
+  const { data, isLoading } = useWorkoutsByWeek(from, to);
 
-  const items = data?.items ?? [];
-  const total = data?.total ?? 0;
-  const hasPrev = offset > 0;
-  const hasNext = offset + PAGE_SIZE < total;
+  const items = [...(data?.items ?? [])].sort((a, b) =>
+    a.performedDate.localeCompare(b.performedDate),
+  );
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-4">
       <h1 className="text-2xl font-bold">History</h1>
 
+      <div className="flex items-center justify-between gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Previous week"
+          onClick={() => setCursor((c) => subWeeks(c, 1))}
+        >
+          <ChevronLeft className="size-4" />
+        </Button>
+        <div className="flex flex-col items-center">
+          <span className="text-sm font-medium">
+            {format(parseISO(from), 'MMM d')} – {format(parseISO(to), 'MMM d')}
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-auto py-0 text-xs"
+            onClick={() => setCursor(new Date())}
+          >
+            Today
+          </Button>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Next week"
+          onClick={() => setCursor((c) => addWeeks(c, 1))}
+        >
+          <ChevronRight className="size-4" />
+        </Button>
+      </div>
+
       {isLoading ? (
         <p className="text-muted-foreground text-sm">Loading…</p>
       ) : items.length === 0 ? (
-        <p className="text-muted-foreground text-sm">No workouts logged yet.</p>
+        <p className="text-muted-foreground text-sm">No workouts this week.</p>
       ) : (
         <ul className="flex flex-col gap-2">
           {items.map((session) => (
@@ -46,7 +77,7 @@ export function HistoryPage() {
                   )}
                 </div>
                 <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-2 text-xs">
-                  <span>{format(parseISO(session.performedDate), 'EEE, MMM d, yyyy')}</span>
+                  <span>{format(parseISO(session.performedDate), 'EEE, MMM d')}</span>
                   {session.durationMinutes !== null && <span>· {session.durationMinutes} min</span>}
                   {session.sessionType === 'activity' && <span>· activity</span>}
                 </div>
@@ -67,30 +98,6 @@ export function HistoryPage() {
             </li>
           ))}
         </ul>
-      )}
-
-      {total > PAGE_SIZE && (
-        <div className="flex items-center justify-between gap-2">
-          <Button
-            variant="outline"
-            className="h-10"
-            disabled={!hasPrev}
-            onClick={() => setOffset((o) => Math.max(0, o - PAGE_SIZE))}
-          >
-            Previous
-          </Button>
-          <span className="text-muted-foreground text-xs">
-            {offset + 1}–{Math.min(offset + PAGE_SIZE, total)} of {total}
-          </span>
-          <Button
-            variant="outline"
-            className="h-10"
-            disabled={!hasNext}
-            onClick={() => setOffset((o) => o + PAGE_SIZE)}
-          >
-            Next
-          </Button>
-        </div>
       )}
     </div>
   );
