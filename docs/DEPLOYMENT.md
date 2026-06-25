@@ -4,14 +4,16 @@ The monorepo deploys to Netlify as two parts from a single site:
 
 - **Frontend** (`apps/web`) — a static SPA, built with Vite to `apps/web/dist`.
 - **Backend** (`apps/api`) — the Hono app running as **one** Netlify Function
-  (`apps/api/netlify/functions/api.mts`), which self-routes every `/api/*` request
-  via the function's inline `config.path`. No adapter — Hono's `app.fetch` is a
-  standard Web fetch handler that Netlify Functions v2 accept directly.
+  (`apps/api/netlify/functions/api.ts`, a v1 classic `handler`). A `netlify.toml`
+  redirect rewrites every `/api/*` request to the function; the handler turns the
+  Netlify event into a Web `Request` (using `event.rawUrl` to preserve the original
+  `/api/...` path so Hono matches), runs `app.fetch`, and converts the `Response`
+  back.
 - **Database** — stays on **Neon** (pooled connection). Netlify never touches it;
   migrations are run manually (see below).
 
-Because the API is served from the **same origin** as the SPA, the HttpOnly
-auth cookie works without cross-origin CORS, and no `/api` redirect is needed.
+Because the API is served from the **same origin** as the SPA (via the `/api/*`
+rewrite), the HttpOnly auth cookie works without cross-origin CORS.
 
 All of this is configured in **`netlify.toml`** at the repo root.
 
@@ -68,9 +70,9 @@ the HTTP driver can't do). The pooled endpoint suits short-lived invocations.
   `https://your-site.netlify.app/api/health` — wait, `/health` is **not** exposed
   (it's a local-dev probe). Instead confirm via the app's login/register flow, or
   any `/api/...` route returning the JSON `{ data }` / `{ error }` envelope.
-- If `/api/*` returns 404s, double-check the function deployed and its
-  `config.path = "/api/*"` is in effect (Netlify → Functions tab shows the `api`
-  function).
+- If `/api/*` returns 404s, check the `api` function deployed (Netlify →
+  Functions tab) and that the `/api/* → /.netlify/functions/api` redirect in
+  `netlify.toml` is listed before the SPA fallback (Deploys → redirects).
 
 ## Updating env vars later
 
