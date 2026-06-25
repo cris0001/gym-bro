@@ -1,18 +1,11 @@
 import { useDroppable } from '@dnd-kit/core';
+import { Activity, Dumbbell } from 'lucide-react';
 
-import type { PlannedSessionWithTemplate, PlannedStatus } from '@gym-bro/shared';
+import type { PlannedSessionWithTemplate } from '@gym-bro/shared';
 
 import { cn } from '@/lib/utils';
 
 import { PlannedMarker } from './planned-marker';
-
-// Dot color per planned status: planned = accent, completed = green, skipped =
-// muted. Planned dots are draggable (see PlannedMarker); the rest are static.
-const STATUS_DOT: Record<PlannedStatus, string> = {
-  planned: 'bg-primary',
-  completed: 'bg-green-500',
-  skipped: 'bg-muted-foreground/50',
-};
 
 interface CalendarDayCellProps {
   iso: string;
@@ -21,13 +14,17 @@ interface CalendarDayCellProps {
   isToday: boolean;
   isSelected: boolean;
   planned: PlannedSessionWithTemplate[];
+  activityCount: number;
   tags: { id: string; color: string }[];
   onSelect: (iso: string) => void;
 }
 
+const MAX_MARKERS = 3;
+
 // One day in the month grid: a drop target (drag a planned marker here to
-// reschedule) that opens the day detail on click. Shows status dots for planned
-// sessions and colored squares for completed workouts' tags.
+// reschedule) that opens the day detail on click. Markers encode type by icon
+// (Dumbbell = training, Activity = logged activity) and status by color (accent =
+// planned/to-do, green = done); completed workouts' tags show as colored badges.
 export function CalendarDayCell({
   iso,
   dayNumber,
@@ -35,6 +32,7 @@ export function CalendarDayCell({
   isToday,
   isSelected,
   planned,
+  activityCount,
   tags,
   onSelect,
 }: CalendarDayCellProps) {
@@ -71,25 +69,25 @@ export function CalendarDayCell({
 
       <span className="flex flex-wrap items-center justify-center gap-0.5">
         {planned
-          .slice(0, 4)
+          .slice(0, MAX_MARKERS)
           .map((session) =>
             session.status === 'planned' ? (
               <PlannedMarker key={session.id} session={session} />
             ) : (
-              <span
-                key={session.id}
-                className={cn('size-1.5 rounded-full', STATUS_DOT[session.status])}
-              />
+              <Dumbbell key={session.id} className="size-4 text-green-600" />
             ),
           )}
+        {Array.from({ length: Math.min(activityCount, MAX_MARKERS) }).map((_, index) => (
+          <Activity key={`activity-${index}`} className="size-4 text-green-600" />
+        ))}
       </span>
 
       {tags.length > 0 && (
-        <span className="flex flex-wrap items-center justify-center gap-0.5">
+        <span className="flex flex-wrap items-center justify-center gap-1">
           {tags.slice(0, 4).map((tag) => (
             <span
               key={tag.id}
-              className="size-1.5 rounded-[2px]"
+              className="size-2 rounded-[3px]"
               style={{ backgroundColor: tag.color }}
             />
           ))}

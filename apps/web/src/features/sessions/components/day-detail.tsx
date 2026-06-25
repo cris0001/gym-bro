@@ -9,7 +9,6 @@ import { cn } from '@/lib/utils';
 
 import { plannedSessionsQueryOptions } from '../hooks/use-planned-sessions';
 import { useDeletePlannedSession } from '../hooks/use-delete-planned-session';
-import { useUpdatePlannedSession } from '../hooks/use-update-planned-session';
 import { useStartWorkout } from '../hooks/use-start-workout';
 import { AssignTemplateForm } from './assign-template-form';
 
@@ -40,14 +39,8 @@ export function DayDetail({ date }: DayDetailProps) {
     ...plannedSessionsQueryOptions(date, date),
     enabled: date !== '',
   });
-  const updateMutation = useUpdatePlannedSession();
   const deleteMutation = useDeletePlannedSession();
   const { startFromTemplate } = useStartWorkout();
-
-  function toggleSkip(id: string, status: PlannedStatus) {
-    const next: PlannedStatus = status === 'skipped' ? 'planned' : 'skipped';
-    updateMutation.mutate({ id, input: { status: next } });
-  }
 
   if (assigning) {
     return (
@@ -92,29 +85,19 @@ export function DayDetail({ date }: DayDetailProps) {
                 </Button>
               </div>
               {session.status !== 'completed' && (
-                <div className="flex gap-2">
-                  <Button
-                    className="h-10 flex-1"
-                    onClick={() =>
-                      startFromTemplate({
-                        templateId: session.template.id,
-                        templateName: session.template.name,
-                        plannedSessionId: session.id,
-                        scheduledDate: session.scheduledDate,
-                      })
-                    }
-                  >
-                    Start session
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="h-10"
-                    onClick={() => toggleSkip(session.id, session.status)}
-                    disabled={updateMutation.isPending}
-                  >
-                    {session.status === 'skipped' ? 'Unskip' : 'Skip'}
-                  </Button>
-                </div>
+                <Button
+                  className="h-10"
+                  onClick={() =>
+                    startFromTemplate({
+                      templateId: session.template.id,
+                      templateName: session.template.name,
+                      plannedSessionId: session.id,
+                      scheduledDate: session.scheduledDate,
+                    })
+                  }
+                >
+                  Start session
+                </Button>
               )}
             </li>
           ))}
