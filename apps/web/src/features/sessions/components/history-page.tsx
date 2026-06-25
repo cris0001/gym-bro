@@ -1,17 +1,19 @@
 import { Link } from '@tanstack/react-router';
 import { addWeeks, format, parseISO, subWeeks } from 'date-fns';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 
 import { useWorkoutsByWeek, weekRange } from '../hooks/use-workouts-by-week';
+import { ActivityFormSheet } from './activity-form-sheet';
 
 // Workout history, browsed a week at a time. The week's sessions are listed
 // chronologically (Mon→Sun); each links to the detail view. Prev/next move one
 // week; Today jumps back to the current week.
 export function HistoryPage() {
   const [cursor, setCursor] = useState(() => new Date());
+  const [activityOpen, setActivityOpen] = useState(false);
   const { from, to } = weekRange(cursor);
   const { data, isLoading } = useWorkoutsByWeek(from, to);
 
@@ -21,7 +23,13 @@ export function HistoryPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-4">
-      <h1 className="text-2xl font-bold">History</h1>
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="text-2xl font-bold">History</h1>
+        <Button variant="outline" className="h-9" onClick={() => setActivityOpen(true)}>
+          <Plus className="size-4" />
+          Activity
+        </Button>
+      </div>
 
       <div className="flex items-center justify-between gap-2">
         <Button
@@ -99,6 +107,8 @@ export function HistoryPage() {
           ))}
         </ul>
       )}
+
+      <ActivityFormSheet open={activityOpen} onClose={() => setActivityOpen(false)} />
     </div>
   );
 }
