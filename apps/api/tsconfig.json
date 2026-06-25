@@ -8,5 +8,5 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "vitest.config.ts", "drizzle.config.ts"]
+  "include": ["src", "netlify", "vitest.config.ts", "drizzle.config.ts"]
 }
