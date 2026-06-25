@@ -10,12 +10,13 @@ import { useExerciseUiStore } from '../stores/exercise-ui.store';
 interface ExerciseListProps {
   // null = all categories.
   category: ExerciseCategory | null;
+  search: string;
 }
 
 // The exercise library list: read state via TanStack Query (filtered by the
-// page's category), edit through the UI store's Sheet, delete with a confirm. Add
-// is owned by the page header.
-export function ExerciseList({ category }: ExerciseListProps) {
+// page's category), then name-filtered client-side by the search box. Edit through
+// the UI store's Sheet, delete with a confirm. Add is owned by the page header.
+export function ExerciseList({ category, search }: ExerciseListProps) {
   const { data: exercises, isPending, isError, error } = useExercises(category ?? undefined);
   const openEdit = useExerciseUiStore((s) => s.openEdit);
   const remove = useDeleteExercise();
@@ -48,9 +49,16 @@ export function ExerciseList({ category }: ExerciseListProps) {
     }
   }
 
+  const query = search.trim().toLowerCase();
+  const filtered = exercises.filter((exercise) => exercise.name.toLowerCase().includes(query));
+
+  if (filtered.length === 0) {
+    return <p className="text-muted-foreground p-4 text-sm">No exercises match your search.</p>;
+  }
+
   return (
     <ul className="divide-y">
-      {exercises.map((exercise) => (
+      {filtered.map((exercise) => (
         <li key={exercise.id} className="flex items-center gap-3 px-4 py-3">
           <div className="min-w-0 flex-1">
             <p className="truncate font-medium">{exercise.name}</p>
