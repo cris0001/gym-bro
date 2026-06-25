@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 
 import { useDeleteWorkoutSession } from '../hooks/use-delete-workout-session';
 import { useWorkoutSession } from '../hooks/use-workout-session';
+import { ExerciseHistoryPanel } from './exercise-history-panel';
 
 interface WorkoutDetailProps {
   sessionId: string;
@@ -106,6 +107,10 @@ export function WorkoutDetail({ sessionId }: WorkoutDetailProps) {
                     <span>{cell(set.rir)}</span>
                   </div>
                 ))}
+                <ExerciseHistoryPanel
+                  exerciseId={performance.exercise.id}
+                  before={session.performedDate}
+                />
               </div>
             );
           })}
