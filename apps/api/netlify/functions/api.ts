@@ -10,10 +10,13 @@ import { app } from '../../src/app';
 // auth_token cookie, so collapsing response headers is safe here.
 export const handler: Handler = async (event) => {
   const url = new URL(event.rawUrl);
+  // GET/HEAD must not carry a body — passing one (even an empty string, which is
+  // what Netlify can send) makes the Request constructor throw.
+  const hasBody = !['GET', 'HEAD'].includes(event.httpMethod.toUpperCase());
   const request = new Request(url, {
     method: event.httpMethod,
     headers: event.headers as Record<string, string>,
-    body: event.body ?? null,
+    body: hasBody ? event.body : null,
   });
 
   const response = await app.fetch(request);
