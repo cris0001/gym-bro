@@ -6,6 +6,7 @@ import type {
   createActivitySessionSchema,
   createPlannedSessionSchema,
   createStrengthSessionSchema,
+  exerciseHistoryQuerySchema,
   logPerformanceSchema,
   logSetSchema,
   setActivePlanSchema,
@@ -27,6 +28,7 @@ export type UpdatePlannedSessionInput = z.infer<typeof updatePlannedSessionSchem
 export type CalendarRangeInput = z.infer<typeof calendarRangeSchema>;
 export type SetActivePlanInput = z.infer<typeof setActivePlanSchema>;
 export type WorkoutHistoryQueryInput = z.infer<typeof workoutHistoryQuerySchema>;
+export type ExerciseHistoryQueryInput = z.infer<typeof exerciseHistoryQuerySchema>;
 
 export type SessionType = (typeof SESSION_TYPES)[number];
 export type PlannedStatus = (typeof PLANNED_STATUSES)[number];
@@ -119,4 +121,14 @@ export interface WorkoutHistoryPage {
 // A calendar entry: a planned session with its template's name for display.
 export interface PlannedSessionWithTemplate extends PlannedSession {
   template: Pick<WorkoutTemplate, 'id' | 'name'>;
+}
+
+// One past performance of an exercise for the "last time" panels (active session
+// + history detail): the session it belonged to and the sets logged. Ordered by
+// the API newest-session-first. weight is the coerced number (null = bodyweight).
+export interface ExerciseHistoryEntry {
+  sessionId: string;
+  sessionName: string;
+  performedDate: string;
+  sets: { weight: number | null; reps: number | null; rir: number | null }[];
 }

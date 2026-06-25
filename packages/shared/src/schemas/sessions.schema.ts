@@ -105,6 +105,15 @@ export const workoutHistoryQuerySchema = z.object({
   offset: z.coerce.number().int().min(0).default(0),
 });
 
+// Per-exercise history: the most recent sessions that included this exercise,
+// newest first. `before` (exclusive) scopes to sessions earlier than a date so
+// the active and detail views can exclude the current/in-progress one. Small
+// default window; the client grows `limit` for "show more".
+export const exerciseHistoryQuerySchema = z.object({
+  before: z.iso.date().optional(),
+  limit: z.coerce.number().int().min(1).max(50).default(5),
+});
+
 // --- Active plan ---
 
 // null clears the active plan.

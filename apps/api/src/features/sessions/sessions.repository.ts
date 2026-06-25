@@ -1,4 +1,4 @@
-import { and, between, count, desc, eq, inArray } from 'drizzle-orm';
+import { and, between, count, desc, eq, inArray, lt } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 
 import { db } from '../../db/client';
@@ -426,6 +426,78 @@ export async function listSetsForSession(userId: string, sessionId: string) {
     .where(and(eq(exercisePerformances.workoutSessionId, sessionId), eq(sets.userId, userId)))
     .orderBy(sets.position);
   return rows.map((row) => ({ ...row, weight: row.weight === null ? null : Number(row.weight) }));
+}
+
+// One past performance of an exercise plus its sets (weight coerced to number).
+export interface ExerciseHistoryEntryRow {
+  sessionId: string;
+  sessionName: string;
+  performedDate: string;
+  sets: { weight: number | null; reps: number | null; rir: number | null }[];
+}
+
+// The most recent performances of an exercise (matched on actualExerciseId, so
+// it follows swaps), newest session first, optionally only before a date. Each
+// matching performance becomes one entry; sets are fetched in a second query and
+// grouped, avoiding an N+1 per session.
+export async function findExerciseHistory(
+  userId: string,
+  exerciseId: string,
+  before: string | undefined,
+  limit: number,
+): Promise<ExerciseHistoryEntryRow[]> {
+  const performances = await db
+    .select({
+      performanceId: exercisePerformances.id,
+      sessionId: workoutSessions.id,
+      sessionName: workoutSessions.name,
+      performedDate: workoutSessions.performedDate,
+    })
+    .from(exercisePerformances)
+    .innerJoin(workoutSessions, eq(exercisePerformances.workoutSessionId, workoutSessions.id))
+    .where(
+      and(
+        eq(exercisePerformances.userId, userId),
+        eq(exercisePerformances.actualExerciseId, exerciseId),
+        before ? lt(workoutSessions.performedDate, before) : undefined,
+      ),
+    )
+    .orderBy(desc(workoutSessions.performedDate), desc(workoutSessions.createdAt))
+    .limit(limit);
+
+  if (performances.length === 0) {
+    return [];
+  }
+
+  const performanceIds = performances.map((row) => row.performanceId);
+  const setRows = await db
+    .select({
+      exercisePerformanceId: sets.exercisePerformanceId,
+      weight: sets.weight,
+      reps: sets.reps,
+      rir: sets.rir,
+    })
+    .from(sets)
+    .where(and(inArray(sets.exercisePerformanceId, performanceIds), eq(sets.userId, userId)))
+    .orderBy(sets.position);
+
+  const setsByPerformance = new Map<string, ExerciseHistoryEntryRow['sets']>();
+  for (const row of setRows) {
+    const list = setsByPerformance.get(row.exercisePerformanceId) ?? [];
+    list.push({
+      weight: row.weight === null ? null : Number(row.weight),
+      reps: row.reps,
+      rir: row.rir,
+    });
+    setsByPerformance.set(row.exercisePerformanceId, list);
+  }
+
+  return performances.map((row) => ({
+    sessionId: row.sessionId,
+    sessionName: row.sessionName,
+    performedDate: row.performedDate,
+    sets: setsByPerformance.get(row.performanceId) ?? [],
+  }));
 }
 
 // Update metadata; when tagIds is provided, replace the whole tag set. One

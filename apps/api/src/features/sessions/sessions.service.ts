@@ -4,6 +4,7 @@ import type {
   CreateActivitySessionInput,
   CreatePlannedSessionInput,
   CreateStrengthSessionInput,
+  ExerciseHistoryQueryInput,
   UpdatePlannedSessionInput,
   UpdateWorkoutSessionInput,
   WorkoutHistoryQueryInput,
@@ -267,6 +268,21 @@ export async function getWorkoutSession(userId: string, id: string) {
   const tags = groupTagsBySession(tagRows).get(id) ?? [];
 
   return { ...session, performances, tags };
+}
+
+// Previous performances of an exercise (for the "last time" panels). The exercise
+// must belong to the user — a missing/foreign one is a 404, since the id comes
+// from the URL, not the request body.
+export async function getExerciseHistory(
+  userId: string,
+  exerciseId: string,
+  query: ExerciseHistoryQueryInput,
+) {
+  const exercise = await trainingRepository.findExerciseById(userId, exerciseId);
+  if (!exercise) {
+    throw new NotFoundError('Exercise not found');
+  }
+  return sessionsRepository.findExerciseHistory(userId, exerciseId, query.before, query.limit);
 }
 
 // Edit metadata and/or replace the tag set. Returns the refreshed detail.
