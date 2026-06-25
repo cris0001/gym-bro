@@ -19,8 +19,10 @@ import { Route as AppSessionRouteImport } from './routes/_app/session'
 import { Route as AppExercisesRouteImport } from './routes/_app/exercises'
 import { Route as AppCalendarRouteImport } from './routes/_app/calendar'
 import { Route as AppPlansIndexRouteImport } from './routes/_app/plans/index'
+import { Route as AppHistoryIndexRouteImport } from './routes/_app/history/index'
 import { Route as AppTemplatesTemplateIdRouteImport } from './routes/_app/templates/$templateId'
 import { Route as AppPlansPlanIdRouteImport } from './routes/_app/plans/$planId'
+import { Route as AppHistorySessionIdRouteImport } from './routes/_app/history/$sessionId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/_auth',
@@ -70,6 +72,11 @@ const AppPlansIndexRoute = AppPlansIndexRouteImport.update({
   path: '/plans/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppHistoryIndexRoute = AppHistoryIndexRouteImport.update({
+  id: '/history/',
+  path: '/history/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppTemplatesTemplateIdRoute = AppTemplatesTemplateIdRouteImport.update({
   id: '/templates/$templateId',
   path: '/templates/$templateId',
@@ -78,6 +85,11 @@ const AppTemplatesTemplateIdRoute = AppTemplatesTemplateIdRouteImport.update({
 const AppPlansPlanIdRoute = AppPlansPlanIdRouteImport.update({
   id: '/plans/$planId',
   path: '/plans/$planId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHistorySessionIdRoute = AppHistorySessionIdRouteImport.update({
+  id: '/history/$sessionId',
+  path: '/history/$sessionId',
   getParentRoute: () => AppRoute,
 } as any)
 
@@ -89,8 +101,10 @@ export interface FileRoutesByFullPath {
   '/tags': typeof AppTagsRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/history/$sessionId': typeof AppHistorySessionIdRoute
   '/plans/$planId': typeof AppPlansPlanIdRoute
   '/templates/$templateId': typeof AppTemplatesTemplateIdRoute
+  '/history/': typeof AppHistoryIndexRoute
   '/plans/': typeof AppPlansIndexRoute
 }
 export interface FileRoutesByTo {
@@ -101,8 +115,10 @@ export interface FileRoutesByTo {
   '/tags': typeof AppTagsRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
+  '/history/$sessionId': typeof AppHistorySessionIdRoute
   '/plans/$planId': typeof AppPlansPlanIdRoute
   '/templates/$templateId': typeof AppTemplatesTemplateIdRoute
+  '/history': typeof AppHistoryIndexRoute
   '/plans': typeof AppPlansIndexRoute
 }
 export interface FileRoutesById {
@@ -116,8 +132,10 @@ export interface FileRoutesById {
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/history/$sessionId': typeof AppHistorySessionIdRoute
   '/_app/plans/$planId': typeof AppPlansPlanIdRoute
   '/_app/templates/$templateId': typeof AppTemplatesTemplateIdRoute
+  '/_app/history/': typeof AppHistoryIndexRoute
   '/_app/plans/': typeof AppPlansIndexRoute
 }
 export interface FileRouteTypes {
@@ -130,8 +148,10 @@ export interface FileRouteTypes {
     | '/tags'
     | '/login'
     | '/register'
+    | '/history/$sessionId'
     | '/plans/$planId'
     | '/templates/$templateId'
+    | '/history/'
     | '/plans/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -142,8 +162,10 @@ export interface FileRouteTypes {
     | '/tags'
     | '/login'
     | '/register'
+    | '/history/$sessionId'
     | '/plans/$planId'
     | '/templates/$templateId'
+    | '/history'
     | '/plans'
   id:
     | '__root__'
@@ -156,8 +178,10 @@ export interface FileRouteTypes {
     | '/_auth/login'
     | '/_auth/register'
     | '/_app/'
+    | '/_app/history/$sessionId'
     | '/_app/plans/$planId'
     | '/_app/templates/$templateId'
+    | '/_app/history/'
     | '/_app/plans/'
   fileRoutesById: FileRoutesById
 }
@@ -238,6 +262,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPlansIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/history/': {
+      id: '/_app/history/'
+      path: '/history'
+      fullPath: '/history/'
+      preLoaderRoute: typeof AppHistoryIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/templates/$templateId': {
       id: '/_app/templates/$templateId'
       path: '/templates/$templateId'
@@ -252,6 +283,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPlansPlanIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/history/$sessionId': {
+      id: '/_app/history/$sessionId'
+      path: '/history/$sessionId'
+      fullPath: '/history/$sessionId'
+      preLoaderRoute: typeof AppHistorySessionIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -261,8 +299,10 @@ interface AppRouteChildren {
   AppSessionRoute: typeof AppSessionRoute
   AppTagsRoute: typeof AppTagsRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppHistorySessionIdRoute: typeof AppHistorySessionIdRoute
   AppPlansPlanIdRoute: typeof AppPlansPlanIdRoute
   AppTemplatesTemplateIdRoute: typeof AppTemplatesTemplateIdRoute
+  AppHistoryIndexRoute: typeof AppHistoryIndexRoute
   AppPlansIndexRoute: typeof AppPlansIndexRoute
 }
 
@@ -272,8 +312,10 @@ const AppRouteChildren: AppRouteChildren = {
   AppSessionRoute: AppSessionRoute,
   AppTagsRoute: AppTagsRoute,
   AppIndexRoute: AppIndexRoute,
+  AppHistorySessionIdRoute: AppHistorySessionIdRoute,
   AppPlansPlanIdRoute: AppPlansPlanIdRoute,
   AppTemplatesTemplateIdRoute: AppTemplatesTemplateIdRoute,
+  AppHistoryIndexRoute: AppHistoryIndexRoute,
   AppPlansIndexRoute: AppPlansIndexRoute,
 }
 

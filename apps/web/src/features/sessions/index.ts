@@ -3,6 +3,8 @@
 
 export { CalendarPage } from './components/calendar-page';
 export { ActiveSessionPage } from './components/active-session-page';
+export { HistoryPage } from './components/history-page';
+export { WorkoutDetail } from './components/workout-detail';
 
 export {
   usePlannedSessions,
