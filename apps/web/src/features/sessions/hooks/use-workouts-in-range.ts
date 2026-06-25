@@ -7,8 +7,9 @@ import { listWorkoutSessions } from '../api/workout-sessions';
 import { workoutSessionKeys } from './use-workout-sessions';
 
 const ISO = 'yyyy-MM-dd';
-// A week's worth of workouts fits one page; cap generously and skip offset paging.
-const WEEK_LIMIT = 100;
+// A bounded window (a week, or a month's calendar grid) fits one page; cap
+// generously and skip offset paging.
+const RANGE_LIMIT = 100;
 
 // Inclusive Monday–Sunday bounds for the week containing the given day.
 export function weekRange(day: Date): { from: string; to: string } {
@@ -18,14 +19,14 @@ export function weekRange(day: Date): { from: string; to: string } {
   };
 }
 
-export function workoutsByWeekQueryOptions(from: string, to: string) {
+export function workoutsInRangeQueryOptions(from: string, to: string) {
   return queryOptions<WorkoutHistoryPage>({
     queryKey: workoutSessionKeys.range(from, to),
-    queryFn: () => listWorkoutSessions(WEEK_LIMIT, 0, from, to),
+    queryFn: () => listWorkoutSessions(RANGE_LIMIT, 0, from, to),
     placeholderData: keepPreviousData,
   });
 }
 
-export function useWorkoutsByWeek(from: string, to: string) {
-  return useQuery(workoutsByWeekQueryOptions(from, to));
+export function useWorkoutsInRange(from: string, to: string) {
+  return useQuery(workoutsInRangeQueryOptions(from, to));
 }
