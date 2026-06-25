@@ -99,10 +99,13 @@ export const calendarRangeSchema = z.object({
 });
 
 // Workout history pagination. Query params arrive as strings, so coerce; sane
-// defaults and an upper bound on page size.
+// defaults and an upper bound on page size. Optional from/to (inclusive) scope
+// the list to a date window — used by the week-by-week history view.
 export const workoutHistoryQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
   offset: z.coerce.number().int().min(0).default(0),
+  from: z.iso.date().optional(),
+  to: z.iso.date().optional(),
 });
 
 // Per-exercise history: the most recent sessions that included this exercise,

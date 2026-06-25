@@ -224,8 +224,14 @@ export async function createActivitySession(
 // One page of history with each session's tags attached.
 export async function listWorkoutSessions(userId: string, query: WorkoutHistoryQueryInput) {
   const [items, total] = await Promise.all([
-    sessionsRepository.listWorkoutSessionsPage(userId, query.limit, query.offset),
-    sessionsRepository.countWorkoutSessions(userId),
+    sessionsRepository.listWorkoutSessionsPage(
+      userId,
+      query.limit,
+      query.offset,
+      query.from,
+      query.to,
+    ),
+    sessionsRepository.countWorkoutSessions(userId, query.from, query.to),
   ]);
   const tagsBySession = groupTagsBySession(
     await sessionsRepository.listTagsForSessions(

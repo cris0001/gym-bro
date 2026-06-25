@@ -82,9 +82,11 @@ sessionsRoutes.get('/workout-sessions', requireAuth, async (c) => {
   const parsed = workoutHistoryQuerySchema.safeParse({
     limit: c.req.query('limit'),
     offset: c.req.query('offset'),
+    from: c.req.query('from'),
+    to: c.req.query('to'),
   });
   if (!parsed.success) {
-    throw new ValidationError('limit and offset must be valid numbers');
+    throw new ValidationError('limit, offset must be numbers and from/to valid dates');
   }
   const page = await sessionsService.listWorkoutSessions(c.get('userId'), parsed.data);
   return c.json({ data: page });
