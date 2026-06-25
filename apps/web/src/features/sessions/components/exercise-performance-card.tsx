@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { ChevronDown, ClipboardCopy, Repeat2, StickyNote, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -28,19 +28,24 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
   const setExerciseNotes = useWorkoutDraftStore((s) => s.setExerciseNotes);
   const performedDate = useWorkoutDraftStore((s) => s.draft?.performedDate);
 
-  const [expanded, setExpanded] = useState(true);
+  const queryClient = useQueryClient();
+  const [expanded, setExpanded] = useState(false);
   const [showNote, setShowNote] = useState(performance.notes !== null);
 
   const isSwapped = performance.actualExerciseId !== performance.originalExerciseId;
   const setCount = performance.sets.length;
 
-  // The most recent prior session for this exercise, for "Copy last". Fetched only
-  // while expanded (shares the limit-1 cache with the history panel).
-  const { data: history = [] } = useQuery({
-    ...exerciseHistoryQueryOptions(performance.actualExerciseId, performedDate, 1),
-    enabled: expanded,
-  });
-  const latest = history[0];
+  // Copies the most recent prior session's sets into this exercise and expands it.
+  // Fetched on demand (shares the limit-1 cache with the history panel) so we
+  // don't query every collapsed card on start.
+  async function handleCopyLast() {
+    setExpanded(true);
+    const history = await queryClient.fetchQuery(
+      exerciseHistoryQueryOptions(performance.actualExerciseId, performedDate, 1),
+    );
+    const latest = history[0];
+    if (latest) replaceSets(performance.id, latest.sets);
+  }
 
   return (
     <div className="flex flex-col rounded-lg border">
@@ -68,8 +73,9 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
           variant="ghost"
           size="icon"
           aria-label="Copy sets from last training"
-          onClick={() => latest && replaceSets(performance.id, latest.sets)}
-          disabled={!latest}
+          onClick={() => {
+            void handleCopyLast();
+          }}
         >
           <ClipboardCopy className="size-4" />
         </Button>
