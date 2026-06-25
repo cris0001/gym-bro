@@ -1,5 +1,8 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { format } from 'date-fns';
+
+import { templateQueryOptions } from '@/features/training';
 
 import { useWorkoutDraftStore } from '../stores/workout-draft.store';
 
@@ -14,10 +17,10 @@ interface StartFromTemplateInput {
 
 // Starts a workout draft and routes to the active-session view. Both entry points
 // (the calendar's "Start session" and the manual template combobox) go through
-// here so the discard-confirm and navigation live in one place. Sessions start
-// with no exercises; they're added from the (template-filtered) picker.
+// here so the discard-confirm and navigation live in one place.
 export function useStartWorkout() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const start = useWorkoutDraftStore((s) => s.start);
   const hasDraft = useWorkoutDraftStore((s) => s.draft !== null);
 
@@ -28,19 +31,27 @@ export function useStartWorkout() {
     );
   }
 
-  function startFromTemplate({
+  // Seeds the session with the template's exercises (in order), each with as many
+  // empty sets as the template's target. The user logs/adjusts from there.
+  async function startFromTemplate({
     templateId,
     templateName,
     plannedSessionId = null,
     scheduledDate,
   }: StartFromTemplateInput) {
     if (!confirmOverwrite()) return;
+    const template = await queryClient.fetchQuery(templateQueryOptions(templateId));
     start({
       name: templateName,
       performedDate: scheduledDate ?? format(new Date(), 'yyyy-MM-dd'),
       workoutTemplateId: templateId,
       plannedSessionId,
-      exercises: [],
+      exercises: template.exercises.map((templateExercise) => ({
+        exerciseId: templateExercise.exercise.id,
+        exerciseName: templateExercise.exercise.name,
+        category: templateExercise.exercise.category,
+        setCount: templateExercise.targetSets ?? 0,
+      })),
     });
     void navigate({ to: '/session' });
   }
