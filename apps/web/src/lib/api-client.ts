@@ -1,6 +1,8 @@
-// Base URL of the API. Override per environment via VITE_API_URL; defaults to
-// the local API origin (which the API's CORS allows with credentials).
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+// Base URL of the API. Empty by default → requests use relative "/api/..." paths,
+// so the browser always hits the SAME origin: the Vite dev-server proxy in dev
+// (see vite.config.ts) and the Netlify Function in production. VITE_API_URL is an
+// optional override for pointing the SPA at a remote/absolute API.
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? '';
 
 // Thrown on any non-2xx response, carrying the API's error envelope so callers
 // (and forms) can switch on `code` or render field-level `details`.

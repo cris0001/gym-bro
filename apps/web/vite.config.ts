@@ -17,7 +17,15 @@ export default defineConfig({
     },
   },
   server: {
-    // Matches the API's CORS_ORIGIN so the auth cookie flows in dev.
     port: 5173,
+    // Proxy API calls to the local backend so the browser uses same-origin,
+    // relative "/api/..." URLs in dev — mirroring production on Netlify, where
+    // the same paths hit the Netlify Function. Keeps the auth cookie same-origin.
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
   },
 });
