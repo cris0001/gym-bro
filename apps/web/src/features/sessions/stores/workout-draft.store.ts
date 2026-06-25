@@ -79,6 +79,7 @@ interface WorkoutDraftState {
   ) => void;
   addEmptySet: (performanceId: string) => void;
   copyLastSet: (performanceId: string) => void;
+  replaceSets: (performanceId: string, sets: Omit<DraftSet, 'id'>[]) => void;
   updateSet: (performanceId: string, setId: string, patch: Partial<Omit<DraftSet, 'id'>>) => void;
   removeSet: (performanceId: string, setId: string) => void;
   setExerciseNotes: (performanceId: string, notes: string | null) => void;
@@ -249,6 +250,25 @@ export const useWorkoutDraftStore = create<WorkoutDraftState>()(
                     : emptySet();
                   return { ...p, sets: [...p.sets, next] };
                 }),
+              }
+            : s,
+        ),
+
+      // Replaces a performance's sets wholesale (e.g. prefilled from last
+      // training); each gets a fresh client id so they're independently editable.
+      replaceSets: (performanceId, sets) =>
+        set((s) =>
+          s.draft
+            ? {
+                draft: mapPerformance(s.draft, performanceId, (p) => ({
+                  ...p,
+                  sets: sets.map((set_) => ({
+                    id: crypto.randomUUID(),
+                    weight: set_.weight,
+                    reps: set_.reps,
+                    rir: set_.rir,
+                  })),
+                })),
               }
             : s,
         ),

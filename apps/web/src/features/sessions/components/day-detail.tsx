@@ -87,14 +87,14 @@ export function DayDetail({ date }: DayDetailProps) {
               {session.status !== 'completed' && (
                 <Button
                   className="h-10"
-                  onClick={() =>
-                    startFromTemplate({
+                  onClick={() => {
+                    void startFromTemplate({
                       templateId: session.template.id,
                       templateName: session.template.name,
                       plannedSessionId: session.id,
                       scheduledDate: session.scheduledDate,
-                    })
-                  }
+                    });
+                  }}
                 >
                   Start session
                 </Button>

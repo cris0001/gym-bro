@@ -35,9 +35,9 @@ export function ActiveSessionPage() {
           Pick a template, or begin an empty session and add exercises as you go.
         </p>
         <TemplateCombobox
-          onSelect={(template) =>
-            startFromTemplate({ templateId: template.id, templateName: template.name })
-          }
+          onSelect={(template) => {
+            void startFromTemplate({ templateId: template.id, templateName: template.name });
+          }}
         />
         <div className="text-muted-foreground flex items-center gap-3 text-xs">
           <span className="bg-border h-px flex-1" />
