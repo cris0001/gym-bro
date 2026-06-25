@@ -31,8 +31,8 @@ export function useStartWorkout() {
     );
   }
 
-  // Seeds the session with the template's exercises (in order), each with as many
-  // empty sets as the template's target. The user logs/adjusts from there.
+  // Seeds the session with the template's exercises (in order), each with a single
+  // empty set; more are added via "Add set" / "Copy last" / copy-from-history.
   async function startFromTemplate({
     templateId,
     templateName,
@@ -50,7 +50,7 @@ export function useStartWorkout() {
         exerciseId: templateExercise.exercise.id,
         exerciseName: templateExercise.exercise.name,
         category: templateExercise.exercise.category,
-        setCount: templateExercise.targetSets ?? 0,
+        setCount: 1,
       })),
     });
     void navigate({ to: '/session' });
