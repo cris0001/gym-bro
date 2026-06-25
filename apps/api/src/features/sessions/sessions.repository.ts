@@ -545,6 +545,87 @@ export async function updateWorkoutSession(
   });
 }
 
+interface ReplaceStrengthSessionData {
+  userId: string;
+  id: string;
+  name: string;
+  performedDate: string;
+  durationMinutes: number | null;
+  rating: number | null;
+  notes: string | null;
+  performances: PerformanceInput[];
+  tagIds: string[];
+}
+
+// Edit a finished strength workout: update metadata and fully replace its
+// performances/sets/tags in one transaction. The template/planned links are left
+// untouched. Returns undefined if the session isn't the user's.
+export async function replaceStrengthSession(
+  data: ReplaceStrengthSessionData,
+): Promise<WorkoutSession | undefined> {
+  return db.transaction(async (tx) => {
+    const [session] = await tx
+      .update(workoutSessions)
+      .set({
+        name: data.name,
+        performedDate: data.performedDate,
+        durationMinutes: data.durationMinutes,
+        rating: data.rating,
+        notes: data.notes,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(workoutSessions.id, data.id), eq(workoutSessions.userId, data.userId)))
+      .returning();
+    if (!session) {
+      return undefined;
+    }
+
+    // Dropping the performances cascade-deletes their sets; then re-insert.
+    await tx.delete(exercisePerformances).where(eq(exercisePerformances.workoutSessionId, data.id));
+    for (const [position, performance] of data.performances.entries()) {
+      const [perfRow] = await tx
+        .insert(exercisePerformances)
+        .values({
+          workoutSessionId: data.id,
+          userId: data.userId,
+          originalExerciseId: performance.originalExerciseId,
+          actualExerciseId: performance.actualExerciseId,
+          notes: performance.notes,
+          position,
+        })
+        .returning();
+      if (!perfRow) {
+        throw new Error('Exercise performance insert returned no row');
+      }
+      if (performance.sets.length > 0) {
+        await tx.insert(sets).values(
+          performance.sets.map((set, setPosition) => ({
+            exercisePerformanceId: perfRow.id,
+            userId: data.userId,
+            position: setPosition,
+            weight: set.weight === null ? null : set.weight.toString(),
+            reps: set.reps,
+            rir: set.rir,
+          })),
+        );
+      }
+    }
+
+    await tx.delete(workoutSessionTags).where(eq(workoutSessionTags.workoutSessionId, data.id));
+    if (data.tagIds.length > 0) {
+      await tx.insert(workoutSessionTags).values(
+        data.tagIds.map((workoutTagId) => ({
+          workoutSessionId: data.id,
+          workoutTagId,
+          userId: data.userId,
+        })),
+      );
+    }
+
+    return session;
+  });
+}
+
 // Hard delete; cascades to performances, sets, and tag links.
 export async function deleteWorkoutSession(
   userId: string,

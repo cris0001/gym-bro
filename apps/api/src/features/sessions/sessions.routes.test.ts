@@ -444,6 +444,53 @@ describe('workout session routes', () => {
 
     expect(res.status).toBe(404);
   });
+
+  it('PUT /api/workout-sessions/:id replaces the graph and returns the refreshed detail', async () => {
+    repo.findWorkoutSessionById.mockResolvedValue(fakeWorkoutSession({ name: 'Edited' }));
+    trainingRepo.findExerciseById.mockResolvedValue(fakeExercise());
+    repo.replaceStrengthSession.mockResolvedValue(fakeWorkoutSession({ name: 'Edited' }));
+    repo.listPerformancesForSession.mockResolvedValue([]);
+    repo.listSetsForSession.mockResolvedValue([]);
+    repo.listTagsForSessions.mockResolvedValue([]);
+
+    const res = await request('PUT', `/api/workout-sessions/${SESSION_ID}`, {
+      cookie: await authCookie(),
+      body: {
+        name: 'Edited',
+        performedDate: '2026-06-20',
+        performances: [
+          {
+            originalExerciseId: EXERCISE_ID,
+            actualExerciseId: EXERCISE_ID,
+            sets: [{ weight: 100, reps: 8 }],
+          },
+        ],
+      },
+    });
+    const body = (await res.json()) as { data: { name: string } };
+
+    expect(res.status).toBe(200);
+    expect(body.data.name).toBe('Edited');
+    expect(repo.replaceStrengthSession).toHaveBeenCalled();
+  });
+
+  it('PUT /api/workout-sessions/:id the user does not own returns 404', async () => {
+    repo.findWorkoutSessionById.mockResolvedValue(undefined);
+
+    const res = await request('PUT', `/api/workout-sessions/${SESSION_ID}`, {
+      cookie: await authCookie(),
+      body: {
+        name: 'Edited',
+        performedDate: '2026-06-20',
+        performances: [
+          { originalExerciseId: EXERCISE_ID, actualExerciseId: EXERCISE_ID, sets: [{ reps: 5 }] },
+        ],
+      },
+    });
+
+    expect(res.status).toBe(404);
+    expect(repo.replaceStrengthSession).not.toHaveBeenCalled();
+  });
 });
 
 describe('exercise history route', () => {

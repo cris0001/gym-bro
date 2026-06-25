@@ -7,6 +7,7 @@ import {
   createStrengthSessionSchema,
   exerciseHistoryQuerySchema,
   updatePlannedSessionSchema,
+  updateStrengthSessionSchema,
   updateWorkoutSessionSchema,
   workoutHistoryQuerySchema,
 } from '@gym-bro/shared';
@@ -102,6 +103,15 @@ sessionsRoutes.patch('/workout-sessions/:id', requireAuth, async (c) => {
   const id = parseUuidParam(c, 'id');
   const input = await parseJson(c, updateWorkoutSessionSchema);
   const session = await sessionsService.updateWorkoutSession(c.get('userId'), id, input);
+  return c.json({ data: session });
+});
+
+// Full edit of a finished strength workout: replace metadata + exercises + sets
+// + tags. Returns the refreshed detail.
+sessionsRoutes.put('/workout-sessions/:id', requireAuth, async (c) => {
+  const id = parseUuidParam(c, 'id');
+  const input = await parseJson(c, updateStrengthSessionSchema);
+  const session = await sessionsService.replaceStrengthSession(c.get('userId'), id, input);
   return c.json({ data: session });
 });
 

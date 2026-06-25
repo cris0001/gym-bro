@@ -51,6 +51,14 @@ export const createStrengthSessionSchema = z.object({
   performances: z.array(logPerformanceSchema).min(1, 'Add at least one exercise').max(50),
 });
 
+// Editing a finished strength workout replaces its whole graph (metadata +
+// exercises + sets + tags). The template/planned links are fixed at creation, so
+// they're omitted here and preserved server-side.
+export const updateStrengthSessionSchema = createStrengthSessionSchema.omit({
+  plannedSessionId: true,
+  workoutTemplateId: true,
+});
+
 // Activity: a quick log (cardio/yoga/sports). Always ad-hoc — no template, no
 // exercises, no planned-session link.
 export const createActivitySessionSchema = z.object({

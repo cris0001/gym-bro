@@ -6,6 +6,7 @@ import type {
   CreateStrengthSessionInput,
   ExerciseHistoryQueryInput,
   UpdatePlannedSessionInput,
+  UpdateStrengthSessionInput,
   UpdateWorkoutSessionInput,
   WorkoutHistoryQueryInput,
 } from '@gym-bro/shared';
@@ -306,6 +307,51 @@ export async function updateWorkoutSession(
     await assertTagsOwned(userId, tagIds);
   }
   const updated = await sessionsRepository.updateWorkoutSession(userId, id, meta, tagIds);
+  if (!updated) {
+    throw new NotFoundError('Workout session not found');
+  }
+  return getWorkoutSession(userId, id);
+}
+
+// Edit a finished strength workout: replace its whole graph. Validates ownership
+// (404) and every exercise/tag reference (400), then returns the refreshed detail.
+export async function replaceStrengthSession(
+  userId: string,
+  id: string,
+  input: UpdateStrengthSessionInput,
+) {
+  const existing = await sessionsRepository.findWorkoutSessionById(userId, id);
+  if (!existing) {
+    throw new NotFoundError('Workout session not found');
+  }
+  const exerciseIds = new Set<string>();
+  for (const performance of input.performances) {
+    exerciseIds.add(performance.originalExerciseId);
+    exerciseIds.add(performance.actualExerciseId);
+  }
+  await assertExercisesOwned(userId, exerciseIds);
+  await assertTagsOwned(userId, input.tagIds);
+
+  const updated = await sessionsRepository.replaceStrengthSession({
+    userId,
+    id,
+    name: input.name,
+    performedDate: input.performedDate,
+    durationMinutes: input.durationMinutes ?? null,
+    rating: input.rating ?? null,
+    notes: input.notes ?? null,
+    performances: input.performances.map((performance) => ({
+      originalExerciseId: performance.originalExerciseId,
+      actualExerciseId: performance.actualExerciseId,
+      notes: performance.notes ?? null,
+      sets: performance.sets.map((set) => ({
+        weight: set.weight ?? null,
+        reps: set.reps ?? null,
+        rir: set.rir ?? null,
+      })),
+    })),
+    tagIds: input.tagIds,
+  });
   if (!updated) {
     throw new NotFoundError('Workout session not found');
   }
