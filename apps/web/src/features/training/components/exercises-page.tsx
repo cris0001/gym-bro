@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { ExerciseCategory } from '@gym-bro/shared';
 
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 import { useExerciseUiStore } from '../stores/exercise-ui.store';
 import { CategoryFilter } from './category-filter';
@@ -16,6 +17,7 @@ import { ExerciseSheet } from './exercise-sheet';
 export function ExercisesPage() {
   const openCreate = useExerciseUiStore((s) => s.openCreate);
   const [category, setCategory] = useState<ExerciseCategory | null>(null);
+  const [search, setSearch] = useState('');
 
   return (
     <div className="flex flex-col">
@@ -27,8 +29,16 @@ export function ExercisesPage() {
         </Button>
       </div>
 
+      <div className="px-4 pb-2">
+        <Input
+          placeholder="Search exercises"
+          className="h-11"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
       <CategoryFilter value={category} onChange={setCategory} />
-      <ExerciseList category={category} />
+      <ExerciseList category={category} search={search} />
       <ExerciseSheet />
     </div>
   );
