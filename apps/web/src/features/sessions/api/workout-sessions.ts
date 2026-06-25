@@ -3,6 +3,7 @@ import { apiFetch } from '@/lib/api-client';
 import type {
   CreateActivitySessionInput,
   CreateStrengthSessionInput,
+  UpdateStrengthSessionInput,
   UpdateWorkoutSessionInput,
   WorkoutHistoryPage,
   WorkoutSession,
@@ -52,6 +53,18 @@ export function updateWorkoutSession(
 ): Promise<WorkoutSessionDetail> {
   return apiFetch<WorkoutSessionDetail>(`/api/workout-sessions/${id}`, {
     method: 'PATCH',
+    body: JSON.stringify(input),
+  });
+}
+
+// PUT /api/workout-sessions/:id — full edit of a strength workout: replace its
+// metadata + exercises + sets + tags. Returns the refreshed detail.
+export function updateStrengthSession(
+  id: string,
+  input: UpdateStrengthSessionInput,
+): Promise<WorkoutSessionDetail> {
+  return apiFetch<WorkoutSessionDetail>(`/api/workout-sessions/${id}`, {
+    method: 'PUT',
     body: JSON.stringify(input),
   });
 }

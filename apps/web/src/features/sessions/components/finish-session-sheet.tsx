@@ -1,3 +1,4 @@
+import { useNavigate } from '@tanstack/react-router';
 import { Star } from 'lucide-react';
 
 import type { CreateStrengthSessionInput } from '@gym-bro/shared';
@@ -17,6 +18,7 @@ import { cn } from '@/lib/utils';
 import type { WorkoutDraft } from '../stores/workout-draft.store';
 import { useWorkoutDraftStore } from '../stores/workout-draft.store';
 import { useCreateStrengthSession } from '../hooks/use-create-strength-session';
+import { useUpdateStrengthSession } from '../hooks/use-update-strength-session';
 
 interface FinishSessionSheetProps {
   open: boolean;
@@ -68,8 +70,14 @@ export function FinishSessionSheet({ open, onClose }: FinishSessionSheetProps) {
   const setTags = useWorkoutDraftStore((s) => s.setTags);
   const discard = useWorkoutDraftStore((s) => s.discard);
   const createMutation = useCreateStrengthSession();
+  const updateMutation = useUpdateStrengthSession();
+  const navigate = useNavigate();
 
   if (!draft) return null;
+
+  const isEditing = draft.editingSessionId !== null;
+  const isPending = createMutation.isPending || updateMutation.isPending;
+  const mutationError = createMutation.error ?? updateMutation.error;
 
   const validationError =
     draft.performances.length === 0
@@ -88,19 +96,34 @@ export function FinishSessionSheet({ open, onClose }: FinishSessionSheetProps) {
 
   function handleFinish() {
     if (!draft || validationError) return;
-    createMutation.mutate(buildPayload(draft), {
-      onSuccess: () => {
-        discard();
-        onClose();
-      },
-    });
+    const payload = buildPayload(draft);
+    const editingId = draft.editingSessionId;
+    if (editingId !== null) {
+      updateMutation.mutate(
+        { id: editingId, input: payload },
+        {
+          onSuccess: () => {
+            discard();
+            onClose();
+            void navigate({ to: '/history/$sessionId', params: { sessionId: editingId } });
+          },
+        },
+      );
+    } else {
+      createMutation.mutate(payload, {
+        onSuccess: () => {
+          discard();
+          onClose();
+        },
+      });
+    }
   }
 
   return (
     <Sheet open={open} onOpenChange={(next) => !next && onClose()}>
       <SheetContent side="bottom" className="gap-0">
         <SheetHeader>
-          <SheetTitle>Finish workout</SheetTitle>
+          <SheetTitle>{isEditing ? 'Save changes' : 'Finish workout'}</SheetTitle>
           <SheetDescription>Rate it and add tags, then save.</SheetDescription>
         </SheetHeader>
 
@@ -178,16 +201,14 @@ export function FinishSessionSheet({ open, onClose }: FinishSessionSheetProps) {
           )}
 
           {validationError && <p className="text-destructive text-sm">{validationError}</p>}
-          {createMutation.isError && (
-            <p className="text-destructive text-sm">{createMutation.error.message}</p>
-          )}
+          {mutationError && <p className="text-destructive text-sm">{mutationError.message}</p>}
 
           <Button
             className="h-11"
-            disabled={validationError !== null || createMutation.isPending}
+            disabled={validationError !== null || isPending}
             onClick={handleFinish}
           >
-            {createMutation.isPending ? 'Saving…' : 'Finish workout'}
+            {isPending ? 'Saving…' : isEditing ? 'Save changes' : 'Finish workout'}
           </Button>
         </div>
       </SheetContent>

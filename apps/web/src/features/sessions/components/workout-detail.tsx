@@ -4,6 +4,7 @@ import { format, parseISO } from 'date-fns';
 import { Button } from '@/components/ui/button';
 
 import { useDeleteWorkoutSession } from '../hooks/use-delete-workout-session';
+import { useEditWorkout } from '../hooks/use-edit-workout';
 import { useWorkoutSession } from '../hooks/use-workout-session';
 import { ExerciseHistoryPanel } from './exercise-history-panel';
 
@@ -20,6 +21,7 @@ export function WorkoutDetail({ sessionId }: WorkoutDetailProps) {
   const navigate = useNavigate();
   const { data: session, isLoading, isError } = useWorkoutSession(sessionId);
   const deleteMutation = useDeleteWorkoutSession();
+  const editWorkout = useEditWorkout();
 
   function handleDelete() {
     if (window.confirm('Delete this workout? This cannot be undone.')) {
@@ -117,14 +119,21 @@ export function WorkoutDetail({ sessionId }: WorkoutDetailProps) {
         </div>
       )}
 
-      <Button
-        variant="outline"
-        className="text-destructive h-11"
-        onClick={handleDelete}
-        disabled={deleteMutation.isPending}
-      >
-        Delete workout
-      </Button>
+      <div className="flex gap-2">
+        {session.sessionType === 'strength' && (
+          <Button className="h-11 flex-1" onClick={() => editWorkout(session)}>
+            Edit
+          </Button>
+        )}
+        <Button
+          variant="outline"
+          className="text-destructive h-11 flex-1"
+          onClick={handleDelete}
+          disabled={deleteMutation.isPending}
+        >
+          Delete
+        </Button>
+      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import type { ExerciseCategory } from '@gym-bro/shared';
+import type { ExerciseCategory, WorkoutSessionDetail } from '@gym-bro/shared';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -29,6 +29,9 @@ export interface DraftPerformance {
 }
 
 export interface WorkoutDraft {
+  // Set when editing a finished session (the graph is PUT back on save); null for
+  // a brand-new workout (POSTed on finish).
+  editingSessionId: string | null;
   name: string;
   performedDate: string;
   plannedSessionId: string | null;
@@ -60,6 +63,7 @@ export interface StartDraftInput {
 interface WorkoutDraftState {
   draft: WorkoutDraft | null;
   start: (input: StartDraftInput) => void;
+  loadForEdit: (detail: WorkoutSessionDetail) => void;
   discard: () => void;
   setName: (name: string) => void;
   setPerformedDate: (performedDate: string) => void;
@@ -111,6 +115,7 @@ export const useWorkoutDraftStore = create<WorkoutDraftState>()(
       start: (input) =>
         set({
           draft: {
+            editingSessionId: null,
             name: input.name,
             performedDate: input.performedDate,
             plannedSessionId: input.plannedSessionId ?? null,
@@ -127,6 +132,35 @@ export const useWorkoutDraftStore = create<WorkoutDraftState>()(
               category: exercise.category,
               notes: null,
               sets: Array.from({ length: exercise.setCount ?? 0 }, emptySet),
+            })),
+          },
+        }),
+
+      loadForEdit: (detail) =>
+        set({
+          draft: {
+            editingSessionId: detail.id,
+            name: detail.name,
+            performedDate: detail.performedDate,
+            plannedSessionId: detail.plannedSessionId,
+            workoutTemplateId: detail.workoutTemplateId,
+            durationMinutes: detail.durationMinutes,
+            rating: detail.rating,
+            notes: detail.notes,
+            tagIds: detail.tags.map((tag) => tag.id),
+            performances: detail.performances.map((performance) => ({
+              id: crypto.randomUUID(),
+              originalExerciseId: performance.originalExercise.id,
+              actualExerciseId: performance.exercise.id,
+              exerciseName: performance.exercise.name,
+              category: performance.exercise.category,
+              notes: performance.notes,
+              sets: performance.sets.map((set) => ({
+                id: crypto.randomUUID(),
+                weight: set.weight,
+                reps: set.reps,
+                rir: set.rir,
+              })),
             })),
           },
         }),

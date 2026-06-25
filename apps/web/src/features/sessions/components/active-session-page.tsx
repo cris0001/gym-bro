@@ -51,8 +51,13 @@ export function ActiveSessionPage() {
     );
   }
 
+  const isEditing = draft.editingSessionId !== null;
+
   function handleDiscard() {
-    if (window.confirm('Discard this workout? Logged sets will be lost.')) discard();
+    const message = isEditing
+      ? "Stop editing? Your changes won't be saved."
+      : 'Discard this workout? Logged sets will be lost.';
+    if (window.confirm(message)) discard();
   }
 
   return (
@@ -93,10 +98,10 @@ export function ActiveSessionPage() {
       <div className="bg-background/95 fixed inset-x-0 bottom-0 border-t p-3 backdrop-blur">
         <div className="mx-auto flex w-full max-w-2xl gap-2">
           <Button variant="ghost" className="h-11" onClick={handleDiscard}>
-            Discard
+            {isEditing ? 'Cancel' : 'Discard'}
           </Button>
           <Button className="h-11 flex-1" onClick={() => setFinishing(true)}>
-            Finish workout
+            {isEditing ? 'Save changes' : 'Finish workout'}
           </Button>
         </div>
       </div>
