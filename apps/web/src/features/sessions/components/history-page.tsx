@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 
-import { useWorkoutsByWeek, weekRange } from '../hooks/use-workouts-by-week';
+import { useWorkoutsInRange, weekRange } from '../hooks/use-workouts-in-range';
 import { ActivityFormSheet } from './activity-form-sheet';
 
 // Workout history, browsed a week at a time. The week's sessions are listed
@@ -15,7 +15,7 @@ export function HistoryPage() {
   const [cursor, setCursor] = useState(() => new Date());
   const [activityOpen, setActivityOpen] = useState(false);
   const { from, to } = weekRange(cursor);
-  const { data, isLoading } = useWorkoutsByWeek(from, to);
+  const { data, isLoading } = useWorkoutsInRange(from, to);
 
   const items = [...(data?.items ?? [])].sort((a, b) =>
     a.performedDate.localeCompare(b.performedDate),
