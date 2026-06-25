@@ -1,15 +1,27 @@
+import { useMediaQuery } from '@/hooks/use-media-query';
+
 import { CalendarGrid } from './calendar-grid';
+import { DayDetailPanel } from './day-detail-panel';
 import { DayDetailSheet } from './day-detail-sheet';
 
-// The Calendar screen: the month grid of planned sessions plus the day-detail
-// Sheet (which reads its open state from the calendar UI store). Tapping a day
-// in the grid opens the Sheet for that date.
+// The Calendar screen. On mobile it's the month grid plus a bottom-sheet day
+// detail. On large screens it becomes a master-detail layout: the grid on the
+// left and the selected day's detail inline on the right. The sheet and the
+// panel are mutually exclusive (one mounts per breakpoint) so a tapped day
+// never opens both.
 export function CalendarPage() {
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
+
   return (
-    <div className="flex flex-col p-4">
+    <div className="mx-auto flex w-full max-w-5xl flex-col p-4">
       <h1 className="mb-4 text-2xl font-bold">Calendar</h1>
-      <CalendarGrid />
-      <DayDetailSheet />
+
+      <div className="lg:grid lg:grid-cols-[1fr_22rem] lg:gap-6">
+        <CalendarGrid />
+        {isDesktop && <DayDetailPanel />}
+      </div>
+
+      {!isDesktop && <DayDetailSheet />}
     </div>
   );
 }
