@@ -553,16 +553,27 @@ Migrations can destroy data. Rules:
 
 ## Current stage
 
-Stage 6: calendar + workout sessions (apps/api + apps/web)
-The heart of the app — planned sessions on a calendar, the active workout view
-(one-handed, mobile-first), set logging (weight × reps × optional RIR with
-"Add empty"/"Copy last set"), exercise swap (keep original + actual), finish-
-workout (star rating + tags), and workout history. New tables: planned_sessions,
-workout_sessions, exercise_performances, sets, and the workout_session_tags
-junction. An "active plan" pointer (e.g. users.active_plan_id) is a new schema
-decision to settle here. In-progress session draft persists via Zustand.
+Stage 7: training stats (apps/api + apps/web) — per-exercise progress (max weight
+and total volume over time), workout rating trend, and the stats/chart views with
+Recharts. No new tables; reads the Stage 6 workout/set data.
 
-(Stage 5 — training UI — complete: the apps/web training feature ships the full
+(Stage 6 — calendar + workout sessions — COMPLETE: shipped end to end. Backend:
+planned_sessions, workout_sessions, exercise_performances, sets,
+workout_session_tags + users.active_plan_id (migration 0003 on Neon); active-plan,
+planned-session (calendar), and workout-session modules — atomic finish-workout
+transaction, manual-session calendar back-fill, full-graph edit (PUT /workout-
+sessions/:id), per-exercise history, date-range history, delete-reverts-planned,
+and a planned→workout deep-link; 128 route tests. Frontend (apps/web): calendar
+(month grid + desktop master-detail, Dumbbell/Activity icon markers, tag badges,
+dnd-kit drag-to-reschedule), the active-session view (persisted Zustand draft,
+collapsible cards, template exercises seeded on start, set logging with decimal
+weight, swap, copy-from-last-training, per-exercise notes, finish with rating/
+tags), start-from-template (searchable combobox + calendar), workout history
+(week navigation) + detail with full edit, ad-hoc activity logging, responsive
+sidebar/bottom navigation, and a dashboard (weekly streak + next session). Plus
+exercise category filter + name search.
+
+Stage 5 — training UI — complete: the apps/web training feature ships the full
 data layer + UI for exercises, tags, plans, templates, and the template-exercise
 builder — dnd-kit reorder with optimistic updates, all server state via TanStack
 Query and local UI state via Zustand; routes /exercises, /tags, and
