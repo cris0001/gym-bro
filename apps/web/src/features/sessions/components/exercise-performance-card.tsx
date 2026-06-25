@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 
 import type { DraftPerformance } from '../stores/workout-draft.store';
 import { useWorkoutDraftStore } from '../stores/workout-draft.store';
+import { ExerciseHistoryPanel } from './exercise-history-panel';
 import { SetRow } from './set-row';
 
 interface ExercisePerformanceCardProps {
@@ -19,6 +20,7 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
   const addEmptySet = useWorkoutDraftStore((s) => s.addEmptySet);
   const copyLastSet = useWorkoutDraftStore((s) => s.copyLastSet);
   const removeExercise = useWorkoutDraftStore((s) => s.removeExercise);
+  const performedDate = useWorkoutDraftStore((s) => s.draft?.performedDate);
 
   const isSwapped = performance.actualExerciseId !== performance.originalExerciseId;
   const hasSets = performance.sets.length > 0;
@@ -47,6 +49,8 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
           </Button>
         </div>
       </div>
+
+      <ExerciseHistoryPanel exerciseId={performance.actualExerciseId} before={performedDate} />
 
       {hasSets && (
         <>
