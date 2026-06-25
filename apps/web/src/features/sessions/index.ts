@@ -1,6 +1,8 @@
 // Public interface of the sessions feature (calendar, workouts, history).
 // Everything outside this folder imports from '@/features/sessions' only.
 
+export { CalendarPage } from './components/calendar-page';
+
 export {
   usePlannedSessions,
   plannedSessionsQueryOptions,
