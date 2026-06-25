@@ -363,4 +363,11 @@ export async function deleteWorkoutSession(userId: string, id: string): Promise<
   if (!deleted) {
     throw new NotFoundError('Workout session not found');
   }
+  // If this workout fulfilled a planned session, revert that calendar entry to
+  // 'planned' so it no longer shows as done now that the workout is gone.
+  if (deleted.plannedSessionId !== null) {
+    await sessionsRepository.updatePlannedSession(userId, deleted.plannedSessionId, {
+      status: 'planned',
+    });
+  }
 }
