@@ -7,6 +7,9 @@ interface StartFromTemplateInput {
   templateId: string;
   templateName: string;
   plannedSessionId?: string | null;
+  // Defaults the performed date (e.g. the planned day from the calendar); falls
+  // back to today. Editable in the active view either way.
+  scheduledDate?: string;
 }
 
 // Starts a workout draft and routes to the active-session view. Both entry points
@@ -29,11 +32,12 @@ export function useStartWorkout() {
     templateId,
     templateName,
     plannedSessionId = null,
+    scheduledDate,
   }: StartFromTemplateInput) {
     if (!confirmOverwrite()) return;
     start({
       name: templateName,
-      performedDate: format(new Date(), 'yyyy-MM-dd'),
+      performedDate: scheduledDate ?? format(new Date(), 'yyyy-MM-dd'),
       workoutTemplateId: templateId,
       plannedSessionId,
       exercises: [],
