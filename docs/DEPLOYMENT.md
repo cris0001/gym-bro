@@ -20,19 +20,19 @@ All of this is configured in **`netlify.toml`** at the repo root.
 Set these in the Netlify dashboard (**Site configuration → Environment
 variables**). They apply at build and/or function runtime.
 
-| Variable       | Value                                                          | Used by                |
-| -------------- | -------------------------------------------------------------- | ---------------------- |
-| `DATABASE_URL` | Neon **pooled** connection string (host contains `-pooler`)    | Function (runtime)     |
-| `JWT_SECRET`   | Long random string, e.g. `openssl rand -base64 32` (≥32 chars) | Function (runtime)     |
-| `NODE_ENV`     | `production` (enables the Secure auth cookie)                  | Function (runtime)     |
-| `CORS_ORIGIN`  | Your site URL, e.g. `https://your-site.netlify.app`            | Function (runtime)     |
-| `VITE_API_URL` | **Empty string** `""` (so the SPA calls a relative `/api/...`) | Web build (build time) |
+| Variable       | Value                                                          | Used by            |
+| -------------- | -------------------------------------------------------------- | ------------------ |
+| `DATABASE_URL` | Neon **pooled** connection string (host contains `-pooler`)    | Function (runtime) |
+| `JWT_SECRET`   | Long random string, e.g. `openssl rand -base64 32` (≥32 chars) | Function (runtime) |
+| `NODE_ENV`     | `production` (enables the Secure auth cookie)                  | Function (runtime) |
+| `CORS_ORIGIN`  | Your site URL, e.g. `https://your-site.netlify.app`            | Function (runtime) |
 
 Notes:
 
-- `VITE_API_URL` is baked into the SPA **at build time** by Vite, so it must be
-  present (set to `""`) before the build runs. If it's left **unset**, the app
-  falls back to `http://localhost:3000` — wrong in production.
+- **No `VITE_API_URL` needed.** The SPA calls relative `/api/...` URLs, which hit
+  the same origin (the Netlify Function in prod, the Vite dev-server proxy in dev),
+  so there's nothing to configure. (`VITE_API_URL` exists only as an optional
+  override to point the SPA at a remote/absolute API.)
 - `PORT` is **not** needed on Netlify (functions don't bind a port).
 - pnpm comes from the repo's `packageManager` field (`pnpm@11.6.0`) via Corepack;
   `netlify.toml` only pins `NODE_VERSION = "22"`.
@@ -56,8 +56,7 @@ the HTTP driver can't do). The pooled endpoint suits short-lived invocations.
    - Publish directory: `apps/web/dist`
    - Functions directory: `apps/api/netlify/functions` (esbuild bundler)
      Leave them as detected.
-3. **Set the environment variables** from the table above (including
-   `VITE_API_URL=""`) before the first build.
+3. **Set the environment variables** from the table above before the first build.
 4. **Deploy**. Netlify installs deps with pnpm, builds the SPA, and bundles the
    function (esbuild compiles the function plus its TS imports — the Hono app and
    the `@gym-bro/shared` workspace source).
@@ -77,8 +76,7 @@ the HTTP driver can't do). The pooled endpoint suits short-lived invocations.
 
 Netlify dashboard → **Site configuration → Environment variables** → edit. Then
 **trigger a redeploy** (Deploys → Trigger deploy → _Deploy site_) so the change
-takes effect — especially `VITE_API_URL`, which is build-time and only changes the
-app after a rebuild.
+takes effect (build-time vars only apply after a rebuild).
 
 ## Database migrations
 
