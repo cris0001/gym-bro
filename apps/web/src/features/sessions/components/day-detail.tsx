@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { Link } from '@tanstack/react-router';
 import { ChevronLeft, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -97,6 +98,13 @@ export function DayDetail({ date }: DayDetailProps) {
                   }}
                 >
                   Start session
+                </Button>
+              )}
+              {session.status === 'completed' && session.workoutSessionId && (
+                <Button asChild variant="outline" className="h-10">
+                  <Link to="/history/$sessionId" params={{ sessionId: session.workoutSessionId }}>
+                    View workout
+                  </Link>
                 </Button>
               )}
             </li>

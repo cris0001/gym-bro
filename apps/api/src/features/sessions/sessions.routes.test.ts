@@ -152,7 +152,11 @@ describe('planned session routes', () => {
   });
 
   it('GET /api/planned-sessions returns the range mapped with the template name', async () => {
-    const row: PlannedSessionWithTemplateRow = { ...fakePlanned(), templateName: 'Push' };
+    const row: PlannedSessionWithTemplateRow = {
+      ...fakePlanned(),
+      templateName: 'Push',
+      workoutSessionId: null,
+    };
     repo.listPlannedSessionsByRange.mockResolvedValue([row]);
 
     const res = await request('GET', '/api/planned-sessions?from=2026-06-01&to=2026-06-30', {

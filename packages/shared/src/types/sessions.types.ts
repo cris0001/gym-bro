@@ -120,9 +120,12 @@ export interface WorkoutHistoryPage {
   total: number;
 }
 
-// A calendar entry: a planned session with its template's name for display.
+// A calendar entry: a planned session with its template's name for display, plus
+// the id of the workout that fulfilled it (null unless completed) so the calendar
+// can deep-link into history.
 export interface PlannedSessionWithTemplate extends PlannedSession {
   template: Pick<WorkoutTemplate, 'id' | 'name'>;
+  workoutSessionId: string | null;
 }
 
 // One past performance of an exercise for the "last time" panels (active session
