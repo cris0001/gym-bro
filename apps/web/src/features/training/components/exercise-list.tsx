@@ -1,16 +1,22 @@
 import { Pencil, Trash2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import type { Exercise } from '@gym-bro/shared';
+import type { Exercise, ExerciseCategory } from '@gym-bro/shared';
 
 import { useDeleteExercise } from '../hooks/use-delete-exercise';
 import { useExercises } from '../hooks/use-exercises';
 import { useExerciseUiStore } from '../stores/exercise-ui.store';
 
-// The exercise library list: read state via TanStack Query, edit through the UI
-// store's Sheet, delete with a confirm. Add is owned by the page header.
-export function ExerciseList() {
-  const { data: exercises, isPending, isError, error } = useExercises();
+interface ExerciseListProps {
+  // null = all categories.
+  category: ExerciseCategory | null;
+}
+
+// The exercise library list: read state via TanStack Query (filtered by the
+// page's category), edit through the UI store's Sheet, delete with a confirm. Add
+// is owned by the page header.
+export function ExerciseList({ category }: ExerciseListProps) {
+  const { data: exercises, isPending, isError, error } = useExercises(category ?? undefined);
   const openEdit = useExerciseUiStore((s) => s.openEdit);
   const remove = useDeleteExercise();
 
@@ -29,7 +35,9 @@ export function ExerciseList() {
   if (exercises.length === 0) {
     return (
       <p className="text-muted-foreground p-4 text-sm">
-        No exercises yet. Add your first one to start building workouts.
+        {category
+          ? `No ${category} exercises yet.`
+          : 'No exercises yet. Add your first one to start building workouts.'}
       </p>
     );
   }
