@@ -95,7 +95,7 @@ export function ActiveSessionPage() {
         Add exercise
       </Button>
 
-      <div className="bg-background/95 fixed inset-x-0 bottom-0 border-t p-3 backdrop-blur">
+      <div className="bg-background/95 fixed inset-x-0 bottom-0 z-30 border-t p-3 backdrop-blur lg:left-56">
         <div className="mx-auto flex w-full max-w-2xl gap-2">
           <Button variant="ghost" className="h-11" onClick={handleDiscard}>
             {isEditing ? 'Cancel' : 'Discard'}

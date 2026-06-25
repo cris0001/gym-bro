@@ -1,5 +1,7 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
 
+import { BottomNav } from '@/components/nav/bottom-nav';
+import { SidebarNav } from '@/components/nav/sidebar-nav';
 import { LogoutButton, OnboardingSheet, meQueryOptions } from '@/features/auth';
 
 // Protected layout. beforeLoad resolves the current user from the shared cache
@@ -18,14 +20,19 @@ export const Route = createFileRoute('/_app')({
 
 function AppLayout() {
   return (
-    <div className="flex min-h-dvh flex-col">
-      <header className="bg-background/80 sticky top-0 z-10 flex h-14 items-center justify-between border-b px-4 backdrop-blur">
-        <span className="text-lg font-bold">GM</span>
-        <LogoutButton />
-      </header>
-      <main className="flex-1">
-        <Outlet />
-      </main>
+    <div className="flex min-h-dvh flex-col lg:flex-row">
+      <SidebarNav />
+      <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
+        {/* Mobile-only top bar; on lg the sidebar carries the logo + logout. */}
+        <header className="bg-background/80 sticky top-0 z-10 flex h-14 items-center justify-between border-b px-4 backdrop-blur lg:hidden">
+          <span className="text-lg font-bold">GM</span>
+          <LogoutButton />
+        </header>
+        <main className="flex-1 pb-16 lg:pb-0">
+          <Outlet />
+        </main>
+      </div>
+      <BottomNav />
       <OnboardingSheet />
     </div>
   );
