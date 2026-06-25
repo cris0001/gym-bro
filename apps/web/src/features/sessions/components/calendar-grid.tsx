@@ -66,6 +66,17 @@ function tagsByDate(
   return map;
 }
 
+// Count of logged activities per day (sessionType 'activity') — they have no
+// planned entry, so they're marked on the calendar straight from the workouts.
+function activitiesByDate(workouts: WorkoutSessionListItem[]): Map<string, number> {
+  const map = new Map<string, number>();
+  for (const workout of workouts) {
+    if (workout.sessionType !== 'activity') continue;
+    map.set(workout.performedDate, (map.get(workout.performedDate) ?? 0) + 1);
+  }
+  return map;
+}
+
 export function CalendarGrid() {
   const viewedMonth = useCalendarUiStore((s) => s.viewedMonth);
   const selectedDate = useCalendarUiStore((s) => s.selectedDate);
@@ -85,7 +96,9 @@ export function CalendarGrid() {
   const { data: sessions = [] } = usePlannedSessions(fromIso, toIso);
   const byDate = groupByDate(sessions);
   const { data: workoutsPage } = useWorkoutsInRange(fromIso, toIso);
-  const tagMarkers = tagsByDate(workoutsPage?.items ?? []);
+  const workouts = workoutsPage?.items ?? [];
+  const tagMarkers = tagsByDate(workouts);
+  const activityCounts = activitiesByDate(workouts);
 
   const updateMutation = useUpdatePlannedSession();
   const [dragging, setDragging] = useState<PlannedSessionWithTemplate | null>(null);
@@ -156,6 +169,7 @@ export function CalendarGrid() {
                 isToday={isToday(day)}
                 isSelected={selectedDate === iso}
                 planned={byDate.get(iso) ?? []}
+                activityCount={activityCounts.get(iso) ?? 0}
                 tags={tagMarkers.get(iso) ?? []}
                 onSelect={selectDay}
               />

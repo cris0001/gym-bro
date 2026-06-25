@@ -1,5 +1,6 @@
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
+import { Dumbbell } from 'lucide-react';
 
 import type { PlannedSessionWithTemplate } from '@gym-bro/shared';
 
@@ -9,9 +10,9 @@ interface PlannedMarkerProps {
   session: PlannedSessionWithTemplate;
 }
 
-// A draggable dot for a planned (not-yet-done) session — drag it onto another day
-// to reschedule. Only 'planned' entries are draggable; completed/skipped are
-// fixed history. touch-none lets the touch sensor take over from page scrolling.
+// A draggable training marker for a planned (not-yet-done) session — drag it onto
+// another day to reschedule. The accent color marks it as still to do (done
+// sessions are green). touch-none lets the touch sensor take over from scrolling.
 export function PlannedMarker({ session }: PlannedMarkerProps) {
   const { listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: session.id,
@@ -24,10 +25,9 @@ export function PlannedMarker({ session }: PlannedMarkerProps) {
       {...listeners}
       style={{ transform: CSS.Translate.toString(transform) }}
       aria-label={`Reschedule ${session.template.name}`}
-      className={cn(
-        'bg-primary size-2.5 cursor-grab touch-none rounded-full',
-        isDragging && 'opacity-40',
-      )}
-    />
+      className={cn('cursor-grab touch-none', isDragging && 'opacity-40')}
+    >
+      <Dumbbell className="text-primary size-4" />
+    </span>
   );
 }
