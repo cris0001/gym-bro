@@ -11,6 +11,7 @@ import type {
   logSetSchema,
   setActivePlanSchema,
   updatePlannedSessionSchema,
+  updateStrengthSessionSchema,
   updateWorkoutSessionSchema,
   workoutHistoryQuerySchema,
 } from '../schemas/sessions.schema';
@@ -23,6 +24,7 @@ export type LogPerformanceInput = z.infer<typeof logPerformanceSchema>;
 export type CreateStrengthSessionInput = z.infer<typeof createStrengthSessionSchema>;
 export type CreateActivitySessionInput = z.infer<typeof createActivitySessionSchema>;
 export type UpdateWorkoutSessionInput = z.infer<typeof updateWorkoutSessionSchema>;
+export type UpdateStrengthSessionInput = z.infer<typeof updateStrengthSessionSchema>;
 export type CreatePlannedSessionInput = z.infer<typeof createPlannedSessionSchema>;
 export type UpdatePlannedSessionInput = z.infer<typeof updatePlannedSessionSchema>;
 export type CalendarRangeInput = z.infer<typeof calendarRangeSchema>;
