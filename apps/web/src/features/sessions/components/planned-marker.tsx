@@ -27,7 +27,7 @@ export function PlannedMarker({ session }: PlannedMarkerProps) {
       aria-label={`Reschedule ${session.template.name}`}
       className={cn('cursor-grab touch-none', isDragging && 'opacity-40')}
     >
-      <Dumbbell className="text-primary size-4" />
+      <Dumbbell className="text-primary size-4 rotate-45" />
     </span>
   );
 }

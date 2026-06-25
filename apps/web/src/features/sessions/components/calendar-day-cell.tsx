@@ -74,7 +74,7 @@ export function CalendarDayCell({
             session.status === 'planned' ? (
               <PlannedMarker key={session.id} session={session} />
             ) : (
-              <Dumbbell key={session.id} className="size-4 text-green-600" />
+              <Dumbbell key={session.id} className="size-4 rotate-45 text-green-600" />
             ),
           )}
         {Array.from({ length: Math.min(activityCount, MAX_MARKERS) }).map((_, index) => (
