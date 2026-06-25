@@ -325,21 +325,37 @@ export async function listWorkoutSessionsPage(
   userId: string,
   limit: number,
   offset: number,
+  from?: string,
+  to?: string,
 ): Promise<WorkoutSession[]> {
   return db
     .select()
     .from(workoutSessions)
-    .where(eq(workoutSessions.userId, userId))
+    .where(
+      and(
+        eq(workoutSessions.userId, userId),
+        from && to ? between(workoutSessions.performedDate, from, to) : undefined,
+      ),
+    )
     .orderBy(desc(workoutSessions.performedDate), desc(workoutSessions.createdAt))
     .limit(limit)
     .offset(offset);
 }
 
-export async function countWorkoutSessions(userId: string): Promise<number> {
+export async function countWorkoutSessions(
+  userId: string,
+  from?: string,
+  to?: string,
+): Promise<number> {
   const [row] = await db
     .select({ value: count() })
     .from(workoutSessions)
-    .where(eq(workoutSessions.userId, userId));
+    .where(
+      and(
+        eq(workoutSessions.userId, userId),
+        from && to ? between(workoutSessions.performedDate, from, to) : undefined,
+      ),
+    );
   return row?.value ?? 0;
 }
 
