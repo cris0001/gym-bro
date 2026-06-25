@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 
-import type { Exercise } from '@gym-bro/shared';
+import type { ExerciseCategory } from '@gym-bro/shared';
 
-import { useExercises } from '@/features/training';
+import { templateQueryOptions, useExercises } from '@/features/training';
 import { Input } from '@/components/ui/input';
 import {
   Sheet,
@@ -11,6 +12,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import { cn } from '@/lib/utils';
 
 import { useWorkoutDraftStore } from '../stores/workout-draft.store';
 import type { PickerMode } from './active-session-page';
@@ -20,18 +22,47 @@ interface ExercisePickerSheetProps {
   onClose: () => void;
 }
 
+interface PickableExercise {
+  id: string;
+  name: string;
+  category: ExerciseCategory;
+  isActive: boolean;
+}
+
 // Bottom sheet listing the exercise library to add a new exercise or swap an
-// existing one (same picker, behaviour chosen by `mode`). Inactive (soft-
-// deleted) exercises are hidden; a name filter keeps long libraries usable.
+// existing one (same picker, behaviour chosen by `mode`). When the session was
+// started from a template, the picker can scope to that template's exercises
+// (default for "add") with a toggle back to the full library; "swap" defaults to
+// the full library. Inactive (soft-deleted) exercises are always hidden.
 export function ExercisePickerSheet({ mode, onClose }: ExercisePickerSheetProps) {
   const { data: exercises = [] } = useExercises();
+  const workoutTemplateId = useWorkoutDraftStore((s) => s.draft?.workoutTemplateId ?? null);
   const addExercise = useWorkoutDraftStore((s) => s.addExercise);
   const swapExercise = useWorkoutDraftStore((s) => s.swapExercise);
+
+  const { data: template } = useQuery({
+    ...templateQueryOptions(workoutTemplateId ?? ''),
+    enabled: workoutTemplateId !== null,
+  });
+
+  const hasTemplate = workoutTemplateId !== null;
+  const [source, setSource] = useState<'template' | 'all'>('template');
   const [search, setSearch] = useState('');
 
+  // Add scopes to the template by default; swap opens on the full library.
+  useEffect(() => {
+    setSource(mode?.type === 'swap' ? 'all' : 'template');
+  }, [mode]);
+
   const isSwap = mode?.type === 'swap';
+  const effectiveSource = hasTemplate ? source : 'all';
+  const candidates: PickableExercise[] =
+    effectiveSource === 'template'
+      ? (template?.exercises ?? []).map((te) => te.exercise)
+      : exercises;
+
   const query = search.trim().toLowerCase();
-  const filtered = exercises.filter(
+  const filtered = candidates.filter(
     (exercise) => exercise.isActive && exercise.name.toLowerCase().includes(query),
   );
 
@@ -40,7 +71,7 @@ export function ExercisePickerSheet({ mode, onClose }: ExercisePickerSheetProps)
     onClose();
   }
 
-  function handleSelect(exercise: Exercise) {
+  function handleSelect(exercise: PickableExercise) {
     const payload = {
       exerciseId: exercise.id,
       exerciseName: exercise.name,
@@ -62,6 +93,24 @@ export function ExercisePickerSheet({ mode, onClose }: ExercisePickerSheetProps)
         </SheetHeader>
 
         <div className="flex max-h-[60vh] flex-col gap-3 p-4">
+          {hasTemplate && (
+            <div className="bg-muted flex gap-1 rounded-md p-1 text-sm">
+              {(['template', 'all'] as const).map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setSource(option)}
+                  className={cn(
+                    'h-9 flex-1 rounded',
+                    effectiveSource === option && 'bg-background font-medium shadow-sm',
+                  )}
+                >
+                  {option === 'template' ? 'Template' : 'All'}
+                </button>
+              ))}
+            </div>
+          )}
+
           <Input
             placeholder="Search exercises"
             className="h-11"

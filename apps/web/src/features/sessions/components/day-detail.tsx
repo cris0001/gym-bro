@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { plannedSessionsQueryOptions } from '../hooks/use-planned-sessions';
 import { useDeletePlannedSession } from '../hooks/use-delete-planned-session';
 import { useUpdatePlannedSession } from '../hooks/use-update-planned-session';
+import { useStartWorkout } from '../hooks/use-start-workout';
 import { AssignTemplateForm } from './assign-template-form';
 
 const STATUS_LABEL: Record<PlannedStatus, string> = {
@@ -41,6 +42,7 @@ export function DayDetail({ date }: DayDetailProps) {
   });
   const updateMutation = useUpdatePlannedSession();
   const deleteMutation = useDeletePlannedSession();
+  const { startFromTemplate } = useStartWorkout();
 
   function toggleSkip(id: string, status: PlannedStatus) {
     const next: PlannedStatus = status === 'skipped' ? 'planned' : 'skipped';
@@ -66,32 +68,19 @@ export function DayDetail({ date }: DayDetailProps) {
       ) : (
         <ul className="flex flex-col gap-2">
           {sessions.map((session) => (
-            <li
-              key={session.id}
-              className="flex items-center justify-between gap-2 rounded-md border p-3"
-            >
-              <div className="flex min-w-0 flex-col gap-1">
-                <span className="truncate font-medium">{session.template.name}</span>
-                <span
-                  className={cn(
-                    'w-fit rounded px-1.5 py-0.5 text-xs font-medium',
-                    STATUS_BADGE[session.status],
-                  )}
-                >
-                  {STATUS_LABEL[session.status]}
-                </span>
-              </div>
-              <div className="flex shrink-0 items-center gap-1">
-                {session.status !== 'completed' && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleSkip(session.id, session.status)}
-                    disabled={updateMutation.isPending}
+            <li key={session.id} className="flex flex-col gap-2 rounded-md border p-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex min-w-0 flex-col gap-1">
+                  <span className="truncate font-medium">{session.template.name}</span>
+                  <span
+                    className={cn(
+                      'w-fit rounded px-1.5 py-0.5 text-xs font-medium',
+                      STATUS_BADGE[session.status],
+                    )}
                   >
-                    {session.status === 'skipped' ? 'Unskip' : 'Skip'}
-                  </Button>
-                )}
+                    {STATUS_LABEL[session.status]}
+                  </span>
+                </div>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -102,6 +91,30 @@ export function DayDetail({ date }: DayDetailProps) {
                   <Trash2 className="size-4" />
                 </Button>
               </div>
+              {session.status !== 'completed' && (
+                <div className="flex gap-2">
+                  <Button
+                    className="h-10 flex-1"
+                    onClick={() =>
+                      startFromTemplate({
+                        templateId: session.template.id,
+                        templateName: session.template.name,
+                        plannedSessionId: session.id,
+                      })
+                    }
+                  >
+                    Start session
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="h-10"
+                    onClick={() => toggleSkip(session.id, session.status)}
+                    disabled={updateMutation.isPending}
+                  >
+                    {session.status === 'skipped' ? 'Unskip' : 'Skip'}
+                  </Button>
+                </div>
+              )}
             </li>
           ))}
         </ul>
