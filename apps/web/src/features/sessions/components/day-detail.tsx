@@ -100,6 +100,7 @@ export function DayDetail({ date }: DayDetailProps) {
                         templateId: session.template.id,
                         templateName: session.template.name,
                         plannedSessionId: session.id,
+                        scheduledDate: session.scheduledDate,
                       })
                     }
                   >

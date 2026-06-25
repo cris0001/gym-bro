@@ -62,6 +62,7 @@ interface WorkoutDraftState {
   start: (input: StartDraftInput) => void;
   discard: () => void;
   setName: (name: string) => void;
+  setPerformedDate: (performedDate: string) => void;
   addExercise: (input: {
     exerciseId: string;
     exerciseName: string;
@@ -133,6 +134,9 @@ export const useWorkoutDraftStore = create<WorkoutDraftState>()(
       discard: () => set({ draft: null }),
 
       setName: (name) => set((s) => (s.draft ? { draft: { ...s.draft, name } } : s)),
+
+      setPerformedDate: (performedDate) =>
+        set((s) => (s.draft ? { draft: { ...s.draft, performedDate } } : s)),
 
       addExercise: (input) =>
         set((s) =>
