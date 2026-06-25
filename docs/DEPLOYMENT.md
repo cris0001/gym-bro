@@ -4,7 +4,7 @@ The monorepo deploys to Netlify as two parts from a single site:
 
 - **Frontend** (`apps/web`) — a static SPA, built with Vite to `apps/web/dist`.
 - **Backend** (`apps/api`) — the Hono app running as **one** Netlify Function
-  (`apps/api/netlify/functions/api.ts`), which self-routes every `/api/*` request
+  (`apps/api/netlify/functions/api.mts`), which self-routes every `/api/*` request
   via the function's inline `config.path`. No adapter — Hono's `app.fetch` is a
   standard Web fetch handler that Netlify Functions v2 accept directly.
 - **Database** — stays on **Neon** (pooled connection). Netlify never touches it;
