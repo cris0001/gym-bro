@@ -445,3 +445,40 @@ describe('workout session routes', () => {
     expect(res.status).toBe(404);
   });
 });
+
+describe('exercise history route', () => {
+  it('GET /api/exercises/:exerciseId/history returns recent performances', async () => {
+    trainingRepo.findExerciseById.mockResolvedValue(fakeExercise());
+    repo.findExerciseHistory.mockResolvedValue([
+      {
+        sessionId: SESSION_ID,
+        sessionName: 'Push',
+        performedDate: '2026-06-22',
+        sets: [{ weight: 100, reps: 8, rir: 2 }],
+      },
+    ]);
+
+    const res = await request('GET', `/api/exercises/${EXERCISE_ID}/history?limit=1`, {
+      cookie: await authCookie(),
+    });
+    const body = (await res.json()) as {
+      data: { sessionName: string; sets: { weight: number | null }[] }[];
+    };
+
+    expect(res.status).toBe(200);
+    expect(body.data).toHaveLength(1);
+    expect(body.data[0]?.sessionName).toBe('Push');
+    expect(body.data[0]?.sets[0]?.weight).toBe(100);
+  });
+
+  it('GET /api/exercises/:exerciseId/history for an exercise the user does not own returns 404', async () => {
+    trainingRepo.findExerciseById.mockResolvedValue(undefined);
+
+    const res = await request('GET', `/api/exercises/${EXERCISE_ID}/history`, {
+      cookie: await authCookie(),
+    });
+
+    expect(res.status).toBe(404);
+    expect(repo.findExerciseHistory).not.toHaveBeenCalled();
+  });
+});

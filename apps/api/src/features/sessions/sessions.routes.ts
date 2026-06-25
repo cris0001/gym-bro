@@ -5,6 +5,7 @@ import {
   createActivitySessionSchema,
   createPlannedSessionSchema,
   createStrengthSessionSchema,
+  exerciseHistoryQuerySchema,
   updatePlannedSessionSchema,
   updateWorkoutSessionSchema,
   workoutHistoryQuerySchema,
@@ -106,4 +107,22 @@ sessionsRoutes.delete('/workout-sessions/:id', requireAuth, async (c) => {
   const id = parseUuidParam(c, 'id');
   await sessionsService.deleteWorkoutSession(c.get('userId'), id);
   return c.json({ data: { success: true } });
+});
+
+// Previous performances of one exercise, newest first, for the "last time" panels.
+sessionsRoutes.get('/exercises/:exerciseId/history', requireAuth, async (c) => {
+  const exerciseId = parseUuidParam(c, 'exerciseId');
+  const parsed = exerciseHistoryQuerySchema.safeParse({
+    before: c.req.query('before'),
+    limit: c.req.query('limit'),
+  });
+  if (!parsed.success) {
+    throw new ValidationError('before must be a date and limit a number');
+  }
+  const history = await sessionsService.getExerciseHistory(
+    c.get('userId'),
+    exerciseId,
+    parsed.data,
+  );
+  return c.json({ data: history });
 });
