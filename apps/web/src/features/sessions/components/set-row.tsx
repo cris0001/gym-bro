@@ -1,4 +1,5 @@
 import { X } from 'lucide-react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,11 +25,17 @@ function parseField(value: string): number | null {
 const toValue = (n: number | null): string => (n === null ? '' : String(n));
 
 // One logged set: weight × reps × optional RIR, plus remove. Inputs use numeric
-// keyboards (decimal for weight) and write straight to the draft store. The
-// header labels live in the parent card, so this is just the value row.
+// keyboards (decimal for weight) and write the parsed number to the draft store.
+// They keep their own input strings so a partial decimal like "2." survives while
+// typing; the parent keys SetRow by set.id, so prefills (copy/add) remount with
+// fresh values. Header labels live in the parent card.
 export function SetRow({ performanceId, set, index }: SetRowProps) {
   const updateSet = useWorkoutDraftStore((s) => s.updateSet);
   const removeSet = useWorkoutDraftStore((s) => s.removeSet);
+
+  const [weight, setWeight] = useState(() => toValue(set.weight));
+  const [reps, setReps] = useState(() => toValue(set.reps));
+  const [rir, setRir] = useState(() => toValue(set.rir));
 
   return (
     <div className="grid grid-cols-[1.5rem_1fr_1fr_1fr_2.25rem] items-center gap-2">
@@ -39,24 +46,33 @@ export function SetRow({ performanceId, set, index }: SetRowProps) {
         aria-label={`Set ${index + 1} weight`}
         placeholder="—"
         className="h-11 text-center"
-        value={toValue(set.weight)}
-        onChange={(e) => updateSet(performanceId, set.id, { weight: parseField(e.target.value) })}
+        value={weight}
+        onChange={(e) => {
+          setWeight(e.target.value);
+          updateSet(performanceId, set.id, { weight: parseField(e.target.value) });
+        }}
       />
       <Input
         inputMode="numeric"
         aria-label={`Set ${index + 1} reps`}
         placeholder="—"
         className="h-11 text-center"
-        value={toValue(set.reps)}
-        onChange={(e) => updateSet(performanceId, set.id, { reps: parseField(e.target.value) })}
+        value={reps}
+        onChange={(e) => {
+          setReps(e.target.value);
+          updateSet(performanceId, set.id, { reps: parseField(e.target.value) });
+        }}
       />
       <Input
         inputMode="numeric"
         aria-label={`Set ${index + 1} RIR`}
         placeholder="—"
         className="h-11 text-center"
-        value={toValue(set.rir)}
-        onChange={(e) => updateSet(performanceId, set.id, { rir: parseField(e.target.value) })}
+        value={rir}
+        onChange={(e) => {
+          setRir(e.target.value);
+          updateSet(performanceId, set.id, { rir: parseField(e.target.value) });
+        }}
       />
 
       <Button
