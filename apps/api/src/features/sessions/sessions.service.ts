@@ -41,6 +41,7 @@ function isUniqueViolation(error: unknown): boolean {
 
 interface PlannedSessionWithTemplate extends PlannedSession {
   template: Pick<WorkoutTemplate, 'id' | 'name'>;
+  workoutSessionId: string | null;
 }
 
 // Calendar entries in a date window, each with its template name.

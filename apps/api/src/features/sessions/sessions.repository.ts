@@ -26,6 +26,9 @@ interface PlannedSessionUpdate {
 // lookup per entry). scheduledDate is a 'YYYY-MM-DD' string.
 export interface PlannedSessionWithTemplateRow extends PlannedSession {
   templateName: string;
+  // The workout that fulfilled this entry (null unless completed), so the calendar
+  // can link to it in history.
+  workoutSessionId: string | null;
 }
 
 // --- Planned sessions ---
@@ -47,9 +50,17 @@ export async function listPlannedSessionsByRange(
       createdAt: plannedSessions.createdAt,
       updatedAt: plannedSessions.updatedAt,
       templateName: workoutTemplates.name,
+      workoutSessionId: workoutSessions.id,
     })
     .from(plannedSessions)
     .innerJoin(workoutTemplates, eq(plannedSessions.workoutTemplateId, workoutTemplates.id))
+    .leftJoin(
+      workoutSessions,
+      and(
+        eq(workoutSessions.plannedSessionId, plannedSessions.id),
+        eq(workoutSessions.userId, userId),
+      ),
+    )
     .where(
       and(eq(plannedSessions.userId, userId), between(plannedSessions.scheduledDate, from, to)),
     )
