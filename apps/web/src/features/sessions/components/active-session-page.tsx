@@ -1,13 +1,14 @@
-import { format } from 'date-fns';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
+import { useStartWorkout } from '../hooks/use-start-workout';
 import { useWorkoutDraftStore } from '../stores/workout-draft.store';
 import { ExercisePerformanceCard } from './exercise-performance-card';
 import { ExercisePickerSheet } from './exercise-picker-sheet';
 import { FinishSessionSheet } from './finish-session-sheet';
+import { TemplateCombobox } from './template-combobox';
 
 // Add a brand-new exercise, or swap the one at a given performance — both pick
 // from the exercise library, so one picker sheet serves both via this mode.
@@ -18,30 +19,31 @@ export type PickerMode = { type: 'add' } | { type: 'swap'; performanceId: string
 // finish/discard bar. No draft = nothing in progress. One-handed, mobile-first.
 export function ActiveSessionPage() {
   const draft = useWorkoutDraftStore((s) => s.draft);
-  const start = useWorkoutDraftStore((s) => s.start);
   const setName = useWorkoutDraftStore((s) => s.setName);
   const discard = useWorkoutDraftStore((s) => s.discard);
+  const { startFromTemplate, startEmpty } = useStartWorkout();
 
   const [picker, setPicker] = useState<PickerMode | null>(null);
   const [finishing, setFinishing] = useState(false);
 
   if (!draft) {
     return (
-      <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-4 p-8 text-center">
-        <h1 className="text-2xl font-bold">No active workout</h1>
-        <p className="text-muted-foreground text-sm">
-          Start a session from a planned day on the calendar, or begin an empty one.
+      <div className="mx-auto flex w-full max-w-sm flex-col gap-4 p-8">
+        <h1 className="text-center text-2xl font-bold">Start a workout</h1>
+        <p className="text-muted-foreground text-center text-sm">
+          Pick a template, or begin an empty session and add exercises as you go.
         </p>
-        <Button
-          className="h-11"
-          onClick={() =>
-            start({
-              name: 'Workout',
-              performedDate: format(new Date(), 'yyyy-MM-dd'),
-              exercises: [],
-            })
+        <TemplateCombobox
+          onSelect={(template) =>
+            startFromTemplate({ templateId: template.id, templateName: template.name })
           }
-        >
+        />
+        <div className="text-muted-foreground flex items-center gap-3 text-xs">
+          <span className="bg-border h-px flex-1" />
+          or
+          <span className="bg-border h-px flex-1" />
+        </div>
+        <Button variant="ghost" className="h-11" onClick={startEmpty}>
           Start empty workout
         </Button>
       </div>
