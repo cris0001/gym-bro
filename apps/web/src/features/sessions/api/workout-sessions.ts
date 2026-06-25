@@ -26,9 +26,18 @@ export function createActivitySession(input: CreateActivitySessionInput): Promis
   });
 }
 
-// GET /api/workout-sessions?limit&offset — a page of history (newest first).
-export function listWorkoutSessions(limit: number, offset: number): Promise<WorkoutHistoryPage> {
-  return apiFetch<WorkoutHistoryPage>(`/api/workout-sessions?limit=${limit}&offset=${offset}`);
+// GET /api/workout-sessions?limit&offset&from&to — a page of history (newest
+// first). Optional from/to (inclusive 'YYYY-MM-DD') scope it to a date window.
+export function listWorkoutSessions(
+  limit: number,
+  offset: number,
+  from?: string,
+  to?: string,
+): Promise<WorkoutHistoryPage> {
+  const query = new URLSearchParams({ limit: String(limit), offset: String(offset) });
+  if (from) query.set('from', from);
+  if (to) query.set('to', to);
+  return apiFetch<WorkoutHistoryPage>(`/api/workout-sessions?${query.toString()}`);
 }
 
 // GET /api/workout-sessions/:id — the full session graph.

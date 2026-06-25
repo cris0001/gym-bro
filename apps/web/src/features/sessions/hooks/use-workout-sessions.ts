@@ -11,6 +11,8 @@ export const workoutSessionKeys = {
   all: ['sessions', 'workout'] as const,
   lists: () => [...workoutSessionKeys.all, 'list'] as const,
   list: (limit: number, offset: number) => [...workoutSessionKeys.lists(), limit, offset] as const,
+  // Under lists() so create/delete invalidation refreshes the week view too.
+  range: (from: string, to: string) => [...workoutSessionKeys.lists(), 'range', from, to] as const,
   detail: (id: string) => [...workoutSessionKeys.all, 'detail', id] as const,
 };
 
