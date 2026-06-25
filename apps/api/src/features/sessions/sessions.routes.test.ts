@@ -435,6 +435,22 @@ describe('workout session routes', () => {
     expect(res.status).toBe(200);
   });
 
+  it('DELETE /api/workout-sessions/:id reverts a fulfilled planned session to planned', async () => {
+    repo.deleteWorkoutSession.mockResolvedValue(
+      fakeWorkoutSession({ plannedSessionId: PLANNED_ID }),
+    );
+    repo.updatePlannedSession.mockResolvedValue(fakePlanned({ status: 'planned' }));
+
+    const res = await request('DELETE', `/api/workout-sessions/${SESSION_ID}`, {
+      cookie: await authCookie(),
+    });
+
+    expect(res.status).toBe(200);
+    expect(repo.updatePlannedSession).toHaveBeenCalledWith('user-1', PLANNED_ID, {
+      status: 'planned',
+    });
+  });
+
   it('DELETE /api/workout-sessions/:id the user does not own returns 404', async () => {
     repo.deleteWorkoutSession.mockResolvedValue(undefined);
 
