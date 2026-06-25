@@ -1,4 +1,5 @@
-import { Repeat2, Trash2 } from 'lucide-react';
+import { Repeat2, StickyNote, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 
@@ -20,10 +21,14 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
   const addEmptySet = useWorkoutDraftStore((s) => s.addEmptySet);
   const copyLastSet = useWorkoutDraftStore((s) => s.copyLastSet);
   const removeExercise = useWorkoutDraftStore((s) => s.removeExercise);
+  const setExerciseNotes = useWorkoutDraftStore((s) => s.setExerciseNotes);
   const performedDate = useWorkoutDraftStore((s) => s.draft?.performedDate);
 
   const isSwapped = performance.actualExerciseId !== performance.originalExerciseId;
   const hasSets = performance.sets.length > 0;
+  // Reveal the note field if one's already been written; otherwise it's behind a
+  // small "Add note" toggle to keep the card uncluttered during a workout.
+  const [showNote, setShowNote] = useState(performance.notes !== null);
 
   return (
     <div className="flex flex-col gap-3 rounded-lg border p-3">
@@ -89,6 +94,24 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
           </Button>
         )}
       </div>
+
+      {showNote ? (
+        <textarea
+          aria-label="Exercise notes"
+          rows={2}
+          placeholder="Notes for this exercise…"
+          className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 rounded-lg border bg-transparent px-2.5 py-2 text-base transition-colors outline-none focus-visible:ring-3 md:text-sm"
+          value={performance.notes ?? ''}
+          onChange={(e) =>
+            setExerciseNotes(performance.id, e.target.value.length > 0 ? e.target.value : null)
+          }
+        />
+      ) : (
+        <Button variant="ghost" size="sm" className="w-fit" onClick={() => setShowNote(true)}>
+          <StickyNote className="size-4" />
+          Add note
+        </Button>
+      )}
     </div>
   );
 }
