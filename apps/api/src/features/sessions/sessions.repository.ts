@@ -153,11 +153,40 @@ export async function createStrengthSession(
   data: CreateStrengthSessionData,
 ): Promise<WorkoutSession> {
   return db.transaction(async (tx) => {
+    // A manual session that names a template but isn't tied to a planned entry
+    // back-fills the calendar: ensure a planned row exists for this day+template
+    // and mark it completed, then link the workout to it. ON CONFLICT handles a
+    // pre-existing entry for that day+template (planned/skipped → completed).
+    let plannedSessionId = data.plannedSessionId;
+    if (plannedSessionId === null && data.workoutTemplateId !== null) {
+      const [planned] = await tx
+        .insert(plannedSessions)
+        .values({
+          userId: data.userId,
+          scheduledDate: data.performedDate,
+          workoutTemplateId: data.workoutTemplateId,
+          status: 'completed',
+        })
+        .onConflictDoUpdate({
+          target: [
+            plannedSessions.userId,
+            plannedSessions.scheduledDate,
+            plannedSessions.workoutTemplateId,
+          ],
+          set: { status: 'completed', updatedAt: new Date() },
+        })
+        .returning();
+      if (!planned) {
+        throw new Error('Planned session upsert returned no row');
+      }
+      plannedSessionId = planned.id;
+    }
+
     const [session] = await tx
       .insert(workoutSessions)
       .values({
         userId: data.userId,
-        plannedSessionId: data.plannedSessionId,
+        plannedSessionId,
         workoutTemplateId: data.workoutTemplateId,
         sessionType: 'strength',
         name: data.name,
