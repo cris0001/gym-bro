@@ -211,7 +211,15 @@ The heart of the app. Mobile-optimized active workout view
 
 ---
 
-### Stage 7 — Training stats
+### Stage 7 — Training stats ✅ COMPLETE
+
+Per-exercise progress and the workout rating trend over the Stage 6 data — no new
+tables. Aggregation runs server-side in SQL (not pure JS functions): three
+read-only endpoints under `/api/stats` (logged-exercise picker, per-exercise
+progress, rating trend), each scoped by user and covered by route tests. The web
+`/stats` page stacks an exercise progress chart — one chart with a max-weight /
+volume metric toggle rather than a separate weekly-bars chart — and the
+rating-trend chart, built with Recharts and reached from primary nav.
 
 - [ ] Pure aggregation functions (max weight, total volume, etc.)
 - [ ] Backend endpoints for aggregated data
