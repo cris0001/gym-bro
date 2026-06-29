@@ -17,6 +17,7 @@ import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AppTagsRouteImport } from './routes/_app/tags'
 import { Route as AppStatsRouteImport } from './routes/_app/stats'
 import { Route as AppSessionRouteImport } from './routes/_app/session'
+import { Route as AppFoodsRouteImport } from './routes/_app/foods'
 import { Route as AppExercisesRouteImport } from './routes/_app/exercises'
 import { Route as AppCalendarRouteImport } from './routes/_app/calendar'
 import { Route as AppPlansIndexRouteImport } from './routes/_app/plans/index'
@@ -63,6 +64,11 @@ const AppSessionRoute = AppSessionRouteImport.update({
   path: '/session',
   getParentRoute: () => AppRoute,
 } as any)
+const AppFoodsRoute = AppFoodsRouteImport.update({
+  id: '/foods',
+  path: '/foods',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppExercisesRoute = AppExercisesRouteImport.update({
   id: '/exercises',
   path: '/exercises',
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/calendar': typeof AppCalendarRoute
   '/exercises': typeof AppExercisesRoute
+  '/foods': typeof AppFoodsRoute
   '/session': typeof AppSessionRoute
   '/stats': typeof AppStatsRoute
   '/tags': typeof AppTagsRoute
@@ -118,6 +125,7 @@ export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/calendar': typeof AppCalendarRoute
   '/exercises': typeof AppExercisesRoute
+  '/foods': typeof AppFoodsRoute
   '/session': typeof AppSessionRoute
   '/stats': typeof AppStatsRoute
   '/tags': typeof AppTagsRoute
@@ -135,6 +143,7 @@ export interface FileRoutesById {
   '/_auth': typeof AuthRouteWithChildren
   '/_app/calendar': typeof AppCalendarRoute
   '/_app/exercises': typeof AppExercisesRoute
+  '/_app/foods': typeof AppFoodsRoute
   '/_app/session': typeof AppSessionRoute
   '/_app/stats': typeof AppStatsRoute
   '/_app/tags': typeof AppTagsRoute
@@ -153,6 +162,7 @@ export interface FileRouteTypes {
     | '/'
     | '/calendar'
     | '/exercises'
+    | '/foods'
     | '/session'
     | '/stats'
     | '/tags'
@@ -168,6 +178,7 @@ export interface FileRouteTypes {
     | '/'
     | '/calendar'
     | '/exercises'
+    | '/foods'
     | '/session'
     | '/stats'
     | '/tags'
@@ -184,6 +195,7 @@ export interface FileRouteTypes {
     | '/_auth'
     | '/_app/calendar'
     | '/_app/exercises'
+    | '/_app/foods'
     | '/_app/session'
     | '/_app/stats'
     | '/_app/tags'
@@ -260,6 +272,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSessionRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/foods': {
+      id: '/_app/foods'
+      path: '/foods'
+      fullPath: '/foods'
+      preLoaderRoute: typeof AppFoodsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/exercises': {
       id: '/_app/exercises'
       path: '/exercises'
@@ -315,6 +334,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppCalendarRoute: typeof AppCalendarRoute
   AppExercisesRoute: typeof AppExercisesRoute
+  AppFoodsRoute: typeof AppFoodsRoute
   AppSessionRoute: typeof AppSessionRoute
   AppStatsRoute: typeof AppStatsRoute
   AppTagsRoute: typeof AppTagsRoute
@@ -329,6 +349,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppCalendarRoute: AppCalendarRoute,
   AppExercisesRoute: AppExercisesRoute,
+  AppFoodsRoute: AppFoodsRoute,
   AppSessionRoute: AppSessionRoute,
   AppStatsRoute: AppStatsRoute,
   AppTagsRoute: AppTagsRoute,

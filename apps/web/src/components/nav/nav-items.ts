@@ -1,4 +1,5 @@
 import {
+  Apple,
   CalendarDays,
   ClipboardList,
   Dumbbell,
@@ -20,7 +21,8 @@ export type NavPath =
   | '/stats'
   | '/plans'
   | '/exercises'
-  | '/tags';
+  | '/tags'
+  | '/foods';
 
 export interface NavItem {
   to: NavPath;
@@ -46,4 +48,5 @@ export const LIBRARY_NAV: NavItem[] = [
   { to: '/plans', label: 'Plans', icon: ClipboardList },
   { to: '/exercises', label: 'Exercises', icon: ListChecks },
   { to: '/tags', label: 'Tags', icon: Tag },
+  { to: '/foods', label: 'Foods', icon: Apple },
 ];
