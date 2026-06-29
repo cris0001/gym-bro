@@ -1,6 +1,7 @@
 import { and, asc, eq, ilike, inArray, sql } from 'drizzle-orm';
 
 import { db } from '../../db/client';
+import { foodLog } from '../../db/schema/food-log';
 import { foods } from '../../db/schema/foods';
 import { recipeIngredients } from '../../db/schema/recipe-ingredients';
 import { recipes } from '../../db/schema/recipes';
@@ -305,4 +306,123 @@ export async function softDeleteRecipe(userId: string, id: string) {
     .where(and(eq(recipes.id, id), eq(recipes.userId, userId), eq(recipes.isActive, true)))
     .returning();
   return row;
+}
+
+// --- Food log ---
+
+// Coerce the snapshot numeric columns to numbers; timestamps stay Date.
+function mapFoodLogRow(row: typeof foodLog.$inferSelect) {
+  return {
+    ...row,
+    quantity: Number(row.quantity),
+    kcal: Number(row.kcal),
+    proteinG: Number(row.proteinG),
+    carbsG: Number(row.carbsG),
+    fatG: Number(row.fatG),
+  };
+}
+
+export type FoodLogEntryRow = ReturnType<typeof mapFoodLogRow>;
+
+// The service computes the snapshot (itemName + macros) before calling; the
+// repository just persists the row. Exactly one of foodId / recipeId is set.
+interface FoodLogInsert {
+  userId: string;
+  loggedDate: string;
+  foodId: string | null;
+  recipeId: string | null;
+  itemName: string;
+  quantity: number;
+  kcal: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+}
+
+export async function createFoodLogEntry(data: FoodLogInsert): Promise<FoodLogEntryRow> {
+  const [row] = await db
+    .insert(foodLog)
+    .values({
+      userId: data.userId,
+      loggedDate: data.loggedDate,
+      foodId: data.foodId,
+      recipeId: data.recipeId,
+      itemName: data.itemName,
+      quantity: data.quantity.toString(),
+      kcal: data.kcal.toString(),
+      proteinG: data.proteinG.toString(),
+      carbsG: data.carbsG.toString(),
+      fatG: data.fatG.toString(),
+    })
+    .returning();
+  if (!row) {
+    throw new Error('Food log insert returned no row');
+  }
+  return mapFoodLogRow(row);
+}
+
+// A day's entries in log order.
+export async function listFoodLogByDate(userId: string, date: string): Promise<FoodLogEntryRow[]> {
+  const rows = await db
+    .select()
+    .from(foodLog)
+    .where(and(eq(foodLog.userId, userId), eq(foodLog.loggedDate, date)))
+    .orderBy(asc(foodLog.createdAt));
+  return rows.map(mapFoodLogRow);
+}
+
+export async function findFoodLogEntryById(
+  userId: string,
+  id: string,
+): Promise<FoodLogEntryRow | undefined> {
+  const [row] = await db
+    .select()
+    .from(foodLog)
+    .where(and(eq(foodLog.id, id), eq(foodLog.userId, userId)))
+    .limit(1);
+  return row ? mapFoodLogRow(row) : undefined;
+}
+
+// Re-snapshot + optionally move the entry to another day. The source reference is
+// left unchanged. loggedDate is only set when provided.
+interface FoodLogUpdate {
+  quantity: number;
+  loggedDate?: string;
+  kcal: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+}
+
+export async function updateFoodLogEntry(
+  userId: string,
+  id: string,
+  data: FoodLogUpdate,
+): Promise<FoodLogEntryRow | undefined> {
+  const [row] = await db
+    .update(foodLog)
+    .set({
+      quantity: data.quantity.toString(),
+      kcal: data.kcal.toString(),
+      proteinG: data.proteinG.toString(),
+      carbsG: data.carbsG.toString(),
+      fatG: data.fatG.toString(),
+      updatedAt: new Date(),
+      ...(data.loggedDate !== undefined ? { loggedDate: data.loggedDate } : {}),
+    })
+    .where(and(eq(foodLog.id, id), eq(foodLog.userId, userId)))
+    .returning();
+  return row ? mapFoodLogRow(row) : undefined;
+}
+
+// Hard delete — a diary entry is leaf data and fully self-contained (snapshotted).
+export async function deleteFoodLogEntry(
+  userId: string,
+  id: string,
+): Promise<FoodLogEntryRow | undefined> {
+  const [row] = await db
+    .delete(foodLog)
+    .where(and(eq(foodLog.id, id), eq(foodLog.userId, userId)))
+    .returning();
+  return row ? mapFoodLogRow(row) : undefined;
 }
