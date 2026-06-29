@@ -553,13 +553,27 @@ Migrations can destroy data. Rules:
 
 ## Current stage
 
-Stage 9: nutrition UI (apps/web) — the frontend nutrition feature over the Stage 8
-endpoints. Food dictionary (list + search + create/edit form), recipe list +
-builder with live macro preview, the daily diary (today by default, add/remove
-food or recipe, day summary vs current target with per-macro progress bars), and
-the targets settings + history views. Mobile-first; the most complex UI module.
+Stage 10: body measurements (apps/api + apps/web) — a body_measurements table
+(weight + body_fat + optional biceps/chest/waist/hip/thigh, UNIQUE per date) with
+a new migration, the body feature module (backend + frontend), a prominent
+quick-add weight form with an expandable "show more" section, the measurements
+list with edit/delete, and trend charts (per-measurement, 7-/30-day moving
+averages, stats panel). Pure moving-average functions with tests.
 
-(Stage 8 — nutrition backend — COMPLETE: foods, recipes (+ recipe_ingredients),
+(Stage 9 — nutrition UI — COMPLETE: the apps/web nutrition feature over the Stage 8
+endpoints, in four slices. Food dictionary (list + search + create/edit Sheet,
+soft-delete); recipes (list + full-page builder at /recipes/new and
+/recipes/$recipeId — per-ingredient food picker + live whole-recipe & per-serving
+macro preview); daily diary (/diary, today by default + day nav, add food-by-grams
+or recipe-by-servings via a sheet, remove entries, day summary with per-macro
+progress bars vs current target); targets (edit current + history). Macro math was
+lifted into @gym-bro/shared (scale/sum/divide/multiply, unit-tested there) so the
+builder's live preview and the backend snapshots share one source of truth. A
+shadcn Progress primitive was added. Nav: Diary in primary, Foods/Recipes/Targets
+under Library. Deferred: inline quantity-edit of a diary entry (delete + re-add
+covers it; PATCH endpoint exists).
+
+Stage 8 — nutrition backend — COMPLETE: foods, recipes (+ recipe_ingredients),
 food_log, and historical nutrition_targets tables (migration 0004 on Neon); the
 nutrition feature module (repository/service/routes) + nutrition Zod schemas/types
 in @gym-bro/shared. Food & recipe dictionaries (soft-delete, case-insensitive

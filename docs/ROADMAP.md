@@ -262,9 +262,20 @@ tests in all.
 
 ---
 
-### Stage 9 — Nutrition UI
+### Stage 9 — Nutrition UI ✅ COMPLETE
 
-Mobile-first. Most complex UI module.
+Mobile-first. Most complex UI module. The apps/web nutrition feature ships four
+vertical slices over the Stage 8 endpoints: the food dictionary (list + search +
+create/edit Sheet form, soft-delete); recipes (list + a full-page builder at
+/recipes/new and /recipes/$recipeId with a per-ingredient food picker and a live
+whole-recipe + per-serving macro preview); the daily diary (/diary, today by
+default with day navigation, add a food by grams or a recipe by servings via a
+sheet, remove entries, and a day summary with per-macro progress bars vs the
+current target); and targets (edit current + history). Macro math was lifted into
+@gym-bro/shared so the builder's live preview and the backend snapshots share one
+source of truth. Diary is in primary nav; Foods/Recipes/Targets under Library.
+(Inline quantity-edit of a diary entry was deferred — delete + re-add covers it;
+the PATCH endpoint exists for later.)
 
 - [ ] Nutrition feature module (frontend)
 - [ ] Food dictionary list view with search
