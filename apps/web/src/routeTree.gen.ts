@@ -14,6 +14,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as AppTargetsRouteImport } from './routes/_app/targets'
 import { Route as AppTagsRouteImport } from './routes/_app/tags'
 import { Route as AppStatsRouteImport } from './routes/_app/stats'
 import { Route as AppSessionRouteImport } from './routes/_app/session'
@@ -51,6 +52,11 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => AuthRoute,
+} as any)
+const AppTargetsRoute = AppTargetsRouteImport.update({
+  id: '/targets',
+  path: '/targets',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppTagsRoute = AppTagsRouteImport.update({
   id: '/tags',
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/session': typeof AppSessionRoute
   '/stats': typeof AppStatsRoute
   '/tags': typeof AppTagsRoute
+  '/targets': typeof AppTargetsRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/history/$sessionId': typeof AppHistorySessionIdRoute
@@ -150,6 +157,7 @@ export interface FileRoutesByTo {
   '/session': typeof AppSessionRoute
   '/stats': typeof AppStatsRoute
   '/tags': typeof AppTagsRoute
+  '/targets': typeof AppTargetsRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/history/$sessionId': typeof AppHistorySessionIdRoute
@@ -171,6 +179,7 @@ export interface FileRoutesById {
   '/_app/session': typeof AppSessionRoute
   '/_app/stats': typeof AppStatsRoute
   '/_app/tags': typeof AppTagsRoute
+  '/_app/targets': typeof AppTargetsRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
   '/_app/': typeof AppIndexRoute
@@ -193,6 +202,7 @@ export interface FileRouteTypes {
     | '/session'
     | '/stats'
     | '/tags'
+    | '/targets'
     | '/login'
     | '/register'
     | '/history/$sessionId'
@@ -212,6 +222,7 @@ export interface FileRouteTypes {
     | '/session'
     | '/stats'
     | '/tags'
+    | '/targets'
     | '/login'
     | '/register'
     | '/history/$sessionId'
@@ -232,6 +243,7 @@ export interface FileRouteTypes {
     | '/_app/session'
     | '/_app/stats'
     | '/_app/tags'
+    | '/_app/targets'
     | '/_auth/login'
     | '/_auth/register'
     | '/_app/'
@@ -286,6 +298,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/login'
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/_app/targets': {
+      id: '/_app/targets'
+      path: '/targets'
+      fullPath: '/targets'
+      preLoaderRoute: typeof AppTargetsRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_app/tags': {
       id: '/_app/tags'
@@ -395,6 +414,7 @@ interface AppRouteChildren {
   AppSessionRoute: typeof AppSessionRoute
   AppStatsRoute: typeof AppStatsRoute
   AppTagsRoute: typeof AppTagsRoute
+  AppTargetsRoute: typeof AppTargetsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppHistorySessionIdRoute: typeof AppHistorySessionIdRoute
   AppPlansPlanIdRoute: typeof AppPlansPlanIdRoute
@@ -413,6 +433,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSessionRoute: AppSessionRoute,
   AppStatsRoute: AppStatsRoute,
   AppTagsRoute: AppTagsRoute,
+  AppTargetsRoute: AppTargetsRoute,
   AppIndexRoute: AppIndexRoute,
   AppHistorySessionIdRoute: AppHistorySessionIdRoute,
   AppPlansPlanIdRoute: AppPlansPlanIdRoute,

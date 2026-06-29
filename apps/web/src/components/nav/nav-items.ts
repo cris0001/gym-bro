@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   ListChecks,
   Tag,
+  Target,
   TrendingUp,
   type LucideIcon,
 } from 'lucide-react';
@@ -24,7 +25,8 @@ export type NavPath =
   | '/exercises'
   | '/tags'
   | '/foods'
-  | '/recipes';
+  | '/recipes'
+  | '/targets';
 
 export interface NavItem {
   to: NavPath;
@@ -52,4 +54,5 @@ export const LIBRARY_NAV: NavItem[] = [
   { to: '/tags', label: 'Tags', icon: Tag },
   { to: '/foods', label: 'Foods', icon: Apple },
   { to: '/recipes', label: 'Recipes', icon: ChefHat },
+  { to: '/targets', label: 'Targets', icon: Target },
 ];
