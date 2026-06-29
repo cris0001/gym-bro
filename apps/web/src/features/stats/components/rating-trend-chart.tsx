@@ -11,6 +11,8 @@ import {
 
 import { useRatingTrend } from '../hooks/use-stats';
 
+import { ChartPlaceholder } from './chart-placeholder';
+
 // Rating is a fixed 1–5 scale, so the Y axis is pinned to that domain rather than
 // auto-scaling — keeps the trend comparable across time windows.
 const RATING_TICKS = [1, 2, 3, 4, 5];
@@ -19,10 +21,10 @@ export function RatingTrendChart() {
   const { data: points = [], isPending } = useRatingTrend();
 
   if (isPending) {
-    return <Placeholder>Loading…</Placeholder>;
+    return <ChartPlaceholder>Loading…</ChartPlaceholder>;
   }
   if (points.length === 0) {
-    return <Placeholder>No rated workouts yet.</Placeholder>;
+    return <ChartPlaceholder>No rated workouts yet.</ChartPlaceholder>;
   }
 
   return (
@@ -64,14 +66,6 @@ export function RatingTrendChart() {
           />
         </LineChart>
       </ResponsiveContainer>
-    </div>
-  );
-}
-
-function Placeholder({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="text-muted-foreground flex h-64 items-center justify-center text-center text-sm">
-      {children}
     </div>
   );
 }
