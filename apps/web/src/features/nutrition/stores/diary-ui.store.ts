@@ -1,15 +1,17 @@
 import { create } from 'zustand';
 
-// Local UI state for the diary's "add entry" sheet — open flag only. Server data
-// (the day's entries) stays in TanStack Query.
+import type { MealType } from '@gym-bro/shared';
+
+// Local UI state for the diary's "add entry" sheet. addMeal is the meal the sheet
+// is adding to (null = closed), preset by the section whose "+" was tapped.
 interface DiaryUiState {
-  addOpen: boolean;
-  openAdd: () => void;
+  addMeal: MealType | null;
+  openAdd: (meal: MealType) => void;
   closeAdd: () => void;
 }
 
 export const useDiaryUiStore = create<DiaryUiState>((set) => ({
-  addOpen: false,
-  openAdd: () => set({ addOpen: true }),
-  closeAdd: () => set({ addOpen: false }),
+  addMeal: null,
+  openAdd: (meal) => set({ addMeal: meal }),
+  closeAdd: () => set({ addMeal: null }),
 }));

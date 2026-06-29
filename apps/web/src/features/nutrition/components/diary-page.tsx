@@ -1,38 +1,42 @@
 import { addDays, format, parseISO } from 'date-fns';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
+import { MEAL_TYPES } from '@gym-bro/shared';
+import type { MealType } from '@gym-bro/shared';
+
 import { useDailyFoodLog } from '../hooks/use-daily-food-log';
-import { useDiaryUiStore } from '../stores/diary-ui.store';
 import { AddEntrySheet } from './add-entry-sheet';
 import { DaySummary } from './day-summary';
-import { DiaryEntryRow } from './diary-entry-row';
+import { MealSection } from './diary-meal-section';
 
 const ISO = 'yyyy-MM-dd';
 
+const MEAL_LABELS: Record<MealType, string> = {
+  breakfast: 'Breakfast',
+  second_breakfast: 'Second breakfast',
+  lunch: 'Lunch',
+  snack: 'Snack',
+  dinner: 'Dinner',
+};
+
 // The daily food diary: a day picker (today by default, no future), the day's
-// summary vs target, the logged entries, and the add-entry action.
+// summary vs target, and the five meal sections (each with its own add action).
 export function DiaryPage() {
   const today = format(new Date(), ISO);
   const [date, setDate] = useState(today);
-  const openAdd = useDiaryUiStore((s) => s.openAdd);
-  const { data, isPending } = useDailyFoodLog(date);
+  const { data } = useDailyFoodLog(date);
 
   const isToday = date === today;
   const shift = (days: number) => setDate(format(addDays(parseISO(date), days), ISO));
+  const entries = data?.entries ?? [];
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Diary</h1>
-        <Button type="button" className="h-11" onClick={openAdd}>
-          <Plus className="size-4" />
-          Add
-        </Button>
-      </div>
+      <h1 className="text-2xl font-bold">Diary</h1>
 
       <div className="flex items-center justify-between">
         <Button
@@ -71,19 +75,16 @@ export function DiaryPage() {
         </CardContent>
       </Card>
 
-      {isPending ? (
-        <p className="text-muted-foreground text-sm">Loading…</p>
-      ) : !data || data.entries.length === 0 ? (
-        <p className="text-muted-foreground text-center text-sm">
-          Nothing logged. Tap Add to log a food or recipe.
-        </p>
-      ) : (
-        <ul className="divide-y">
-          {data.entries.map((entry) => (
-            <DiaryEntryRow key={entry.id} entry={entry} />
-          ))}
-        </ul>
-      )}
+      <div className="flex flex-col gap-5">
+        {MEAL_TYPES.map((meal) => (
+          <MealSection
+            key={meal}
+            meal={meal}
+            label={MEAL_LABELS[meal]}
+            entries={entries.filter((entry) => entry.meal === meal)}
+          />
+        ))}
+      </div>
 
       <AddEntrySheet loggedDate={date} />
     </div>
