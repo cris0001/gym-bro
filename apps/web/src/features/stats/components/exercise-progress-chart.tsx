@@ -15,6 +15,8 @@ import { cn } from '@/lib/utils';
 
 import { useExerciseProgress } from '../hooks/use-stats';
 
+import { ChartPlaceholder } from './chart-placeholder';
+
 import type { ExerciseProgressPoint } from '@gym-bro/shared';
 
 type Metric = 'weight' | 'volume';
@@ -41,14 +43,18 @@ export function ExerciseProgressChart({ exerciseId }: ExerciseProgressChartProps
   const config = METRICS[metric];
 
   if (exerciseId === null) {
-    return <Placeholder>Select an exercise to see its progress.</Placeholder>;
+    return <ChartPlaceholder>Select an exercise to see its progress.</ChartPlaceholder>;
   }
   if (isPending) {
-    return <Placeholder>Loading…</Placeholder>;
+    return <ChartPlaceholder>Loading…</ChartPlaceholder>;
   }
   const hasMetricData = points.some((point) => point[config.dataKey] !== null);
   if (points.length === 0 || !hasMetricData) {
-    return <Placeholder>No {config.label.toLowerCase()} logged for this exercise yet.</Placeholder>;
+    return (
+      <ChartPlaceholder>
+        No {config.label.toLowerCase()} logged for this exercise yet.
+      </ChartPlaceholder>
+    );
   }
 
   return (
@@ -106,14 +112,6 @@ export function ExerciseProgressChart({ exerciseId }: ExerciseProgressChartProps
           </LineChart>
         </ResponsiveContainer>
       </div>
-    </div>
-  );
-}
-
-function Placeholder({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="text-muted-foreground flex h-64 items-center justify-center text-center text-sm">
-      {children}
     </div>
   );
 }
