@@ -1,7 +1,13 @@
-import type { CreateFoodInput, UpdateFoodInput } from '@gym-bro/shared';
+import type {
+  CreateFoodInput,
+  CreateRecipeInput,
+  UpdateFoodInput,
+  UpdateRecipeInput,
+} from '@gym-bro/shared';
 
-import { ConflictError, NotFoundError } from '../../lib/errors';
+import { ConflictError, NotFoundError, ValidationError } from '../../lib/errors';
 import * as nutritionRepository from './nutrition.repository';
+import { divideMacros, scaleMacros, sumMacros } from './nutrition.utils';
 
 // Business logic for the nutrition domain — ownership checks, conflict mapping,
 // macro computation. No Drizzle here. Grown per resource, foods first.
@@ -62,4 +68,123 @@ export async function deleteFood(userId: string, id: string) {
     throw new NotFoundError('Food not found');
   }
   return food;
+}
+
+// --- Recipes ---
+
+// Every ingredient must reference an active food the user owns. Validated up
+// front so a bad reference is a 400, not an FK error mid-transaction.
+async function assertIngredientFoodsExist(
+  userId: string,
+  ingredients: { foodId: string }[],
+): Promise<void> {
+  const ids = [...new Set(ingredients.map((i) => i.foodId))];
+  const found = await nutritionRepository.findActiveFoodsByIds(userId, ids);
+  if (found.length !== ids.length) {
+    throw new ValidationError('One or more ingredients reference a food that does not exist');
+  }
+}
+
+// Resolve a recipe's ingredient lines into macros (each food scaled to its
+// amount), then sum to whole-recipe totals and divide by servings — the computed
+// detail returned by the recipe read/write endpoints.
+async function buildRecipeDetail(recipe: {
+  id: string;
+  userId: string;
+  name: string;
+  servings: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}) {
+  const lines = await nutritionRepository.listRecipeIngredientsWithFood(recipe.userId, recipe.id);
+  const ingredients = lines.map((line) => ({
+    id: line.id,
+    foodId: line.foodId,
+    foodName: line.foodName,
+    amountGrams: line.amountGrams,
+    position: line.position,
+    macros: scaleMacros(line.per100g, line.amountGrams),
+  }));
+  const total = sumMacros(ingredients.map((i) => i.macros));
+  const totalGrams = ingredients.reduce((sum, i) => sum + i.amountGrams, 0);
+  return {
+    ...recipe,
+    ingredients,
+    totalGrams,
+    total,
+    perServing: divideMacros(total, recipe.servings),
+  };
+}
+
+export async function listRecipes(userId: string) {
+  const rows = await nutritionRepository.listRecipesWithTotals(userId);
+  return rows.map((row) => ({
+    id: row.id,
+    userId: row.userId,
+    name: row.name,
+    servings: row.servings,
+    isActive: row.isActive,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    totalGrams: row.totalGrams,
+    perServing: divideMacros(row.total, row.servings),
+  }));
+}
+
+export async function getRecipe(userId: string, id: string) {
+  const recipe = await nutritionRepository.findRecipeById(userId, id);
+  if (!recipe) {
+    throw new NotFoundError('Recipe not found');
+  }
+  return buildRecipeDetail(recipe);
+}
+
+export async function createRecipe(userId: string, input: CreateRecipeInput) {
+  await assertIngredientFoodsExist(userId, input.ingredients);
+  let recipe;
+  try {
+    recipe = await nutritionRepository.createRecipe({
+      userId,
+      name: input.name,
+      servings: input.servings,
+      ingredients: input.ingredients,
+    });
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      throw new ConflictError('A recipe with this name already exists');
+    }
+    throw error;
+  }
+  return buildRecipeDetail(recipe);
+}
+
+export async function updateRecipe(userId: string, id: string, input: UpdateRecipeInput) {
+  await assertIngredientFoodsExist(userId, input.ingredients);
+  let recipe;
+  try {
+    recipe = await nutritionRepository.replaceRecipe(id, {
+      userId,
+      name: input.name,
+      servings: input.servings,
+      ingredients: input.ingredients,
+    });
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      throw new ConflictError('A recipe with this name already exists');
+    }
+    throw error;
+  }
+  if (!recipe) {
+    throw new NotFoundError('Recipe not found');
+  }
+  return buildRecipeDetail(recipe);
+}
+
+export async function deleteRecipe(userId: string, id: string) {
+  const recipe = await nutritionRepository.softDeleteRecipe(userId, id);
+  if (!recipe) {
+    throw new NotFoundError('Recipe not found');
+  }
+  return recipe;
 }
