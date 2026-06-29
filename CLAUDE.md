@@ -571,7 +571,13 @@ lifted into @gym-bro/shared (scale/sum/divide/multiply, unit-tested there) so th
 builder's live preview and the backend snapshots share one source of truth. A
 shadcn Progress primitive was added. Nav: Diary in primary, Foods/Recipes/Targets
 under Library. Deferred: inline quantity-edit of a diary entry (delete + re-add
-covers it; PATCH endpoint exists).
+covers it; PATCH endpoint exists). Post-Stage-9 enhancement (migration 0005): the
+diary is split into 5 Fitatu-style meals (breakfast / second_breakfast / lunch /
+snack / dinner) via a meal_type enum + food_log.meal, each meal section with its
+own add; and a recipe can be logged by grams OR servings via a food_log_unit enum
+
+- food_log.unit (grams snapshot = total ÷ total weight × grams). MEAL_TYPES +
+  FOOD_LOG_UNITS in @gym-bro/shared.
 
 Stage 8 — nutrition backend — COMPLETE: foods, recipes (+ recipe_ingredients),
 food_log, and historical nutrition_targets tables (migration 0004 on Neon); the
