@@ -213,9 +213,11 @@ export async function createFoodLogEntry(userId: string, input: CreateFoodLogInp
     return nutritionRepository.createFoodLogEntry({
       userId,
       loggedDate: input.loggedDate,
+      meal: input.meal,
       foodId: input.foodId,
       recipeId: null,
       itemName: food.name,
+      unit: 'grams',
       quantity: input.quantity,
       ...scaleMacros(food, input.quantity),
     });
@@ -226,14 +228,19 @@ export async function createFoodLogEntry(userId: string, input: CreateFoodLogInp
     throw new ValidationError('Recipe not found');
   }
   const detail = await buildRecipeDetail(recipe);
+  // Per-serving for a servings log; per-gram (total / total weight) for a grams log.
+  const perUnit =
+    input.unit === 'servings' ? detail.perServing : divideMacros(detail.total, detail.totalGrams);
   return nutritionRepository.createFoodLogEntry({
     userId,
     loggedDate: input.loggedDate,
+    meal: input.meal,
     foodId: null,
     recipeId: input.recipeId,
     itemName: recipe.name,
+    unit: input.unit,
     quantity: input.quantity,
-    ...multiplyMacros(detail.perServing, input.quantity),
+    ...multiplyMacros(perUnit, input.quantity),
   });
 }
 

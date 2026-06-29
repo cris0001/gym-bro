@@ -385,7 +385,13 @@ describe('food-log create route (snapshot)', () => {
 
     const res = await request('POST', '/api/food-log', {
       cookie: await authCookie(),
-      body: { type: 'food', foodId: FOOD_ID, quantity: 200, loggedDate: '2026-06-29' },
+      body: {
+        type: 'food',
+        foodId: FOOD_ID,
+        quantity: 200,
+        meal: 'breakfast',
+        loggedDate: '2026-06-29',
+      },
     });
 
     expect(res.status).toBe(201);
@@ -393,9 +399,11 @@ describe('food-log create route (snapshot)', () => {
     expect(repo.createFoodLogEntry).toHaveBeenCalledWith({
       userId: 'user-1',
       loggedDate: '2026-06-29',
+      meal: 'breakfast',
       foodId: FOOD_ID,
       recipeId: null,
       itemName: 'Chicken breast',
+      unit: 'grams',
       quantity: 200,
       kcal: 330,
       proteinG: 62,
@@ -404,14 +412,21 @@ describe('food-log create route (snapshot)', () => {
     });
   });
 
-  it('POST /api/food-log for a recipe snapshots per-serving x servings', async () => {
+  it('POST /api/food-log for a recipe by servings snapshots per-serving x servings', async () => {
     repo.findRecipeById.mockResolvedValue(fakeRecipe());
     repo.listRecipeIngredientsWithFood.mockResolvedValue(INGREDIENT_LINES);
     repo.createFoodLogEntry.mockResolvedValue(fakeLogEntry({ recipeId: RECIPE_ID, foodId: null }));
 
     const res = await request('POST', '/api/food-log', {
       cookie: await authCookie(),
-      body: { type: 'recipe', recipeId: RECIPE_ID, quantity: 2, loggedDate: '2026-06-29' },
+      body: {
+        type: 'recipe',
+        recipeId: RECIPE_ID,
+        quantity: 2,
+        unit: 'servings',
+        meal: 'dinner',
+        loggedDate: '2026-06-29',
+      },
     });
 
     expect(res.status).toBe(201);
@@ -419,10 +434,47 @@ describe('food-log create route (snapshot)', () => {
     expect(repo.createFoodLogEntry).toHaveBeenCalledWith({
       userId: 'user-1',
       loggedDate: '2026-06-29',
+      meal: 'dinner',
       foodId: null,
       recipeId: RECIPE_ID,
       itemName: 'Chili',
+      unit: 'servings',
       quantity: 2,
+      kcal: 805,
+      proteinG: 77,
+      carbsG: 30,
+      fatG: 38.5,
+    });
+  });
+
+  it('POST /api/food-log for a recipe by grams snapshots per-gram x grams', async () => {
+    repo.findRecipeById.mockResolvedValue(fakeRecipe());
+    repo.listRecipeIngredientsWithFood.mockResolvedValue(INGREDIENT_LINES);
+    repo.createFoodLogEntry.mockResolvedValue(fakeLogEntry({ recipeId: RECIPE_ID, foodId: null }));
+
+    const res = await request('POST', '/api/food-log', {
+      cookie: await authCookie(),
+      body: {
+        type: 'recipe',
+        recipeId: RECIPE_ID,
+        quantity: 450,
+        unit: 'grams',
+        meal: 'lunch',
+        loggedDate: '2026-06-29',
+      },
+    });
+
+    expect(res.status).toBe(201);
+    // Recipe is 1610/154/60/77 over 900g; 450g is half -> 805/77/30/38.5.
+    expect(repo.createFoodLogEntry).toHaveBeenCalledWith({
+      userId: 'user-1',
+      loggedDate: '2026-06-29',
+      meal: 'lunch',
+      foodId: null,
+      recipeId: RECIPE_ID,
+      itemName: 'Chili',
+      unit: 'grams',
+      quantity: 450,
       kcal: 805,
       proteinG: 77,
       carbsG: 30,
@@ -435,7 +487,13 @@ describe('food-log create route (snapshot)', () => {
 
     const res = await request('POST', '/api/food-log', {
       cookie: await authCookie(),
-      body: { type: 'food', foodId: FOOD_ID, quantity: 200, loggedDate: '2026-06-29' },
+      body: {
+        type: 'food',
+        foodId: FOOD_ID,
+        quantity: 200,
+        meal: 'breakfast',
+        loggedDate: '2026-06-29',
+      },
     });
 
     expect(res.status).toBe(400);

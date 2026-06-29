@@ -1,5 +1,7 @@
 import { and, asc, desc, eq, ilike, inArray, sql } from 'drizzle-orm';
 
+import type { FoodLogUnit, MealType } from '@gym-bro/shared';
+
 import { db } from '../../db/client';
 import { foodLog } from '../../db/schema/food-log';
 import { foods } from '../../db/schema/foods';
@@ -330,9 +332,11 @@ export type FoodLogEntryRow = ReturnType<typeof mapFoodLogRow>;
 interface FoodLogInsert {
   userId: string;
   loggedDate: string;
+  meal: MealType;
   foodId: string | null;
   recipeId: string | null;
   itemName: string;
+  unit: FoodLogUnit;
   quantity: number;
   kcal: number;
   proteinG: number;
@@ -346,9 +350,11 @@ export async function createFoodLogEntry(data: FoodLogInsert): Promise<FoodLogEn
     .values({
       userId: data.userId,
       loggedDate: data.loggedDate,
+      meal: data.meal,
       foodId: data.foodId,
       recipeId: data.recipeId,
       itemName: data.itemName,
+      unit: data.unit,
       quantity: data.quantity.toString(),
       kcal: data.kcal.toString(),
       proteinG: data.proteinG.toString(),
