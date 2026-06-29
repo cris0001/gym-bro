@@ -20,9 +20,12 @@ import { Route as AppSessionRouteImport } from './routes/_app/session'
 import { Route as AppFoodsRouteImport } from './routes/_app/foods'
 import { Route as AppExercisesRouteImport } from './routes/_app/exercises'
 import { Route as AppCalendarRouteImport } from './routes/_app/calendar'
+import { Route as AppRecipesIndexRouteImport } from './routes/_app/recipes/index'
 import { Route as AppPlansIndexRouteImport } from './routes/_app/plans/index'
 import { Route as AppHistoryIndexRouteImport } from './routes/_app/history/index'
 import { Route as AppTemplatesTemplateIdRouteImport } from './routes/_app/templates/$templateId'
+import { Route as AppRecipesNewRouteImport } from './routes/_app/recipes/new'
+import { Route as AppRecipesRecipeIdRouteImport } from './routes/_app/recipes/$recipeId'
 import { Route as AppPlansPlanIdRouteImport } from './routes/_app/plans/$planId'
 import { Route as AppHistorySessionIdRouteImport } from './routes/_app/history/$sessionId'
 
@@ -79,6 +82,11 @@ const AppCalendarRoute = AppCalendarRouteImport.update({
   path: '/calendar',
   getParentRoute: () => AppRoute,
 } as any)
+const AppRecipesIndexRoute = AppRecipesIndexRouteImport.update({
+  id: '/recipes/',
+  path: '/recipes/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppPlansIndexRoute = AppPlansIndexRouteImport.update({
   id: '/plans/',
   path: '/plans/',
@@ -92,6 +100,16 @@ const AppHistoryIndexRoute = AppHistoryIndexRouteImport.update({
 const AppTemplatesTemplateIdRoute = AppTemplatesTemplateIdRouteImport.update({
   id: '/templates/$templateId',
   path: '/templates/$templateId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRecipesNewRoute = AppRecipesNewRouteImport.update({
+  id: '/recipes/new',
+  path: '/recipes/new',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRecipesRecipeIdRoute = AppRecipesRecipeIdRouteImport.update({
+  id: '/recipes/$recipeId',
+  path: '/recipes/$recipeId',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPlansPlanIdRoute = AppPlansPlanIdRouteImport.update({
@@ -117,9 +135,12 @@ export interface FileRoutesByFullPath {
   '/register': typeof AuthRegisterRoute
   '/history/$sessionId': typeof AppHistorySessionIdRoute
   '/plans/$planId': typeof AppPlansPlanIdRoute
+  '/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
+  '/recipes/new': typeof AppRecipesNewRoute
   '/templates/$templateId': typeof AppTemplatesTemplateIdRoute
   '/history/': typeof AppHistoryIndexRoute
   '/plans/': typeof AppPlansIndexRoute
+  '/recipes/': typeof AppRecipesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
@@ -133,9 +154,12 @@ export interface FileRoutesByTo {
   '/register': typeof AuthRegisterRoute
   '/history/$sessionId': typeof AppHistorySessionIdRoute
   '/plans/$planId': typeof AppPlansPlanIdRoute
+  '/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
+  '/recipes/new': typeof AppRecipesNewRoute
   '/templates/$templateId': typeof AppTemplatesTemplateIdRoute
   '/history': typeof AppHistoryIndexRoute
   '/plans': typeof AppPlansIndexRoute
+  '/recipes': typeof AppRecipesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -152,9 +176,12 @@ export interface FileRoutesById {
   '/_app/': typeof AppIndexRoute
   '/_app/history/$sessionId': typeof AppHistorySessionIdRoute
   '/_app/plans/$planId': typeof AppPlansPlanIdRoute
+  '/_app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
+  '/_app/recipes/new': typeof AppRecipesNewRoute
   '/_app/templates/$templateId': typeof AppTemplatesTemplateIdRoute
   '/_app/history/': typeof AppHistoryIndexRoute
   '/_app/plans/': typeof AppPlansIndexRoute
+  '/_app/recipes/': typeof AppRecipesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -170,9 +197,12 @@ export interface FileRouteTypes {
     | '/register'
     | '/history/$sessionId'
     | '/plans/$planId'
+    | '/recipes/$recipeId'
+    | '/recipes/new'
     | '/templates/$templateId'
     | '/history/'
     | '/plans/'
+    | '/recipes/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -186,9 +216,12 @@ export interface FileRouteTypes {
     | '/register'
     | '/history/$sessionId'
     | '/plans/$planId'
+    | '/recipes/$recipeId'
+    | '/recipes/new'
     | '/templates/$templateId'
     | '/history'
     | '/plans'
+    | '/recipes'
   id:
     | '__root__'
     | '/_app'
@@ -204,9 +237,12 @@ export interface FileRouteTypes {
     | '/_app/'
     | '/_app/history/$sessionId'
     | '/_app/plans/$planId'
+    | '/_app/recipes/$recipeId'
+    | '/_app/recipes/new'
     | '/_app/templates/$templateId'
     | '/_app/history/'
     | '/_app/plans/'
+    | '/_app/recipes/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -293,6 +329,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCalendarRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/recipes/': {
+      id: '/_app/recipes/'
+      path: '/recipes'
+      fullPath: '/recipes/'
+      preLoaderRoute: typeof AppRecipesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/plans/': {
       id: '/_app/plans/'
       path: '/plans'
@@ -312,6 +355,20 @@ declare module '@tanstack/react-router' {
       path: '/templates/$templateId'
       fullPath: '/templates/$templateId'
       preLoaderRoute: typeof AppTemplatesTemplateIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/recipes/new': {
+      id: '/_app/recipes/new'
+      path: '/recipes/new'
+      fullPath: '/recipes/new'
+      preLoaderRoute: typeof AppRecipesNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/recipes/$recipeId': {
+      id: '/_app/recipes/$recipeId'
+      path: '/recipes/$recipeId'
+      fullPath: '/recipes/$recipeId'
+      preLoaderRoute: typeof AppRecipesRecipeIdRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/plans/$planId': {
@@ -341,9 +398,12 @@ interface AppRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppHistorySessionIdRoute: typeof AppHistorySessionIdRoute
   AppPlansPlanIdRoute: typeof AppPlansPlanIdRoute
+  AppRecipesRecipeIdRoute: typeof AppRecipesRecipeIdRoute
+  AppRecipesNewRoute: typeof AppRecipesNewRoute
   AppTemplatesTemplateIdRoute: typeof AppTemplatesTemplateIdRoute
   AppHistoryIndexRoute: typeof AppHistoryIndexRoute
   AppPlansIndexRoute: typeof AppPlansIndexRoute
+  AppRecipesIndexRoute: typeof AppRecipesIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -356,9 +416,12 @@ const AppRouteChildren: AppRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppHistorySessionIdRoute: AppHistorySessionIdRoute,
   AppPlansPlanIdRoute: AppPlansPlanIdRoute,
+  AppRecipesRecipeIdRoute: AppRecipesRecipeIdRoute,
+  AppRecipesNewRoute: AppRecipesNewRoute,
   AppTemplatesTemplateIdRoute: AppTemplatesTemplateIdRoute,
   AppHistoryIndexRoute: AppHistoryIndexRoute,
   AppPlansIndexRoute: AppPlansIndexRoute,
+  AppRecipesIndexRoute: AppRecipesIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
