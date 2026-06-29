@@ -2,6 +2,8 @@ import { and, asc, eq, ilike, inArray, sql } from 'drizzle-orm';
 
 import { db } from '../../db/client';
 import { foods } from '../../db/schema/foods';
+import { recipeIngredients } from '../../db/schema/recipe-ingredients';
+import { recipes } from '../../db/schema/recipes';
 
 // Drizzle queries for the nutrition domain — plain rows, no business logic. The
 // numeric macro columns come back as strings from the driver and are coerced to
@@ -120,4 +122,187 @@ export async function softDeleteFood(userId: string, id: string): Promise<FoodRo
     .where(and(eq(foods.id, id), eq(foods.userId, userId), eq(foods.isActive, true)))
     .returning();
   return row ? mapFoodRow(row) : undefined;
+}
+
+// --- Recipes ---
+
+// A recipe with its whole-recipe macro totals, aggregated in SQL from its
+// ingredients (each food's per-100g macros scaled by amount_grams/100). LEFT JOIN
+// + coalesce so a recipe with no ingredients still appears with zero totals. The
+// service derives per-serving from these + servings.
+export interface RecipeWithTotalsRow {
+  id: string;
+  userId: string;
+  name: string;
+  servings: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  total: { kcal: number; proteinG: number; carbsG: number; fatG: number };
+  totalGrams: number;
+}
+
+export async function listRecipesWithTotals(userId: string): Promise<RecipeWithTotalsRow[]> {
+  const rows = await db
+    .select({
+      id: recipes.id,
+      userId: recipes.userId,
+      name: recipes.name,
+      servings: recipes.servings,
+      isActive: recipes.isActive,
+      createdAt: recipes.createdAt,
+      updatedAt: recipes.updatedAt,
+      kcal: sql<string>`coalesce(sum(${foods.kcal} * ${recipeIngredients.amountGrams} / 100), 0)`,
+      proteinG: sql<string>`coalesce(sum(${foods.proteinG} * ${recipeIngredients.amountGrams} / 100), 0)`,
+      carbsG: sql<string>`coalesce(sum(${foods.carbsG} * ${recipeIngredients.amountGrams} / 100), 0)`,
+      fatG: sql<string>`coalesce(sum(${foods.fatG} * ${recipeIngredients.amountGrams} / 100), 0)`,
+      totalGrams: sql<string>`coalesce(sum(${recipeIngredients.amountGrams}), 0)`,
+    })
+    .from(recipes)
+    .leftJoin(recipeIngredients, eq(recipeIngredients.recipeId, recipes.id))
+    .leftJoin(foods, eq(recipeIngredients.foodId, foods.id))
+    .where(and(eq(recipes.userId, userId), eq(recipes.isActive, true)))
+    .groupBy(recipes.id)
+    .orderBy(asc(sql`lower(${recipes.name})`));
+
+  return rows.map((row) => ({
+    id: row.id,
+    userId: row.userId,
+    name: row.name,
+    servings: row.servings,
+    isActive: row.isActive,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    total: {
+      kcal: Number(row.kcal),
+      proteinG: Number(row.proteinG),
+      carbsG: Number(row.carbsG),
+      fatG: Number(row.fatG),
+    },
+    totalGrams: Number(row.totalGrams),
+  }));
+}
+
+export async function findRecipeById(userId: string, id: string) {
+  const [row] = await db
+    .select()
+    .from(recipes)
+    .where(and(eq(recipes.id, id), eq(recipes.userId, userId), eq(recipes.isActive, true)))
+    .limit(1);
+  return row;
+}
+
+// A recipe's ingredient lines, ordered, each with its food's name and per-100g
+// macros (coerced to numbers) so the service can scale them to amount_grams.
+export interface RecipeIngredientWithFoodRow {
+  id: string;
+  foodId: string;
+  foodName: string;
+  amountGrams: number;
+  position: number;
+  per100g: { kcal: number; proteinG: number; carbsG: number; fatG: number };
+}
+
+export async function listRecipeIngredientsWithFood(
+  userId: string,
+  recipeId: string,
+): Promise<RecipeIngredientWithFoodRow[]> {
+  const rows = await db
+    .select({
+      id: recipeIngredients.id,
+      foodId: recipeIngredients.foodId,
+      foodName: foods.name,
+      amountGrams: recipeIngredients.amountGrams,
+      position: recipeIngredients.position,
+      kcal: foods.kcal,
+      proteinG: foods.proteinG,
+      carbsG: foods.carbsG,
+      fatG: foods.fatG,
+    })
+    .from(recipeIngredients)
+    .innerJoin(foods, eq(recipeIngredients.foodId, foods.id))
+    .where(and(eq(recipeIngredients.recipeId, recipeId), eq(recipeIngredients.userId, userId)))
+    .orderBy(asc(recipeIngredients.position));
+
+  return rows.map((row) => ({
+    id: row.id,
+    foodId: row.foodId,
+    foodName: row.foodName,
+    amountGrams: Number(row.amountGrams),
+    position: row.position,
+    per100g: {
+      kcal: Number(row.kcal),
+      proteinG: Number(row.proteinG),
+      carbsG: Number(row.carbsG),
+      fatG: Number(row.fatG),
+    },
+  }));
+}
+
+interface RecipeInput {
+  userId: string;
+  name: string;
+  servings: number;
+  ingredients: { foodId: string; amountGrams: number }[];
+}
+
+// Insert a recipe + its ordered ingredient lines in one transaction. Position
+// comes from array index. Returns the recipe row (the service composes the detail).
+export async function createRecipe(data: RecipeInput) {
+  return db.transaction(async (tx) => {
+    const [recipe] = await tx
+      .insert(recipes)
+      .values({ userId: data.userId, name: data.name, servings: data.servings })
+      .returning();
+    if (!recipe) {
+      throw new Error('Recipe insert returned no row');
+    }
+    await tx.insert(recipeIngredients).values(
+      data.ingredients.map((ingredient, position) => ({
+        recipeId: recipe.id,
+        userId: data.userId,
+        foodId: ingredient.foodId,
+        amountGrams: ingredient.amountGrams.toString(),
+        position,
+      })),
+    );
+    return recipe;
+  });
+}
+
+// Edit an active recipe: update its metadata and fully replace its ingredient
+// lines in one transaction. Returns undefined if the recipe isn't the user's
+// (or already soft-deleted).
+export async function replaceRecipe(id: string, data: RecipeInput) {
+  return db.transaction(async (tx) => {
+    const [recipe] = await tx
+      .update(recipes)
+      .set({ name: data.name, servings: data.servings, updatedAt: new Date() })
+      .where(and(eq(recipes.id, id), eq(recipes.userId, data.userId), eq(recipes.isActive, true)))
+      .returning();
+    if (!recipe) {
+      return undefined;
+    }
+    await tx.delete(recipeIngredients).where(eq(recipeIngredients.recipeId, id));
+    await tx.insert(recipeIngredients).values(
+      data.ingredients.map((ingredient, position) => ({
+        recipeId: id,
+        userId: data.userId,
+        foodId: ingredient.foodId,
+        amountGrams: ingredient.amountGrams.toString(),
+        position,
+      })),
+    );
+    return recipe;
+  });
+}
+
+// Soft delete — the recipe row stays so historical food_log references resolve.
+export async function softDeleteRecipe(userId: string, id: string) {
+  const [row] = await db
+    .update(recipes)
+    .set({ isActive: false, updatedAt: new Date() })
+    .where(and(eq(recipes.id, id), eq(recipes.userId, userId), eq(recipes.isActive, true)))
+    .returning();
+  return row;
 }

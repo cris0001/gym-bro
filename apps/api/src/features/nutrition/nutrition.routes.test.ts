@@ -1,9 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { app } from '../../app';
+import type { Recipe } from '../../db/schema/recipes';
 import { AUTH_COOKIE_NAME } from '../../lib/auth-cookie';
 import { signToken } from '../../lib/jwt';
-import type { FoodRow } from './nutrition.repository';
+import type {
+  FoodRow,
+  RecipeIngredientWithFoodRow,
+  RecipeWithTotalsRow,
+} from './nutrition.repository';
 import * as nutritionRepository from './nutrition.repository';
 
 // Mock the Drizzle boundary so tests drive the real Hono app + service over fake
@@ -157,5 +162,193 @@ describe('food update/delete routes', () => {
     const res = await request('DELETE', `/api/foods/${FOOD_ID}`, { cookie: await authCookie() });
 
     expect(res.status).toBe(404);
+  });
+});
+
+const RECIPE_ID = '33333333-3333-4333-8333-333333333333';
+const FOOD_A = '44444444-4444-4444-8444-444444444444';
+const FOOD_B = '55555555-5555-4555-8555-555555555555';
+
+function fakeRecipe(overrides: Partial<Recipe> = {}): Recipe {
+  return {
+    id: RECIPE_ID,
+    userId: 'user-1',
+    name: 'Chili',
+    servings: 4,
+    isActive: true,
+    createdAt: new Date('2026-01-01T00:00:00Z'),
+    updatedAt: new Date('2026-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+// Beef 500g @ 250/26/0/15 per 100g -> 1250/130/0/75; Beans 400g @ 90/6/15/0.5 ->
+// 360/24/60/2. Totals 1610/154/60/77 over 900g; perServing (/4) 402.5/38.5/15/19.25.
+const INGREDIENT_LINES: RecipeIngredientWithFoodRow[] = [
+  {
+    id: 'line-1',
+    foodId: FOOD_A,
+    foodName: 'Beef',
+    amountGrams: 500,
+    position: 0,
+    per100g: { kcal: 250, proteinG: 26, carbsG: 0, fatG: 15 },
+  },
+  {
+    id: 'line-2',
+    foodId: FOOD_B,
+    foodName: 'Beans',
+    amountGrams: 400,
+    position: 1,
+    per100g: { kcal: 90, proteinG: 6, carbsG: 15, fatG: 0.5 },
+  },
+];
+
+const VALID_RECIPE = {
+  name: 'Chili',
+  servings: 4,
+  ingredients: [
+    { foodId: FOOD_A, amountGrams: 500 },
+    { foodId: FOOD_B, amountGrams: 400 },
+  ],
+};
+
+describe('recipe create route (macro computation)', () => {
+  it('POST /api/recipes validates foods, creates, and returns computed macro totals', async () => {
+    repo.findActiveFoodsByIds.mockResolvedValue([
+      fakeFood({ id: FOOD_A }),
+      fakeFood({ id: FOOD_B }),
+    ]);
+    repo.createRecipe.mockResolvedValue(fakeRecipe());
+    repo.listRecipeIngredientsWithFood.mockResolvedValue(INGREDIENT_LINES);
+
+    const res = await request('POST', '/api/recipes', {
+      cookie: await authCookie(),
+      body: VALID_RECIPE,
+    });
+    const body = (await res.json()) as {
+      data: {
+        totalGrams: number;
+        total: Record<string, number>;
+        perServing: Record<string, number>;
+        ingredients: { macros: Record<string, number> }[];
+      };
+    };
+
+    expect(res.status).toBe(201);
+    expect(body.data.totalGrams).toBe(900);
+    expect(body.data.total).toEqual({ kcal: 1610, proteinG: 154, carbsG: 60, fatG: 77 });
+    expect(body.data.perServing).toEqual({ kcal: 402.5, proteinG: 38.5, carbsG: 15, fatG: 19.25 });
+    expect(body.data.ingredients[0]?.macros).toEqual({
+      kcal: 1250,
+      proteinG: 130,
+      carbsG: 0,
+      fatG: 75,
+    });
+  });
+
+  it('POST /api/recipes with an unknown ingredient food returns 400 without creating', async () => {
+    // Only one of the two referenced foods is found.
+    repo.findActiveFoodsByIds.mockResolvedValue([fakeFood({ id: FOOD_A })]);
+
+    const res = await request('POST', '/api/recipes', {
+      cookie: await authCookie(),
+      body: VALID_RECIPE,
+    });
+
+    expect(res.status).toBe(400);
+    expect(repo.createRecipe).not.toHaveBeenCalled();
+  });
+
+  it('POST /api/recipes with a duplicate name returns 409', async () => {
+    repo.findActiveFoodsByIds.mockResolvedValue([
+      fakeFood({ id: FOOD_A }),
+      fakeFood({ id: FOOD_B }),
+    ]);
+    repo.createRecipe.mockRejectedValue(uniqueViolation);
+
+    const res = await request('POST', '/api/recipes', {
+      cookie: await authCookie(),
+      body: VALID_RECIPE,
+    });
+
+    expect(res.status).toBe(409);
+  });
+
+  it('POST /api/recipes with no ingredients returns 400', async () => {
+    const res = await request('POST', '/api/recipes', {
+      cookie: await authCookie(),
+      body: { name: 'Empty', servings: 1, ingredients: [] },
+    });
+
+    expect(res.status).toBe(400);
+    expect(repo.findActiveFoodsByIds).not.toHaveBeenCalled();
+  });
+});
+
+describe('recipe read/update/delete routes', () => {
+  it('GET /api/recipes/:id returns the computed detail', async () => {
+    repo.findRecipeById.mockResolvedValue(fakeRecipe());
+    repo.listRecipeIngredientsWithFood.mockResolvedValue(INGREDIENT_LINES);
+
+    const res = await request('GET', `/api/recipes/${RECIPE_ID}`, { cookie: await authCookie() });
+    const body = (await res.json()) as { data: { perServing: Record<string, number> } };
+
+    expect(res.status).toBe(200);
+    expect(body.data.perServing).toEqual({ kcal: 402.5, proteinG: 38.5, carbsG: 15, fatG: 19.25 });
+  });
+
+  it("GET /api/recipes/:id returns 404 when not the user's", async () => {
+    repo.findRecipeById.mockResolvedValue(undefined);
+
+    const res = await request('GET', `/api/recipes/${RECIPE_ID}`, { cookie: await authCookie() });
+
+    expect(res.status).toBe(404);
+  });
+
+  it('GET /api/recipes lists recipes with per-serving macros', async () => {
+    const row: RecipeWithTotalsRow = {
+      ...fakeRecipe(),
+      total: { kcal: 1610, proteinG: 154, carbsG: 60, fatG: 77 },
+      totalGrams: 900,
+    };
+    repo.listRecipesWithTotals.mockResolvedValue([row]);
+
+    const res = await request('GET', '/api/recipes', { cookie: await authCookie() });
+    const body = (await res.json()) as { data: { perServing: Record<string, number> }[] };
+
+    expect(res.status).toBe(200);
+    expect(body.data[0]?.perServing).toEqual({
+      kcal: 402.5,
+      proteinG: 38.5,
+      carbsG: 15,
+      fatG: 19.25,
+    });
+  });
+
+  it("PUT /api/recipes/:id returns 404 when the recipe is not the user's", async () => {
+    repo.findActiveFoodsByIds.mockResolvedValue([
+      fakeFood({ id: FOOD_A }),
+      fakeFood({ id: FOOD_B }),
+    ]);
+    repo.replaceRecipe.mockResolvedValue(undefined);
+
+    const res = await request('PUT', `/api/recipes/${RECIPE_ID}`, {
+      cookie: await authCookie(),
+      body: VALID_RECIPE,
+    });
+
+    expect(res.status).toBe(404);
+  });
+
+  it('DELETE /api/recipes/:id soft-deletes and returns success', async () => {
+    repo.softDeleteRecipe.mockResolvedValue(fakeRecipe({ isActive: false }));
+
+    const res = await request('DELETE', `/api/recipes/${RECIPE_ID}`, {
+      cookie: await authCookie(),
+    });
+    const body = (await res.json()) as { data: { success: boolean } };
+
+    expect(res.status).toBe(200);
+    expect(body.data.success).toBe(true);
   });
 });

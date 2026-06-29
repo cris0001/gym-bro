@@ -1,6 +1,11 @@
 import { Hono, type Context } from 'hono';
 import { z } from 'zod';
-import { createFoodSchema, updateFoodSchema } from '@gym-bro/shared';
+import {
+  createFoodSchema,
+  createRecipeSchema,
+  updateFoodSchema,
+  updateRecipeSchema,
+} from '@gym-bro/shared';
 
 import { NotFoundError } from '../../lib/errors';
 import { parseJson } from '../../lib/validate';
@@ -47,5 +52,37 @@ nutritionRoutes.put('/foods/:id', requireAuth, async (c) => {
 nutritionRoutes.delete('/foods/:id', requireAuth, async (c) => {
   const id = parseUuidParam(c, 'id');
   await nutritionService.deleteFood(c.get('userId'), id);
+  return c.json({ data: { success: true } });
+});
+
+// --- Recipes ---
+
+nutritionRoutes.get('/recipes', requireAuth, async (c) => {
+  const recipes = await nutritionService.listRecipes(c.get('userId'));
+  return c.json({ data: recipes });
+});
+
+nutritionRoutes.get('/recipes/:id', requireAuth, async (c) => {
+  const id = parseUuidParam(c, 'id');
+  const recipe = await nutritionService.getRecipe(c.get('userId'), id);
+  return c.json({ data: recipe });
+});
+
+nutritionRoutes.post('/recipes', requireAuth, async (c) => {
+  const input = await parseJson(c, createRecipeSchema);
+  const recipe = await nutritionService.createRecipe(c.get('userId'), input);
+  return c.json({ data: recipe }, 201);
+});
+
+nutritionRoutes.put('/recipes/:id', requireAuth, async (c) => {
+  const id = parseUuidParam(c, 'id');
+  const input = await parseJson(c, updateRecipeSchema);
+  const recipe = await nutritionService.updateRecipe(c.get('userId'), id, input);
+  return c.json({ data: recipe });
+});
+
+nutritionRoutes.delete('/recipes/:id', requireAuth, async (c) => {
+  const id = parseUuidParam(c, 'id');
+  await nutritionService.deleteRecipe(c.get('userId'), id);
   return c.json({ data: { success: true } });
 });
