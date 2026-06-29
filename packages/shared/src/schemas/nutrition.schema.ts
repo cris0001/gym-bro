@@ -1,8 +1,11 @@
 import { z } from 'zod';
 
+import { FOOD_LOG_UNITS, MEAL_TYPES } from '../constants/nutrition.constants';
+
 // --- Shared field helpers ---
 
 const itemName = z.string().trim().min(1, 'Name is required').max(100, 'Name is too long');
+const meal = z.enum(MEAL_TYPES);
 // A per-100g macro or a daily target value: numeric(6,2), non-negative.
 const macroValue = z.number().min(0, 'Must be 0 or more').max(9999.99, 'Too large');
 // A gram amount or serving quantity: numeric(7,2), strictly positive.
@@ -59,17 +62,22 @@ export const setNutritionTargetSchema = z.object({
 // servings); the discriminator makes that unambiguous and prevents setting both
 // or neither. The macros are computed and snapshotted server-side, so they're not
 // in the input.
+// A food is always logged by grams (server-set unit); a recipe carries an explicit
+// unit so it can be logged by grams OR by servings. `meal` groups the entry.
 export const createFoodLogSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('food'),
     foodId: z.uuid(),
     quantity: positiveAmount,
+    meal,
     loggedDate: z.iso.date(),
   }),
   z.object({
     type: z.literal('recipe'),
     recipeId: z.uuid(),
     quantity: positiveAmount,
+    unit: z.enum(FOOD_LOG_UNITS),
+    meal,
     loggedDate: z.iso.date(),
   }),
 ]);

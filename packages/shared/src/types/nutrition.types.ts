@@ -1,5 +1,6 @@
 import type { z } from 'zod';
 
+import type { FOOD_LOG_UNITS, MEAL_TYPES } from '../constants/nutrition.constants';
 import type {
   createFoodLogSchema,
   createFoodSchema,
@@ -26,6 +27,9 @@ export type FoodLogDateQueryInput = z.infer<typeof foodLogDateQuerySchema>;
 
 // --- Wire entity shapes (numeric columns coerced to numbers by the service;
 // date columns are 'YYYY-MM-DD' strings; timestamps are ISO strings) ---
+
+export type MealType = (typeof MEAL_TYPES)[number];
+export type FoodLogUnit = (typeof FOOD_LOG_UNITS)[number];
 
 // The reusable four-number macro shape: per-100g for a food, a daily goal for a
 // target, or a snapshotted total for a log entry.
@@ -60,9 +64,11 @@ export interface FoodLogEntry extends MacroTotals {
   id: string;
   userId: string;
   loggedDate: string;
+  meal: MealType;
   foodId: string | null;
   recipeId: string | null;
   itemName: string;
+  unit: FoodLogUnit;
   quantity: number;
   createdAt: string;
   updatedAt: string;

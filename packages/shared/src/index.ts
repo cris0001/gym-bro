@@ -13,3 +13,4 @@ export * from './utils/macros';
 export * from './constants/auth.constants';
 export * from './constants/training.constants';
 export * from './constants/sessions.constants';
+export * from './constants/nutrition.constants';
