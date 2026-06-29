@@ -232,7 +232,19 @@ rating-trend chart, built with Recharts and reached from primary nav.
 
 ---
 
-### Stage 8 — Nutrition backend
+### Stage 8 — Nutrition backend ✅ COMPLETE
+
+Foods, recipes (+ recipe_ingredients), food_log, and historical nutrition_targets
+tables (migration 0004 applied to Neon). The nutrition feature module ships full
+CRUD across repository/service/routes: food and recipe dictionaries (soft-deleted,
+case-insensitive unique names), recipes with macros computed on read from
+ingredients (server-side, no cached columns) and a servings count; the food-log
+diary snapshots macros at log time (a food by grams, a recipe by per-serving ×
+servings) so editing/deleting a source never rewrites history, with day-totals and
+a linear quantity-rescale on edit; and historical nutrition targets via a
+single-row-per-date upsert ("current" = most recent). Pure macro math
+(scale/sum/divide/multiply) lives in nutrition.utils with unit tests; 43 nutrition
+tests in all.
 
 - [ ] foods schema + migration
 - [ ] recipes schema + migration

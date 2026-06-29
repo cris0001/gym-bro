@@ -553,15 +553,26 @@ Migrations can destroy data. Rules:
 
 ## Current stage
 
-Stage 8: nutrition backend (apps/api + packages/shared) — foods, recipes,
-recipe_ingredients, food_log, and historical nutrition_targets (UNIQUE per date)
-tables with a new migration, the nutrition feature module (routes/service/
-repository), and the per-domain nutrition Zod schemas/types in @gym-bro/shared.
-Food/recipe/food-log/target CRUD (recipes auto-calculate macros; targets are
-historical with a "current" = most recent), plus pure macro-calculation functions
-with tests.
+Stage 9: nutrition UI (apps/web) — the frontend nutrition feature over the Stage 8
+endpoints. Food dictionary (list + search + create/edit form), recipe list +
+builder with live macro preview, the daily diary (today by default, add/remove
+food or recipe, day summary vs current target with per-macro progress bars), and
+the targets settings + history views. Mobile-first; the most complex UI module.
 
-(Stage 7 — training stats — COMPLETE: no new tables; reads Stage 6 workout/set
+(Stage 8 — nutrition backend — COMPLETE: foods, recipes (+ recipe_ingredients),
+food_log, and historical nutrition_targets tables (migration 0004 on Neon); the
+nutrition feature module (repository/service/routes) + nutrition Zod schemas/types
+in @gym-bro/shared. Food & recipe dictionaries (soft-delete, case-insensitive
+unique names); recipe macros computed on read from ingredients (no cached columns)
+with a servings count; food_log snapshots macros at log time (food by grams,
+recipe by per-serving × servings) so editing/deleting a source never rewrites
+history, with day-totals + a linear quantity-rescale on edit; nutrition targets via
+a one-row-per-date upsert ("current" = most recent). Pure macro math in
+nutrition.utils (scale/sum/divide/multiply) with unit tests; 43 nutrition tests
+(177 total). Endpoint verbs: PUT full-replace for food/recipe edits, PATCH for
+food-log, PUT /nutrition-targets upsert, hard-delete for food-log.
+
+Stage 7 — training stats — COMPLETE: no new tables; reads Stage 6 workout/set
 data. Backend: three read-only /api/stats endpoints — logged-exercise picker,
 per-exercise progress (per-session MAX weight + SUM weight×reps, matched on
 actualExerciseId so swaps count, optional from/to window, nulls skipped so
