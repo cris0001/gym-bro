@@ -1,15 +1,37 @@
 import { sql } from 'drizzle-orm';
-import { check, date, index, numeric, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import {
+  check,
+  date,
+  index,
+  numeric,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from 'drizzle-orm/pg-core';
 
 import { foods } from './foods';
 import { recipes } from './recipes';
 import { users } from './users';
 
+// Which meal an entry belongs to (Fitatu-style). Mirrored as MEAL_TYPES in shared.
+export const mealTypeEnum = pgEnum('meal_type', [
+  'breakfast',
+  'second_breakfast',
+  'lunch',
+  'snack',
+  'dinner',
+]);
+
+// The unit a quantity is expressed in: a food is always grams; a recipe can be
+// logged by grams or by servings. Mirrored as FOOD_LOG_UNITS in shared.
+export const foodLogUnitEnum = pgEnum('food_log_unit', ['grams', 'servings']);
+
 // A daily diary entry referencing EITHER a food or a recipe (exactly one), with
 // macros SNAPSHOTTED at log time so editing/renaming/soft-deleting the source
-// never rewrites eating history. The unit is implied by the reference: a food
-// entry's quantity is grams, a recipe entry's is servings. Daily totals are a
-// join-free SUM over the snapshot columns.
+// never rewrites eating history. The unit is stored explicitly (a recipe may be
+// grams or servings). Daily totals are a join-free SUM over the snapshot columns.
 export const foodLog = pgTable(
   'food_log',
   {
@@ -18,6 +40,8 @@ export const foodLog = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     loggedDate: date('logged_date').notNull(),
+    // The meal this entry is grouped under. Default backfills pre-existing rows.
+    meal: mealTypeEnum('meal').notNull().default('breakfast'),
     // Exactly one of foodId / recipeId is set (CHECK below). RESTRICT: foods and
     // recipes are soft-deleted, never hard-removed while referenced.
     foodId: uuid('food_id').references(() => foods.id, { onDelete: 'restrict' }),
@@ -25,7 +49,11 @@ export const foodLog = pgTable(
     // Snapshot of the source name at log time, so the row reads correctly after a
     // rename or soft-delete. The FK is kept only for "jump to source" linking.
     itemName: text('item_name').notNull(),
-    // Grams (food) or servings (recipe), per which reference is set.
+    // What `quantity` is measured in (grams for a food; grams or servings for a
+    // recipe). Default 'grams' backfills pre-existing food rows; the migration
+    // backfills recipe rows to 'servings'.
+    unit: foodLogUnitEnum('unit').notNull().default('grams'),
+    // Grams or servings of the source, per `unit`.
     quantity: numeric('quantity', { precision: 7, scale: 2 }).notNull(),
     // Snapshot totals for this entry's quantity, computed in the service.
     kcal: numeric('kcal', { precision: 7, scale: 2 }).notNull(),
