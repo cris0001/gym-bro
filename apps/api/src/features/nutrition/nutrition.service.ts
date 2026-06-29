@@ -2,6 +2,7 @@ import type {
   CreateFoodInput,
   CreateFoodLogInput,
   CreateRecipeInput,
+  SetNutritionTargetInput,
   UpdateFoodInput,
   UpdateFoodLogInput,
   UpdateRecipeInput,
@@ -262,4 +263,26 @@ export async function deleteFoodLogEntry(userId: string, id: string) {
     throw new NotFoundError('Log entry not found');
   }
   return entry;
+}
+
+// --- Nutrition targets ---
+
+// Today's date as 'YYYY-MM-DD' (UTC). The effective date is server-stamped; for a
+// single-user app a UTC day boundary is acceptable.
+function todayIso(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+// The current target, or null if the user has never set one.
+export async function getCurrentTarget(userId: string) {
+  return (await nutritionRepository.findCurrentTarget(userId)) ?? null;
+}
+
+export async function listNutritionTargets(userId: string) {
+  return nutritionRepository.listTargets(userId);
+}
+
+// Set/change today's target — a same-day re-save replaces today's row.
+export async function setNutritionTarget(userId: string, input: SetNutritionTargetInput) {
+  return nutritionRepository.upsertTodayTarget(userId, todayIso(), input);
 }
