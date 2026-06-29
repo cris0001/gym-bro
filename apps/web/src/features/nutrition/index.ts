@@ -5,3 +5,4 @@ export { FoodsPage } from './components/foods-page';
 export { RecipesPage } from './components/recipes-page';
 export { RecipeBuilder } from './components/recipe-builder';
 export { RecipeEditPage } from './components/recipe-edit-page';
+export { TargetsPage } from './components/targets-page';
