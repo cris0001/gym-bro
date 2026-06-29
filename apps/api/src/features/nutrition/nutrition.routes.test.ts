@@ -5,6 +5,7 @@ import type { Recipe } from '../../db/schema/recipes';
 import { AUTH_COOKIE_NAME } from '../../lib/auth-cookie';
 import { signToken } from '../../lib/jwt';
 import type {
+  FoodLogEntryRow,
   FoodRow,
   RecipeIngredientWithFoodRow,
   RecipeWithTotalsRow,
@@ -350,5 +351,175 @@ describe('recipe read/update/delete routes', () => {
 
     expect(res.status).toBe(200);
     expect(body.data.success).toBe(true);
+  });
+});
+
+const LOG_ID = '66666666-6666-4666-8666-666666666666';
+
+function fakeLogEntry(overrides: Partial<FoodLogEntryRow> = {}): FoodLogEntryRow {
+  return {
+    id: LOG_ID,
+    userId: 'user-1',
+    loggedDate: '2026-06-29',
+    foodId: FOOD_ID,
+    recipeId: null,
+    itemName: 'Chicken breast',
+    quantity: 200,
+    kcal: 330,
+    proteinG: 62,
+    carbsG: 0,
+    fatG: 7.2,
+    createdAt: new Date('2026-01-01T00:00:00Z'),
+    updatedAt: new Date('2026-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+describe('food-log create route (snapshot)', () => {
+  it('POST /api/food-log for a food snapshots scaled macros + name', async () => {
+    repo.findFoodById.mockResolvedValue(fakeFood());
+    repo.createFoodLogEntry.mockResolvedValue(fakeLogEntry());
+
+    const res = await request('POST', '/api/food-log', {
+      cookie: await authCookie(),
+      body: { type: 'food', foodId: FOOD_ID, quantity: 200, loggedDate: '2026-06-29' },
+    });
+
+    expect(res.status).toBe(201);
+    // Chicken 200g @ 165/31/0/3.6 per 100g -> 330/62/0/7.2.
+    expect(repo.createFoodLogEntry).toHaveBeenCalledWith({
+      userId: 'user-1',
+      loggedDate: '2026-06-29',
+      foodId: FOOD_ID,
+      recipeId: null,
+      itemName: 'Chicken breast',
+      quantity: 200,
+      kcal: 330,
+      proteinG: 62,
+      carbsG: 0,
+      fatG: 7.2,
+    });
+  });
+
+  it('POST /api/food-log for a recipe snapshots per-serving x servings', async () => {
+    repo.findRecipeById.mockResolvedValue(fakeRecipe());
+    repo.listRecipeIngredientsWithFood.mockResolvedValue(INGREDIENT_LINES);
+    repo.createFoodLogEntry.mockResolvedValue(fakeLogEntry({ recipeId: RECIPE_ID, foodId: null }));
+
+    const res = await request('POST', '/api/food-log', {
+      cookie: await authCookie(),
+      body: { type: 'recipe', recipeId: RECIPE_ID, quantity: 2, loggedDate: '2026-06-29' },
+    });
+
+    expect(res.status).toBe(201);
+    // perServing 402.5/38.5/15/19.25 x 2 servings -> 805/77/30/38.5.
+    expect(repo.createFoodLogEntry).toHaveBeenCalledWith({
+      userId: 'user-1',
+      loggedDate: '2026-06-29',
+      foodId: null,
+      recipeId: RECIPE_ID,
+      itemName: 'Chili',
+      quantity: 2,
+      kcal: 805,
+      proteinG: 77,
+      carbsG: 30,
+      fatG: 38.5,
+    });
+  });
+
+  it('POST /api/food-log for a missing/inactive food returns 400', async () => {
+    repo.findFoodById.mockResolvedValue(undefined);
+
+    const res = await request('POST', '/api/food-log', {
+      cookie: await authCookie(),
+      body: { type: 'food', foodId: FOOD_ID, quantity: 200, loggedDate: '2026-06-29' },
+    });
+
+    expect(res.status).toBe(400);
+    expect(repo.createFoodLogEntry).not.toHaveBeenCalled();
+  });
+
+  it('POST /api/food-log with an unknown discriminator type returns 400', async () => {
+    const res = await request('POST', '/api/food-log', {
+      cookie: await authCookie(),
+      body: { type: 'snack', foodId: FOOD_ID, quantity: 200, loggedDate: '2026-06-29' },
+    });
+
+    expect(res.status).toBe(400);
+  });
+});
+
+describe('food-log read/update/delete routes', () => {
+  it('GET /api/food-log returns the day entries and summed totals', async () => {
+    repo.listFoodLogByDate.mockResolvedValue([
+      fakeLogEntry({ kcal: 330, proteinG: 62, carbsG: 0, fatG: 7 }),
+      fakeLogEntry({ id: 'e2', kcal: 200, proteinG: 10, carbsG: 20, fatG: 5 }),
+    ]);
+
+    const res = await request('GET', '/api/food-log?date=2026-06-29', {
+      cookie: await authCookie(),
+    });
+    const body = (await res.json()) as { data: { totals: Record<string, number> } };
+
+    expect(res.status).toBe(200);
+    expect(body.data.totals).toEqual({ kcal: 530, proteinG: 72, carbsG: 20, fatG: 12 });
+    expect(repo.listFoodLogByDate).toHaveBeenCalledWith('user-1', '2026-06-29');
+  });
+
+  it('GET /api/food-log without a date returns 400', async () => {
+    const res = await request('GET', '/api/food-log', { cookie: await authCookie() });
+
+    expect(res.status).toBe(400);
+    expect(repo.listFoodLogByDate).not.toHaveBeenCalled();
+  });
+
+  it('PATCH /api/food-log/:id rescales the snapshot by the quantity ratio', async () => {
+    repo.findFoodLogEntryById.mockResolvedValue(fakeLogEntry());
+    repo.updateFoodLogEntry.mockResolvedValue(fakeLogEntry({ quantity: 100 }));
+
+    const res = await request('PATCH', `/api/food-log/${LOG_ID}`, {
+      cookie: await authCookie(),
+      body: { quantity: 100 },
+    });
+
+    expect(res.status).toBe(200);
+    // 200g -> 100g halves the stored 330/62/0/7.2 snapshot.
+    expect(repo.updateFoodLogEntry).toHaveBeenCalledWith('user-1', LOG_ID, {
+      quantity: 100,
+      kcal: 165,
+      proteinG: 31,
+      carbsG: 0,
+      fatG: 3.6,
+    });
+  });
+
+  it("PATCH /api/food-log/:id returns 404 when the entry is not the user's", async () => {
+    repo.findFoodLogEntryById.mockResolvedValue(undefined);
+
+    const res = await request('PATCH', `/api/food-log/${LOG_ID}`, {
+      cookie: await authCookie(),
+      body: { quantity: 100 },
+    });
+
+    expect(res.status).toBe(404);
+    expect(repo.updateFoodLogEntry).not.toHaveBeenCalled();
+  });
+
+  it('DELETE /api/food-log/:id deletes and returns success', async () => {
+    repo.deleteFoodLogEntry.mockResolvedValue(fakeLogEntry());
+
+    const res = await request('DELETE', `/api/food-log/${LOG_ID}`, { cookie: await authCookie() });
+    const body = (await res.json()) as { data: { success: boolean } };
+
+    expect(res.status).toBe(200);
+    expect(body.data.success).toBe(true);
+  });
+
+  it('DELETE /api/food-log/:id returns 404 when the entry is not found', async () => {
+    repo.deleteFoodLogEntry.mockResolvedValue(undefined);
+
+    const res = await request('DELETE', `/api/food-log/${LOG_ID}`, { cookie: await authCookie() });
+
+    expect(res.status).toBe(404);
   });
 });

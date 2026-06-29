@@ -39,3 +39,14 @@ export function divideMacros(total: MacroTotals, divisor: number): MacroTotals {
     fatG: total.fatG / divisor,
   };
 }
+
+// Multiply macro totals by a factor (e.g. per-serving macros x servings logged,
+// or rescaling a log snapshot by a quantity ratio).
+export function multiplyMacros(macros: MacroTotals, factor: number): MacroTotals {
+  return {
+    kcal: macros.kcal * factor,
+    proteinG: macros.proteinG * factor,
+    carbsG: macros.carbsG * factor,
+    fatG: macros.fatG * factor,
+  };
+}

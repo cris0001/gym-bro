@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { divideMacros, scaleMacros, sumMacros } from './nutrition.utils';
+import { divideMacros, multiplyMacros, scaleMacros, sumMacros } from './nutrition.utils';
 
 const CHICKEN = { kcal: 165, proteinG: 31, carbsG: 0, fatG: 3.6 };
 
@@ -40,6 +40,17 @@ describe('divideMacros', () => {
       proteinG: 15,
       carbsG: 10,
       fatG: 5,
+    });
+  });
+});
+
+describe('multiplyMacros', () => {
+  it('multiplies totals by a factor (e.g. per-serving x servings logged)', () => {
+    expect(multiplyMacros({ kcal: 200, proteinG: 15, carbsG: 10, fatG: 5 }, 1.5)).toEqual({
+      kcal: 300,
+      proteinG: 22.5,
+      carbsG: 15,
+      fatG: 7.5,
     });
   });
 });

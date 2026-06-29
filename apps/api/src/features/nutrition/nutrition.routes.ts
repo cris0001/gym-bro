@@ -1,13 +1,16 @@
 import { Hono, type Context } from 'hono';
 import { z } from 'zod';
 import {
+  createFoodLogSchema,
   createFoodSchema,
   createRecipeSchema,
+  foodLogDateQuerySchema,
+  updateFoodLogSchema,
   updateFoodSchema,
   updateRecipeSchema,
 } from '@gym-bro/shared';
 
-import { NotFoundError } from '../../lib/errors';
+import { NotFoundError, ValidationError } from '../../lib/errors';
 import { parseJson } from '../../lib/validate';
 import { requireAuth, type AppEnv } from '../../middleware/auth';
 import * as nutritionService from './nutrition.service';
@@ -84,5 +87,35 @@ nutritionRoutes.put('/recipes/:id', requireAuth, async (c) => {
 nutritionRoutes.delete('/recipes/:id', requireAuth, async (c) => {
   const id = parseUuidParam(c, 'id');
   await nutritionService.deleteRecipe(c.get('userId'), id);
+  return c.json({ data: { success: true } });
+});
+
+// --- Food log ---
+
+nutritionRoutes.get('/food-log', requireAuth, async (c) => {
+  const parsed = foodLogDateQuerySchema.safeParse({ date: c.req.query('date') });
+  if (!parsed.success) {
+    throw new ValidationError('date must be a valid date (YYYY-MM-DD)');
+  }
+  const day = await nutritionService.getDailyFoodLog(c.get('userId'), parsed.data.date);
+  return c.json({ data: day });
+});
+
+nutritionRoutes.post('/food-log', requireAuth, async (c) => {
+  const input = await parseJson(c, createFoodLogSchema);
+  const entry = await nutritionService.createFoodLogEntry(c.get('userId'), input);
+  return c.json({ data: entry }, 201);
+});
+
+nutritionRoutes.patch('/food-log/:id', requireAuth, async (c) => {
+  const id = parseUuidParam(c, 'id');
+  const input = await parseJson(c, updateFoodLogSchema);
+  const entry = await nutritionService.updateFoodLogEntry(c.get('userId'), id, input);
+  return c.json({ data: entry });
+});
+
+nutritionRoutes.delete('/food-log/:id', requireAuth, async (c) => {
+  const id = parseUuidParam(c, 'id');
+  await nutritionService.deleteFoodLogEntry(c.get('userId'), id);
   return c.json({ data: { success: true } });
 });

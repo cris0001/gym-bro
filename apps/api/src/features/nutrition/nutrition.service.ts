@@ -1,13 +1,15 @@
 import type {
   CreateFoodInput,
+  CreateFoodLogInput,
   CreateRecipeInput,
   UpdateFoodInput,
+  UpdateFoodLogInput,
   UpdateRecipeInput,
 } from '@gym-bro/shared';
 
 import { ConflictError, NotFoundError, ValidationError } from '../../lib/errors';
 import * as nutritionRepository from './nutrition.repository';
-import { divideMacros, scaleMacros, sumMacros } from './nutrition.utils';
+import { divideMacros, multiplyMacros, scaleMacros, sumMacros } from './nutrition.utils';
 
 // Business logic for the nutrition domain — ownership checks, conflict mapping,
 // macro computation. No Drizzle here. Grown per resource, foods first.
@@ -187,4 +189,77 @@ export async function deleteRecipe(userId: string, id: string) {
     throw new NotFoundError('Recipe not found');
   }
   return recipe;
+}
+
+// --- Food log ---
+
+// A day's diary: entries plus their summed macro totals.
+export async function getDailyFoodLog(userId: string, date: string) {
+  const entries = await nutritionRepository.listFoodLogByDate(userId, date);
+  return { date, entries, totals: sumMacros(entries) };
+}
+
+// Create an entry, snapshotting the macros from the referenced source at the
+// logged quantity: a food scales its per-100g macros by grams; a recipe scales
+// its per-serving macros by the number of servings. itemName is snapshotted too.
+export async function createFoodLogEntry(userId: string, input: CreateFoodLogInput) {
+  if (input.type === 'food') {
+    const food = await nutritionRepository.findFoodById(userId, input.foodId);
+    if (!food?.isActive) {
+      throw new ValidationError('Food not found');
+    }
+    return nutritionRepository.createFoodLogEntry({
+      userId,
+      loggedDate: input.loggedDate,
+      foodId: input.foodId,
+      recipeId: null,
+      itemName: food.name,
+      quantity: input.quantity,
+      ...scaleMacros(food, input.quantity),
+    });
+  }
+
+  const recipe = await nutritionRepository.findRecipeById(userId, input.recipeId);
+  if (!recipe) {
+    throw new ValidationError('Recipe not found');
+  }
+  const detail = await buildRecipeDetail(recipe);
+  return nutritionRepository.createFoodLogEntry({
+    userId,
+    loggedDate: input.loggedDate,
+    foodId: null,
+    recipeId: input.recipeId,
+    itemName: recipe.name,
+    quantity: input.quantity,
+    ...multiplyMacros(detail.perServing, input.quantity),
+  });
+}
+
+// Edit an entry's quantity and/or day. The snapshot is linear in quantity, so a
+// quantity change rescales the stored macros by the ratio — no need to refetch
+// the (possibly soft-deleted) source.
+export async function updateFoodLogEntry(userId: string, id: string, input: UpdateFoodLogInput) {
+  const entry = await nutritionRepository.findFoodLogEntryById(userId, id);
+  if (!entry) {
+    throw new NotFoundError('Log entry not found');
+  }
+  const newQuantity = input.quantity ?? entry.quantity;
+  const macros = multiplyMacros(entry, newQuantity / entry.quantity);
+  const updated = await nutritionRepository.updateFoodLogEntry(userId, id, {
+    quantity: newQuantity,
+    ...macros,
+    ...(input.loggedDate !== undefined ? { loggedDate: input.loggedDate } : {}),
+  });
+  if (!updated) {
+    throw new NotFoundError('Log entry not found');
+  }
+  return updated;
+}
+
+export async function deleteFoodLogEntry(userId: string, id: string) {
+  const entry = await nutritionRepository.deleteFoodLogEntry(userId, id);
+  if (!entry) {
+    throw new NotFoundError('Log entry not found');
+  }
+  return entry;
 }
