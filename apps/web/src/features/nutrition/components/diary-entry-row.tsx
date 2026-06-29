@@ -11,7 +11,7 @@ import { MacrosSummary } from './macros-summary';
 // quick delete (low-stakes and easily re-added, so no confirm).
 export function DiaryEntryRow({ entry }: { entry: FoodLogEntry }) {
   const remove = useDeleteFoodLogEntry();
-  const unit = entry.recipeId ? (entry.quantity === 1 ? 'serving' : 'servings') : 'g';
+  const unit = entry.unit === 'servings' ? (entry.quantity === 1 ? 'serving' : 'servings') : 'g';
 
   return (
     <li className="flex items-center gap-3 py-3">
