@@ -1,0 +1,51 @@
+import { Hono, type Context } from 'hono';
+import { z } from 'zod';
+import { createFoodSchema, updateFoodSchema } from '@gym-bro/shared';
+
+import { NotFoundError } from '../../lib/errors';
+import { parseJson } from '../../lib/validate';
+import { requireAuth, type AppEnv } from '../../middleware/auth';
+import * as nutritionService from './nutrition.service';
+
+// Thin handlers: authenticate, validate, delegate, format. requireAuth per route
+// (same as the other feature modules). Every handler scopes to c.get('userId').
+// Grown per resource, foods first.
+export const nutritionRoutes = new Hono<AppEnv>();
+
+// A non-uuid path param can't reference a real row — treat it as not found
+// rather than letting Postgres raise an invalid-uuid error (500).
+function parseUuidParam(c: Context<AppEnv>, name: string): string {
+  const result = z.uuid().safeParse(c.req.param(name));
+  if (!result.success) {
+    throw new NotFoundError();
+  }
+  return result.data;
+}
+
+// --- Foods ---
+
+nutritionRoutes.get('/foods', requireAuth, async (c) => {
+  const searchParam = c.req.query('search')?.trim();
+  const search = searchParam && searchParam.length > 0 ? searchParam : undefined;
+  const foods = await nutritionService.listFoods(c.get('userId'), search);
+  return c.json({ data: foods });
+});
+
+nutritionRoutes.post('/foods', requireAuth, async (c) => {
+  const input = await parseJson(c, createFoodSchema);
+  const food = await nutritionService.createFood(c.get('userId'), input);
+  return c.json({ data: food }, 201);
+});
+
+nutritionRoutes.put('/foods/:id', requireAuth, async (c) => {
+  const id = parseUuidParam(c, 'id');
+  const input = await parseJson(c, updateFoodSchema);
+  const food = await nutritionService.updateFood(c.get('userId'), id, input);
+  return c.json({ data: food });
+});
+
+nutritionRoutes.delete('/foods/:id', requireAuth, async (c) => {
+  const id = parseUuidParam(c, 'id');
+  await nutritionService.deleteFood(c.get('userId'), id);
+  return c.json({ data: { success: true } });
+});

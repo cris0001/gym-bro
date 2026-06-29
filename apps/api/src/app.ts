@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 
 import { authRoutes } from './features/auth/auth.routes';
+import { nutritionRoutes } from './features/nutrition/nutrition.routes';
 import { sessionsRoutes } from './features/sessions/sessions.routes';
 import { statsRoutes } from './features/stats/stats.routes';
 import { trainingRoutes } from './features/training/training.routes';
@@ -34,3 +35,6 @@ app.route('/api', sessionsRoutes);
 // Stats routes (/stats/*) — read-only training aggregations, per-route auth,
 // mounted at the shared /api prefix.
 app.route('/api', statsRoutes);
+// Nutrition routes (/foods, /recipes, /food-log, /nutrition-targets) — per-route
+// auth, mounted at the shared /api prefix.
+app.route('/api', nutritionRoutes);
