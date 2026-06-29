@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   ListChecks,
   Tag,
+  TrendingUp,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -16,6 +17,7 @@ export type NavPath =
   | '/calendar'
   | '/session'
   | '/history'
+  | '/stats'
   | '/plans'
   | '/exercises'
   | '/tags';
@@ -35,6 +37,7 @@ export const PRIMARY_NAV: NavItem[] = [
   { to: '/calendar', label: 'Calendar', icon: CalendarDays },
   { to: '/session', label: 'Workout', icon: Dumbbell },
   { to: '/history', label: 'History', icon: History },
+  { to: '/stats', label: 'Stats', icon: TrendingUp },
 ];
 
 // Setup/library destinations, used infrequently — grouped under "Library" in the
