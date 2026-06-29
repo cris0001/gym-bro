@@ -275,7 +275,10 @@ current target); and targets (edit current + history). Macro math was lifted int
 @gym-bro/shared so the builder's live preview and the backend snapshots share one
 source of truth. Diary is in primary nav; Foods/Recipes/Targets under Library.
 (Inline quantity-edit of a diary entry was deferred — delete + re-add covers it;
-the PATCH endpoint exists for later.)
+the PATCH endpoint exists for later.) Post-completion enhancement (migration 0005):
+the diary is split into 5 Fitatu-style meals (food_log.meal + meal_type enum), each
+section with its own add; and a recipe can be logged by grams or by servings
+(food_log.unit + food_log_unit enum).
 
 - [ ] Nutrition feature module (frontend)
 - [ ] Food dictionary list view with search
