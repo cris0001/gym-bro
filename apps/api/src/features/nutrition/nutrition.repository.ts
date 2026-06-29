@@ -1,8 +1,9 @@
-import { and, asc, eq, ilike, inArray, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, ilike, inArray, sql } from 'drizzle-orm';
 
 import { db } from '../../db/client';
 import { foodLog } from '../../db/schema/food-log';
 import { foods } from '../../db/schema/foods';
+import { nutritionTargets } from '../../db/schema/nutrition-targets';
 import { recipeIngredients } from '../../db/schema/recipe-ingredients';
 import { recipes } from '../../db/schema/recipes';
 
@@ -425,4 +426,74 @@ export async function deleteFoodLogEntry(
     .where(and(eq(foodLog.id, id), eq(foodLog.userId, userId)))
     .returning();
   return row ? mapFoodLogRow(row) : undefined;
+}
+
+// --- Nutrition targets ---
+
+function mapTargetRow(row: typeof nutritionTargets.$inferSelect) {
+  return {
+    ...row,
+    kcal: Number(row.kcal),
+    proteinG: Number(row.proteinG),
+    carbsG: Number(row.carbsG),
+    fatG: Number(row.fatG),
+  };
+}
+
+export type NutritionTargetRow = ReturnType<typeof mapTargetRow>;
+
+interface TargetInput {
+  kcal: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+}
+
+// The current target = the most recent effective date.
+export async function findCurrentTarget(userId: string): Promise<NutritionTargetRow | undefined> {
+  const [row] = await db
+    .select()
+    .from(nutritionTargets)
+    .where(eq(nutritionTargets.userId, userId))
+    .orderBy(desc(nutritionTargets.effectiveDate))
+    .limit(1);
+  return row ? mapTargetRow(row) : undefined;
+}
+
+// Full history, oldest first (for the targets-over-time chart).
+export async function listTargets(userId: string): Promise<NutritionTargetRow[]> {
+  const rows = await db
+    .select()
+    .from(nutritionTargets)
+    .where(eq(nutritionTargets.userId, userId))
+    .orderBy(asc(nutritionTargets.effectiveDate));
+  return rows.map(mapTargetRow);
+}
+
+// Set the target effective on `date` (today). Re-saving the same day updates that
+// row instead of stacking a duplicate, via the (user_id, effective_date) unique
+// index — prior dates stay as history.
+export async function upsertTodayTarget(
+  userId: string,
+  date: string,
+  data: TargetInput,
+): Promise<NutritionTargetRow> {
+  const values = {
+    kcal: data.kcal.toString(),
+    proteinG: data.proteinG.toString(),
+    carbsG: data.carbsG.toString(),
+    fatG: data.fatG.toString(),
+  };
+  const [row] = await db
+    .insert(nutritionTargets)
+    .values({ userId, effectiveDate: date, ...values })
+    .onConflictDoUpdate({
+      target: [nutritionTargets.userId, nutritionTargets.effectiveDate],
+      set: { ...values, updatedAt: new Date() },
+    })
+    .returning();
+  if (!row) {
+    throw new Error('Nutrition target upsert returned no row');
+  }
+  return mapTargetRow(row);
 }

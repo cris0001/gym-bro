@@ -5,6 +5,7 @@ import {
   createFoodSchema,
   createRecipeSchema,
   foodLogDateQuerySchema,
+  setNutritionTargetSchema,
   updateFoodLogSchema,
   updateFoodSchema,
   updateRecipeSchema,
@@ -118,4 +119,22 @@ nutritionRoutes.delete('/food-log/:id', requireAuth, async (c) => {
   const id = parseUuidParam(c, 'id');
   await nutritionService.deleteFoodLogEntry(c.get('userId'), id);
   return c.json({ data: { success: true } });
+});
+
+// --- Nutrition targets ---
+
+nutritionRoutes.get('/nutrition-targets/current', requireAuth, async (c) => {
+  const target = await nutritionService.getCurrentTarget(c.get('userId'));
+  return c.json({ data: target });
+});
+
+nutritionRoutes.get('/nutrition-targets', requireAuth, async (c) => {
+  const targets = await nutritionService.listNutritionTargets(c.get('userId'));
+  return c.json({ data: targets });
+});
+
+nutritionRoutes.put('/nutrition-targets', requireAuth, async (c) => {
+  const input = await parseJson(c, setNutritionTargetSchema);
+  const target = await nutritionService.setNutritionTarget(c.get('userId'), input);
+  return c.json({ data: target });
 });

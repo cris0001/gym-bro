@@ -7,6 +7,7 @@ import { signToken } from '../../lib/jwt';
 import type {
   FoodLogEntryRow,
   FoodRow,
+  NutritionTargetRow,
   RecipeIngredientWithFoodRow,
   RecipeWithTotalsRow,
 } from './nutrition.repository';
@@ -521,5 +522,88 @@ describe('food-log read/update/delete routes', () => {
     const res = await request('DELETE', `/api/food-log/${LOG_ID}`, { cookie: await authCookie() });
 
     expect(res.status).toBe(404);
+  });
+});
+
+const TARGET_ID = '77777777-7777-4777-8777-777777777777';
+const VALID_TARGET = { kcal: 2000, proteinG: 150, carbsG: 200, fatG: 60 };
+
+function fakeTarget(overrides: Partial<NutritionTargetRow> = {}): NutritionTargetRow {
+  return {
+    id: TARGET_ID,
+    userId: 'user-1',
+    effectiveDate: '2026-06-29',
+    kcal: 2000,
+    proteinG: 150,
+    carbsG: 200,
+    fatG: 60,
+    createdAt: new Date('2026-01-01T00:00:00Z'),
+    updatedAt: new Date('2026-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+describe('nutrition target routes', () => {
+  it('GET /api/nutrition-targets/current returns the most recent target', async () => {
+    repo.findCurrentTarget.mockResolvedValue(fakeTarget());
+
+    const res = await request('GET', '/api/nutrition-targets/current', {
+      cookie: await authCookie(),
+    });
+    const body = (await res.json()) as { data: NutritionTargetRow | null };
+
+    expect(res.status).toBe(200);
+    expect(body.data?.kcal).toBe(2000);
+  });
+
+  it('GET /api/nutrition-targets/current returns null when none is set', async () => {
+    repo.findCurrentTarget.mockResolvedValue(undefined);
+
+    const res = await request('GET', '/api/nutrition-targets/current', {
+      cookie: await authCookie(),
+    });
+    const body = (await res.json()) as { data: NutritionTargetRow | null };
+
+    expect(res.status).toBe(200);
+    expect(body.data).toBeNull();
+  });
+
+  it('GET /api/nutrition-targets returns the history', async () => {
+    repo.listTargets.mockResolvedValue([
+      fakeTarget({ id: 'old', effectiveDate: '2026-01-15', kcal: 2200 }),
+      fakeTarget(),
+    ]);
+
+    const res = await request('GET', '/api/nutrition-targets', { cookie: await authCookie() });
+    const body = (await res.json()) as { data: NutritionTargetRow[] };
+
+    expect(res.status).toBe(200);
+    expect(body.data).toHaveLength(2);
+  });
+
+  it("PUT /api/nutrition-targets upserts today's target", async () => {
+    repo.upsertTodayTarget.mockResolvedValue(fakeTarget());
+
+    const res = await request('PUT', '/api/nutrition-targets', {
+      cookie: await authCookie(),
+      body: VALID_TARGET,
+    });
+
+    expect(res.status).toBe(200);
+    expect(repo.upsertTodayTarget).toHaveBeenCalledWith(
+      'user-1',
+      expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+      VALID_TARGET,
+    );
+  });
+
+  it('PUT /api/nutrition-targets with a missing macro returns 400', async () => {
+    const res = await request('PUT', '/api/nutrition-targets', {
+      cookie: await authCookie(),
+      body: { kcal: 2000, proteinG: 150, carbsG: 200 },
+    });
+
+    expect(res.status).toBe(400);
+    expect(repo.upsertTodayTarget).not.toHaveBeenCalled();
   });
 });
