@@ -9,6 +9,7 @@ export * from './types/training.types';
 export * from './types/sessions.types';
 export * from './types/stats.types';
 export * from './types/nutrition.types';
+export * from './utils/macros';
 export * from './constants/auth.constants';
 export * from './constants/training.constants';
 export * from './constants/sessions.constants';

@@ -8,9 +8,10 @@ import type {
   UpdateRecipeInput,
 } from '@gym-bro/shared';
 
+import { divideMacros, multiplyMacros, scaleMacros, sumMacros } from '@gym-bro/shared';
+
 import { ConflictError, NotFoundError, ValidationError } from '../../lib/errors';
 import * as nutritionRepository from './nutrition.repository';
-import { divideMacros, multiplyMacros, scaleMacros, sumMacros } from './nutrition.utils';
 
 // Business logic for the nutrition domain — ownership checks, conflict mapping,
 // macro computation. No Drizzle here. Grown per resource, foods first.

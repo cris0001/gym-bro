@@ -1,8 +1,9 @@
-import type { MacroTotals } from '@gym-bro/shared';
+import type { MacroTotals } from '../types/nutrition.types';
 
-// Pure macro math for the nutrition domain — used to compute recipe totals and
-// food-log snapshots. Full precision is kept here; the numeric columns round to
-// 2 decimals on write.
+// Pure macro math, the single source of truth for both apps: the backend uses it
+// for recipe totals and food-log snapshots; the frontend uses it for the recipe
+// builder's live preview. Full precision is kept here; the numeric columns round
+// to 2 decimals on write.
 
 const ZERO: MacroTotals = { kcal: 0, proteinG: 0, carbsG: 0, fatG: 0 };
 
