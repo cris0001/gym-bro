@@ -8,147 +8,147 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root';
-import { Route as AuthRouteImport } from './routes/_auth';
-import { Route as AppRouteImport } from './routes/_app';
-import { Route as AppIndexRouteImport } from './routes/_app/index';
-import { Route as AuthRegisterRouteImport } from './routes/_auth/register';
-import { Route as AuthLoginRouteImport } from './routes/_auth/login';
-import { Route as AppTagsRouteImport } from './routes/_app/tags';
-import { Route as AppStatsRouteImport } from './routes/_app/stats';
-import { Route as AppSessionRouteImport } from './routes/_app/session';
-import { Route as AppExercisesRouteImport } from './routes/_app/exercises';
-import { Route as AppCalendarRouteImport } from './routes/_app/calendar';
-import { Route as AppPlansIndexRouteImport } from './routes/_app/plans/index';
-import { Route as AppHistoryIndexRouteImport } from './routes/_app/history/index';
-import { Route as AppTemplatesTemplateIdRouteImport } from './routes/_app/templates/$templateId';
-import { Route as AppPlansPlanIdRouteImport } from './routes/_app/plans/$planId';
-import { Route as AppHistorySessionIdRouteImport } from './routes/_app/history/$sessionId';
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteImport } from './routes/_auth'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
+import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as AppTagsRouteImport } from './routes/_app/tags'
+import { Route as AppStatsRouteImport } from './routes/_app/stats'
+import { Route as AppSessionRouteImport } from './routes/_app/session'
+import { Route as AppExercisesRouteImport } from './routes/_app/exercises'
+import { Route as AppCalendarRouteImport } from './routes/_app/calendar'
+import { Route as AppPlansIndexRouteImport } from './routes/_app/plans/index'
+import { Route as AppHistoryIndexRouteImport } from './routes/_app/history/index'
+import { Route as AppTemplatesTemplateIdRouteImport } from './routes/_app/templates/$templateId'
+import { Route as AppPlansPlanIdRouteImport } from './routes/_app/plans/$planId'
+import { Route as AppHistorySessionIdRouteImport } from './routes/_app/history/$sessionId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/_auth',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRoute,
-} as any);
+} as any)
 const AuthRegisterRoute = AuthRegisterRouteImport.update({
   id: '/register',
   path: '/register',
   getParentRoute: () => AuthRoute,
-} as any);
+} as any)
 const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => AuthRoute,
-} as any);
+} as any)
 const AppTagsRoute = AppTagsRouteImport.update({
   id: '/tags',
   path: '/tags',
   getParentRoute: () => AppRoute,
-} as any);
+} as any)
 const AppStatsRoute = AppStatsRouteImport.update({
   id: '/stats',
   path: '/stats',
   getParentRoute: () => AppRoute,
-} as any);
+} as any)
 const AppSessionRoute = AppSessionRouteImport.update({
   id: '/session',
   path: '/session',
   getParentRoute: () => AppRoute,
-} as any);
+} as any)
 const AppExercisesRoute = AppExercisesRouteImport.update({
   id: '/exercises',
   path: '/exercises',
   getParentRoute: () => AppRoute,
-} as any);
+} as any)
 const AppCalendarRoute = AppCalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
   getParentRoute: () => AppRoute,
-} as any);
+} as any)
 const AppPlansIndexRoute = AppPlansIndexRouteImport.update({
   id: '/plans/',
   path: '/plans/',
   getParentRoute: () => AppRoute,
-} as any);
+} as any)
 const AppHistoryIndexRoute = AppHistoryIndexRouteImport.update({
   id: '/history/',
   path: '/history/',
   getParentRoute: () => AppRoute,
-} as any);
+} as any)
 const AppTemplatesTemplateIdRoute = AppTemplatesTemplateIdRouteImport.update({
   id: '/templates/$templateId',
   path: '/templates/$templateId',
   getParentRoute: () => AppRoute,
-} as any);
+} as any)
 const AppPlansPlanIdRoute = AppPlansPlanIdRouteImport.update({
   id: '/plans/$planId',
   path: '/plans/$planId',
   getParentRoute: () => AppRoute,
-} as any);
+} as any)
 const AppHistorySessionIdRoute = AppHistorySessionIdRouteImport.update({
   id: '/history/$sessionId',
   path: '/history/$sessionId',
   getParentRoute: () => AppRoute,
-} as any);
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AppIndexRoute;
-  '/calendar': typeof AppCalendarRoute;
-  '/exercises': typeof AppExercisesRoute;
-  '/session': typeof AppSessionRoute;
-  '/stats': typeof AppStatsRoute;
-  '/tags': typeof AppTagsRoute;
-  '/login': typeof AuthLoginRoute;
-  '/register': typeof AuthRegisterRoute;
-  '/history/$sessionId': typeof AppHistorySessionIdRoute;
-  '/plans/$planId': typeof AppPlansPlanIdRoute;
-  '/templates/$templateId': typeof AppTemplatesTemplateIdRoute;
-  '/history/': typeof AppHistoryIndexRoute;
-  '/plans/': typeof AppPlansIndexRoute;
+  '/': typeof AppIndexRoute
+  '/calendar': typeof AppCalendarRoute
+  '/exercises': typeof AppExercisesRoute
+  '/session': typeof AppSessionRoute
+  '/stats': typeof AppStatsRoute
+  '/tags': typeof AppTagsRoute
+  '/login': typeof AuthLoginRoute
+  '/register': typeof AuthRegisterRoute
+  '/history/$sessionId': typeof AppHistorySessionIdRoute
+  '/plans/$planId': typeof AppPlansPlanIdRoute
+  '/templates/$templateId': typeof AppTemplatesTemplateIdRoute
+  '/history/': typeof AppHistoryIndexRoute
+  '/plans/': typeof AppPlansIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof AppIndexRoute;
-  '/calendar': typeof AppCalendarRoute;
-  '/exercises': typeof AppExercisesRoute;
-  '/session': typeof AppSessionRoute;
-  '/stats': typeof AppStatsRoute;
-  '/tags': typeof AppTagsRoute;
-  '/login': typeof AuthLoginRoute;
-  '/register': typeof AuthRegisterRoute;
-  '/history/$sessionId': typeof AppHistorySessionIdRoute;
-  '/plans/$planId': typeof AppPlansPlanIdRoute;
-  '/templates/$templateId': typeof AppTemplatesTemplateIdRoute;
-  '/history': typeof AppHistoryIndexRoute;
-  '/plans': typeof AppPlansIndexRoute;
+  '/': typeof AppIndexRoute
+  '/calendar': typeof AppCalendarRoute
+  '/exercises': typeof AppExercisesRoute
+  '/session': typeof AppSessionRoute
+  '/stats': typeof AppStatsRoute
+  '/tags': typeof AppTagsRoute
+  '/login': typeof AuthLoginRoute
+  '/register': typeof AuthRegisterRoute
+  '/history/$sessionId': typeof AppHistorySessionIdRoute
+  '/plans/$planId': typeof AppPlansPlanIdRoute
+  '/templates/$templateId': typeof AppTemplatesTemplateIdRoute
+  '/history': typeof AppHistoryIndexRoute
+  '/plans': typeof AppPlansIndexRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  '/_app': typeof AppRouteWithChildren;
-  '/_auth': typeof AuthRouteWithChildren;
-  '/_app/calendar': typeof AppCalendarRoute;
-  '/_app/exercises': typeof AppExercisesRoute;
-  '/_app/session': typeof AppSessionRoute;
-  '/_app/stats': typeof AppStatsRoute;
-  '/_app/tags': typeof AppTagsRoute;
-  '/_auth/login': typeof AuthLoginRoute;
-  '/_auth/register': typeof AuthRegisterRoute;
-  '/_app/': typeof AppIndexRoute;
-  '/_app/history/$sessionId': typeof AppHistorySessionIdRoute;
-  '/_app/plans/$planId': typeof AppPlansPlanIdRoute;
-  '/_app/templates/$templateId': typeof AppTemplatesTemplateIdRoute;
-  '/_app/history/': typeof AppHistoryIndexRoute;
-  '/_app/plans/': typeof AppPlansIndexRoute;
+  __root__: typeof rootRouteImport
+  '/_app': typeof AppRouteWithChildren
+  '/_auth': typeof AuthRouteWithChildren
+  '/_app/calendar': typeof AppCalendarRoute
+  '/_app/exercises': typeof AppExercisesRoute
+  '/_app/session': typeof AppSessionRoute
+  '/_app/stats': typeof AppStatsRoute
+  '/_app/tags': typeof AppTagsRoute
+  '/_auth/login': typeof AuthLoginRoute
+  '/_auth/register': typeof AuthRegisterRoute
+  '/_app/': typeof AppIndexRoute
+  '/_app/history/$sessionId': typeof AppHistorySessionIdRoute
+  '/_app/plans/$planId': typeof AppPlansPlanIdRoute
+  '/_app/templates/$templateId': typeof AppTemplatesTemplateIdRoute
+  '/_app/history/': typeof AppHistoryIndexRoute
+  '/_app/plans/': typeof AppPlansIndexRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/calendar'
@@ -162,8 +162,8 @@ export interface FileRouteTypes {
     | '/plans/$planId'
     | '/templates/$templateId'
     | '/history/'
-    | '/plans/';
-  fileRoutesByTo: FileRoutesByTo;
+    | '/plans/'
+  fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/calendar'
@@ -177,7 +177,7 @@ export interface FileRouteTypes {
     | '/plans/$planId'
     | '/templates/$templateId'
     | '/history'
-    | '/plans';
+    | '/plans'
   id:
     | '__root__'
     | '/_app'
@@ -194,136 +194,136 @@ export interface FileRouteTypes {
     | '/_app/plans/$planId'
     | '/_app/templates/$templateId'
     | '/_app/history/'
-    | '/_app/plans/';
-  fileRoutesById: FileRoutesById;
+    | '/_app/plans/'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  AppRoute: typeof AppRouteWithChildren;
-  AuthRoute: typeof AuthRouteWithChildren;
+  AppRoute: typeof AppRouteWithChildren
+  AuthRoute: typeof AuthRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/_auth': {
-      id: '/_auth';
-      path: '';
-      fullPath: '/';
-      preLoaderRoute: typeof AuthRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/_auth'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app': {
-      id: '/_app';
-      path: '';
-      fullPath: '/';
-      preLoaderRoute: typeof AppRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/': {
-      id: '/_app/';
-      path: '/';
-      fullPath: '/';
-      preLoaderRoute: typeof AppIndexRouteImport;
-      parentRoute: typeof AppRoute;
-    };
+      id: '/_app/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_auth/register': {
-      id: '/_auth/register';
-      path: '/register';
-      fullPath: '/register';
-      preLoaderRoute: typeof AuthRegisterRouteImport;
-      parentRoute: typeof AuthRoute;
-    };
+      id: '/_auth/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof AuthRegisterRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/_auth/login': {
-      id: '/_auth/login';
-      path: '/login';
-      fullPath: '/login';
-      preLoaderRoute: typeof AuthLoginRouteImport;
-      parentRoute: typeof AuthRoute;
-    };
+      id: '/_auth/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/_app/tags': {
-      id: '/_app/tags';
-      path: '/tags';
-      fullPath: '/tags';
-      preLoaderRoute: typeof AppTagsRouteImport;
-      parentRoute: typeof AppRoute;
-    };
+      id: '/_app/tags'
+      path: '/tags'
+      fullPath: '/tags'
+      preLoaderRoute: typeof AppTagsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/stats': {
-      id: '/_app/stats';
-      path: '/stats';
-      fullPath: '/stats';
-      preLoaderRoute: typeof AppStatsRouteImport;
-      parentRoute: typeof AppRoute;
-    };
+      id: '/_app/stats'
+      path: '/stats'
+      fullPath: '/stats'
+      preLoaderRoute: typeof AppStatsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/session': {
-      id: '/_app/session';
-      path: '/session';
-      fullPath: '/session';
-      preLoaderRoute: typeof AppSessionRouteImport;
-      parentRoute: typeof AppRoute;
-    };
+      id: '/_app/session'
+      path: '/session'
+      fullPath: '/session'
+      preLoaderRoute: typeof AppSessionRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/exercises': {
-      id: '/_app/exercises';
-      path: '/exercises';
-      fullPath: '/exercises';
-      preLoaderRoute: typeof AppExercisesRouteImport;
-      parentRoute: typeof AppRoute;
-    };
+      id: '/_app/exercises'
+      path: '/exercises'
+      fullPath: '/exercises'
+      preLoaderRoute: typeof AppExercisesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/calendar': {
-      id: '/_app/calendar';
-      path: '/calendar';
-      fullPath: '/calendar';
-      preLoaderRoute: typeof AppCalendarRouteImport;
-      parentRoute: typeof AppRoute;
-    };
+      id: '/_app/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof AppCalendarRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/plans/': {
-      id: '/_app/plans/';
-      path: '/plans';
-      fullPath: '/plans/';
-      preLoaderRoute: typeof AppPlansIndexRouteImport;
-      parentRoute: typeof AppRoute;
-    };
+      id: '/_app/plans/'
+      path: '/plans'
+      fullPath: '/plans/'
+      preLoaderRoute: typeof AppPlansIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/history/': {
-      id: '/_app/history/';
-      path: '/history';
-      fullPath: '/history/';
-      preLoaderRoute: typeof AppHistoryIndexRouteImport;
-      parentRoute: typeof AppRoute;
-    };
+      id: '/_app/history/'
+      path: '/history'
+      fullPath: '/history/'
+      preLoaderRoute: typeof AppHistoryIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/templates/$templateId': {
-      id: '/_app/templates/$templateId';
-      path: '/templates/$templateId';
-      fullPath: '/templates/$templateId';
-      preLoaderRoute: typeof AppTemplatesTemplateIdRouteImport;
-      parentRoute: typeof AppRoute;
-    };
+      id: '/_app/templates/$templateId'
+      path: '/templates/$templateId'
+      fullPath: '/templates/$templateId'
+      preLoaderRoute: typeof AppTemplatesTemplateIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/plans/$planId': {
-      id: '/_app/plans/$planId';
-      path: '/plans/$planId';
-      fullPath: '/plans/$planId';
-      preLoaderRoute: typeof AppPlansPlanIdRouteImport;
-      parentRoute: typeof AppRoute;
-    };
+      id: '/_app/plans/$planId'
+      path: '/plans/$planId'
+      fullPath: '/plans/$planId'
+      preLoaderRoute: typeof AppPlansPlanIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/history/$sessionId': {
-      id: '/_app/history/$sessionId';
-      path: '/history/$sessionId';
-      fullPath: '/history/$sessionId';
-      preLoaderRoute: typeof AppHistorySessionIdRouteImport;
-      parentRoute: typeof AppRoute;
-    };
+      id: '/_app/history/$sessionId'
+      path: '/history/$sessionId'
+      fullPath: '/history/$sessionId'
+      preLoaderRoute: typeof AppHistorySessionIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
-  AppCalendarRoute: typeof AppCalendarRoute;
-  AppExercisesRoute: typeof AppExercisesRoute;
-  AppSessionRoute: typeof AppSessionRoute;
-  AppStatsRoute: typeof AppStatsRoute;
-  AppTagsRoute: typeof AppTagsRoute;
-  AppIndexRoute: typeof AppIndexRoute;
-  AppHistorySessionIdRoute: typeof AppHistorySessionIdRoute;
-  AppPlansPlanIdRoute: typeof AppPlansPlanIdRoute;
-  AppTemplatesTemplateIdRoute: typeof AppTemplatesTemplateIdRoute;
-  AppHistoryIndexRoute: typeof AppHistoryIndexRoute;
-  AppPlansIndexRoute: typeof AppPlansIndexRoute;
+  AppCalendarRoute: typeof AppCalendarRoute
+  AppExercisesRoute: typeof AppExercisesRoute
+  AppSessionRoute: typeof AppSessionRoute
+  AppStatsRoute: typeof AppStatsRoute
+  AppTagsRoute: typeof AppTagsRoute
+  AppIndexRoute: typeof AppIndexRoute
+  AppHistorySessionIdRoute: typeof AppHistorySessionIdRoute
+  AppPlansPlanIdRoute: typeof AppPlansPlanIdRoute
+  AppTemplatesTemplateIdRoute: typeof AppTemplatesTemplateIdRoute
+  AppHistoryIndexRoute: typeof AppHistoryIndexRoute
+  AppPlansIndexRoute: typeof AppPlansIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -338,26 +338,26 @@ const AppRouteChildren: AppRouteChildren = {
   AppTemplatesTemplateIdRoute: AppTemplatesTemplateIdRoute,
   AppHistoryIndexRoute: AppHistoryIndexRoute,
   AppPlansIndexRoute: AppPlansIndexRoute,
-};
+}
 
-const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren);
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 interface AuthRouteChildren {
-  AuthLoginRoute: typeof AuthLoginRoute;
-  AuthRegisterRoute: typeof AuthRegisterRoute;
+  AuthLoginRoute: typeof AuthLoginRoute
+  AuthRegisterRoute: typeof AuthRegisterRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
-};
+}
 
-const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren);
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
