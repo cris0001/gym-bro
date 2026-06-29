@@ -553,11 +553,27 @@ Migrations can destroy data. Rules:
 
 ## Current stage
 
-Stage 7: training stats (apps/api + apps/web) — per-exercise progress (max weight
-and total volume over time), workout rating trend, and the stats/chart views with
-Recharts. No new tables; reads the Stage 6 workout/set data.
+Stage 8: nutrition backend (apps/api + packages/shared) — foods, recipes,
+recipe_ingredients, food_log, and historical nutrition_targets (UNIQUE per date)
+tables with a new migration, the nutrition feature module (routes/service/
+repository), and the per-domain nutrition Zod schemas/types in @gym-bro/shared.
+Food/recipe/food-log/target CRUD (recipes auto-calculate macros; targets are
+historical with a "current" = most recent), plus pure macro-calculation functions
+with tests.
 
-(Stage 6 — calendar + workout sessions — COMPLETE: shipped end to end. Backend:
+(Stage 7 — training stats — COMPLETE: no new tables; reads Stage 6 workout/set
+data. Backend: three read-only /api/stats endpoints — logged-exercise picker,
+per-exercise progress (per-session MAX weight + SUM weight×reps, matched on
+actualExerciseId so swaps count, optional from/to window, nulls skipped so
+bodyweight drops out), and rating trend (all rated sessions) — in a new stats
+feature module (repository/service/routes), with statsRangeQuerySchema +
+StatExercise/ExerciseProgressPoint/RatingTrendPoint in @gym-bro/shared; 8 route
+tests (136 total). Frontend (apps/web): recharts added; a /stats page (primary
+nav) stacking a per-exercise progress chart (max-weight/volume metric toggle +
+searchable picker over logged exercises) and a pinned 1–5 rating-trend chart, both
+Recharts, themed via CSS vars for dark mode and code-split to the route.
+
+Stage 6 — calendar + workout sessions — COMPLETE: shipped end to end. Backend:
 planned_sessions, workout_sessions, exercise_performances, sets,
 workout_session_tags + users.active_plan_id (migration 0003 on Neon); active-plan,
 planned-session (calendar), and workout-session modules — atomic finish-workout
