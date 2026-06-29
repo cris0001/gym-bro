@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { divideMacros, multiplyMacros, scaleMacros, sumMacros } from './nutrition.utils';
+import { divideMacros, multiplyMacros, scaleMacros, sumMacros } from './macros';
 
 const CHICKEN = { kcal: 165, proteinG: 31, carbsG: 0, fatG: 3.6 };
 
