@@ -6,3 +6,4 @@ export { RecipesPage } from './components/recipes-page';
 export { RecipeBuilder } from './components/recipe-builder';
 export { RecipeEditPage } from './components/recipe-edit-page';
 export { TargetsPage } from './components/targets-page';
+export { DiaryPage } from './components/diary-page';
