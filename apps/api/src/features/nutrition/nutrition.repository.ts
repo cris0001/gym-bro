@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, ilike, inArray, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gte, ilike, inArray, max, sql } from 'drizzle-orm';
 
 import type { FoodLogUnit, MealType } from '@gym-bro/shared';
 
@@ -388,6 +388,74 @@ export async function findFoodLogEntryById(
     .where(and(eq(foodLog.id, id), eq(foodLog.userId, userId)))
     .limit(1);
   return row ? mapFoodLogRow(row) : undefined;
+}
+
+// A recently-logged source for a meal with how often and how recently it was used
+// (for frequency ranking). Counts come back as numbers; lastDate is a date string.
+export interface RecentDiaryRow {
+  type: 'food' | 'recipe';
+  id: string;
+  name: string;
+  count: number;
+  lastDate: string;
+}
+
+// Distinct active foods and recipes logged for `meal` on/after `sinceDate`, each
+// with its use count and most recent day. Only active sources are returned (a
+// soft-deleted one can't be re-logged). The service merges, ranks, and caps.
+export async function findRecentDiaryRows(
+  userId: string,
+  meal: MealType,
+  sinceDate: string,
+): Promise<RecentDiaryRow[]> {
+  // The shared filters; the inner join already restricts each query to food vs
+  // recipe entries, so no null-check on the polymorphic columns is needed.
+  const inWindow = and(
+    eq(foodLog.userId, userId),
+    eq(foodLog.meal, meal),
+    gte(foodLog.loggedDate, sinceDate),
+  );
+
+  const foodRows = await db
+    .select({
+      id: foods.id,
+      name: foods.name,
+      count: count(),
+      lastDate: max(foodLog.loggedDate),
+    })
+    .from(foodLog)
+    .innerJoin(foods, eq(foodLog.foodId, foods.id))
+    .where(and(inWindow, eq(foods.isActive, true)))
+    .groupBy(foods.id, foods.name);
+
+  const recipeRows = await db
+    .select({
+      id: recipes.id,
+      name: recipes.name,
+      count: count(),
+      lastDate: max(foodLog.loggedDate),
+    })
+    .from(foodLog)
+    .innerJoin(recipes, eq(foodLog.recipeId, recipes.id))
+    .where(and(inWindow, eq(recipes.isActive, true)))
+    .groupBy(recipes.id, recipes.name);
+
+  return [
+    ...foodRows.map((row) => ({
+      type: 'food' as const,
+      id: row.id,
+      name: row.name,
+      count: Number(row.count),
+      lastDate: row.lastDate ?? sinceDate,
+    })),
+    ...recipeRows.map((row) => ({
+      type: 'recipe' as const,
+      id: row.id,
+      name: row.name,
+      count: Number(row.count),
+      lastDate: row.lastDate ?? sinceDate,
+    })),
+  ];
 }
 
 // Re-snapshot + optionally move the entry to another day. The source reference is

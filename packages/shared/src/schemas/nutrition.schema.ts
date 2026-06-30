@@ -98,3 +98,8 @@ export const updateFoodLogSchema = z
 export const foodLogDateQuerySchema = z.object({
   date: z.iso.date(),
 });
+
+// Recently-logged items for one meal, for the quick re-add list.
+export const recentFoodLogQuerySchema = z.object({
+  meal,
+});

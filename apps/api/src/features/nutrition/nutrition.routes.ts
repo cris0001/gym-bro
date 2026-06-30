@@ -5,6 +5,7 @@ import {
   createFoodSchema,
   createRecipeSchema,
   foodLogDateQuerySchema,
+  recentFoodLogQuerySchema,
   setNutritionTargetSchema,
   updateFoodLogSchema,
   updateFoodSchema,
@@ -100,6 +101,16 @@ nutritionRoutes.get('/food-log', requireAuth, async (c) => {
   }
   const day = await nutritionService.getDailyFoodLog(c.get('userId'), parsed.data.date);
   return c.json({ data: day });
+});
+
+// Static segment before the /:id routes so "recent" isn't read as an id.
+nutritionRoutes.get('/food-log/recent', requireAuth, async (c) => {
+  const parsed = recentFoodLogQuerySchema.safeParse({ meal: c.req.query('meal') });
+  if (!parsed.success) {
+    throw new ValidationError('meal is required and must be a valid meal');
+  }
+  const items = await nutritionService.getRecentDiaryItems(c.get('userId'), parsed.data.meal);
+  return c.json({ data: items });
 });
 
 nutritionRoutes.post('/food-log', requireAuth, async (c) => {
