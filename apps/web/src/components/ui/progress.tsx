@@ -4,11 +4,15 @@ import { Progress as ProgressPrimitive } from 'radix-ui';
 import { cn } from '@/lib/utils';
 
 // Standard shadcn/ui Progress primitive (Radix). value is 0–100.
+// indicatorClassName recolors the filled bar (e.g. per macro).
 function Progress({
   className,
+  indicatorClassName,
   value,
   ...props
-}: React.ComponentProps<typeof ProgressPrimitive.Root>) {
+}: React.ComponentProps<typeof ProgressPrimitive.Root> & {
+  indicatorClassName?: string | undefined;
+}) {
   return (
     <ProgressPrimitive.Root
       data-slot="progress"
@@ -17,7 +21,7 @@ function Progress({
     >
       <ProgressPrimitive.Indicator
         data-slot="progress-indicator"
-        className="bg-primary h-full w-full flex-1 transition-all"
+        className={cn('bg-primary h-full w-full flex-1 transition-all', indicatorClassName)}
         style={{ transform: `translateX(-${100 - (value ?? 0)}%)` }}
       />
     </ProgressPrimitive.Root>
