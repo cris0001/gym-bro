@@ -18,11 +18,15 @@ const tagIdList = z
 // --- Sets and performances (strength only) ---
 
 // One logged set. Position comes from array order. All metrics nullish: weight
-// null = bodyweight, and a set may be logged with only some fields.
+// null = bodyweight, and a set may be logged with only some fields. isTopSet marks
+// the exercise's heavier, lower-rep "top set" (the rest are normal/back-off sets);
+// defaults to false, at most one per performance (enforced in the UI).
 export const logSetSchema = z.object({
   weight: z.number().min(0).max(9999.99).nullish(),
   reps: z.number().int().min(0).max(10000).nullish(),
   rir: z.number().int().min(0).max(5).nullish(),
+  // Optional on input (omitted = a normal set); the backend/DB default to false.
+  isTopSet: z.boolean().optional(),
 });
 
 // One exercise performed within a session, with its sets. The swap pair:
