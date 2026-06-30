@@ -82,18 +82,28 @@ function countByDate(
 }
 
 export function CalendarGrid() {
-  const viewedMonth = useCalendarUiStore((s) => s.viewedMonth);
+  const viewMode = useCalendarUiStore((s) => s.viewMode);
+  const anchor = useCalendarUiStore((s) => s.anchor);
   const selectedDate = useCalendarUiStore((s) => s.selectedDate);
   const selectDay = useCalendarUiStore((s) => s.selectDay);
-  const goToPrevMonth = useCalendarUiStore((s) => s.goToPrevMonth);
-  const goToNextMonth = useCalendarUiStore((s) => s.goToNextMonth);
+  const setViewMode = useCalendarUiStore((s) => s.setViewMode);
+  const goPrev = useCalendarUiStore((s) => s.goPrev);
+  const goNext = useCalendarUiStore((s) => s.goNext);
   const goToToday = useCalendarUiStore((s) => s.goToToday);
 
-  // The grid spans whole weeks, so it bleeds into the prev/next month. We query
-  // the full visible window so leading/trailing days show their markers too.
-  const gridStart = startOfWeek(startOfMonth(viewedMonth), { weekStartsOn: 1 });
-  const gridEnd = endOfWeek(endOfMonth(viewedMonth), { weekStartsOn: 1 });
+  const isWeek = viewMode === 'week';
+  // Month spans whole weeks (bleeding into adjacent months); week is the single
+  // week around the anchor. Either way we query the full visible window.
+  const gridStart = isWeek
+    ? startOfWeek(anchor, { weekStartsOn: 1 })
+    : startOfWeek(startOfMonth(anchor), { weekStartsOn: 1 });
+  const gridEnd = isWeek
+    ? endOfWeek(anchor, { weekStartsOn: 1 })
+    : endOfWeek(endOfMonth(anchor), { weekStartsOn: 1 });
   const days = eachDayOfInterval({ start: gridStart, end: gridEnd });
+  const label = isWeek
+    ? `${format(gridStart, 'MMM d')} – ${format(gridEnd, 'MMM d')}`
+    : format(anchor, 'MMMM yyyy');
 
   const fromIso = format(gridStart, ISO);
   const toIso = format(gridEnd, ISO);
@@ -141,16 +151,29 @@ export function CalendarGrid() {
       onDragCancel={() => setDragging(null)}
     >
       <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">{format(viewedMonth, 'MMMM yyyy')}</h2>
-          <div className="flex items-center gap-1">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-lg font-semibold">{label}</h2>
+          <div className="flex items-center gap-2">
+            <div className="bg-muted flex gap-0.5 rounded-md p-0.5">
+              {(['month', 'week'] as const).map((mode) => (
+                <Button
+                  key={mode}
+                  variant={viewMode === mode ? 'default' : 'ghost'}
+                  size="sm"
+                  className="h-7 px-2.5 capitalize"
+                  onClick={() => setViewMode(mode)}
+                >
+                  {mode}
+                </Button>
+              ))}
+            </div>
             <Button variant="ghost" size="sm" onClick={goToToday}>
               Today
             </Button>
-            <Button variant="ghost" size="icon" onClick={goToPrevMonth} aria-label="Previous month">
+            <Button variant="ghost" size="icon" onClick={goPrev} aria-label="Previous">
               <ChevronLeft className="size-4" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={goToNextMonth} aria-label="Next month">
+            <Button variant="ghost" size="icon" onClick={goNext} aria-label="Next">
               <ChevronRight className="size-4" />
             </Button>
           </div>
@@ -172,7 +195,8 @@ export function CalendarGrid() {
                 key={iso}
                 iso={iso}
                 dayNumber={format(day, 'd')}
-                inMonth={isSameMonth(day, viewedMonth)}
+                inMonth={isWeek ? true : isSameMonth(day, anchor)}
+                tall={isWeek}
                 isToday={isToday(day)}
                 isSelected={selectedDate === iso}
                 planned={byDate.get(iso) ?? []}

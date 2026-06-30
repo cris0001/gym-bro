@@ -11,6 +11,8 @@ interface CalendarDayCellProps {
   iso: string;
   dayNumber: string;
   inMonth: boolean;
+  // Week view gives each day more vertical room; month view keeps square cells.
+  tall?: boolean;
   isToday: boolean;
   isSelected: boolean;
   planned: PlannedSessionWithTemplate[];
@@ -31,6 +33,7 @@ export function CalendarDayCell({
   iso,
   dayNumber,
   inMonth,
+  tall = false,
   isToday,
   isSelected,
   planned,
@@ -74,7 +77,8 @@ export function CalendarDayCell({
         }
       }}
       className={cn(
-        'flex aspect-square min-h-11 cursor-pointer flex-col items-center justify-start gap-1 rounded-md p-1 text-sm transition-colors',
+        'flex min-h-11 cursor-pointer flex-col items-center justify-start gap-1 rounded-md p-1 text-sm transition-colors',
+        tall ? 'min-h-24' : 'aspect-square',
         'hover:bg-accent focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2',
         !inMonth && 'text-muted-foreground/40',
         bgClass,
