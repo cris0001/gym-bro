@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
 
 import { BottomNav } from '@/components/nav/bottom-nav';
+import { SectionTabs } from '@/components/nav/section-tabs';
 import { SidebarNav } from '@/components/nav/sidebar-nav';
 import { LogoutButton, OnboardingSheet, meQueryOptions } from '@/features/auth';
 
@@ -28,6 +29,7 @@ function AppLayout() {
           <span className="text-lg font-bold">GM</span>
           <LogoutButton />
         </header>
+        <SectionTabs />
         <main className="flex-1 pb-16 lg:pb-0">
           <Outlet />
         </main>
