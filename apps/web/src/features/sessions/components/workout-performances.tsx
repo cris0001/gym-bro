@@ -28,7 +28,7 @@ export function WorkoutPerformances({
       {performances.map((performance) => {
         const swapped = performance.exercise.id !== performance.originalExercise.id;
         return (
-          <div key={performance.id} className="flex flex-col gap-2 rounded-lg border p-3">
+          <div key={performance.id} className="bg-card flex flex-col gap-2 rounded-lg border p-3">
             <div className="flex flex-col">
               <span className="font-semibold">{performance.exercise.name}</span>
               <span className="text-muted-foreground text-xs">

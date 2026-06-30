@@ -64,8 +64,8 @@ export function ActiveSessionPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-4 pb-28">
-      <header className="flex flex-col gap-2">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-4 pb-28">
+      <header className="border-l-primary bg-card flex flex-col gap-2 rounded-xl border border-l-4 p-4">
         {isTemplateBased ? (
           <h1 className="flex h-11 items-center text-lg font-semibold">{draft.name}</h1>
         ) : (
@@ -103,7 +103,7 @@ export function ActiveSessionPage() {
       </Button>
 
       <div className="bg-background/95 fixed inset-x-0 bottom-0 z-30 border-t p-3 backdrop-blur lg:left-56">
-        <div className="mx-auto flex w-full max-w-2xl gap-2">
+        <div className="mx-auto flex w-full max-w-3xl gap-2">
           <Button variant="ghost" className="h-11" onClick={handleDiscard}>
             {isEditing ? 'Cancel' : 'Discard'}
           </Button>

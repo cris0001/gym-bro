@@ -45,45 +45,49 @@ export function BodyPage() {
   const filtered = filterByPeriod(entries, period);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-4">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 p-4">
       <h1 className="text-2xl font-bold">Body</h1>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{editing ? 'Edit measurement' : 'Add measurement'}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <BodyMeasurementForm />
-        </CardContent>
-      </Card>
+      <div className="grid gap-4 lg:grid-cols-[22rem_1fr] lg:items-start">
+        <Card className="border-l-primary border-l-4">
+          <CardHeader>
+            <CardTitle>{editing ? 'Edit measurement' : 'Add measurement'}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <BodyMeasurementForm />
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-          <CardTitle>Trends</CardTitle>
-          <div className="bg-muted flex gap-0.5 rounded-md p-0.5">
-            {PERIODS.map((p) => (
-              <Button
-                key={p.key}
-                type="button"
-                size="sm"
-                variant={period === p.key ? 'default' : 'ghost'}
-                className={cn('h-7 px-2', period !== p.key && 'text-muted-foreground')}
-                onClick={() => setPeriod(p.key)}
-              >
-                {p.label}
-              </Button>
-            ))}
-          </div>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <BodyStatsPanel entries={filtered} />
-          <BodyTrendChart entries={filtered} />
-        </CardContent>
-      </Card>
+        <Card>
+          <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
+            <CardTitle>Trends</CardTitle>
+            <div className="bg-muted flex gap-0.5 rounded-md p-0.5">
+              {PERIODS.map((p) => (
+                <Button
+                  key={p.key}
+                  type="button"
+                  size="sm"
+                  variant={period === p.key ? 'default' : 'ghost'}
+                  className={cn('h-7 px-2', period !== p.key && 'text-muted-foreground')}
+                  onClick={() => setPeriod(p.key)}
+                >
+                  {p.label}
+                </Button>
+              ))}
+            </div>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <BodyStatsPanel entries={filtered} />
+            <BodyTrendChart entries={filtered} />
+          </CardContent>
+        </Card>
+      </div>
 
-      <section className="flex flex-col gap-1">
+      <section className="flex flex-col gap-2">
         <h2 className="font-semibold">History</h2>
-        <MeasurementList entries={filtered} />
+        <div className="bg-card rounded-xl border px-4">
+          <MeasurementList entries={filtered} />
+        </div>
       </section>
     </div>
   );
