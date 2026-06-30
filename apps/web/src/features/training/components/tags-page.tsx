@@ -12,7 +12,7 @@ export function TagsPage() {
   const openCreate = useTagUiStore((s) => s.openCreate);
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-4">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 p-4">
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">Tags</h1>
         <Button type="button" className="h-11" onClick={openCreate}>

@@ -11,6 +11,7 @@ import type { MealType } from '@gym-bro/shared';
 import { useDailyFoodLog } from '../hooks/use-daily-food-log';
 import { AddEntrySheet } from './add-entry-sheet';
 import { DaySummary } from './day-summary';
+import { DiaryBottomBar } from './diary-bottom-bar';
 import { MealSection } from './diary-meal-section';
 
 const ISO = 'yyyy-MM-dd';
@@ -35,12 +36,12 @@ export function DiaryPage() {
   const entries = data?.entries ?? [];
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 p-4">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-4 pb-28 lg:pb-4">
       <h1 className="text-2xl font-bold">Diary</h1>
 
-      <div className="lg:grid lg:grid-cols-[1fr_18rem] lg:items-start lg:gap-6">
-        {/* Summary on top on mobile, sticky sidebar on desktop. */}
-        <Card className="mb-4 lg:order-2 lg:mb-0 lg:sticky lg:top-4">
+      <div className="lg:grid lg:grid-cols-[1fr_19rem] lg:items-start lg:gap-6">
+        {/* Desktop sidebar summary; on mobile the slim bottom bar takes over. */}
+        <Card className="hidden lg:order-2 lg:sticky lg:top-4 lg:block">
           <CardContent>
             {data ? (
               <DaySummary totals={data.totals} />
@@ -90,6 +91,7 @@ export function DiaryPage() {
       </div>
 
       <AddEntrySheet loggedDate={date} />
+      {data && <DiaryBottomBar totals={data.totals} />}
     </div>
   );
 }
