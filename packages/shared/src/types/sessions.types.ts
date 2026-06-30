@@ -84,6 +84,8 @@ export interface WorkoutSet {
   weight: number | null;
   reps: number | null;
   rir: number | null;
+  // The exercise's top set (heavier, lower reps); false for normal/back-off sets.
+  isTopSet: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -135,5 +137,10 @@ export interface ExerciseHistoryEntry {
   sessionId: string;
   sessionName: string;
   performedDate: string;
-  sets: { weight: number | null; reps: number | null; rir: number | null }[];
+  sets: {
+    weight: number | null;
+    reps: number | null;
+    rir: number | null;
+    isTopSet: boolean;
+  }[];
 }
