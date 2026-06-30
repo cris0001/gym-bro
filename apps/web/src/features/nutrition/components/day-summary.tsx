@@ -28,10 +28,21 @@ export function DaySummary({ totals }: DaySummaryProps) {
 
   return (
     <div className="grid gap-3">
-      <MacroProgress label="Calories" current={totals.kcal} target={target.kcal} unit="kcal" />
-      <MacroProgress label="Protein" current={totals.proteinG} target={target.proteinG} />
-      <MacroProgress label="Carbs" current={totals.carbsG} target={target.carbsG} />
-      <MacroProgress label="Fat" current={totals.fatG} target={target.fatG} />
+      <MacroProgress
+        label="Calories"
+        current={totals.kcal}
+        target={target.kcal}
+        unit="kcal"
+        macro="kcal"
+      />
+      <MacroProgress
+        label="Protein"
+        current={totals.proteinG}
+        target={target.proteinG}
+        macro="protein"
+      />
+      <MacroProgress label="Carbs" current={totals.carbsG} target={target.carbsG} macro="carbs" />
+      <MacroProgress label="Fat" current={totals.fatG} target={target.fatG} macro="fat" />
     </div>
   );
 }

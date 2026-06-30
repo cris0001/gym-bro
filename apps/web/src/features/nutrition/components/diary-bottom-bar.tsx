@@ -1,10 +1,22 @@
 import type { MacroTotals } from '@gym-bro/shared';
 
 import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 
 import { useCurrentTarget } from '../hooks/use-current-target';
+import { MACRO_BAR, MACRO_TRACK, type MacroKey } from '../utils/macro-colors';
 
-function MiniMacro({ label, current, target }: { label: string; current: number; target: number }) {
+function MiniMacro({
+  label,
+  macro,
+  current,
+  target,
+}: {
+  label: string;
+  macro: MacroKey;
+  current: number;
+  target: number;
+}) {
   const percent = target > 0 ? Math.min(100, (current / target) * 100) : 0;
   return (
     <div className="flex w-14 flex-col gap-0.5">
@@ -14,7 +26,11 @@ function MiniMacro({ label, current, target }: { label: string; current: number;
           {Math.round(current)}/{Math.round(target)}
         </span>
       </div>
-      <Progress value={percent} className="h-1" />
+      <Progress
+        value={percent}
+        className={cn('h-1', MACRO_TRACK[macro])}
+        indicatorClassName={MACRO_BAR[macro]}
+      />
     </div>
   );
 }
@@ -40,12 +56,16 @@ export function DiaryBottomBar({ totals }: { totals: MacroTotals }) {
               / {Math.round(target.kcal)} kcal
             </span>
           </span>
-          <Progress value={kcalPercent} className="mt-0.5 h-1 w-24" />
+          <Progress
+            value={kcalPercent}
+            className={cn('mt-0.5 h-1 w-24', MACRO_TRACK.kcal)}
+            indicatorClassName={MACRO_BAR.kcal}
+          />
         </div>
         <div className="ml-auto flex gap-2.5">
-          <MiniMacro label="P" current={totals.proteinG} target={target.proteinG} />
-          <MiniMacro label="C" current={totals.carbsG} target={target.carbsG} />
-          <MiniMacro label="F" current={totals.fatG} target={target.fatG} />
+          <MiniMacro label="P" macro="protein" current={totals.proteinG} target={target.proteinG} />
+          <MiniMacro label="C" macro="carbs" current={totals.carbsG} target={target.carbsG} />
+          <MiniMacro label="F" macro="fat" current={totals.fatG} target={target.fatG} />
         </div>
       </div>
     </div>

@@ -26,7 +26,7 @@ export function TodayNutritionCard({ date }: { date: string }) {
       </span>
       {targetKcal !== null ? (
         <div className="flex flex-col gap-1">
-          <Progress value={pct} />
+          <Progress value={pct} className="bg-sky-500/15" indicatorClassName="bg-sky-500" />
           <span className="text-muted-foreground text-xs">
             {kcal} / {targetKcal} kcal
           </span>
