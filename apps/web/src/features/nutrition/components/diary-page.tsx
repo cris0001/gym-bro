@@ -35,55 +35,58 @@ export function DiaryPage() {
   const entries = data?.entries ?? [];
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-4">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 p-4">
       <h1 className="text-2xl font-bold">Diary</h1>
 
-      <div className="flex items-center justify-between">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="size-11"
-          aria-label="Previous day"
-          onClick={() => shift(-1)}
-        >
-          <ChevronLeft className="size-5" />
-        </Button>
-        <button type="button" className="text-sm font-medium" onClick={() => setDate(today)}>
-          {isToday ? 'Today' : format(parseISO(date), 'EEE, PP')}
-        </button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="size-11"
-          aria-label="Next day"
-          disabled={isToday}
-          onClick={() => shift(1)}
-        >
-          <ChevronRight className="size-5" />
-        </Button>
-      </div>
+      <div className="lg:grid lg:grid-cols-[1fr_18rem] lg:items-start lg:gap-6">
+        {/* Summary on top on mobile, sticky sidebar on desktop. */}
+        <Card className="mb-4 lg:order-2 lg:mb-0 lg:sticky lg:top-4">
+          <CardContent>
+            {data ? (
+              <DaySummary totals={data.totals} />
+            ) : (
+              <p className="text-muted-foreground text-sm">Loading…</p>
+            )}
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardContent>
-          {data ? (
-            <DaySummary totals={data.totals} />
-          ) : (
-            <p className="text-muted-foreground text-sm">Loading…</p>
-          )}
-        </CardContent>
-      </Card>
+        <div className="flex flex-col gap-4 lg:order-1">
+          <div className="flex items-center justify-between">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="size-11"
+              aria-label="Previous day"
+              onClick={() => shift(-1)}
+            >
+              <ChevronLeft className="size-5" />
+            </Button>
+            <button type="button" className="text-sm font-medium" onClick={() => setDate(today)}>
+              {isToday ? 'Today' : format(parseISO(date), 'EEE, PP')}
+            </button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="size-11"
+              aria-label="Next day"
+              disabled={isToday}
+              onClick={() => shift(1)}
+            >
+              <ChevronRight className="size-5" />
+            </Button>
+          </div>
 
-      <div className="flex flex-col gap-5">
-        {MEAL_TYPES.map((meal) => (
-          <MealSection
-            key={meal}
-            meal={meal}
-            label={MEAL_LABELS[meal]}
-            entries={entries.filter((entry) => entry.meal === meal)}
-          />
-        ))}
+          {MEAL_TYPES.map((meal) => (
+            <MealSection
+              key={meal}
+              meal={meal}
+              label={MEAL_LABELS[meal]}
+              entries={entries.filter((entry) => entry.meal === meal)}
+            />
+          ))}
+        </div>
       </div>
 
       <AddEntrySheet loggedDate={date} />
