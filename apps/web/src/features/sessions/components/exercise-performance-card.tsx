@@ -44,7 +44,14 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
       exerciseHistoryQueryOptions(performance.actualExerciseId, performedDate, 1),
     );
     const latest = history[0];
-    if (latest) replaceSets(performance.id, latest.sets);
+    if (latest) {
+      // History sets carry weight/reps/rir/isTopSet; derive the client-only
+      // bodyweight flag from a null weight.
+      replaceSets(
+        performance.id,
+        latest.sets.map((s) => ({ ...s, isBodyweight: s.weight === null })),
+      );
+    }
   }
 
   return (
@@ -98,11 +105,12 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
 
           {setCount > 0 && (
             <>
-              <div className="text-muted-foreground grid grid-cols-[1.5rem_1fr_1fr_1fr_2.25rem] items-center gap-2 text-center text-xs font-medium">
+              <div className="text-muted-foreground grid grid-cols-[1.5rem_1fr_1fr_1fr_2rem_2rem] items-center gap-2 text-center text-xs font-medium">
                 <span>#</span>
                 <span>Weight</span>
                 <span>Reps</span>
                 <span>RIR</span>
+                <span />
                 <span />
               </div>
               <div className="flex flex-col gap-2">

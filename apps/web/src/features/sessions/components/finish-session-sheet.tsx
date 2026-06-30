@@ -42,9 +42,12 @@ function buildPayload(draft: WorkoutDraft): CreateStrengthSessionInput {
       actualExerciseId: performance.actualExerciseId,
       notes: performance.notes,
       sets: performance.sets.map((set) => ({
+        // A bodyweight set already has a null weight in the draft; only the
+        // top-set flag needs forwarding (the server defaults it to false).
         weight: set.weight,
         reps: set.reps,
         rir: set.rir,
+        isTopSet: set.isTopSet,
       })),
     })),
   };
