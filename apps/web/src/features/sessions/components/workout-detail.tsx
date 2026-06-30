@@ -23,7 +23,7 @@ export function WorkoutDetail({ sessionId }: WorkoutDetailProps) {
 
   function handleDelete() {
     if (window.confirm('Delete this workout? This cannot be undone.')) {
-      deleteMutation.mutate(sessionId, { onSuccess: () => void navigate({ to: '/history' }) });
+      deleteMutation.mutate(sessionId, { onSuccess: () => void navigate({ to: '/calendar' }) });
     }
   }
 
@@ -34,8 +34,8 @@ export function WorkoutDetail({ sessionId }: WorkoutDetailProps) {
     return (
       <div className="flex flex-col gap-3 p-4">
         <p className="text-muted-foreground text-sm">Workout not found.</p>
-        <Link to="/history" className="text-sm underline">
-          Back to history
+        <Link to="/calendar" className="text-sm underline">
+          Back to calendar
         </Link>
       </div>
     );
@@ -43,8 +43,8 @@ export function WorkoutDetail({ sessionId }: WorkoutDetailProps) {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-4">
-      <Link to="/history" className="text-muted-foreground text-sm">
-        ← History
+      <Link to="/calendar" className="text-muted-foreground text-sm">
+        ← Calendar
       </Link>
 
       <header className="flex flex-col gap-2">
