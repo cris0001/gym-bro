@@ -20,8 +20,8 @@ export function ExercisesPage() {
   const [search, setSearch] = useState('');
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col">
-      <div className="flex items-center justify-between px-4 py-4">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 p-4">
+      <div className="flex items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">Exercises</h1>
         <Button type="button" className="h-11" onClick={openCreate}>
           <Plus className="size-4" />
@@ -29,16 +29,16 @@ export function ExercisesPage() {
         </Button>
       </div>
 
-      <div className="px-4 pb-2">
-        <Input
-          placeholder="Search exercises"
-          className="h-11"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
+      <Input
+        placeholder="Search exercises"
+        className="h-11"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
       <CategoryFilter value={category} onChange={setCategory} />
-      <ExerciseList category={category} search={search} />
+      <div className="bg-card overflow-hidden rounded-xl border">
+        <ExerciseList category={category} search={search} />
+      </div>
       <ExerciseSheet />
     </div>
   );

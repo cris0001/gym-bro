@@ -36,7 +36,8 @@ function AppLayout() {
           <LogoutButton />
         </header>
         <SectionTabs />
-        <main className="flex-1 pb-16 lg:pb-0">
+        {/* Muted canvas so cards and list surfaces lift off the background. */}
+        <main className="bg-muted/40 flex-1 pb-16 lg:pb-0">
           <Outlet />
         </main>
       </div>

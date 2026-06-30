@@ -12,8 +12,8 @@ export function PlansPage() {
   const openCreate = usePlanUiStore((s) => s.openCreate);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col">
-      <div className="flex items-center justify-between px-4 py-4">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-4">
+      <div className="flex items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">Plans</h1>
         <Button type="button" className="h-11" onClick={openCreate}>
           <Plus className="size-4" />
@@ -21,7 +21,9 @@ export function PlansPage() {
         </Button>
       </div>
 
-      <PlanList />
+      <div className="bg-card overflow-hidden rounded-xl border">
+        <PlanList />
+      </div>
       <PlanSheet />
     </div>
   );
