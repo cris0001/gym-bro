@@ -125,6 +125,7 @@ interface SetInput {
   weight: number | null;
   reps: number | null;
   rir: number | null;
+  isTopSet?: boolean;
 }
 
 interface PerformanceInput {
@@ -235,6 +236,7 @@ export async function createStrengthSession(
             weight: set.weight === null ? null : set.weight.toString(),
             reps: set.reps,
             rir: set.rir,
+            isTopSet: set.isTopSet ?? false,
           })),
         );
       }
@@ -445,6 +447,7 @@ export async function listSetsForSession(userId: string, sessionId: string) {
       weight: sets.weight,
       reps: sets.reps,
       rir: sets.rir,
+      isTopSet: sets.isTopSet,
       createdAt: sets.createdAt,
       updatedAt: sets.updatedAt,
     })
@@ -460,7 +463,7 @@ export interface ExerciseHistoryEntryRow {
   sessionId: string;
   sessionName: string;
   performedDate: string;
-  sets: { weight: number | null; reps: number | null; rir: number | null }[];
+  sets: { weight: number | null; reps: number | null; rir: number | null; isTopSet: boolean }[];
 }
 
 // The most recent performances of an exercise (matched on actualExerciseId, so
@@ -503,6 +506,7 @@ export async function findExerciseHistory(
       weight: sets.weight,
       reps: sets.reps,
       rir: sets.rir,
+      isTopSet: sets.isTopSet,
     })
     .from(sets)
     .where(and(inArray(sets.exercisePerformanceId, performanceIds), eq(sets.userId, userId)))
@@ -515,6 +519,7 @@ export async function findExerciseHistory(
       weight: row.weight === null ? null : Number(row.weight),
       reps: row.reps,
       rir: row.rir,
+      isTopSet: row.isTopSet,
     });
     setsByPerformance.set(row.exercisePerformanceId, list);
   }
@@ -617,6 +622,7 @@ export async function replaceStrengthSession(
             weight: set.weight === null ? null : set.weight.toString(),
             reps: set.reps,
             rir: set.rir,
+            isTopSet: set.isTopSet ?? false,
           })),
         );
       }

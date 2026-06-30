@@ -253,7 +253,7 @@ describe('workout session routes', () => {
       {
         originalExerciseId: EXERCISE_ID,
         actualExerciseId: EXERCISE_ID,
-        sets: [{ weight: 100, reps: 8, rir: 2 }],
+        sets: [{ weight: 100, reps: 8, rir: 2, isTopSet: false }],
       },
     ],
   };
@@ -271,6 +271,35 @@ describe('workout session routes', () => {
     expect(res.status).toBe(201);
     expect(body.data.id).toBe(SESSION_ID);
     expect(repo.createStrengthSession).toHaveBeenCalledOnce();
+  });
+
+  it('POST /api/workout-sessions/strength persists the top-set flag (omitted defaults to false)', async () => {
+    trainingRepo.findExerciseById.mockResolvedValue(fakeExercise());
+    repo.createStrengthSession.mockResolvedValue(fakeWorkoutSession());
+
+    await request('POST', '/api/workout-sessions/strength', {
+      cookie: await authCookie(),
+      body: {
+        name: 'Push',
+        performedDate: '2026-06-29',
+        performances: [
+          {
+            originalExerciseId: EXERCISE_ID,
+            actualExerciseId: EXERCISE_ID,
+            sets: [
+              { weight: 120, reps: 3, isTopSet: true },
+              { weight: 100, reps: 8 },
+            ],
+          },
+        ],
+      },
+    });
+
+    const arg = repo.createStrengthSession.mock.calls[0]?.[0];
+    expect(arg?.performances[0]?.sets).toEqual([
+      { weight: 120, reps: 3, rir: null, isTopSet: true },
+      { weight: 100, reps: 8, rir: null, isTopSet: false },
+    ]);
   });
 
   it('POST /api/workout-sessions/strength with an exercise the user does not own returns 400', async () => {
@@ -370,6 +399,7 @@ describe('workout session routes', () => {
         weight: 100,
         reps: 8,
         rir: 2,
+        isTopSet: false,
         createdAt: new Date('2026-01-01T00:00:00Z'),
         updatedAt: new Date('2026-01-01T00:00:00Z'),
       },
@@ -521,7 +551,7 @@ describe('exercise history route', () => {
         sessionId: SESSION_ID,
         sessionName: 'Push',
         performedDate: '2026-06-22',
-        sets: [{ weight: 100, reps: 8, rir: 2 }],
+        sets: [{ weight: 100, reps: 8, rir: 2, isTopSet: false }],
       },
     ]);
 
