@@ -34,16 +34,16 @@ function MeasurementRow({ entry }: { entry: BodyMeasurement }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   return (
-    <li className="flex items-center gap-2 py-3">
-      <div className="min-w-0 flex-1">
-        <p className="font-medium">{format(parseISO(entry.measuredDate), 'EEE, PP')}</p>
-        <p className="text-muted-foreground truncate text-sm">{summarize(entry)}</p>
-      </div>
+    <li className="flex items-center gap-2 py-2 text-sm">
+      <span className="text-muted-foreground w-20 shrink-0">
+        {format(parseISO(entry.measuredDate), 'd MMM yy')}
+      </span>
+      <span className="min-w-0 flex-1 truncate">{summarize(entry)}</span>
       <Button
         type="button"
         variant="ghost"
         size="icon"
-        className="size-11 shrink-0"
+        className="size-9 shrink-0"
         aria-label={`Edit ${entry.measuredDate}`}
         onClick={() => openEdit(entry)}
       >
@@ -55,7 +55,7 @@ function MeasurementRow({ entry }: { entry: BodyMeasurement }) {
             type="button"
             variant="ghost"
             size="icon"
-            className="text-destructive size-11 shrink-0"
+            className="text-destructive size-9 shrink-0"
             aria-label={`Delete ${entry.measuredDate}`}
           >
             <Trash2 className="size-4" />
@@ -88,7 +88,7 @@ function MeasurementRow({ entry }: { entry: BodyMeasurement }) {
 // with edit (loads the form) and delete actions.
 export function MeasurementList({ entries }: { entries: BodyMeasurement[] }) {
   if (entries.length === 0) {
-    return <p className="text-muted-foreground py-4 text-sm">No measurements yet.</p>;
+    return <p className="text-muted-foreground py-4 text-sm">No measurements in this range.</p>;
   }
   return (
     <ul className="divide-y">
