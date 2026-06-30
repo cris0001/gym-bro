@@ -12,34 +12,36 @@ import {
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 
-import type { CreateFoodLogInput, Food, FoodLogUnit, RecipeListItem } from '@gym-bro/shared';
+import type { CreateFoodLogInput, FoodLogUnit, RecentDiaryItem } from '@gym-bro/shared';
 
 import { useCreateFoodLogEntry } from '../hooks/use-create-food-log-entry';
+import { useRecipes } from '../hooks/use-recipes';
 import { useDiaryUiStore } from '../stores/diary-ui.store';
 import { FoodCombobox } from './food-combobox';
+import { RecentItemsRow } from './recent-items-row';
 import { RecipeCombobox } from './recipe-combobox';
 
 type Mode = 'food' | 'recipe';
+type Selected = { id: string; name: string } | null;
 
-interface AddEntrySheetProps {
-  loggedDate: string;
-}
-
-// Log a food (by grams) or a recipe (by grams or servings) to the meal preset on
-// the store. The server snapshots the macros; this only sends the reference +
-// quantity + unit. State resets each time the sheet opens.
-export function AddEntrySheet({ loggedDate }: AddEntrySheetProps) {
+// Log foods (by grams) or recipes (by grams or servings) to the meal preset on the
+// store. The sheet stays open after each add (reset for the next item) so several
+// things can be logged in one go; "Done" closes it. A recent-items row and the
+// recipe's planned servings speed up repeat logging.
+export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
   const addMeal = useDiaryUiStore((s) => s.addMeal);
   const closeAdd = useDiaryUiStore((s) => s.closeAdd);
   const open = addMeal !== null;
 
   const [mode, setMode] = useState<Mode>('food');
-  const [food, setFood] = useState<Food | null>(null);
-  const [recipe, setRecipe] = useState<RecipeListItem | null>(null);
+  const [food, setFood] = useState<Selected>(null);
+  const [recipe, setRecipe] = useState<Selected>(null);
   const [recipeUnit, setRecipeUnit] = useState<FoodLogUnit>('servings');
   const [quantity, setQuantity] = useState('');
+  const [addedCount, setAddedCount] = useState(0);
 
   const create = useCreateFoodLogEntry();
+  const { data: recipes = [] } = useRecipes();
 
   useEffect(() => {
     if (open) {
@@ -48,42 +50,65 @@ export function AddEntrySheet({ loggedDate }: AddEntrySheetProps) {
       setRecipe(null);
       setRecipeUnit('servings');
       setQuantity('');
+      setAddedCount(0);
       create.reset();
     }
-    // Resets only when the sheet opens/closes; create.reset is stable enough here.
   }, [open]);
 
   const amount = Number(quantity);
-  const selected = mode === 'food' ? food !== null : recipe !== null;
-  const canAdd = selected && Number.isFinite(amount) && amount > 0 && !create.isPending;
-  // A recipe by grams uses the grams label; otherwise servings/grams as applicable.
+  const selected = mode === 'food' ? food : recipe;
+  const canAdd = selected !== null && Number.isFinite(amount) && amount > 0 && !create.isPending;
+  const recipeServings = recipe ? recipes.find((r) => r.id === recipe.id)?.servings : undefined;
   const quantityLabel = mode === 'food' || recipeUnit === 'grams' ? 'Amount (g)' : 'Servings';
 
+  function pickRecent(item: RecentDiaryItem) {
+    setMode(item.type);
+    if (item.type === 'food') {
+      setFood({ id: item.id, name: item.name });
+    } else {
+      setRecipe({ id: item.id, name: item.name });
+    }
+  }
+
   function add() {
-    if (!canAdd || addMeal === null) return;
+    if (!canAdd || addMeal === null || selected === null) return;
     const input: CreateFoodLogInput =
       mode === 'food'
-        ? { type: 'food', foodId: food!.id, quantity: amount, meal: addMeal, loggedDate }
+        ? { type: 'food', foodId: selected.id, quantity: amount, meal: addMeal, loggedDate }
         : {
             type: 'recipe',
-            recipeId: recipe!.id,
+            recipeId: selected.id,
             quantity: amount,
             unit: recipeUnit,
             meal: addMeal,
             loggedDate,
           };
-    create.mutate(input, { onSuccess: closeAdd });
+    // Keep the sheet open: clear the selection + amount for the next item.
+    create.mutate(input, {
+      onSuccess: () => {
+        setFood(null);
+        setRecipe(null);
+        setQuantity('');
+        setAddedCount((count) => count + 1);
+      },
+    });
   }
 
   return (
     <Sheet open={open} onOpenChange={(next) => !next && closeAdd()}>
       <SheetContent side="bottom" className="gap-0">
         <SheetHeader>
-          <SheetTitle>Add to diary</SheetTitle>
-          <SheetDescription>Log a food by grams or a recipe by grams or servings.</SheetDescription>
+          <SheetTitle className="capitalize">
+            Add to {addMeal?.replace('_', ' ') ?? 'diary'}
+          </SheetTitle>
+          <SheetDescription>
+            Add several items; the sheet stays open until you’re done.
+          </SheetDescription>
         </SheetHeader>
 
         <div className="grid gap-4 p-4">
+          {addMeal !== null && <RecentItemsRow meal={addMeal} onPick={pickRecent} />}
+
           <div className="bg-muted flex gap-1 rounded-md p-1">
             {(['food', 'recipe'] as Mode[]).map((m) => (
               <Button
@@ -103,15 +128,20 @@ export function AddEntrySheet({ loggedDate }: AddEntrySheetProps) {
             <FoodCombobox
               selectedId={food?.id ?? null}
               selectedName={food?.name ?? null}
-              onSelect={setFood}
+              onSelect={(f) => setFood({ id: f.id, name: f.name })}
             />
           ) : (
             <>
               <RecipeCombobox
                 selectedId={recipe?.id ?? null}
                 selectedName={recipe?.name ?? null}
-                onSelect={setRecipe}
+                onSelect={(r) => setRecipe({ id: r.id, name: r.name })}
               />
+              {recipeServings !== undefined && (
+                <p className="text-muted-foreground text-xs">
+                  Makes {recipeServings} {recipeServings === 1 ? 'serving' : 'servings'} per recipe.
+                </p>
+              )}
               <div className="bg-muted flex gap-1 rounded-md p-1">
                 {(['servings', 'grams'] as FoodLogUnit[]).map((u) => (
                   <Button
@@ -150,9 +180,19 @@ export function AddEntrySheet({ loggedDate }: AddEntrySheetProps) {
             </p>
           ) : null}
 
-          <Button type="button" className="h-11" disabled={!canAdd} onClick={add}>
-            {create.isPending ? 'Adding…' : 'Add to diary'}
-          </Button>
+          <div className="flex gap-2">
+            <Button type="button" className="h-11 flex-1" disabled={!canAdd} onClick={add}>
+              {create.isPending ? 'Adding…' : 'Add'}
+            </Button>
+            <Button type="button" variant="outline" className="h-11" onClick={closeAdd}>
+              Done
+            </Button>
+          </div>
+          {addedCount > 0 && (
+            <p className="text-muted-foreground text-center text-xs">
+              {addedCount} added to this meal
+            </p>
+          )}
         </div>
       </SheetContent>
     </Sheet>
