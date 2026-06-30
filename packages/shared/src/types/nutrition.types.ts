@@ -6,6 +6,7 @@ import type {
   createFoodSchema,
   createRecipeSchema,
   foodLogDateQuerySchema,
+  recentFoodLogQuerySchema,
   recipeIngredientInputSchema,
   setNutritionTargetSchema,
   updateFoodLogSchema,
@@ -24,6 +25,7 @@ export type SetNutritionTargetInput = z.infer<typeof setNutritionTargetSchema>;
 export type CreateFoodLogInput = z.infer<typeof createFoodLogSchema>;
 export type UpdateFoodLogInput = z.infer<typeof updateFoodLogSchema>;
 export type FoodLogDateQueryInput = z.infer<typeof foodLogDateQuerySchema>;
+export type RecentFoodLogQueryInput = z.infer<typeof recentFoodLogQuerySchema>;
 
 // --- Wire entity shapes (numeric columns coerced to numbers by the service;
 // date columns are 'YYYY-MM-DD' strings; timestamps are ISO strings) ---
@@ -116,4 +118,13 @@ export interface DailyFoodLog {
   date: string;
   entries: FoodLogEntry[];
   totals: MacroTotals;
+}
+
+// A recently-logged source for a meal, for the quick re-add list. `type`
+// discriminates which dictionary `id` points at; only still-active sources are
+// returned (a soft-deleted food/recipe can't be re-logged).
+export interface RecentDiaryItem {
+  type: 'food' | 'recipe';
+  id: string;
+  name: string;
 }

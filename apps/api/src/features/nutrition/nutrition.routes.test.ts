@@ -585,6 +585,41 @@ describe('food-log read/update/delete routes', () => {
   });
 });
 
+describe('recent diary items route', () => {
+  it('GET /api/food-log/recent ranks by use count then recency and maps to source refs', async () => {
+    repo.findRecentDiaryRows.mockResolvedValue([
+      { type: 'food', id: FOOD_ID, name: 'Banana', count: 1, lastDate: '2026-06-28' },
+      { type: 'recipe', id: RECIPE_ID, name: 'Chili', count: 5, lastDate: '2026-06-20' },
+      { type: 'food', id: 'food-2', name: 'Eggs', count: 5, lastDate: '2026-06-29' },
+    ]);
+
+    const res = await request('GET', '/api/food-log/recent?meal=breakfast', {
+      cookie: await authCookie(),
+    });
+    const body = (await res.json()) as { data: { type: string; id: string; name: string }[] };
+
+    expect(res.status).toBe(200);
+    // count 5 before count 1; within count 5, the more recent (Eggs) first.
+    expect(body.data).toEqual([
+      { type: 'food', id: 'food-2', name: 'Eggs' },
+      { type: 'recipe', id: RECIPE_ID, name: 'Chili' },
+      { type: 'food', id: FOOD_ID, name: 'Banana' },
+    ]);
+    expect(repo.findRecentDiaryRows).toHaveBeenCalledWith(
+      'user-1',
+      'breakfast',
+      expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+    );
+  });
+
+  it('GET /api/food-log/recent without a meal returns 400', async () => {
+    const res = await request('GET', '/api/food-log/recent', { cookie: await authCookie() });
+
+    expect(res.status).toBe(400);
+    expect(repo.findRecentDiaryRows).not.toHaveBeenCalled();
+  });
+});
+
 const TARGET_ID = '77777777-7777-4777-8777-777777777777';
 const VALID_TARGET = { kcal: 2000, proteinG: 150, carbsG: 200, fatG: 60 };
 

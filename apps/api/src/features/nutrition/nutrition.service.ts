@@ -2,6 +2,7 @@ import type {
   CreateFoodInput,
   CreateFoodLogInput,
   CreateRecipeInput,
+  MealType,
   SetNutritionTargetInput,
   UpdateFoodInput,
   UpdateFoodLogInput,
@@ -199,6 +200,27 @@ export async function deleteRecipe(userId: string, id: string) {
 export async function getDailyFoodLog(userId: string, date: string) {
   const entries = await nutritionRepository.listFoodLogByDate(userId, date);
   return { date, entries, totals: sumMacros(entries) };
+}
+
+// Recency window and cap for the quick re-add list.
+const RECENT_DAYS = 10;
+const RECENT_LIMIT = 10;
+
+// `RECENT_DAYS` ago as 'YYYY-MM-DD' (UTC), inclusive of today.
+function recentSinceIso(): string {
+  const since = new Date();
+  since.setUTCDate(since.getUTCDate() - (RECENT_DAYS - 1));
+  return since.toISOString().slice(0, 10);
+}
+
+// Items recently logged for a meal, ranked most-used first (then most-recent), so
+// staples float up and one-off entries sink. Capped to a short list for re-adding.
+export async function getRecentDiaryItems(userId: string, meal: MealType) {
+  const rows = await nutritionRepository.findRecentDiaryRows(userId, meal, recentSinceIso());
+  return rows
+    .sort((a, b) => b.count - a.count || b.lastDate.localeCompare(a.lastDate))
+    .slice(0, RECENT_LIMIT)
+    .map((row) => ({ type: row.type, id: row.id, name: row.name }));
 }
 
 // Create an entry, snapshotting the macros from the referenced source at the
