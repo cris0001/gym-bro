@@ -14,7 +14,7 @@ export function BottomNav() {
   const activeSection = findActiveSection(pathname);
 
   return (
-    <nav className="bg-primary text-primary-foreground fixed inset-x-0 bottom-0 z-20 flex h-14 lg:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-20 flex h-14 bg-sky-400 text-white lg:hidden">
       {NAV_SECTIONS.map((section) => {
         const Icon = section.icon;
         const isActive = section.label === activeSection.label;
@@ -24,7 +24,7 @@ export function BottomNav() {
             to={section.to}
             className={cn(
               'flex flex-1 flex-col items-center justify-center gap-0.5 text-xs',
-              isActive ? 'font-semibold' : 'text-primary-foreground/70',
+              isActive ? 'font-semibold' : 'text-white/75',
             )}
           >
             <Icon className="size-5" />
