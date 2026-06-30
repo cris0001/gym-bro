@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import {
+  boolean,
   check,
   integer,
   numeric,
@@ -33,6 +34,10 @@ export const sets = pgTable(
     reps: integer('reps'),
     // Reps in reserve, 0–5.
     rir: smallint('rir'),
+    // Marks the session's "top set" for this exercise (heavier, lower reps); the
+    // rest are normal/back-off sets. At most one per performance (enforced in the
+    // UI, not the DB). Lets stats chart the top-set vs normal-set progression.
+    isTopSet: boolean('is_top_set').notNull().default(false),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     // Service sets this to now() on every update (no DB trigger).
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
