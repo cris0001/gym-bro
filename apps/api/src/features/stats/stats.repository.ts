@@ -1,4 +1,4 @@
-import { and, asc, count, eq, gte, isNotNull, lte, max, sql, type SQL } from 'drizzle-orm';
+import { and, asc, eq, gte, isNotNull, lte, type SQL } from 'drizzle-orm';
 
 import { db } from '../../db/client';
 import { exercisePerformances } from '../../db/schema/exercise-performances';
@@ -39,39 +39,35 @@ export async function listExercisesWithHistory(userId: string) {
 
 // --- Per-exercise progress ---
 
-// One row per session that included the exercise, oldest first. weight/volume
-// arrive as numeric strings (or null when no set had the field) and are coerced
-// to numbers at the boundary.
-export interface ExerciseProgressRow {
+// One row per logged set of the exercise (matched on actualExerciseId, so swaps
+// count), in execution order: oldest session first, then performance order, then
+// set order. weight arrives as a numeric string (or null = bodyweight) and is
+// coerced here. The service reduces these into per-session top/normal points.
+export interface ExerciseSetRow {
   sessionId: string;
   performedDate: string;
-  maxWeight: number | null;
-  totalVolume: number | null;
-  setCount: number;
+  weight: number | null;
+  reps: number | null;
+  isTopSet: boolean;
 }
 
-// Aggregate the exercise's sets per session: heaviest set's weight, and total
-// weight x reps volume (SQL SUM/MAX skip null weight/reps, so bodyweight sets
-// drop out and a pure-bodyweight exercise yields null metrics). LEFT JOIN keeps
-// a session with zero logged sets (setCount 0). Grouped per session, so multiple
-// performances of the exercise in one session fold into a single point.
-export async function findExerciseProgress(
+export async function findExerciseSetRows(
   userId: string,
   exerciseId: string,
   from: string | undefined,
   to: string | undefined,
-): Promise<ExerciseProgressRow[]> {
+): Promise<ExerciseSetRow[]> {
   const rows = await db
     .select({
       sessionId: workoutSessions.id,
       performedDate: workoutSessions.performedDate,
-      maxWeight: max(sets.weight),
-      totalVolume: sql<string | null>`sum(${sets.weight} * ${sets.reps})`,
-      setCount: count(sets.id),
+      weight: sets.weight,
+      reps: sets.reps,
+      isTopSet: sets.isTopSet,
     })
     .from(exercisePerformances)
     .innerJoin(workoutSessions, eq(exercisePerformances.workoutSessionId, workoutSessions.id))
-    .leftJoin(sets, eq(sets.exercisePerformanceId, exercisePerformances.id))
+    .innerJoin(sets, eq(sets.exercisePerformanceId, exercisePerformances.id))
     .where(
       and(
         eq(exercisePerformances.userId, userId),
@@ -79,15 +75,19 @@ export async function findExerciseProgress(
         ...dateWindow(from, to),
       ),
     )
-    .groupBy(workoutSessions.id, workoutSessions.performedDate)
-    .orderBy(asc(workoutSessions.performedDate), asc(workoutSessions.createdAt));
+    .orderBy(
+      asc(workoutSessions.performedDate),
+      asc(workoutSessions.createdAt),
+      asc(exercisePerformances.position),
+      asc(sets.position),
+    );
 
   return rows.map((row) => ({
     sessionId: row.sessionId,
     performedDate: row.performedDate,
-    maxWeight: row.maxWeight === null ? null : Number(row.maxWeight),
-    totalVolume: row.totalVolume === null ? null : Number(row.totalVolume),
-    setCount: row.setCount,
+    weight: row.weight === null ? null : Number(row.weight),
+    reps: row.reps,
+    isTopSet: row.isTopSet,
   }));
 }
 

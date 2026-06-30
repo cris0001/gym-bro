@@ -18,16 +18,18 @@ export type StatExercise = Pick<Exercise, 'id' | 'name' | 'category'>;
 
 // GET /api/stats/exercises/:exerciseId/progress — one point per session that
 // included this exercise (matched on actualExerciseId, so it follows swaps),
-// oldest first. maxWeight = the heaviest set's weight; totalVolume = sum of
-// weight x reps across the session's sets. Both null when no set had both a
-// weight and reps (e.g. a pure-bodyweight session) — null-weight/null-rep sets
-// are skipped, so a bodyweight exercise simply yields no line.
+// oldest first. Each session contributes its representative TOP set (the marked
+// top set: heavier, lower reps) and NORMAL set (the first non-top set — back-offs
+// are uniform, so the first one represents them). weight is null for a bodyweight
+// set; a field is null when that kind of set wasn't logged that session. The
+// frontend switches between top and normal and derives volume = weight × reps.
 export interface ExerciseProgressPoint {
   sessionId: string;
   date: string;
-  maxWeight: number | null;
-  totalVolume: number | null;
-  setCount: number;
+  topWeight: number | null;
+  topReps: number | null;
+  normalWeight: number | null;
+  normalReps: number | null;
 }
 
 // GET /api/stats/rating-trend — one point per rated session (strength or
