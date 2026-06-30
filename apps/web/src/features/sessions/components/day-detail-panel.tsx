@@ -10,7 +10,7 @@ export function DayDetailPanel() {
   const selectedDate = useCalendarUiStore((s) => s.selectedDate);
 
   return (
-    <aside className="bg-card h-fit overflow-hidden rounded-lg border">
+    <aside className="bg-card h-fit overflow-hidden rounded-xl border lg:sticky lg:top-4">
       {selectedDate ? (
         <>
           <header className="border-b p-4">
@@ -20,7 +20,7 @@ export function DayDetailPanel() {
         </>
       ) : (
         <p className="text-muted-foreground p-8 text-center text-sm">
-          Select a day to see its planned sessions.
+          Select a day to see its sessions.
         </p>
       )}
     </aside>

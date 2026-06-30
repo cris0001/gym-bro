@@ -43,6 +43,15 @@ export function CalendarDayCell({
 
   const finished = strengthCount + activityCount;
   const total = planned.length + finished;
+  // Tint the cell by its content for an at-a-glance read: green when something was
+  // done, accent when only planned. Selection wins over the tint.
+  const bgClass = isSelected
+    ? 'bg-accent'
+    : finished > 0
+      ? 'bg-green-500/10'
+      : planned.length > 0
+        ? 'bg-primary/10'
+        : '';
   // Planned markers are draggable, so keep them all; fill the rest with finished
   // markers up to the cap, leaving room for a "+N" overflow chip.
   const shownStrength = Math.max(0, Math.min(strengthCount, MAX_MARKERS - planned.length));
@@ -68,7 +77,8 @@ export function CalendarDayCell({
         'flex aspect-square min-h-11 cursor-pointer flex-col items-center justify-start gap-1 rounded-md p-1 text-sm transition-colors',
         'hover:bg-accent focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2',
         !inMonth && 'text-muted-foreground/40',
-        isSelected && 'bg-accent',
+        bgClass,
+        isToday && !isSelected && 'ring-primary/40 ring-1',
         isOver && 'ring-primary ring-2',
       )}
     >

@@ -25,7 +25,7 @@ export function DayDetailSheet() {
           <SheetTitle>
             {selectedDate ? format(parseISO(selectedDate), 'EEEE, MMM d') : ''}
           </SheetTitle>
-          <SheetDescription>Sessions planned for this day.</SheetDescription>
+          <SheetDescription>Planned and finished sessions for this day.</SheetDescription>
         </SheetHeader>
 
         {selectedDate && <DayDetail date={selectedDate} />}
