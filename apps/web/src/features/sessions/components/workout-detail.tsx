@@ -2,18 +2,15 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { format, parseISO } from 'date-fns';
 
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 
 import { useDeleteWorkoutSession } from '../hooks/use-delete-workout-session';
 import { useEditWorkout } from '../hooks/use-edit-workout';
 import { useWorkoutSession } from '../hooks/use-workout-session';
-import { ExerciseHistoryPanel } from './exercise-history-panel';
+import { WorkoutPerformances } from './workout-performances';
 
 interface WorkoutDetailProps {
   sessionId: string;
 }
-
-const cell = (value: number | null): string => (value === null ? '—' : String(value));
 
 // Detail view of a finished workout: metadata header (date, rating, duration,
 // tags, notes) and each exercise's logged sets. A swapped exercise shows what it
@@ -78,56 +75,10 @@ export function WorkoutDetail({ sessionId }: WorkoutDetailProps) {
       {session.performances.length === 0 ? (
         <p className="text-muted-foreground text-sm">No exercises logged.</p>
       ) : (
-        <div className="flex flex-col gap-3">
-          {session.performances.map((performance) => {
-            const swapped = performance.exercise.id !== performance.originalExercise.id;
-            return (
-              <div key={performance.id} className="flex flex-col gap-2 rounded-lg border p-3">
-                <div className="flex flex-col">
-                  <span className="font-semibold">{performance.exercise.name}</span>
-                  <span className="text-muted-foreground text-xs">
-                    {performance.exercise.category}
-                    {swapped && ` · swapped from ${performance.originalExercise.name}`}
-                  </span>
-                </div>
-                {performance.notes !== null && (
-                  <p className="text-muted-foreground text-sm">{performance.notes}</p>
-                )}
-                <div className="grid grid-cols-[1.5rem_1fr_1fr_1fr] gap-2 text-center text-xs font-medium text-muted-foreground">
-                  <span>#</span>
-                  <span>Weight</span>
-                  <span>Reps</span>
-                  <span>RIR</span>
-                </div>
-                {performance.sets.map((set, index) => (
-                  <div
-                    key={set.id}
-                    className="grid grid-cols-[1.5rem_1fr_1fr_1fr] items-center gap-2 text-center text-sm"
-                  >
-                    <span
-                      className={cn(
-                        'mx-auto flex size-6 items-center justify-center rounded-full text-xs font-semibold',
-                        set.isTopSet
-                          ? 'bg-primary text-primary-foreground'
-                          : 'text-muted-foreground',
-                      )}
-                    >
-                      {index + 1}
-                    </span>
-                    {/* A null weight on a finished set means it was bodyweight. */}
-                    <span>{set.weight ?? 'BW'}</span>
-                    <span>{cell(set.reps)}</span>
-                    <span>{cell(set.rir)}</span>
-                  </div>
-                ))}
-                <ExerciseHistoryPanel
-                  exerciseId={performance.exercise.id}
-                  before={session.performedDate}
-                />
-              </div>
-            );
-          })}
-        </div>
+        <WorkoutPerformances
+          performances={session.performances}
+          performedDate={session.performedDate}
+        />
       )}
 
       <div className="flex gap-2">
