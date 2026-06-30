@@ -33,6 +33,14 @@ function filterByPeriod(entries: BodyMeasurement[], period: Period): BodyMeasure
   return entries.filter((entry) => entry.measuredDate >= cutoff);
 }
 
+// Entries within an explicit from/to window (either bound optional).
+function filterByRange(entries: BodyMeasurement[], from: string, to: string): BodyMeasurement[] {
+  return entries.filter(
+    (entry) =>
+      (from === '' || entry.measuredDate >= from) && (to === '' || entry.measuredDate <= to),
+  );
+}
+
 // The body-measurements page: a prominent quick-add/edit form, a trends card with
 // a period selector that scopes both the chart and the history below it, and the
 // (period-filtered) measurement history. Mobile-first single column.
@@ -40,9 +48,19 @@ export function BodyPage() {
   const { data } = useBodyMeasurements();
   const editing = useBodyUiStore((s) => s.editing);
   const [period, setPeriod] = useState<Period>('3m');
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
 
   const entries = data ?? [];
-  const filtered = filterByPeriod(entries, period);
+  // An explicit from/to window takes over from the quick period buttons.
+  const customRange = from !== '' || to !== '';
+  const filtered = customRange ? filterByRange(entries, from, to) : filterByPeriod(entries, period);
+
+  function selectPeriod(next: Period) {
+    setPeriod(next);
+    setFrom('');
+    setTo('');
+  }
 
   return (
     <div className="flex w-full max-w-6xl flex-col gap-4 p-4">
@@ -67,9 +85,12 @@ export function BodyPage() {
                   key={p.key}
                   type="button"
                   size="sm"
-                  variant={period === p.key ? 'default' : 'ghost'}
-                  className={cn('h-7 px-2', period !== p.key && 'text-muted-foreground')}
-                  onClick={() => setPeriod(p.key)}
+                  variant={!customRange && period === p.key ? 'default' : 'ghost'}
+                  className={cn(
+                    'h-7 px-2',
+                    (customRange || period !== p.key) && 'text-muted-foreground',
+                  )}
+                  onClick={() => selectPeriod(p.key)}
                 >
                   {p.label}
                 </Button>
@@ -77,6 +98,36 @@ export function BodyPage() {
             </div>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
+            <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-sm">
+              <input
+                type="date"
+                aria-label="From date"
+                className="border-input text-foreground h-9 rounded-md border bg-transparent px-2 text-sm"
+                value={from}
+                max={to || undefined}
+                onChange={(e) => setFrom(e.target.value)}
+              />
+              <span>–</span>
+              <input
+                type="date"
+                aria-label="To date"
+                className="border-input text-foreground h-9 rounded-md border bg-transparent px-2 text-sm"
+                value={to}
+                min={from || undefined}
+                onChange={(e) => setTo(e.target.value)}
+              />
+              {customRange && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-9"
+                  onClick={() => selectPeriod(period)}
+                >
+                  Clear
+                </Button>
+              )}
+            </div>
             <BodyStatsPanel entries={filtered} />
             <BodyTrendChart entries={filtered} />
           </CardContent>
