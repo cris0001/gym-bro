@@ -20,7 +20,7 @@ export function ExercisesPage() {
   const [search, setSearch] = useState('');
 
   return (
-    <div className="flex flex-col">
+    <div className="mx-auto flex w-full max-w-2xl flex-col">
       <div className="flex items-center justify-between px-4 py-4">
         <h1 className="text-2xl font-bold">Exercises</h1>
         <Button type="button" className="h-11" onClick={openCreate}>

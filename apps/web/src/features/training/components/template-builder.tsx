@@ -32,7 +32,7 @@ export function TemplateBuilder({ templateId }: TemplateBuilderProps) {
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="mx-auto flex w-full max-w-2xl flex-col">
       <div className="px-4 py-4">
         <Link
           to="/plans/$planId"
