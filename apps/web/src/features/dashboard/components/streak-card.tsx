@@ -11,7 +11,7 @@ interface StreakCardProps {
 // progress toward keeping it alive.
 export function StreakCard({ streak, thisWeekCount }: StreakCardProps) {
   return (
-    <div className="flex flex-col gap-2 rounded-lg border p-4">
+    <div className="flex flex-col gap-2 rounded-xl border p-4">
       <div className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
         <Flame className="size-5 text-orange-500" />
         Streak
