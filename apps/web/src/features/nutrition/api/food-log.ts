@@ -4,12 +4,19 @@ import type {
   CreateFoodLogInput,
   DailyFoodLog,
   FoodLogEntry,
+  MealType,
+  RecentDiaryItem,
   UpdateFoodLogInput,
 } from '@gym-bro/shared';
 
 // GET /api/food-log?date=YYYY-MM-DD — a day's entries + summed totals.
 export function getDailyFoodLog(date: string): Promise<DailyFoodLog> {
   return apiFetch<DailyFoodLog>(`/api/food-log?date=${encodeURIComponent(date)}`);
+}
+
+// GET /api/food-log/recent?meal=… — recently-used items for a meal (quick re-add).
+export function getRecentDiaryItems(meal: MealType): Promise<RecentDiaryItem[]> {
+  return apiFetch<RecentDiaryItem[]>(`/api/food-log/recent?meal=${meal}`);
 }
 
 // POST /api/food-log — log a food or recipe (server snapshots the macros).
