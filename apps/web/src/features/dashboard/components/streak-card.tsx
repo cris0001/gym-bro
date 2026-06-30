@@ -11,10 +11,12 @@ interface StreakCardProps {
 // progress toward keeping it alive.
 export function StreakCard({ streak, thisWeekCount }: StreakCardProps) {
   return (
-    <div className="bg-card flex flex-col gap-2 rounded-xl border p-4">
-      <div className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
-        <Flame className="size-5 text-orange-500" />
-        Streak
+    <div className="bg-card flex flex-col gap-2 rounded-xl border p-4 transition-shadow hover:shadow-md">
+      <div className="flex items-center gap-2 text-sm font-medium">
+        <span className="flex size-8 items-center justify-center rounded-lg bg-orange-500/10 text-orange-500">
+          <Flame className="size-4" />
+        </span>
+        <span className="text-muted-foreground">Streak</span>
       </div>
       <span className="text-3xl font-bold">
         {streak} {streak === 1 ? 'week' : 'weeks'}

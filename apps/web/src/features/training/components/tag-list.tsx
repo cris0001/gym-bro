@@ -43,7 +43,10 @@ export function TagList() {
   return (
     <ul className="divide-y">
       {tags.map((tag) => (
-        <li key={tag.id} className="flex items-center gap-3 px-4 py-3">
+        <li
+          key={tag.id}
+          className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/50"
+        >
           <span
             className="size-4 shrink-0 rounded-full border"
             style={{ backgroundColor: tag.color }}

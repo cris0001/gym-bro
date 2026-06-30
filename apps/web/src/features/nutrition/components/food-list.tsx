@@ -43,7 +43,10 @@ export function FoodList({ search }: FoodListProps) {
   return (
     <ul className="divide-y">
       {filtered.map((food) => (
-        <li key={food.id} className="flex items-center gap-3 px-4 py-3">
+        <li
+          key={food.id}
+          className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/50"
+        >
           <div className="min-w-0 flex-1">
             <p className="truncate font-medium">{food.name}</p>
             <p className="text-muted-foreground text-sm">

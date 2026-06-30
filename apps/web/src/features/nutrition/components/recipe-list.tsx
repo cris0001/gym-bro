@@ -35,7 +35,10 @@ export function RecipeList() {
   return (
     <ul className="divide-y">
       {recipes.map((recipe) => (
-        <li key={recipe.id} className="flex items-center gap-3 px-4 py-3">
+        <li
+          key={recipe.id}
+          className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/50"
+        >
           <Link
             to="/recipes/$recipeId"
             params={{ recipeId: recipe.id }}

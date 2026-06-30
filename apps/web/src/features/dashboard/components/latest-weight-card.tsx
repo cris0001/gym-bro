@@ -16,10 +16,12 @@ export function LatestWeightCard() {
   const delta = latest !== null && previous !== null ? latest - previous : null;
 
   return (
-    <div className="bg-card flex flex-col gap-2 rounded-xl border p-4">
-      <div className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
-        <Scale className="text-primary size-5" />
-        Weight
+    <div className="bg-card flex flex-col gap-2 rounded-xl border p-4 transition-shadow hover:shadow-md">
+      <div className="flex items-center gap-2 text-sm font-medium">
+        <span className="flex size-8 items-center justify-center rounded-lg bg-violet-500/10 text-violet-500">
+          <Scale className="size-4" />
+        </span>
+        <span className="text-muted-foreground">Weight</span>
       </div>
       {latest !== null ? (
         <>
