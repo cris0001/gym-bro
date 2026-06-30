@@ -102,7 +102,7 @@ export function BodyPage() {
               <input
                 type="date"
                 aria-label="From date"
-                className="border-input text-foreground h-9 rounded-md border bg-transparent px-2 text-sm"
+                className="border-input text-foreground h-9 rounded-md border bg-background px-2 text-sm"
                 value={from}
                 max={to || undefined}
                 onChange={(e) => setFrom(e.target.value)}
@@ -111,7 +111,7 @@ export function BodyPage() {
               <input
                 type="date"
                 aria-label="To date"
-                className="border-input text-foreground h-9 rounded-md border bg-transparent px-2 text-sm"
+                className="border-input text-foreground h-9 rounded-md border bg-background px-2 text-sm"
                 value={to}
                 min={from || undefined}
                 onChange={(e) => setTo(e.target.value)}

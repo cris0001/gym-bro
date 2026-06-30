@@ -149,7 +149,7 @@ export function ActivityFormSheet({ open, onClose }: ActivityFormSheetProps) {
             <textarea
               placeholder="Optional"
               rows={3}
-              className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 rounded-lg border bg-transparent px-2.5 py-2 text-base transition-colors outline-none focus-visible:ring-3 md:text-sm"
+              className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 rounded-lg border bg-background px-2.5 py-2 text-base transition-colors outline-none focus-visible:ring-3 md:text-sm"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />

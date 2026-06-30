@@ -67,9 +67,12 @@ export function DayDetail({ date }: { date: string }) {
 
       {todos.length > 0 && (
         <section className="flex flex-col gap-2">
-          <h3 className="text-muted-foreground text-xs font-medium uppercase">Planned</h3>
+          <h3 className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium uppercase">
+            <span className="bg-primary size-2 rounded-full" />
+            Planned
+          </h3>
           {todos.map((session) => (
-            <div key={session.id} className="flex flex-col gap-2 rounded-md border p-3">
+            <div key={session.id} className="bg-primary/5 flex flex-col gap-2 rounded-lg p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex min-w-0 flex-col gap-1">
                   <span className="truncate font-medium">{session.template.name}</span>
@@ -114,7 +117,10 @@ export function DayDetail({ date }: { date: string }) {
 
       {workouts.length > 0 && (
         <section className="flex flex-col gap-2">
-          <h3 className="text-muted-foreground text-xs font-medium uppercase">Done</h3>
+          <h3 className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium uppercase">
+            <span className="size-2 rounded-full bg-green-500" />
+            Done
+          </h3>
           {workouts.map((workout) => (
             <DayWorkoutItem key={workout.id} workout={workout} />
           ))}

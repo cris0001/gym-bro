@@ -23,15 +23,17 @@ export function MealSection({ meal, label, entries }: MealSectionProps) {
   return (
     <div className="bg-card flex flex-col rounded-xl border p-4">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-baseline gap-2">
+        <div className="flex items-center gap-2">
           <h2 className="font-semibold">{label}</h2>
-          <span className="text-muted-foreground text-sm">{kcal} kcal</span>
+          <span className="rounded-full bg-sky-500/10 px-2 py-0.5 text-xs font-medium text-sky-600">
+            {kcal} kcal
+          </span>
         </div>
         <Button
           type="button"
           variant="ghost"
           size="icon"
-          className="size-9"
+          className="text-primary hover:bg-primary/10 size-9"
           aria-label={`Add to ${label}`}
           onClick={() => openAdd(meal)}
         >
