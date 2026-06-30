@@ -56,7 +56,9 @@ interface ExerciseProgressChartProps {
 // Per-session progress for the picked exercise: switch between the top set and the
 // normal (back-off) set, and between weight / reps / volume.
 export function ExerciseProgressChart({ exerciseId }: ExerciseProgressChartProps) {
-  const [dimension, setDimension] = useState<Dimension>('top');
+  // Default to normal sets: most logged history has no marked top set, so the top
+  // view would look empty even when the exercise has plenty of data.
+  const [dimension, setDimension] = useState<Dimension>('normal');
   const [metric, setMetric] = useState<Metric>('weight');
   const { data: points = [], isPending } = useExerciseProgress(exerciseId);
 
