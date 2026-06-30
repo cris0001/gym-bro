@@ -23,11 +23,11 @@ export function BottomNav() {
             key={section.label}
             to={section.to}
             className={cn(
-              'flex flex-1 flex-col items-center justify-center gap-0.5 text-xs',
-              isActive ? 'font-semibold' : 'text-white/75',
+              'flex flex-1 flex-col items-center justify-center gap-0.5 text-xs font-medium transition-colors',
+              isActive ? 'bg-white/15 font-semibold text-white' : 'text-white/85',
             )}
           >
-            <Icon className="size-5" />
+            <Icon className="size-6" />
             {section.label}
           </Link>
         );
