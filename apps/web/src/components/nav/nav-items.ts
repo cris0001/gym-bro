@@ -7,6 +7,7 @@ import {
   History,
   LayoutDashboard,
   ListChecks,
+  Scale,
   Tag,
   Target,
   TrendingUp,
@@ -23,6 +24,7 @@ export type NavPath =
   | '/history'
   | '/stats'
   | '/diary'
+  | '/body'
   | '/plans'
   | '/exercises'
   | '/tags'
@@ -47,6 +49,7 @@ export const PRIMARY_NAV: NavItem[] = [
   { to: '/history', label: 'History', icon: History },
   { to: '/stats', label: 'Stats', icon: TrendingUp },
   { to: '/diary', label: 'Diary', icon: UtensilsCrossed },
+  { to: '/body', label: 'Body', icon: Scale },
 ];
 
 // Setup/library destinations, used infrequently — grouped under "Library" in the
