@@ -52,15 +52,13 @@ describe('stats exercise-picker route', () => {
 });
 
 describe('stats exercise-progress route', () => {
-  it('maps performedDate to date and forwards the from/to window', async () => {
-    repo.findExerciseProgress.mockResolvedValue([
-      {
-        sessionId: SESSION_ID,
-        performedDate: '2026-06-29',
-        maxWeight: 100,
-        totalVolume: 5000,
-        setCount: 5,
-      },
+  it('reduces a session to its top set and first normal set, forwarding the window', async () => {
+    // Top set (120×3) then three uniform back-offs (100×8); only the first normal
+    // set represents the back-offs.
+    repo.findExerciseSetRows.mockResolvedValue([
+      { sessionId: SESSION_ID, performedDate: '2026-06-29', weight: 120, reps: 3, isTopSet: true },
+      { sessionId: SESSION_ID, performedDate: '2026-06-29', weight: 100, reps: 8, isTopSet: false },
+      { sessionId: SESSION_ID, performedDate: '2026-06-29', weight: 100, reps: 8, isTopSet: false },
     ]);
 
     const res = await request(
@@ -72,9 +70,16 @@ describe('stats exercise-progress route', () => {
 
     expect(res.status).toBe(200);
     expect(body.data).toEqual([
-      { sessionId: SESSION_ID, date: '2026-06-29', maxWeight: 100, totalVolume: 5000, setCount: 5 },
+      {
+        sessionId: SESSION_ID,
+        date: '2026-06-29',
+        topWeight: 120,
+        topReps: 3,
+        normalWeight: 100,
+        normalReps: 8,
+      },
     ]);
-    expect(repo.findExerciseProgress).toHaveBeenCalledWith(
+    expect(repo.findExerciseSetRows).toHaveBeenCalledWith(
       'user-1',
       EXERCISE_ID,
       '2026-01-01',
@@ -82,15 +87,38 @@ describe('stats exercise-progress route', () => {
     );
   });
 
+  it('leaves the top fields null for a session with no marked top set', async () => {
+    repo.findExerciseSetRows.mockResolvedValue([
+      { sessionId: SESSION_ID, performedDate: '2026-06-29', weight: 100, reps: 8, isTopSet: false },
+    ]);
+
+    const res = await request('GET', `/api/stats/exercises/${EXERCISE_ID}/progress`, {
+      cookie: await authCookie(),
+    });
+    const body = (await res.json()) as { data: ExerciseProgressPoint[] };
+
+    expect(res.status).toBe(200);
+    expect(body.data).toEqual([
+      {
+        sessionId: SESSION_ID,
+        date: '2026-06-29',
+        topWeight: null,
+        topReps: null,
+        normalWeight: 100,
+        normalReps: 8,
+      },
+    ]);
+  });
+
   it('passes undefined bounds when no range is given (all history)', async () => {
-    repo.findExerciseProgress.mockResolvedValue([]);
+    repo.findExerciseSetRows.mockResolvedValue([]);
 
     const res = await request('GET', `/api/stats/exercises/${EXERCISE_ID}/progress`, {
       cookie: await authCookie(),
     });
 
     expect(res.status).toBe(200);
-    expect(repo.findExerciseProgress).toHaveBeenCalledWith(
+    expect(repo.findExerciseSetRows).toHaveBeenCalledWith(
       'user-1',
       EXERCISE_ID,
       undefined,
@@ -104,7 +132,7 @@ describe('stats exercise-progress route', () => {
     });
 
     expect(res.status).toBe(404);
-    expect(repo.findExerciseProgress).not.toHaveBeenCalled();
+    expect(repo.findExerciseSetRows).not.toHaveBeenCalled();
   });
 
   it('returns 400 when from is after to', async () => {
@@ -115,7 +143,7 @@ describe('stats exercise-progress route', () => {
     );
 
     expect(res.status).toBe(400);
-    expect(repo.findExerciseProgress).not.toHaveBeenCalled();
+    expect(repo.findExerciseSetRows).not.toHaveBeenCalled();
   });
 });
 
