@@ -29,11 +29,11 @@ export function DayWorkoutItem({ workout }: { workout: WorkoutSessionListItem })
   }
 
   return (
-    <div className="rounded-md border">
+    <div className="bg-muted/60 overflow-hidden rounded-lg">
       <button
         type="button"
         onClick={() => setExpanded((value) => !value)}
-        className="flex w-full items-center gap-2 p-3 text-left"
+        className="hover:bg-muted flex w-full items-center gap-2 p-3 text-left transition-colors"
         aria-expanded={expanded}
       >
         <Icon className="size-4 shrink-0 text-green-600" />

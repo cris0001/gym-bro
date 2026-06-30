@@ -170,7 +170,7 @@ export function FinishSessionSheet({ open, onClose }: FinishSessionSheetProps) {
             <textarea
               placeholder="Optional"
               rows={3}
-              className="border-input bg-transparent placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 rounded-lg border px-2.5 py-2 text-base transition-colors outline-none focus-visible:ring-3 md:text-sm"
+              className="border-input bg-background placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 rounded-lg border px-2.5 py-2 text-base transition-colors outline-none focus-visible:ring-3 md:text-sm"
               value={draft.notes ?? ''}
               onChange={(e) => setNotes(e.target.value.length > 0 ? e.target.value : null)}
             />

@@ -147,7 +147,7 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
               aria-label="Exercise notes"
               rows={2}
               placeholder="Notes for this exercise…"
-              className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 rounded-lg border bg-transparent px-2.5 py-2 text-base transition-colors outline-none focus-visible:ring-3 md:text-sm"
+              className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 rounded-lg border bg-background px-2.5 py-2 text-base transition-colors outline-none focus-visible:ring-3 md:text-sm"
               value={performance.notes ?? ''}
               onChange={(e) =>
                 setExerciseNotes(performance.id, e.target.value.length > 0 ? e.target.value : null)

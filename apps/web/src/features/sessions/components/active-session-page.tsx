@@ -81,7 +81,7 @@ export function ActiveSessionPage() {
           <input
             type="date"
             aria-label="Workout date"
-            className="border-input text-foreground h-9 rounded-md border bg-transparent px-2 text-sm"
+            className="border-input text-foreground h-9 rounded-md border bg-background px-2 text-sm"
             value={draft.performedDate}
             onChange={(e) => e.target.value && setPerformedDate(e.target.value)}
           />

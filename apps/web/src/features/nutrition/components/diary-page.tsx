@@ -39,9 +39,11 @@ export function DiaryPage() {
     <div className="lg:col-start-2 flex w-full max-w-5xl flex-col gap-4 p-4 pb-28 lg:pb-4">
       <h1 className="text-2xl font-bold">Diary</h1>
 
-      <div className="lg:grid lg:grid-cols-[1fr_19rem] lg:items-start lg:gap-6">
-        {/* Desktop sidebar summary; on mobile the slim bottom bar takes over. */}
-        <Card className="hidden lg:order-2 lg:sticky lg:top-4 lg:block">
+      <div className="lg:grid lg:grid-cols-[1fr_24rem] lg:items-start lg:gap-6">
+        {/* Desktop sidebar summary; on mobile the slim bottom bar takes over. The
+            top margin drops it past the day switcher so it lines up with the first
+            meal. */}
+        <Card className="hidden lg:order-2 lg:mt-[3.75rem] lg:sticky lg:top-4 lg:block">
           <CardContent>
             {data ? (
               <DaySummary totals={data.totals} />

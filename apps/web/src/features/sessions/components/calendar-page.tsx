@@ -30,7 +30,7 @@ export function CalendarPage() {
         </div>
       </div>
 
-      <div className="lg:grid lg:grid-cols-[1fr_22rem] lg:items-start lg:gap-6">
+      <div className="lg:grid lg:grid-cols-[1fr_26rem] lg:items-start lg:gap-6">
         <div className="bg-card rounded-xl border p-3 sm:p-4">
           <CalendarGrid />
         </div>
