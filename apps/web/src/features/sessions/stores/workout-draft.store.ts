@@ -12,6 +12,12 @@ export interface DraftSet {
   weight: number | null;
   reps: number | null;
   rir: number | null;
+  // The exercise's heavier, lower-rep "top set" (at most one per exercise). The
+  // rest are normal/back-off sets. Persisted to the DB.
+  isTopSet: boolean;
+  // A bodyweight set: weight is null and the weight input is disabled. Client-only
+  // — on the wire it's just a null weight (null weight = bodyweight in the DB).
+  isBodyweight: boolean;
 }
 
 // One exercise being performed. The swap pair is kept: originalExerciseId is what
@@ -81,6 +87,11 @@ interface WorkoutDraftState {
   copyLastSet: (performanceId: string) => void;
   replaceSets: (performanceId: string, sets: Omit<DraftSet, 'id'>[]) => void;
   updateSet: (performanceId: string, setId: string, patch: Partial<Omit<DraftSet, 'id'>>) => void;
+  // Single-select: marking a set as the top set un-marks the others; toggling the
+  // current top set off leaves the exercise with none.
+  toggleTopSet: (performanceId: string, setId: string) => void;
+  // Toggles bodyweight; turning it on nulls the weight.
+  toggleBodyweight: (performanceId: string, setId: string) => void;
   removeSet: (performanceId: string, setId: string) => void;
   setExerciseNotes: (performanceId: string, notes: string | null) => void;
   setDuration: (durationMinutes: number | null) => void;
@@ -94,6 +105,8 @@ const emptySet = (): DraftSet => ({
   weight: null,
   reps: null,
   rir: null,
+  isTopSet: false,
+  isBodyweight: false,
 });
 
 // Applies an update to one performance, leaving the rest untouched.
@@ -161,6 +174,9 @@ export const useWorkoutDraftStore = create<WorkoutDraftState>()(
                 weight: set.weight,
                 reps: set.reps,
                 rir: set.rir,
+                isTopSet: set.isTopSet,
+                // A persisted null weight means it was logged as bodyweight.
+                isBodyweight: set.weight === null,
               })),
             })),
           },
@@ -246,6 +262,10 @@ export const useWorkoutDraftStore = create<WorkoutDraftState>()(
                         weight: last.weight,
                         reps: last.reps,
                         rir: last.rir,
+                        // A copy is a back-off set, never the top set; inherit the
+                        // bodyweight state (back-offs of a BW exercise are BW too).
+                        isTopSet: false,
+                        isBodyweight: last.isBodyweight,
                       }
                     : emptySet();
                   return { ...p, sets: [...p.sets, next] };
@@ -267,6 +287,8 @@ export const useWorkoutDraftStore = create<WorkoutDraftState>()(
                     weight: set_.weight,
                     reps: set_.reps,
                     rir: set_.rir,
+                    isTopSet: set_.isTopSet,
+                    isBodyweight: set_.isBodyweight,
                   })),
                 })),
               }
@@ -280,6 +302,44 @@ export const useWorkoutDraftStore = create<WorkoutDraftState>()(
                 draft: mapPerformance(s.draft, performanceId, (p) => ({
                   ...p,
                   sets: p.sets.map((set_) => (set_.id === setId ? { ...set_, ...patch } : set_)),
+                })),
+              }
+            : s,
+        ),
+
+      toggleTopSet: (performanceId, setId) =>
+        set((s) =>
+          s.draft
+            ? {
+                draft: mapPerformance(s.draft, performanceId, (p) => ({
+                  ...p,
+                  // Flip the target; force every other set off (single top set).
+                  sets: p.sets.map((set_) =>
+                    set_.id === setId
+                      ? { ...set_, isTopSet: !set_.isTopSet }
+                      : { ...set_, isTopSet: false },
+                  ),
+                })),
+              }
+            : s,
+        ),
+
+      toggleBodyweight: (performanceId, setId) =>
+        set((s) =>
+          s.draft
+            ? {
+                draft: mapPerformance(s.draft, performanceId, (p) => ({
+                  ...p,
+                  sets: p.sets.map((set_) =>
+                    set_.id === setId
+                      ? {
+                          ...set_,
+                          isBodyweight: !set_.isBodyweight,
+                          // Turning bodyweight on clears the weight.
+                          weight: set_.isBodyweight ? set_.weight : null,
+                        }
+                      : set_,
+                  ),
                 })),
               }
             : s,
