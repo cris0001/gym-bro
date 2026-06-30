@@ -14,6 +14,8 @@ export function workoutSessionQueryOptions(id: string) {
   });
 }
 
-export function useWorkoutSession(id: string) {
-  return useQuery(workoutSessionQueryOptions(id));
+// enabled gates the fetch so callers can defer it (e.g. the calendar panel only
+// loads a workout's detail once its row is expanded).
+export function useWorkoutSession(id: string, enabled = true) {
+  return useQuery({ ...workoutSessionQueryOptions(id), enabled });
 }
