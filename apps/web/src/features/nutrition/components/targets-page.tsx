@@ -10,30 +10,32 @@ export function TargetsPage() {
   const { data: current, isPending } = useCurrentTarget();
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-4">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 p-4">
       <h1 className="text-2xl font-bold">Targets</h1>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Daily target</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isPending ? (
-            <p className="text-muted-foreground text-sm">Loading…</p>
-          ) : (
-            <TargetsForm key={current?.id ?? 'none'} current={current ?? null} />
-          )}
-        </CardContent>
-      </Card>
+      <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+        <Card>
+          <CardHeader>
+            <CardTitle>Daily target</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isPending ? (
+              <p className="text-muted-foreground text-sm">Loading…</p>
+            ) : (
+              <TargetsForm key={current?.id ?? 'none'} current={current ?? null} />
+            )}
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>History</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <TargetsHistory />
-        </CardContent>
-      </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>History</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TargetsHistory />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
