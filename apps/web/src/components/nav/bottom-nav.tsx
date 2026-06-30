@@ -1,69 +1,37 @@
-import { Link } from '@tanstack/react-router';
-import { Menu } from 'lucide-react';
-import { useState } from 'react';
+import { Link, useRouterState } from '@tanstack/react-router';
 
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { cn } from '@/lib/utils';
 
-import { LIBRARY_NAV, PRIMARY_NAV } from './nav-items';
+import { findActiveSection, NAV_SECTIONS } from './nav-items';
 
-// Mobile navigation: a fixed bottom tab bar of the primary destinations plus a
-// "More" tab that opens the library in a bottom sheet. Hidden on lg, where the
-// sidebar takes over.
+// Mobile navigation: a fixed bottom tab bar of the four sections, each landing on
+// its main view. A tab is active whenever the current route belongs to that
+// section (e.g. Training stays lit on /plans), so the submenu pages keep their
+// category highlighted. The sub-tab strip (SectionTabs) handles within-section
+// navigation. Hidden on lg, where the sidebar takes over.
 export function BottomNav() {
-  const [moreOpen, setMoreOpen] = useState(false);
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const activeSection = findActiveSection(pathname);
 
   return (
-    <>
-      <nav className="bg-background fixed inset-x-0 bottom-0 z-20 flex border-t lg:hidden">
-        {PRIMARY_NAV.map((item) => {
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.to}
-              to={item.to}
-              activeOptions={{ exact: item.exact ?? false }}
-              className="flex flex-1 flex-col items-center gap-0.5 py-2 text-xs"
-              activeProps={{ className: 'text-primary' }}
-              inactiveProps={{ className: 'text-muted-foreground' }}
-            >
-              <Icon className="size-5" />
-              {item.label}
-            </Link>
-          );
-        })}
-        <button
-          type="button"
-          onClick={() => setMoreOpen(true)}
-          className="text-muted-foreground flex flex-1 flex-col items-center gap-0.5 py-2 text-xs"
-        >
-          <Menu className="size-5" />
-          More
-        </button>
-      </nav>
-
-      <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
-        <SheetContent side="bottom">
-          <SheetHeader>
-            <SheetTitle>Library</SheetTitle>
-          </SheetHeader>
-          <div className="flex flex-col gap-1 p-4">
-            {LIBRARY_NAV.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setMoreOpen(false)}
-                  className="hover:bg-accent flex min-h-11 items-center gap-3 rounded-md px-3 text-sm"
-                >
-                  <Icon className="size-5" />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </div>
-        </SheetContent>
-      </Sheet>
-    </>
+    <nav className="bg-background fixed inset-x-0 bottom-0 z-20 flex border-t lg:hidden">
+      {NAV_SECTIONS.map((section) => {
+        const Icon = section.icon;
+        const isActive = section.label === activeSection.label;
+        return (
+          <Link
+            key={section.label}
+            to={section.to}
+            className={cn(
+              'flex flex-1 flex-col items-center gap-0.5 py-2 text-xs',
+              isActive ? 'text-primary' : 'text-muted-foreground',
+            )}
+          >
+            <Icon className="size-5" />
+            {section.label}
+          </Link>
+        );
+      })}
+    </nav>
   );
 }
