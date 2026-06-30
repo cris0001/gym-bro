@@ -45,7 +45,7 @@ export function PlanDetail({ planId }: PlanDetailProps) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col">
+    <div className="flex w-full max-w-2xl flex-col">
       <div className="px-4 py-4">
         <Link
           to="/plans"

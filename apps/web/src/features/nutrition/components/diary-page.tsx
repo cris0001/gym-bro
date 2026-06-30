@@ -36,7 +36,7 @@ export function DiaryPage() {
   const entries = data?.entries ?? [];
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-4 pb-28 lg:pb-4">
+    <div className="flex w-full max-w-5xl flex-col gap-4 p-4 pb-28 lg:pb-4">
       <h1 className="text-2xl font-bold">Diary</h1>
 
       <div className="lg:grid lg:grid-cols-[1fr_19rem] lg:items-start lg:gap-6">

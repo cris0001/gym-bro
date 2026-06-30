@@ -45,7 +45,7 @@ export function BodyPage() {
   const filtered = filterByPeriod(entries, period);
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-4">
+    <div className="flex w-full max-w-6xl flex-col gap-4 p-4">
       <h1 className="text-2xl font-bold">Body</h1>
 
       <div className="grid gap-4 lg:grid-cols-[22rem_1fr] lg:items-start">

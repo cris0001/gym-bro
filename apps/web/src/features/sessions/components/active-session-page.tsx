@@ -29,7 +29,7 @@ export function ActiveSessionPage() {
 
   if (!draft) {
     return (
-      <div className="mx-auto flex w-full max-w-sm flex-col gap-4 p-8">
+      <div className="flex w-full max-w-sm flex-col gap-4 p-8">
         <h1 className="text-center text-2xl font-bold">Start a workout</h1>
         <p className="text-muted-foreground text-center text-sm">
           Pick a template, or begin an empty session and add exercises as you go.
@@ -64,7 +64,7 @@ export function ActiveSessionPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-4 pb-28">
+    <div className="flex w-full max-w-3xl flex-col gap-4 p-4 pb-28">
       <header className="bg-card flex flex-col gap-2 rounded-xl border p-4">
         {isTemplateBased ? (
           <h1 className="flex h-11 items-center text-lg font-semibold">{draft.name}</h1>
@@ -102,8 +102,8 @@ export function ActiveSessionPage() {
         Add exercise
       </Button>
 
-      <div className="bg-background/95 fixed inset-x-0 bottom-0 z-30 border-t p-3 backdrop-blur lg:left-56">
-        <div className="mx-auto flex w-full max-w-3xl gap-2">
+      <div className="bg-background/95 fixed inset-x-0 bottom-0 z-30 border-t p-3 backdrop-blur lg:left-60">
+        <div className="flex w-full max-w-3xl gap-2">
           <Button variant="ghost" className="h-11" onClick={handleDiscard}>
             {isEditing ? 'Cancel' : 'Discard'}
           </Button>
