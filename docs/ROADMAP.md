@@ -297,22 +297,43 @@ section with its own add; and a recipe can be logged by grams or by servings
 
 ---
 
-### Stage 10 — Body measurements
+### Stage 10 — Body measurements ✅ COMPLETE
 
-- [ ] body_measurements schema + migration (weight + body_fat +
+A body_measurements table (weight + body_fat + optional
+biceps/chest/waist/hip/thigh, UNIQUE per date; migration 0006 applied to Neon) and
+the body feature module end to end. The backend upsert MERGES on a same-day re-save
+— only the fields present in the payload change (a number sets, an explicit null
+clears, an omitted field is left untouched) — which is what keeps the prominent
+quick-add weight form non-destructive; 10 route tests (181 total). The web feature
+(in three slices: data layer + nav → quick-add form + list → charts) ships a
+prominent quick-add/edit form (date defaults to today, weight + body fat shown,
+the five circumferences behind "Show more"), the history list with edit (reloads
+the form) and a delete confirmed via a Popover, a trend chart (per-measure selector
+
+- 7-/30-day moving-average overlays, Recharts, themed for dark mode and code-split
+  to the route), and a weight stats panel. Moving averages are a pure shared util
+  using a CALENDAR-day window (a "7-day average" is the mean of every point within
+  the trailing 7 calendar days, honest under sparse logging), with 9 unit tests.
+  Body is in primary nav.
+
+* [x] body_measurements schema + migration (weight + body_fat +
       optional biceps/chest/waist/hip/thigh; UNIQUE per date)
-- [ ] Body feature module (backend)
-- [ ] Body feature module (frontend)
-- [ ] Quick-add weight form (primary, prominent on mobile)
-- [ ] Expandable "Show more measurements" section
-- [ ] Body measurements list (paginated or virtualized)
-- [ ] Edit/delete entries
-- [ ] Trend chart per measurement
-- [ ] 7-day and 30-day moving averages overlay
-- [ ] Stats panel (current, last 7d change, last 30d change, total)
-- [ ] Date range selector
-- [ ] Pure functions for moving averages (tested)
-- [ ] Bonus: overlay nutrition target changes on weight chart
+* [x] Body feature module (backend) — repository/service/routes, merge upsert,
+      10 route tests
+* [x] Body feature module (frontend)
+* [x] Quick-add weight form (primary, prominent on mobile)
+* [x] Expandable "Show more measurements" section
+* [~] Body measurements list — shipped as a plain list; pagination/virtualization
+  deferred to the Stage 12 performance pass (single-user data stays small)
+* [x] Edit/delete entries (delete behind a Popover confirm)
+* [x] Trend chart per measurement (per-measure selector)
+* [x] 7-day and 30-day moving averages overlay
+* [~] Stats panel — weight-only: latest, change since last, lowest, highest
+  (kept simple rather than per-measure to avoid lifting chart state)
+* [ ] Date range selector — deferred; charts show full history (revisit if the
+      series grows long enough to need windowing)
+* [x] Pure functions for moving averages (tested) — shared, calendar-window, 9 tests
+* [ ] Bonus: overlay nutrition target changes on weight chart — skipped (bonus)
 
 ---
 
