@@ -65,7 +65,7 @@ export function ActiveSessionPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-4 pb-28">
-      <header className="border-l-primary bg-card flex flex-col gap-2 rounded-xl border border-l-4 p-4">
+      <header className="bg-card flex flex-col gap-2 rounded-xl border p-4">
         {isTemplateBased ? (
           <h1 className="flex h-11 items-center text-lg font-semibold">{draft.name}</h1>
         ) : (

@@ -49,7 +49,7 @@ export function BodyPage() {
       <h1 className="text-2xl font-bold">Body</h1>
 
       <div className="grid gap-4 lg:grid-cols-[22rem_1fr] lg:items-start">
-        <Card className="border-l-primary border-l-4">
+        <Card>
           <CardHeader>
             <CardTitle>{editing ? 'Edit measurement' : 'Add measurement'}</CardTitle>
           </CardHeader>
