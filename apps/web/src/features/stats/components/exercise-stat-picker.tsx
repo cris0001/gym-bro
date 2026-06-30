@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 
 import { useStatExercises } from '../hooks/use-stats';
 
-import type { StatExercise } from '@gym-bro/shared';
+import { EXERCISE_CATEGORIES, type StatExercise } from '@gym-bro/shared';
 
 interface ExerciseStatPickerProps {
   value: StatExercise | null;
@@ -23,11 +23,17 @@ interface ExerciseStatPickerProps {
 }
 
 // Searchable picker for the progress chart. Lists only exercises the user has
-// logged (from /stats/exercises), so every choice yields a non-empty chart. The
-// category is shown as a muted suffix to disambiguate similarly-named exercises.
+// logged (from /stats/exercises), so every choice yields a non-empty chart.
+// Exercises are grouped by category (in the canonical category order; names are
+// already sorted within each from the backend) so the list reads by muscle group.
 export function ExerciseStatPicker({ value, onSelect }: ExerciseStatPickerProps) {
   const [open, setOpen] = useState(false);
   const { data: exercises = [], isPending } = useStatExercises();
+
+  const groups = EXERCISE_CATEGORIES.map((category) => ({
+    category,
+    items: exercises.filter((exercise) => exercise.category === category),
+  })).filter((group) => group.items.length > 0);
 
   function handleSelect(exercise: StatExercise) {
     onSelect(exercise);
@@ -49,24 +55,25 @@ export function ExerciseStatPicker({ value, onSelect }: ExerciseStatPickerProps)
           <CommandInput placeholder="Search exercises" />
           <CommandList>
             <CommandEmpty>{isPending ? 'Loading…' : 'No logged exercises yet.'}</CommandEmpty>
-            <CommandGroup>
-              {exercises.map((exercise) => (
-                <CommandItem
-                  key={exercise.id}
-                  value={exercise.name}
-                  onSelect={() => handleSelect(exercise)}
-                >
-                  <Check
-                    className={cn(
-                      'size-4',
-                      exercise.id === value?.id ? 'opacity-100' : 'opacity-0',
-                    )}
-                  />
-                  <span className="truncate">{exercise.name}</span>
-                  <span className="text-muted-foreground ml-auto text-xs">{exercise.category}</span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            {groups.map((group) => (
+              <CommandGroup key={group.category} heading={group.category}>
+                {group.items.map((exercise) => (
+                  <CommandItem
+                    key={exercise.id}
+                    value={exercise.name}
+                    onSelect={() => handleSelect(exercise)}
+                  >
+                    <Check
+                      className={cn(
+                        'size-4',
+                        exercise.id === value?.id ? 'opacity-100' : 'opacity-0',
+                      )}
+                    />
+                    <span className="truncate">{exercise.name}</span>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            ))}
           </CommandList>
         </Command>
       </PopoverContent>
