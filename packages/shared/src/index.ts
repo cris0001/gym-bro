@@ -12,6 +12,7 @@ export * from './types/stats.types';
 export * from './types/nutrition.types';
 export * from './types/body.types';
 export * from './utils/macros';
+export * from './utils/moving-average';
 export * from './constants/auth.constants';
 export * from './constants/training.constants';
 export * from './constants/sessions.constants';
