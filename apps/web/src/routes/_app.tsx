@@ -36,9 +36,13 @@ function AppLayout() {
           <LogoutButton />
         </header>
         <SectionTabs />
-        {/* Muted canvas so cards and list surfaces lift off the background. */}
-        <main className="bg-muted/40 flex-1 pb-16 lg:pb-0">
-          <Outlet />
+        {/* Muted canvas so cards and list surfaces lift off the background. On
+            desktop the content sits in the left-of-center band (1fr left, 2fr
+            right) rather than hard-left or dead-center. */}
+        <main className="bg-muted/40 flex-1 pb-16 lg:grid lg:grid-cols-[1fr_minmax(0,72rem)_2fr] lg:pb-0">
+          <div className="min-w-0 lg:col-start-2">
+            <Outlet />
+          </div>
         </main>
       </div>
       <BottomNav />
