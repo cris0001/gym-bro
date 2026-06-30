@@ -42,7 +42,7 @@ export function WorkoutDetail({ sessionId }: WorkoutDetailProps) {
   }
 
   return (
-    <div className="flex w-full max-w-2xl flex-col gap-4 p-4">
+    <div className="mx-auto lg:col-span-3 flex w-full max-w-2xl flex-col gap-4 p-4">
       <Link to="/calendar" className="text-muted-foreground text-sm">
         ← Calendar
       </Link>

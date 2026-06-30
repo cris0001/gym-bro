@@ -8,7 +8,7 @@ import { RecipeList } from './recipe-list';
 // The recipe list page: header + "New" action (to the builder route) and the list.
 export function RecipesPage() {
   return (
-    <div className="flex w-full max-w-4xl flex-col gap-4 p-4">
+    <div className="mx-auto lg:col-span-3 flex w-full max-w-4xl flex-col gap-4 p-4">
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">Recipes</h1>
         <Button asChild className="h-11">

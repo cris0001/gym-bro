@@ -29,7 +29,7 @@ export function ActiveSessionPage() {
 
   if (!draft) {
     return (
-      <div className="flex w-full max-w-sm flex-col gap-4 p-8">
+      <div className="mx-auto flex w-full max-w-sm flex-col gap-4 p-8 lg:col-span-3">
         <h1 className="text-center text-2xl font-bold">Start a workout</h1>
         <p className="text-muted-foreground text-center text-sm">
           Pick a template, or begin an empty session and add exercises as you go.
@@ -64,7 +64,7 @@ export function ActiveSessionPage() {
   }
 
   return (
-    <div className="flex w-full max-w-3xl flex-col gap-4 p-4 pb-28">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-4 pb-28 lg:col-span-3">
       <header className="bg-card flex flex-col gap-2 rounded-xl border p-4">
         {isTemplateBased ? (
           <h1 className="flex h-11 items-center text-lg font-semibold">{draft.name}</h1>

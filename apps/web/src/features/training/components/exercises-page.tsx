@@ -20,7 +20,7 @@ export function ExercisesPage() {
   const [search, setSearch] = useState('');
 
   return (
-    <div className="flex w-full max-w-4xl flex-col gap-3 p-4">
+    <div className="mx-auto lg:col-span-3 flex w-full max-w-4xl flex-col gap-3 p-4">
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">Exercises</h1>
         <Button type="button" className="h-11" onClick={openCreate}>

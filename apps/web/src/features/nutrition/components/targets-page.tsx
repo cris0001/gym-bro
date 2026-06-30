@@ -10,7 +10,7 @@ export function TargetsPage() {
   const { data: current, isPending } = useCurrentTarget();
 
   return (
-    <div className="flex w-full max-w-5xl flex-col gap-4 p-4">
+    <div className="mx-auto lg:col-span-3 flex w-full max-w-5xl flex-col gap-4 p-4">
       <h1 className="text-2xl font-bold">Targets</h1>
 
       <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
