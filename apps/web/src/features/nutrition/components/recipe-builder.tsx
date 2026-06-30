@@ -106,7 +106,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
   }
 
   return (
-    <div className="flex w-full max-w-2xl flex-col gap-4 p-4">
+    <div className="mx-auto lg:col-span-3 flex w-full max-w-2xl flex-col gap-4 p-4">
       <h1 className="text-2xl font-bold">{editing ? 'Edit recipe' : 'New recipe'}</h1>
 
       <div className="grid gap-2">

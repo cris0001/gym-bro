@@ -15,7 +15,7 @@ export function StatsPage() {
   const [exercise, setExercise] = useState<StatExercise | null>(null);
 
   return (
-    <div className="flex w-full max-w-6xl flex-col gap-4 p-4">
+    <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-4 p-4">
       <h1 className="text-2xl font-bold">Stats</h1>
 
       <div className="grid gap-4 lg:grid-cols-2 lg:items-start">

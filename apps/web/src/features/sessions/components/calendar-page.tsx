@@ -14,7 +14,7 @@ export function CalendarPage() {
   const isDesktop = useMediaQuery('(min-width: 1024px)');
 
   return (
-    <div className="flex w-full max-w-6xl flex-col gap-4 p-4">
+    <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-4 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">Calendar</h1>
         <div className="text-muted-foreground flex items-center gap-4 text-xs">
