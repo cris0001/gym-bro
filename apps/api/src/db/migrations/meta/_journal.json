@@ -43,6 +43,13 @@
       "when": 1782740981147,
       "tag": "0005_outstanding_nuke",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1782800757199,
+      "tag": "0006_spotty_doctor_faustus",
+      "breakpoints": true
     }
   ]
 }
