@@ -2,6 +2,7 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { format, parseISO } from 'date-fns';
 
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 import { useDeleteWorkoutSession } from '../hooks/use-delete-workout-session';
 import { useEditWorkout } from '../hooks/use-edit-workout';
@@ -101,10 +102,20 @@ export function WorkoutDetail({ sessionId }: WorkoutDetailProps) {
                 {performance.sets.map((set, index) => (
                   <div
                     key={set.id}
-                    className="grid grid-cols-[1.5rem_1fr_1fr_1fr] gap-2 text-center text-sm"
+                    className="grid grid-cols-[1.5rem_1fr_1fr_1fr] items-center gap-2 text-center text-sm"
                   >
-                    <span className="text-muted-foreground">{index + 1}</span>
-                    <span>{cell(set.weight)}</span>
+                    <span
+                      className={cn(
+                        'mx-auto flex size-6 items-center justify-center rounded-full text-xs font-semibold',
+                        set.isTopSet
+                          ? 'bg-primary text-primary-foreground'
+                          : 'text-muted-foreground',
+                      )}
+                    >
+                      {index + 1}
+                    </span>
+                    {/* A null weight on a finished set means it was bodyweight. */}
+                    <span>{set.weight ?? 'BW'}</span>
                     <span>{cell(set.reps)}</span>
                     <span>{cell(set.rir)}</span>
                   </div>

@@ -11,11 +11,12 @@ import { useExerciseHistory } from '../hooks/use-exercise-history';
 const STEP = 3;
 
 // Compact set summary, e.g. "100×8 @2" (weight×reps, optional RIR). null weight
-// is bodyweight; a missing rep count shows as a dash.
+// is bodyweight; a missing rep count shows as a dash; a top set is prefixed "★".
 function formatSet(set: ExerciseHistoryEntry['sets'][number]): string {
   const weight = set.weight ?? 'BW';
   const base = `${weight}×${set.reps ?? '–'}`;
-  return set.rir === null ? base : `${base} @${set.rir}`;
+  const withRir = set.rir === null ? base : `${base} @${set.rir}`;
+  return set.isTopSet ? `★${withRir}` : withRir;
 }
 
 interface ExerciseHistoryPanelProps {
