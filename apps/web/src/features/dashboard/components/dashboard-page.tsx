@@ -38,7 +38,7 @@ export function DashboardPage() {
       .sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate))[0] ?? null;
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-4">
+    <div className="flex w-full max-w-6xl flex-col gap-4 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">Dashboard</h1>
         <Button asChild className="h-11">
