@@ -11,10 +11,12 @@ interface NextSessionCardProps {
 // The soonest upcoming planned session, or a prompt to plan one.
 export function NextSessionCard({ session }: NextSessionCardProps) {
   return (
-    <div className="bg-card flex flex-col gap-2 rounded-xl border p-4">
-      <div className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
-        <CalendarDays className="text-primary size-5" />
-        Next session
+    <div className="bg-card flex flex-col gap-2 rounded-xl border p-4 transition-shadow hover:shadow-md">
+      <div className="flex items-center gap-2 text-sm font-medium">
+        <span className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg">
+          <CalendarDays className="size-4" />
+        </span>
+        <span className="text-muted-foreground">Next session</span>
       </div>
       {session ? (
         <>
