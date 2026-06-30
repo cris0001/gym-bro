@@ -5,8 +5,10 @@ import { usePlannedSessions, useWorkoutSessions } from '@/features/sessions';
 import { Button } from '@/components/ui/button';
 
 import { computeWeeklyStreak, countWorkoutsThisWeek } from '../utils/compute-weekly-streak';
+import { LatestWeightCard } from './latest-weight-card';
 import { NextSessionCard } from './next-session-card';
 import { StreakCard } from './streak-card';
+import { TodayNutritionCard } from './today-nutrition-card';
 
 const ISO = 'yyyy-MM-dd';
 // Window for finding the next planned session.
@@ -36,17 +38,20 @@ export function DashboardPage() {
       .sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate))[0] ?? null;
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-4">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <StreakCard streak={streak} thisWeekCount={thisWeekCount} />
-        <NextSessionCard session={nextSession} />
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <Button asChild className="h-11">
+          <Link to="/session">Start a workout</Link>
+        </Button>
       </div>
 
-      <Button asChild className="h-11">
-        <Link to="/session">Start a workout</Link>
-      </Button>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StreakCard streak={streak} thisWeekCount={thisWeekCount} />
+        <NextSessionCard session={nextSession} />
+        <TodayNutritionCard date={todayIso} />
+        <LatestWeightCard />
+      </div>
     </div>
   );
 }
