@@ -16,7 +16,7 @@ export function LatestWeightCard() {
   const delta = latest !== null && previous !== null ? latest - previous : null;
 
   return (
-    <div className="flex flex-col gap-2 rounded-xl border p-4">
+    <div className="bg-card flex flex-col gap-2 rounded-xl border p-4">
       <div className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
         <Scale className="text-primary size-5" />
         Weight

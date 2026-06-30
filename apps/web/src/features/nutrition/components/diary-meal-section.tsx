@@ -21,7 +21,7 @@ export function MealSection({ meal, label, entries }: MealSectionProps) {
   const kcal = Math.round(sumMacros(entries).kcal);
 
   return (
-    <div className="flex flex-col rounded-xl border p-4">
+    <div className="bg-card flex flex-col rounded-xl border p-4">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-baseline gap-2">
           <h2 className="font-semibold">{label}</h2>

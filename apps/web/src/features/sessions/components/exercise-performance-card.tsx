@@ -55,7 +55,7 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
   }
 
   return (
-    <div className="flex flex-col rounded-lg border">
+    <div className="bg-card flex flex-col rounded-xl border">
       <div className="flex items-center gap-1 p-3">
         <button
           type="button"
