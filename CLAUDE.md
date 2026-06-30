@@ -553,12 +553,31 @@ Migrations can destroy data. Rules:
 
 ## Current stage
 
-Stage 10: body measurements (apps/api + apps/web) — a body_measurements table
-(weight + body_fat + optional biceps/chest/waist/hip/thigh, UNIQUE per date) with
-a new migration, the body feature module (backend + frontend), a prominent
-quick-add weight form with an expandable "show more" section, the measurements
-list with edit/delete, and trend charts (per-measurement, 7-/30-day moving
-averages, stats panel). Pure moving-average functions with tests.
+Stage 11: unified dashboard (apps/web) — pull the three modules into one home
+screen: today's planned workout (if any), the day's calories vs the current
+target, latest weight + weekly trend, and the streak counter, fetched in parallel
+(useQueries) with per-section skeleton/empty states. No new tables or endpoints —
+it composes existing Stage 6/8/10 reads. (A basic dashboard with weekly streak +
+next session already shipped in Stage 6; Stage 11 expands it to all three modules.)
+
+(Stage 10 — body measurements — COMPLETE: a body_measurements table (weight +
+body_fat + optional biceps/chest/waist/hip/thigh, UNIQUE per date; migration 0006
+on Neon) and the body feature module end to end. The backend upsert MERGES on a
+same-day re-save — a number sets, an explicit null clears, an omitted field is
+left untouched — so the prominent quick-add weight form stays non-destructive; 10
+route tests (181 total). Web shipped in three slices (data layer + nav → quick-add
+form + list → charts): the quick-add/edit form (date defaults to today, weight +
+body fat shown, the five circumferences behind "Show more"), the history list with
+edit (reloads the form) + a Popover-confirmed delete, a trend chart (per-measure
+selector + 7-/30-day moving-average overlays, Recharts, code-split to the route +
+dark-mode themed), and a weight stats panel (latest / since-last / lowest /
+highest). Moving averages are a pure @gym-bro/shared util using a CALENDAR-day
+window (a 7-day average = mean of every point within the trailing 7 calendar days,
+honest under sparse logging), with 9 unit tests. The merge upsert relies on the
+shared schema marking measurement fields nullable+optional so null (clear) is
+distinct from omitted (leave). Body is in primary nav. Deferred: list
+pagination/virtualization (Stage 12), a date-range selector, and the
+nutrition-target-overlay bonus.)
 
 (Stage 9 — nutrition UI — COMPLETE: the apps/web nutrition feature over the Stage 8
 endpoints, in four slices. Food dictionary (list + search + create/edit Sheet,
