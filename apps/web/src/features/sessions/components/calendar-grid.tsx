@@ -66,12 +66,16 @@ function tagsByDate(
   return map;
 }
 
-// Count of logged activities per day (sessionType 'activity') — they have no
-// planned entry, so they're marked on the calendar straight from the workouts.
-function activitiesByDate(workouts: WorkoutSessionListItem[]): Map<string, number> {
+// Count of finished workouts of a given type per day, keyed by performedDate.
+// Every finished workout is marked straight from the workouts list (planned or
+// ad-hoc), so a workout logged without a calendar entry still shows up.
+function countByDate(
+  workouts: WorkoutSessionListItem[],
+  type: WorkoutSessionListItem['sessionType'],
+): Map<string, number> {
   const map = new Map<string, number>();
   for (const workout of workouts) {
-    if (workout.sessionType !== 'activity') continue;
+    if (workout.sessionType !== type) continue;
     map.set(workout.performedDate, (map.get(workout.performedDate) ?? 0) + 1);
   }
   return map;
@@ -94,11 +98,14 @@ export function CalendarGrid() {
   const fromIso = format(gridStart, ISO);
   const toIso = format(gridEnd, ISO);
   const { data: sessions = [] } = usePlannedSessions(fromIso, toIso);
-  const byDate = groupByDate(sessions);
+  // Only still-to-do plans get an accent marker; completed/skipped ones are shown
+  // via their finished workout (green) or not at all.
+  const byDate = groupByDate(sessions.filter((session) => session.status === 'planned'));
   const { data: workoutsPage } = useWorkoutsInRange(fromIso, toIso);
   const workouts = workoutsPage?.items ?? [];
   const tagMarkers = tagsByDate(workouts);
-  const activityCounts = activitiesByDate(workouts);
+  const strengthCounts = countByDate(workouts, 'strength');
+  const activityCounts = countByDate(workouts, 'activity');
 
   const updateMutation = useUpdatePlannedSession();
   const [dragging, setDragging] = useState<PlannedSessionWithTemplate | null>(null);
@@ -169,6 +176,7 @@ export function CalendarGrid() {
                 isToday={isToday(day)}
                 isSelected={selectedDate === iso}
                 planned={byDate.get(iso) ?? []}
+                strengthCount={strengthCounts.get(iso) ?? 0}
                 activityCount={activityCounts.get(iso) ?? 0}
                 tags={tagMarkers.get(iso) ?? []}
                 onSelect={selectDay}

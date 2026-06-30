@@ -14,17 +14,19 @@ interface CalendarDayCellProps {
   isToday: boolean;
   isSelected: boolean;
   planned: PlannedSessionWithTemplate[];
+  strengthCount: number;
   activityCount: number;
   tags: { id: string; color: string }[];
   onSelect: (iso: string) => void;
 }
 
-const MAX_MARKERS = 3;
+const MAX_MARKERS = 4;
 
 // One day in the month grid: a drop target (drag a planned marker here to
 // reschedule) that opens the day detail on click. Markers encode type by icon
 // (Dumbbell = training, Activity = logged activity) and status by color (accent =
-// planned/to-do, green = done); completed workouts' tags show as colored badges.
+// planned/to-do, green = finished); completed workouts' tags show as colored
+// badges. Planned to-dos come first, then the day's finished workouts.
 export function CalendarDayCell({
   iso,
   dayNumber,
@@ -32,11 +34,23 @@ export function CalendarDayCell({
   isToday,
   isSelected,
   planned,
+  strengthCount,
   activityCount,
   tags,
   onSelect,
 }: CalendarDayCellProps) {
   const { setNodeRef, isOver } = useDroppable({ id: iso });
+
+  const finished = strengthCount + activityCount;
+  const total = planned.length + finished;
+  // Planned markers are draggable, so keep them all; fill the rest with finished
+  // markers up to the cap, leaving room for a "+N" overflow chip.
+  const shownStrength = Math.max(0, Math.min(strengthCount, MAX_MARKERS - planned.length));
+  const shownActivity = Math.max(
+    0,
+    Math.min(activityCount, MAX_MARKERS - planned.length - shownStrength),
+  );
+  const overflow = total - planned.length - shownStrength - shownActivity;
 
   return (
     <div
@@ -68,18 +82,16 @@ export function CalendarDayCell({
       </span>
 
       <span className="flex flex-wrap items-center justify-center gap-0.5">
-        {planned
-          .slice(0, MAX_MARKERS)
-          .map((session) =>
-            session.status === 'planned' ? (
-              <PlannedMarker key={session.id} session={session} />
-            ) : (
-              <Dumbbell key={session.id} className="size-4 rotate-45 text-green-600" />
-            ),
-          )}
-        {Array.from({ length: Math.min(activityCount, MAX_MARKERS) }).map((_, index) => (
+        {planned.map((session) => (
+          <PlannedMarker key={session.id} session={session} />
+        ))}
+        {Array.from({ length: shownStrength }).map((_, index) => (
+          <Dumbbell key={`strength-${index}`} className="size-4 rotate-45 text-green-600" />
+        ))}
+        {Array.from({ length: shownActivity }).map((_, index) => (
           <Activity key={`activity-${index}`} className="size-4 text-green-600" />
         ))}
+        {overflow > 0 && <span className="text-muted-foreground text-[10px]">+{overflow}</span>}
       </span>
 
       {tags.length > 0 && (
