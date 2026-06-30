@@ -4,7 +4,6 @@ import {
   ChefHat,
   ClipboardList,
   Dumbbell,
-  History,
   LayoutDashboard,
   ListChecks,
   Scale,
@@ -21,7 +20,6 @@ export type NavPath =
   | '/'
   | '/calendar'
   | '/session'
-  | '/history'
   | '/stats'
   | '/diary'
   | '/body'
@@ -58,7 +56,6 @@ export const NAV_SECTIONS: NavSection[] = [
     icon: Dumbbell,
     children: [
       { to: '/calendar', label: 'Calendar', icon: CalendarDays },
-      { to: '/history', label: 'History', icon: History },
       { to: '/stats', label: 'Stats', icon: TrendingUp },
       { to: '/plans', label: 'Plans', icon: ClipboardList },
       { to: '/exercises', label: 'Exercises', icon: ListChecks },

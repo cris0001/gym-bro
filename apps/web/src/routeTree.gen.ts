@@ -25,7 +25,6 @@ import { Route as AppCalendarRouteImport } from './routes/_app/calendar'
 import { Route as AppBodyRouteImport } from './routes/_app/body'
 import { Route as AppRecipesIndexRouteImport } from './routes/_app/recipes/index'
 import { Route as AppPlansIndexRouteImport } from './routes/_app/plans/index'
-import { Route as AppHistoryIndexRouteImport } from './routes/_app/history/index'
 import { Route as AppTemplatesTemplateIdRouteImport } from './routes/_app/templates/$templateId'
 import { Route as AppRecipesNewRouteImport } from './routes/_app/recipes/new'
 import { Route as AppRecipesRecipeIdRouteImport } from './routes/_app/recipes/$recipeId'
@@ -110,11 +109,6 @@ const AppPlansIndexRoute = AppPlansIndexRouteImport.update({
   path: '/plans/',
   getParentRoute: () => AppRoute,
 } as any)
-const AppHistoryIndexRoute = AppHistoryIndexRouteImport.update({
-  id: '/history/',
-  path: '/history/',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppTemplatesTemplateIdRoute = AppTemplatesTemplateIdRouteImport.update({
   id: '/templates/$templateId',
   path: '/templates/$templateId',
@@ -159,7 +153,6 @@ export interface FileRoutesByFullPath {
   '/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
   '/recipes/new': typeof AppRecipesNewRoute
   '/templates/$templateId': typeof AppTemplatesTemplateIdRoute
-  '/history/': typeof AppHistoryIndexRoute
   '/plans/': typeof AppPlansIndexRoute
   '/recipes/': typeof AppRecipesIndexRoute
 }
@@ -181,7 +174,6 @@ export interface FileRoutesByTo {
   '/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
   '/recipes/new': typeof AppRecipesNewRoute
   '/templates/$templateId': typeof AppTemplatesTemplateIdRoute
-  '/history': typeof AppHistoryIndexRoute
   '/plans': typeof AppPlansIndexRoute
   '/recipes': typeof AppRecipesIndexRoute
 }
@@ -206,7 +198,6 @@ export interface FileRoutesById {
   '/_app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
   '/_app/recipes/new': typeof AppRecipesNewRoute
   '/_app/templates/$templateId': typeof AppTemplatesTemplateIdRoute
-  '/_app/history/': typeof AppHistoryIndexRoute
   '/_app/plans/': typeof AppPlansIndexRoute
   '/_app/recipes/': typeof AppRecipesIndexRoute
 }
@@ -230,7 +221,6 @@ export interface FileRouteTypes {
     | '/recipes/$recipeId'
     | '/recipes/new'
     | '/templates/$templateId'
-    | '/history/'
     | '/plans/'
     | '/recipes/'
   fileRoutesByTo: FileRoutesByTo
@@ -252,7 +242,6 @@ export interface FileRouteTypes {
     | '/recipes/$recipeId'
     | '/recipes/new'
     | '/templates/$templateId'
-    | '/history'
     | '/plans'
     | '/recipes'
   id:
@@ -276,7 +265,6 @@ export interface FileRouteTypes {
     | '/_app/recipes/$recipeId'
     | '/_app/recipes/new'
     | '/_app/templates/$templateId'
-    | '/_app/history/'
     | '/_app/plans/'
     | '/_app/recipes/'
   fileRoutesById: FileRoutesById
@@ -400,13 +388,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPlansIndexRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/history/': {
-      id: '/_app/history/'
-      path: '/history'
-      fullPath: '/history/'
-      preLoaderRoute: typeof AppHistoryIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/templates/$templateId': {
       id: '/_app/templates/$templateId'
       path: '/templates/$templateId'
@@ -461,7 +442,6 @@ interface AppRouteChildren {
   AppRecipesRecipeIdRoute: typeof AppRecipesRecipeIdRoute
   AppRecipesNewRoute: typeof AppRecipesNewRoute
   AppTemplatesTemplateIdRoute: typeof AppTemplatesTemplateIdRoute
-  AppHistoryIndexRoute: typeof AppHistoryIndexRoute
   AppPlansIndexRoute: typeof AppPlansIndexRoute
   AppRecipesIndexRoute: typeof AppRecipesIndexRoute
 }
@@ -482,7 +462,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppRecipesRecipeIdRoute: AppRecipesRecipeIdRoute,
   AppRecipesNewRoute: AppRecipesNewRoute,
   AppTemplatesTemplateIdRoute: AppTemplatesTemplateIdRoute,
-  AppHistoryIndexRoute: AppHistoryIndexRoute,
   AppPlansIndexRoute: AppPlansIndexRoute,
   AppRecipesIndexRoute: AppRecipesIndexRoute,
 }
