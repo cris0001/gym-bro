@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useBodyMeasurements } from '../hooks/use-body-measurements';
 import { useBodyUiStore } from '../stores/body-ui.store';
 import { BodyMeasurementForm } from './body-measurement-form';
+import { BodyStatsPanel } from './body-stats-panel';
+import { BodyTrendChart } from './body-trend-chart';
 import { MeasurementList } from './measurement-list';
 
 // The body-measurements page: a prominent quick-add/edit form card on top, then
@@ -23,6 +25,16 @@ export function BodyPage() {
         </CardHeader>
         <CardContent>
           <BodyMeasurementForm />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Trends</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <BodyStatsPanel entries={entries} />
+          <BodyTrendChart entries={entries} />
         </CardContent>
       </Card>
 
