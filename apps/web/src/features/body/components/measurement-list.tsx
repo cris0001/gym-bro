@@ -1,7 +1,9 @@
 import { format, parseISO } from 'date-fns';
 import { Pencil, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 import type { BodyMeasurement } from '@gym-bro/shared';
 
@@ -29,6 +31,7 @@ function summarize(entry: BodyMeasurement): string {
 function MeasurementRow({ entry }: { entry: BodyMeasurement }) {
   const openEdit = useBodyUiStore((s) => s.openEdit);
   const remove = useDeleteBodyMeasurement();
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   return (
     <li className="flex items-center gap-2 py-3">
@@ -46,17 +49,37 @@ function MeasurementRow({ entry }: { entry: BodyMeasurement }) {
       >
         <Pencil className="size-4" />
       </Button>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="text-destructive size-11 shrink-0"
-        aria-label={`Delete ${entry.measuredDate}`}
-        disabled={remove.isPending}
-        onClick={() => remove.mutate(entry.id)}
-      >
-        <Trash2 className="size-4" />
-      </Button>
+      <Popover open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="text-destructive size-11 shrink-0"
+            aria-label={`Delete ${entry.measuredDate}`}
+          >
+            <Trash2 className="size-4" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent align="end" className="w-60">
+          <p className="text-sm font-medium">Delete this entry?</p>
+          <p className="text-muted-foreground text-sm">This can’t be undone.</p>
+          <div className="mt-3 flex justify-end gap-2">
+            <Button type="button" variant="outline" size="sm" onClick={() => setConfirmOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              disabled={remove.isPending}
+              onClick={() => remove.mutate(entry.id, { onSuccess: () => setConfirmOpen(false) })}
+            >
+              Delete
+            </Button>
+          </div>
+        </PopoverContent>
+      </Popover>
     </li>
   );
 }
