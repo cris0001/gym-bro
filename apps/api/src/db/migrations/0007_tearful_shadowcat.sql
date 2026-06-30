@@ -1,0 +1,1 @@
+ALTER TABLE "sets" ADD COLUMN "is_top_set" boolean DEFAULT false NOT NULL;
