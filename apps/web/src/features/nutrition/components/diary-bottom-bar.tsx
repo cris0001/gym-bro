@@ -19,16 +19,16 @@ function MiniMacro({
 }) {
   const percent = target > 0 ? Math.min(100, (current / target) * 100) : 0;
   return (
-    <div className="flex w-14 flex-col gap-0.5">
-      <div className="flex justify-between text-[10px] leading-none">
-        <span className="font-medium">{label}</span>
+    <div className="flex w-16 flex-col gap-1">
+      <div className="flex justify-between text-xs leading-none">
+        <span className="font-semibold">{label}</span>
         <span className="text-muted-foreground">
           {Math.round(current)}/{Math.round(target)}
         </span>
       </div>
       <Progress
         value={percent}
-        className={cn('h-1', MACRO_TRACK[macro])}
+        className={cn('h-1.5', MACRO_TRACK[macro])}
         indicatorClassName={MACRO_BAR[macro]}
       />
     </div>
@@ -46,19 +46,19 @@ export function DiaryBottomBar({ totals }: { totals: MacroTotals }) {
   const kcalPercent = target.kcal > 0 ? Math.min(100, (totals.kcal / target.kcal) * 100) : 0;
 
   return (
-    <div className="bg-background/95 fixed inset-x-0 bottom-14 z-20 border-t px-3 py-2.5 backdrop-blur lg:hidden">
+    <div className="bg-background/95 fixed inset-x-0 bottom-14 z-20 border-t px-4 py-3.5 backdrop-blur lg:hidden">
       <div className="mx-auto flex max-w-2xl items-center gap-3">
         <div className="flex min-w-0 flex-col">
-          <span className="text-sm leading-tight font-semibold">
+          <span className="text-xl leading-tight font-bold">
             {Math.round(totals.kcal)}
-            <span className="text-muted-foreground text-xs font-normal">
+            <span className="text-muted-foreground text-sm font-normal">
               {' '}
               / {Math.round(target.kcal)} kcal
             </span>
           </span>
           <Progress
             value={kcalPercent}
-            className={cn('mt-0.5 h-1 w-24', MACRO_TRACK.kcal)}
+            className={cn('mt-1 h-1.5 w-28', MACRO_TRACK.kcal)}
             indicatorClassName={MACRO_BAR.kcal}
           />
         </div>
