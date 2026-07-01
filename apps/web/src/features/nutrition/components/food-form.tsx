@@ -32,12 +32,24 @@ const macroField = z
     return Number.isFinite(n) && n >= 0 && n <= 9999.99;
   }, 'Enter a number 0–9999.99');
 
+// Optional serving size (grams). Blank = grams-only; a value lets the food be logged
+// by serving too (e.g. a bought product: "1 serving = 150 g").
+const servingField = z
+  .string()
+  .trim()
+  .refine((v) => {
+    if (v === '') return true;
+    const n = Number(v);
+    return Number.isFinite(n) && n > 0 && n <= 99999.99;
+  }, 'Enter a number greater than 0');
+
 const foodFormSchema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(100, 'Name is too long'),
   kcal: macroField,
   proteinG: macroField,
   carbsG: macroField,
   fatG: macroField,
+  servingGrams: servingField,
 });
 
 type FoodFormValues = z.infer<typeof foodFormSchema>;
@@ -67,8 +79,9 @@ export function FoodForm({ editing, onSuccess }: FoodFormProps) {
           proteinG: String(editing.proteinG),
           carbsG: String(editing.carbsG),
           fatG: String(editing.fatG),
+          servingGrams: editing.servingGrams !== null ? String(editing.servingGrams) : '',
         }
-      : { name: '', kcal: '', proteinG: '', carbsG: '', fatG: '' },
+      : { name: '', kcal: '', proteinG: '', carbsG: '', fatG: '', servingGrams: '' },
   });
 
   const create = useCreateFood();
@@ -83,6 +96,7 @@ export function FoodForm({ editing, onSuccess }: FoodFormProps) {
       proteinG: Number(values.proteinG),
       carbsG: Number(values.carbsG),
       fatG: Number(values.fatG),
+      ...(values.servingGrams.trim() !== '' ? { servingGrams: Number(values.servingGrams) } : {}),
     };
     if (editing) {
       update.mutate({ id: editing.id, input }, { onSuccess });
@@ -128,6 +142,28 @@ export function FoodForm({ editing, onSuccess }: FoodFormProps) {
             />
           ))}
         </div>
+
+        <FormField
+          control={form.control}
+          name="servingGrams"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Grams per serving (optional)</FormLabel>
+              <FormControl>
+                <Input
+                  inputMode="decimal"
+                  placeholder="e.g. 150"
+                  className="h-11 w-40"
+                  {...field}
+                />
+              </FormControl>
+              <p className="text-muted-foreground text-xs">
+                Set this to log the food by serving as well as by grams.
+              </p>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         {error ? (
           <p role="alert" className="text-destructive text-sm">
