@@ -23,6 +23,7 @@ export interface BodyMeasurement {
   waistCm: number | null;
   hipCm: number | null;
   thighCm: number | null;
+  notes: string | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -1,0 +1,1 @@
+ALTER TABLE "body_measurements" ADD COLUMN "notes" text;
