@@ -1,5 +1,14 @@
 import { sql } from 'drizzle-orm';
-import { check, date, numeric, pgTable, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import {
+  check,
+  date,
+  numeric,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from 'drizzle-orm/pg-core';
 
 import { users } from './users';
 
@@ -27,6 +36,10 @@ export const bodyMeasurements = pgTable(
     waistCm: numeric('waist_cm', { precision: 5, scale: 2 }),
     hipCm: numeric('hip_cm', { precision: 5, scale: 2 }),
     thighCm: numeric('thigh_cm', { precision: 5, scale: 2 }),
+    // Free-text info / feedback for the entry (e.g. "measured fasted", "felt
+    // bloated"). Optional; participates in the same-day merge upsert like the
+    // measurement fields (a value sets, explicit null clears, omitted leaves).
+    notes: text('notes'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     // Service sets this to now() on every same-day upsert (no DB trigger).
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

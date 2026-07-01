@@ -33,6 +33,11 @@ export const upsertBodyMeasurementSchema = z
   .object({
     measuredDate: z.iso.date(),
     ...measurementFields,
+    // Free-text info / feedback. Nullable + optional like the measurements, so it
+    // merges the same way (null clears, omitted leaves, a string sets). It does
+    // NOT satisfy the "at least one measurement" rule below — a note only
+    // accompanies measurements, it can't create an entry on its own.
+    notes: z.string().max(500, 'Too long (max 500 characters)').nullable().optional(),
   })
   .refine(
     (v) =>
