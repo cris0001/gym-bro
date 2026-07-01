@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { format } from 'date-fns';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -29,6 +30,7 @@ const targetField = z
   }, 'Enter a number 0–9999.99');
 
 const targetFormSchema = z.object({
+  effectiveDate: z.string().min(1, 'Date is required'),
   kcal: targetField,
   proteinG: targetField,
   carbsG: targetField,
@@ -53,20 +55,24 @@ interface TargetsFormProps {
 export function TargetsForm({ current }: TargetsFormProps) {
   const form = useForm<TargetFormValues>({
     resolver: zodResolver(targetFormSchema),
-    defaultValues: current
-      ? {
-          kcal: String(current.kcal),
-          proteinG: String(current.proteinG),
-          carbsG: String(current.carbsG),
-          fatG: String(current.fatG),
-        }
-      : { kcal: '', proteinG: '', carbsG: '', fatG: '' },
+    defaultValues: {
+      effectiveDate: format(new Date(), 'yyyy-MM-dd'),
+      ...(current
+        ? {
+            kcal: String(current.kcal),
+            proteinG: String(current.proteinG),
+            carbsG: String(current.carbsG),
+            fatG: String(current.fatG),
+          }
+        : { kcal: '', proteinG: '', carbsG: '', fatG: '' }),
+    },
   });
 
   const setTarget = useSetTarget();
 
   function onSubmit(values: TargetFormValues) {
     const input: SetNutritionTargetInput = {
+      effectiveDate: values.effectiveDate,
       kcal: Number(values.kcal),
       proteinG: Number(values.proteinG),
       carbsG: Number(values.carbsG),
@@ -78,6 +84,28 @@ export function TargetsForm({ current }: TargetsFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={(e) => void form.handleSubmit(onSubmit)(e)} className="grid gap-4">
+        <FormField
+          control={form.control}
+          name="effectiveDate"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Effective date</FormLabel>
+              <FormControl>
+                <Input
+                  type="date"
+                  max={format(new Date(), 'yyyy-MM-dd')}
+                  className="h-11"
+                  {...field}
+                />
+              </FormControl>
+              <p className="text-muted-foreground text-xs">
+                Today by default. Pick a past date to back-fill a historical target.
+              </p>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <div className="grid grid-cols-2 gap-3">
           {FIELDS.map((field) => (
             <FormField
