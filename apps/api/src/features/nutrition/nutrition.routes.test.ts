@@ -677,7 +677,7 @@ describe('nutrition target routes', () => {
   });
 
   it("PUT /api/nutrition-targets upserts today's target", async () => {
-    repo.upsertTodayTarget.mockResolvedValue(fakeTarget());
+    repo.upsertTargetOnDate.mockResolvedValue(fakeTarget());
 
     const res = await request('PUT', '/api/nutrition-targets', {
       cookie: await authCookie(),
@@ -685,11 +685,24 @@ describe('nutrition target routes', () => {
     });
 
     expect(res.status).toBe(200);
-    expect(repo.upsertTodayTarget).toHaveBeenCalledWith(
+    expect(repo.upsertTargetOnDate).toHaveBeenCalledWith(
       'user-1',
       expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
       VALID_TARGET,
     );
+  });
+
+  it('PUT /api/nutrition-targets with effectiveDate back-fills that date', async () => {
+    repo.upsertTargetOnDate.mockResolvedValue(fakeTarget());
+    const body = { ...VALID_TARGET, effectiveDate: '2026-01-01' };
+
+    const res = await request('PUT', '/api/nutrition-targets', {
+      cookie: await authCookie(),
+      body,
+    });
+
+    expect(res.status).toBe(200);
+    expect(repo.upsertTargetOnDate).toHaveBeenCalledWith('user-1', '2026-01-01', body);
   });
 
   it('PUT /api/nutrition-targets with a missing macro returns 400', async () => {
@@ -699,6 +712,6 @@ describe('nutrition target routes', () => {
     });
 
     expect(res.status).toBe(400);
-    expect(repo.upsertTodayTarget).not.toHaveBeenCalled();
+    expect(repo.upsertTargetOnDate).not.toHaveBeenCalled();
   });
 });

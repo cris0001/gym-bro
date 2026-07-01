@@ -544,10 +544,11 @@ export async function listTargets(userId: string): Promise<NutritionTargetRow[]>
   return rows.map(mapTargetRow);
 }
 
-// Set the target effective on `date` (today). Re-saving the same day updates that
-// row instead of stacking a duplicate, via the (user_id, effective_date) unique
-// index — prior dates stay as history.
-export async function upsertTodayTarget(
+// Set the target effective on `date` (today for a normal change, or a past date to
+// back-fill history). Re-saving the same date updates that row instead of stacking a
+// duplicate, via the (user_id, effective_date) unique index — other dates stay as
+// history.
+export async function upsertTargetOnDate(
   userId: string,
   date: string,
   data: TargetInput,

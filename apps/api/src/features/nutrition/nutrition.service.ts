@@ -312,7 +312,9 @@ export async function listNutritionTargets(userId: string) {
   return nutritionRepository.listTargets(userId);
 }
 
-// Set/change today's target — a same-day re-save replaces today's row.
+// Set/change a target. No effectiveDate → today's target (a same-day re-save
+// replaces today's row); an effectiveDate → back-fill/replace that date's historical
+// target. Prior dates always stay as history.
 export async function setNutritionTarget(userId: string, input: SetNutritionTargetInput) {
-  return nutritionRepository.upsertTodayTarget(userId, todayIso(), input);
+  return nutritionRepository.upsertTargetOnDate(userId, input.effectiveDate ?? todayIso(), input);
 }
