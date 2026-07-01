@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Sheet,
   SheetContent,
@@ -15,19 +13,20 @@ import { cn } from '@/lib/utils';
 import type { CreateFoodLogInput, FoodLogUnit, RecentDiaryItem } from '@gym-bro/shared';
 
 import { useCreateFoodLogEntry } from '../hooks/use-create-food-log-entry';
+import { useFoods } from '../hooks/use-foods';
 import { useRecipes } from '../hooks/use-recipes';
 import { useDiaryUiStore } from '../stores/diary-ui.store';
 import { FoodCombobox } from './food-combobox';
+import { PortionPicker, type PortionChoice } from './portion-picker';
 import { RecentItemsRow } from './recent-items-row';
 import { RecipeCombobox } from './recipe-combobox';
 
 type Mode = 'food' | 'recipe';
 type Selected = { id: string; name: string } | null;
 
-// Log foods (by grams) or recipes (by grams or servings) to the meal preset on the
-// store. The sheet stays open after each add (reset for the next item) so several
-// things can be logged in one go; "Done" closes it. A recent-items row and the
-// recipe's planned servings speed up repeat logging.
+// Log foods or recipes to the meal preset on the store, Fitatu-style: pick the item,
+// then a portion (1 serving / 100 g / custom) with live calories per option. The
+// sheet stays open after each add so several things can be logged in one go.
 export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
   const addMeal = useDiaryUiStore((s) => s.addMeal);
   const closeAdd = useDiaryUiStore((s) => s.closeAdd);
@@ -36,11 +35,11 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
   const [mode, setMode] = useState<Mode>('food');
   const [food, setFood] = useState<Selected>(null);
   const [recipe, setRecipe] = useState<Selected>(null);
-  const [recipeUnit, setRecipeUnit] = useState<FoodLogUnit>('servings');
-  const [quantity, setQuantity] = useState('');
+  const [choice, setChoice] = useState<PortionChoice | null>(null);
   const [addedCount, setAddedCount] = useState(0);
 
   const create = useCreateFoodLogEntry();
+  const { data: foods = [] } = useFoods('');
   const { data: recipes = [] } = useRecipes();
 
   useEffect(() => {
@@ -48,48 +47,61 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
       setMode('food');
       setFood(null);
       setRecipe(null);
-      setRecipeUnit('servings');
-      setQuantity('');
+      setChoice(null);
       setAddedCount(0);
       create.reset();
     }
   }, [open]);
 
-  const amount = Number(quantity);
   const selected = mode === 'food' ? food : recipe;
-  const canAdd = selected !== null && Number.isFinite(amount) && amount > 0 && !create.isPending;
+  const selectedFood = food ? foods.find((f) => f.id === food.id) : undefined;
   const selectedRecipe = recipe ? recipes.find((r) => r.id === recipe.id) : undefined;
-  const recipeServings = selectedRecipe?.servings;
-  const quantityLabel = mode === 'food' || recipeUnit === 'grams' ? 'Amount (g)' : 'Servings';
+
+  // Calories for a portion of the selected item: a food scales its per-100g kcal by
+  // grams; a recipe uses per-serving kcal, or per-gram (total ÷ weight) for grams.
+  function kcalFor(unit: FoodLogUnit, quantity: number): number | null {
+    if (mode === 'food') {
+      return selectedFood ? (selectedFood.kcal * quantity) / 100 : null;
+    }
+    if (!selectedRecipe) return null;
+    if (unit === 'servings') return selectedRecipe.perServing.kcal * quantity;
+    const totalKcal = selectedRecipe.perServing.kcal * selectedRecipe.servings;
+    return selectedRecipe.totalGrams > 0
+      ? (totalKcal / selectedRecipe.totalGrams) * quantity
+      : null;
+  }
+
+  const canAdd = selected !== null && choice !== null && !create.isPending;
 
   function pickRecent(item: RecentDiaryItem) {
     setMode(item.type);
-    if (item.type === 'food') {
-      setFood({ id: item.id, name: item.name });
-    } else {
-      setRecipe({ id: item.id, name: item.name });
-    }
+    if (item.type === 'food') setFood({ id: item.id, name: item.name });
+    else setRecipe({ id: item.id, name: item.name });
   }
 
   function add() {
-    if (!canAdd || addMeal === null || selected === null) return;
+    if (!canAdd || addMeal === null || selected === null || choice === null) return;
     const input: CreateFoodLogInput =
       mode === 'food'
-        ? { type: 'food', foodId: selected.id, quantity: amount, meal: addMeal, loggedDate }
+        ? {
+            type: 'food',
+            foodId: selected.id,
+            quantity: choice.quantity,
+            meal: addMeal,
+            loggedDate,
+          }
         : {
             type: 'recipe',
             recipeId: selected.id,
-            quantity: amount,
-            unit: recipeUnit,
+            quantity: choice.quantity,
+            unit: choice.unit,
             meal: addMeal,
             loggedDate,
           };
-    // Keep the sheet open: clear the selection + amount for the next item.
     create.mutate(input, {
       onSuccess: () => {
         setFood(null);
         setRecipe(null);
-        setQuantity('');
         setAddedCount((count) => count + 1);
       },
     });
@@ -138,42 +150,27 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
                 selectedName={recipe?.name ?? null}
                 onSelect={(r) => setRecipe({ id: r.id, name: r.name })}
               />
-              {recipeServings !== undefined && (
+              {selectedRecipe !== undefined && (
                 <p className="text-muted-foreground text-xs">
-                  Makes {recipeServings} {recipeServings === 1 ? 'serving' : 'servings'} per recipe.
+                  Makes {selectedRecipe.servings}{' '}
+                  {selectedRecipe.servings === 1 ? 'serving' : 'servings'} ·{' '}
+                  {Math.round(selectedRecipe.totalGrams)} g total (1 serving ≈{' '}
+                  {Math.round(selectedRecipe.totalGrams / selectedRecipe.servings)} g).
                 </p>
               )}
-              <div className="bg-muted flex gap-1 rounded-md p-1">
-                {(['servings', 'grams'] as FoodLogUnit[]).map((u) => (
-                  <Button
-                    key={u}
-                    type="button"
-                    size="sm"
-                    variant={recipeUnit === u ? 'default' : 'ghost'}
-                    className={cn(
-                      'h-9 flex-1 capitalize',
-                      recipeUnit !== u && 'text-muted-foreground',
-                    )}
-                    onClick={() => setRecipeUnit(u)}
-                  >
-                    {u}
-                  </Button>
-                ))}
-              </div>
             </>
           )}
 
-          <div className="grid gap-2">
-            <Label htmlFor="entry-quantity">{quantityLabel}</Label>
-            <Input
-              id="entry-quantity"
-              inputMode="decimal"
-              placeholder={quantityLabel === 'Servings' ? 'e.g. 1' : 'e.g. 200'}
-              className="h-11"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
+          {selected !== null && (
+            <PortionPicker
+              mode={mode}
+              gramsPerServing={
+                selectedRecipe ? selectedRecipe.totalGrams / selectedRecipe.servings : undefined
+              }
+              kcalFor={kcalFor}
+              onChange={setChoice}
             />
-          </div>
+          )}
 
           {create.error ? (
             <p role="alert" className="text-destructive text-sm">
