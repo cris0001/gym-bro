@@ -81,6 +81,18 @@ function countByDate(
   return map;
 }
 
+// Finished workout names per day (template snapshot for strength, entered name for
+// activity), in list order — shown as labels on the cell.
+function namesByDate(workouts: WorkoutSessionListItem[]): Map<string, string[]> {
+  const map = new Map<string, string[]>();
+  for (const workout of workouts) {
+    const existing = map.get(workout.performedDate) ?? [];
+    existing.push(workout.name);
+    map.set(workout.performedDate, existing);
+  }
+  return map;
+}
+
 export function CalendarGrid() {
   const viewMode = useCalendarUiStore((s) => s.viewMode);
   const anchor = useCalendarUiStore((s) => s.anchor);
@@ -116,6 +128,7 @@ export function CalendarGrid() {
   const tagMarkers = tagsByDate(workouts);
   const strengthCounts = countByDate(workouts, 'strength');
   const activityCounts = countByDate(workouts, 'activity');
+  const finishedNames = namesByDate(workouts);
 
   const updateMutation = useUpdatePlannedSession();
   const [dragging, setDragging] = useState<PlannedSessionWithTemplate | null>(null);
@@ -202,6 +215,7 @@ export function CalendarGrid() {
                 planned={byDate.get(iso) ?? []}
                 strengthCount={strengthCounts.get(iso) ?? 0}
                 activityCount={activityCounts.get(iso) ?? 0}
+                workoutNames={finishedNames.get(iso) ?? []}
                 tags={tagMarkers.get(iso) ?? []}
                 onSelect={selectDay}
               />
