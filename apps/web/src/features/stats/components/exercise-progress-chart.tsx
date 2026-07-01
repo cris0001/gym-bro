@@ -2,6 +2,7 @@ import { format, parseISO } from 'date-fns';
 import { useState } from 'react';
 import {
   CartesianGrid,
+  Legend,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -17,49 +18,25 @@ import { useExerciseProgress } from '../hooks/use-stats';
 
 import { ChartPlaceholder } from './chart-placeholder';
 
-import type { ExerciseProgressPoint } from '@gym-bro/shared';
-
 // The two set tiers a session contributes: the marked top set vs the first normal
 // (back-off) set.
 type Dimension = 'top' | 'normal';
-type Metric = 'weight' | 'reps' | 'volume';
 
 const DIMENSIONS: { key: Dimension; label: string }[] = [
   { key: 'top', label: 'Top set' },
   { key: 'normal', label: 'Normal' },
 ];
-const METRICS: { key: Metric; label: string }[] = [
-  { key: 'weight', label: 'Weight' },
-  { key: 'reps', label: 'Reps' },
-  { key: 'volume', label: 'Volume' },
-];
-const METRIC_UNIT: Record<Metric, string> = { weight: 'kg', reps: 'reps', volume: 'kg·reps' };
-
-// The metric value for a point given the chosen tier; volume is weight × reps.
-// Null (bodyweight weight, or a tier not logged that session) leaves a gap.
-function valueOf(
-  point: ExerciseProgressPoint,
-  dimension: Dimension,
-  metric: Metric,
-): number | null {
-  const weight = dimension === 'top' ? point.topWeight : point.normalWeight;
-  const reps = dimension === 'top' ? point.topReps : point.normalReps;
-  if (metric === 'weight') return weight;
-  if (metric === 'reps') return reps;
-  return weight !== null && reps !== null ? weight * reps : null;
-}
 
 interface ExerciseProgressChartProps {
   exerciseId: string | null;
 }
 
-// Per-session progress for the picked exercise: switch between the top set and the
-// normal (back-off) set, and between weight / reps / volume.
+// Per-session progress for the picked exercise: weight and reps plotted together
+// (weight on the left axis, reps on the right — different scales), switchable
+// between the top set and the normal (back-off) set. Normal is the default since
+// most history's uniform back-off sets are the fuller series.
 export function ExerciseProgressChart({ exerciseId }: ExerciseProgressChartProps) {
-  // Default to normal sets: most logged history has no marked top set, so the top
-  // view would look empty even when the exercise has plenty of data.
   const [dimension, setDimension] = useState<Dimension>('normal');
-  const [metric, setMetric] = useState<Metric>('weight');
   const { data: points = [], isPending } = useExerciseProgress(exerciseId);
 
   if (exerciseId === null) {
@@ -71,9 +48,10 @@ export function ExerciseProgressChart({ exerciseId }: ExerciseProgressChartProps
 
   const data = points.map((point) => ({
     date: point.date,
-    value: valueOf(point, dimension, metric),
+    weight: dimension === 'top' ? point.topWeight : point.normalWeight,
+    reps: dimension === 'top' ? point.topReps : point.normalReps,
   }));
-  const hasData = data.some((d) => d.value !== null);
+  const hasData = data.some((d) => d.weight !== null || d.reps !== null);
   if (!hasData) {
     return (
       <ChartPlaceholder>
@@ -85,10 +63,7 @@ export function ExerciseProgressChart({ exerciseId }: ExerciseProgressChartProps
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap gap-2">
-        <ToggleGroup options={DIMENSIONS} value={dimension} onChange={setDimension} />
-        <ToggleGroup options={METRICS} value={metric} onChange={setMetric} />
-      </div>
+      <ToggleGroup options={DIMENSIONS} value={dimension} onChange={setDimension} />
 
       <div className="h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
@@ -102,9 +77,16 @@ export function ExerciseProgressChart({ exerciseId }: ExerciseProgressChartProps
               minTickGap={24}
             />
             <YAxis
+              yAxisId="weight"
               tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
               width={44}
-              allowDecimals={metric === 'weight'}
+            />
+            <YAxis
+              yAxisId="reps"
+              orientation="right"
+              allowDecimals={false}
+              tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
+              width={36}
             />
             <Tooltip
               contentStyle={{
@@ -114,12 +96,29 @@ export function ExerciseProgressChart({ exerciseId }: ExerciseProgressChartProps
                 color: 'var(--card-foreground)',
               }}
               labelFormatter={(label) => format(parseISO(String(label)), 'PP')}
-              formatter={(value) => `${String(value)} ${METRIC_UNIT[metric]}`}
+              formatter={(value, name) => {
+                if (value === null || value === undefined) return ['—', name];
+                return [name === 'Reps' ? `${String(value)} reps` : `${String(value)} kg`, name];
+              }}
+            />
+            <Legend />
+            <Line
+              yAxisId="weight"
+              name="Weight"
+              type="monotone"
+              dataKey="weight"
+              stroke="var(--chart-1)"
+              strokeWidth={2}
+              dot={{ r: 3 }}
+              activeDot={{ r: 5 }}
+              connectNulls={false}
             />
             <Line
+              yAxisId="reps"
+              name="Reps"
               type="monotone"
-              dataKey="value"
-              stroke="var(--primary)"
+              dataKey="reps"
+              stroke="var(--chart-2)"
               strokeWidth={2}
               dot={{ r: 3 }}
               activeDot={{ r: 5 }}
