@@ -3,6 +3,7 @@ import type {
   CreateFoodLogInput,
   CreateRecipeInput,
   MealType,
+  RecipeType,
   SetNutritionTargetInput,
   UpdateFoodInput,
   UpdateFoodLogInput,
@@ -90,18 +91,51 @@ async function assertIngredientFoodsExist(
   }
 }
 
-// Resolve a recipe's ingredient lines into macros (each food scaled to its
-// amount), then sum to whole-recipe totals and divide by servings — the computed
-// detail returned by the recipe read/write endpoints.
+// The recipe read/write endpoints' computed detail. For an 'ingredients' recipe the
+// totals come from its lines (each food scaled to its amount, then summed); for a
+// 'manual' recipe they're the stored total macros with no ingredient lines.
+// Per-serving = total / servings in both cases.
 async function buildRecipeDetail(recipe: {
   id: string;
   userId: string;
   name: string;
+  type: RecipeType;
   servings: number;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
+  kcal: string | null;
+  proteinG: string | null;
+  carbsG: string | null;
+  fatG: string | null;
 }) {
+  const meta = {
+    id: recipe.id,
+    userId: recipe.userId,
+    name: recipe.name,
+    type: recipe.type,
+    servings: recipe.servings,
+    isActive: recipe.isActive,
+    createdAt: recipe.createdAt,
+    updatedAt: recipe.updatedAt,
+  };
+
+  if (recipe.type === 'manual') {
+    const total = {
+      kcal: Number(recipe.kcal),
+      proteinG: Number(recipe.proteinG),
+      carbsG: Number(recipe.carbsG),
+      fatG: Number(recipe.fatG),
+    };
+    return {
+      ...meta,
+      ingredients: [],
+      totalGrams: 0,
+      total,
+      perServing: divideMacros(total, recipe.servings),
+    };
+  }
+
   const lines = await nutritionRepository.listRecipeIngredientsWithFood(recipe.userId, recipe.id);
   const ingredients = lines.map((line) => ({
     id: line.id,
@@ -114,7 +148,7 @@ async function buildRecipeDetail(recipe: {
   const total = sumMacros(ingredients.map((i) => i.macros));
   const totalGrams = ingredients.reduce((sum, i) => sum + i.amountGrams, 0);
   return {
-    ...recipe,
+    ...meta,
     ingredients,
     totalGrams,
     total,
@@ -128,6 +162,7 @@ export async function listRecipes(userId: string) {
     id: row.id,
     userId: row.userId,
     name: row.name,
+    type: row.type,
     servings: row.servings,
     isActive: row.isActive,
     createdAt: row.createdAt,
@@ -146,15 +181,12 @@ export async function getRecipe(userId: string, id: string) {
 }
 
 export async function createRecipe(userId: string, input: CreateRecipeInput) {
-  await assertIngredientFoodsExist(userId, input.ingredients);
+  if (input.type === 'ingredients') {
+    await assertIngredientFoodsExist(userId, input.ingredients);
+  }
   let recipe;
   try {
-    recipe = await nutritionRepository.createRecipe({
-      userId,
-      name: input.name,
-      servings: input.servings,
-      ingredients: input.ingredients,
-    });
+    recipe = await nutritionRepository.createRecipe({ userId, ...input });
   } catch (error) {
     if (isUniqueViolation(error)) {
       throw new ConflictError('A recipe with this name already exists');
@@ -165,15 +197,12 @@ export async function createRecipe(userId: string, input: CreateRecipeInput) {
 }
 
 export async function updateRecipe(userId: string, id: string, input: UpdateRecipeInput) {
-  await assertIngredientFoodsExist(userId, input.ingredients);
+  if (input.type === 'ingredients') {
+    await assertIngredientFoodsExist(userId, input.ingredients);
+  }
   let recipe;
   try {
-    recipe = await nutritionRepository.replaceRecipe(id, {
-      userId,
-      name: input.name,
-      servings: input.servings,
-      ingredients: input.ingredients,
-    });
+    recipe = await nutritionRepository.replaceRecipe(id, { userId, ...input });
   } catch (error) {
     if (isUniqueViolation(error)) {
       throw new ConflictError('A recipe with this name already exists');
@@ -248,6 +277,11 @@ export async function createFoodLogEntry(userId: string, input: CreateFoodLogInp
   const recipe = await nutritionRepository.findRecipeById(userId, input.recipeId);
   if (!recipe) {
     throw new ValidationError('Recipe not found');
+  }
+  // A manual recipe has no ingredients (no total weight), so it can't be logged by
+  // grams — only by servings.
+  if (recipe.type === 'manual' && input.unit === 'grams') {
+    throw new ValidationError('This recipe can only be logged by servings');
   }
   const detail = await buildRecipeDetail(recipe);
   // Per-serving for a servings log; per-gram (total / total weight) for a grams log.
