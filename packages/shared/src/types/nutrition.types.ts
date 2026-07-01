@@ -1,6 +1,6 @@
 import type { z } from 'zod';
 
-import type { FOOD_LOG_UNITS, MEAL_TYPES } from '../constants/nutrition.constants';
+import type { FOOD_LOG_UNITS, MEAL_TYPES, RECIPE_TYPES } from '../constants/nutrition.constants';
 import type {
   createFoodLogSchema,
   createFoodSchema,
@@ -32,6 +32,7 @@ export type RecentFoodLogQueryInput = z.infer<typeof recentFoodLogQuerySchema>;
 
 export type MealType = (typeof MEAL_TYPES)[number];
 export type FoodLogUnit = (typeof FOOD_LOG_UNITS)[number];
+export type RecipeType = (typeof RECIPE_TYPES)[number];
 
 // The reusable four-number macro shape: per-100g for a food, a daily goal for a
 // target, or a snapshotted total for a log entry.
@@ -80,6 +81,9 @@ export interface Recipe {
   id: string;
   userId: string;
   name: string;
+  // 'ingredients' recipes compute totals from their lines; 'manual' recipes store
+  // their own totals and have no ingredients.
+  type: RecipeType;
   servings: number;
   isActive: boolean;
   createdAt: string;

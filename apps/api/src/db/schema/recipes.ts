@@ -3,6 +3,8 @@ import {
   boolean,
   check,
   integer,
+  numeric,
+  pgEnum,
   pgTable,
   text,
   timestamp,
@@ -12,11 +14,19 @@ import {
 
 import { users } from './users';
 
-// Per-user recipe dictionary. Starts empty. No macro columns — totals are
-// computed on read from recipe_ingredients, so they never go stale when an
-// ingredient (or the food it points at) changes. servings drives per-serving
-// macros, since a recipe is logged by servings. Soft-deleted via is_active so
-// historical food_log rows keep referencing a stable recipe_id — like foods.
+// How a recipe's macros are defined:
+//   - 'ingredients' → composed of recipe_ingredients; totals computed on read.
+//   - 'manual'      → a prepared product (e.g. a bought sandwich); its TOTAL macros
+//                     are entered by hand and stored below, with no ingredients.
+// Mirrored as RECIPE_TYPES in @gym-bro/shared.
+export const recipeTypeEnum = pgEnum('recipe_type', ['ingredients', 'manual']);
+
+// Per-user recipe dictionary. Starts empty. Ingredient recipes carry no macro
+// columns — totals are computed on read from recipe_ingredients, so they never go
+// stale when an ingredient (or its food) changes. Manual recipes store their own
+// total macros (the kcal/*_g columns below). servings drives per-serving macros for
+// both. Soft-deleted via is_active so historical food_log rows keep referencing a
+// stable recipe_id — like foods.
 export const recipes = pgTable(
   'recipes',
   {
@@ -25,8 +35,15 @@ export const recipes = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     name: text('name').notNull(),
+    type: recipeTypeEnum('type').notNull().default('ingredients'),
     // How many servings the recipe yields; per-serving macros = total / servings.
     servings: integer('servings').notNull().default(1),
+    // Manual-recipe TOTAL macros (null for ingredient recipes). "All four present
+    // for manual, all null for ingredients" is enforced in Zod/service, not the DB.
+    kcal: numeric('kcal', { precision: 7, scale: 2 }),
+    proteinG: numeric('protein_g', { precision: 7, scale: 2 }),
+    carbsG: numeric('carbs_g', { precision: 7, scale: 2 }),
+    fatG: numeric('fat_g', { precision: 7, scale: 2 }),
     isActive: boolean('is_active').notNull().default(true),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     // Service sets this to now() on every update (no DB trigger).
@@ -38,6 +55,10 @@ export const recipes = pgTable(
       .on(table.userId, sql`lower(${table.name})`)
       .where(sql`${table.isActive}`),
     check('recipes_servings_positive', sql`${table.servings} > 0`),
+    check('recipes_kcal_non_negative', sql`${table.kcal} >= 0`),
+    check('recipes_protein_non_negative', sql`${table.proteinG} >= 0`),
+    check('recipes_carbs_non_negative', sql`${table.carbsG} >= 0`),
+    check('recipes_fat_non_negative', sql`${table.fatG} >= 0`),
   ],
 );
 
