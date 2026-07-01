@@ -14,15 +14,16 @@ interface PortionOption {
   input?: boolean;
 }
 
-// Foods are grams-only; recipes offer serving + gram presets plus custom inputs.
-const FOOD_OPTIONS: PortionOption[] = [
-  { id: 'g100', label: '100 g', unit: 'grams', quantity: 100 },
-  { id: 'gx', label: 'Grams', unit: 'grams', quantity: null, input: true },
-];
-const RECIPE_OPTIONS: PortionOption[] = [
+// Items with a serving size (recipes, or products with grams-per-serving) offer
+// serving + gram presets; grams-only items just offer grams.
+const SERVING_OPTIONS: PortionOption[] = [
   { id: 's1', label: '1 serving', unit: 'servings', quantity: 1 },
   { id: 'g100', label: '100 g', unit: 'grams', quantity: 100 },
   { id: 'sx', label: 'Servings', unit: 'servings', quantity: null, input: true },
+  { id: 'gx', label: 'Grams', unit: 'grams', quantity: null, input: true },
+];
+const GRAMS_OPTIONS: PortionOption[] = [
+  { id: 'g100', label: '100 g', unit: 'grams', quantity: 100 },
   { id: 'gx', label: 'Grams', unit: 'grams', quantity: null, input: true },
 ];
 
@@ -32,9 +33,9 @@ export interface PortionChoice {
 }
 
 interface PortionPickerProps {
-  mode: 'food' | 'recipe';
-  // Grams in one serving (recipe total weight ÷ servings), for the serving-row weight
-  // hint. Undefined for foods (no servings).
+  // Whether the item can be logged by serving (recipe, or product with a serving size).
+  hasServings: boolean;
+  // Grams in one serving, for the serving-row weight hint. Undefined when unknown.
   gramsPerServing?: number | undefined;
   // kcal for a given portion, or null when it can't be computed (no item / no weight).
   kcalFor: (unit: FoodLogUnit, quantity: number) => number | null;
@@ -44,16 +45,21 @@ interface PortionPickerProps {
 // Fitatu-style portion selector: pick a preset (1 serving / 100 g) or type a custom
 // amount, each row showing its live calories. Emits the chosen {unit, quantity} (or
 // null when a custom input is empty/invalid) to the parent for logging.
-export function PortionPicker({ mode, gramsPerServing, kcalFor, onChange }: PortionPickerProps) {
-  const options = mode === 'food' ? FOOD_OPTIONS : RECIPE_OPTIONS;
+export function PortionPicker({
+  hasServings,
+  gramsPerServing,
+  kcalFor,
+  onChange,
+}: PortionPickerProps) {
+  const options = hasServings ? SERVING_OPTIONS : GRAMS_OPTIONS;
   const [selected, setSelected] = useState(options[0]!.id);
   const [gramsInput, setGramsInput] = useState('');
   const [servingsInput, setServingsInput] = useState('');
 
-  // Reset to the first preset when switching food/recipe.
+  // Reset to the first preset when the option set changes.
   useEffect(() => {
-    setSelected((mode === 'food' ? FOOD_OPTIONS : RECIPE_OPTIONS)[0]!.id);
-  }, [mode]);
+    setSelected((hasServings ? SERVING_OPTIONS : GRAMS_OPTIONS)[0]!.id);
+  }, [hasServings]);
 
   const quantityOf = (option: PortionOption): number | null => {
     if (option.quantity !== null) return option.quantity;
@@ -64,7 +70,7 @@ export function PortionPicker({ mode, gramsPerServing, kcalFor, onChange }: Port
 
   // Report the current choice up whenever the selection or inputs change.
   useEffect(() => {
-    const opts = mode === 'food' ? FOOD_OPTIONS : RECIPE_OPTIONS;
+    const opts = hasServings ? SERVING_OPTIONS : GRAMS_OPTIONS;
     const current = opts.find((o) => o.id === selected) ?? opts[0]!;
     let quantity: number | null = current.quantity;
     if (quantity === null) {
@@ -73,7 +79,7 @@ export function PortionPicker({ mode, gramsPerServing, kcalFor, onChange }: Port
       quantity = raw.trim() !== '' && Number.isFinite(n) && n > 0 ? n : null;
     }
     onChange(quantity !== null ? { unit: current.unit, quantity } : null);
-  }, [selected, gramsInput, servingsInput, mode, onChange]);
+  }, [selected, gramsInput, servingsInput, hasServings, onChange]);
 
   return (
     <div className="flex flex-col gap-1.5">

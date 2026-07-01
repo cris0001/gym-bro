@@ -6,16 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
 
 import { divideMacros, multiplyMacros, scaleMacros, sumMacros } from '@gym-bro/shared';
-import type {
-  CreateRecipeInput,
-  Food,
-  MacroTotals,
-  RecipeDetail,
-  RecipeType,
-} from '@gym-bro/shared';
+import type { CreateRecipeInput, Food, MacroTotals, RecipeDetail } from '@gym-bro/shared';
 
 import { useCreateRecipe } from '../hooks/use-create-recipe';
 import { useUpdateRecipe } from '../hooks/use-update-recipe';
@@ -38,9 +31,9 @@ function newRow(): IngredientDraft {
   return { key: crypto.randomUUID(), food: null, amount: '' };
 }
 
-// Seed the builder from a saved ingredient recipe. A line's per-100g macros are
-// reconstructed from its stored (amount-scaled) macros, so editing recomputes
-// correctly even when the source food was soft-deleted and is no longer picked.
+// Seed the builder from a saved recipe. A line's per-100g macros are reconstructed
+// from its stored (amount-scaled) macros, so editing recomputes correctly even when
+// the source food was soft-deleted and is no longer in the picker.
 function fromDetail(recipe: RecipeDetail): IngredientDraft[] {
   return recipe.ingredients.map((ing) => ({
     key: ing.id,
@@ -53,49 +46,20 @@ function fromDetail(recipe: RecipeDetail): IngredientDraft[] {
   }));
 }
 
-const MANUAL_FIELDS = [
-  { key: 'kcal', label: 'Calories /100g' },
-  { key: 'proteinG', label: 'Protein /100g' },
-  { key: 'carbsG', label: 'Carbs /100g' },
-  { key: 'fatG', label: 'Fat /100g' },
-] as const;
-
-type ManualMacros = Record<(typeof MANUAL_FIELDS)[number]['key'], string>;
-
-const MODES: { key: RecipeType; label: string }[] = [
-  { key: 'ingredients', label: 'By ingredients' },
-  { key: 'manual', label: 'Manual macros' },
-];
-
 interface RecipeBuilderProps {
   editing: RecipeDetail | null;
 }
 
-// Full-page recipe builder (create + edit) with two modes: compose from ingredients
-// (macros computed live) or enter the TOTAL macros by hand for a prepared product
-// (e.g. a bought sandwich). Drafts are raw strings, per the numeric-input pattern.
+// Full-page recipe builder (create + edit) for a dish composed of foods. Ingredients
+// live in local draft state (raw strings, per the numeric-input pattern); the macro
+// preview is computed live from the shared macro math. (Bought/prepared products are
+// modelled as foods with a serving size, not recipes.)
 export function RecipeBuilder({ editing }: RecipeBuilderProps) {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<RecipeType>(editing?.type ?? 'ingredients');
   const [name, setName] = useState(editing?.name ?? '');
   const [servings, setServings] = useState(editing ? String(editing.servings) : '1');
   const [ingredients, setIngredients] = useState<IngredientDraft[]>(
-    editing?.type === 'ingredients' ? fromDetail(editing) : [newRow()],
-  );
-  // Seed the manual macro fields as per-100g, reconstructed from the saved
-  // whole-recipe total ÷ weight (manual recipes are stored per 100g).
-  const editingPer100g =
-    editing?.type === 'manual' && editing.totalGrams > 0
-      ? multiplyMacros(editing.total, 100 / editing.totalGrams)
-      : null;
-  const [macros, setMacros] = useState<ManualMacros>({
-    kcal: editingPer100g ? String(editingPer100g.kcal) : '',
-    proteinG: editingPer100g ? String(editingPer100g.proteinG) : '',
-    carbsG: editingPer100g ? String(editingPer100g.carbsG) : '',
-    fatG: editingPer100g ? String(editingPer100g.fatG) : '',
-  });
-  const [totalGrams, setTotalGrams] = useState(
-    editing?.type === 'manual' ? String(editing.totalGrams) : '',
+    editing ? fromDetail(editing) : [newRow()],
   );
 
   const create = useCreateRecipe();
@@ -116,50 +80,20 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
     (r): r is IngredientDraft & { food: IngredientFood } =>
       r.food !== null && Number.isFinite(Number(r.amount)) && Number(r.amount) > 0,
   );
-  const validMacros = MANUAL_FIELDS.every((f) => {
-    const v = macros[f.key];
-    return v.trim() !== '' && Number.isFinite(Number(v)) && Number(v) >= 0;
-  });
-  const totalGramsNum = Number(totalGrams);
-  const validWeight =
-    totalGrams.trim() !== '' && Number.isFinite(totalGramsNum) && totalGramsNum > 0;
-  const per100g: MacroTotals = {
-    kcal: Number(macros.kcal) || 0,
-    proteinG: Number(macros.proteinG) || 0,
-    carbsG: Number(macros.carbsG) || 0,
-    fatG: Number(macros.fatG) || 0,
-  };
 
-  const total: MacroTotals =
-    mode === 'manual'
-      ? scaleMacros(per100g, validWeight ? totalGramsNum : 0)
-      : sumMacros(validRows.map((r) => scaleMacros(r.food.per100g, Number(r.amount))));
+  const total = sumMacros(validRows.map((r) => scaleMacros(r.food.per100g, Number(r.amount))));
   const servingsNum = Number(servings);
   const validServings = Number.isInteger(servingsNum) && servingsNum > 0;
   const perServing = validServings ? divideMacros(total, servingsNum) : total;
-  const contentValid = mode === 'manual' ? validMacros && validWeight : validRows.length > 0;
-  const canSave = name.trim().length > 0 && validServings && contentValid && !isPending;
+  const canSave = name.trim().length > 0 && validServings && validRows.length > 0 && !isPending;
 
   function save() {
     if (!canSave) return;
-    const input: CreateRecipeInput =
-      mode === 'manual'
-        ? {
-            type: 'manual',
-            name: name.trim(),
-            servings: servingsNum,
-            ...per100g,
-            totalGrams: totalGramsNum,
-          }
-        : {
-            type: 'ingredients',
-            name: name.trim(),
-            servings: servingsNum,
-            ingredients: validRows.map((r) => ({
-              foodId: r.food.id,
-              amountGrams: Number(r.amount),
-            })),
-          };
+    const input: CreateRecipeInput = {
+      name: name.trim(),
+      servings: servingsNum,
+      ingredients: validRows.map((r) => ({ foodId: r.food.id, amountGrams: Number(r.amount) })),
+    };
     const onSuccess = () => void navigate({ to: '/recipes' });
     if (editing) update.mutate({ id: editing.id, input }, { onSuccess });
     else create.mutate(input, { onSuccess });
@@ -168,24 +102,6 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
   return (
     <div className="mx-auto lg:col-span-3 flex w-full max-w-2xl flex-col gap-4 p-4">
       <h1 className="text-2xl font-bold">{editing ? 'Edit recipe' : 'New recipe'}</h1>
-
-      <div className="bg-muted flex w-fit gap-1 rounded-md p-1">
-        {MODES.map((m) => (
-          <Button
-            key={m.key}
-            type="button"
-            size="sm"
-            variant={mode === m.key ? 'default' : 'ghost'}
-            className={cn('h-8', mode !== m.key && 'text-muted-foreground')}
-            onClick={() => {
-              setMode(m.key);
-              if (m.key === 'ingredients' && ingredients.length === 0) setIngredients([newRow()]);
-            }}
-          >
-            {m.label}
-          </Button>
-        ))}
-      </div>
 
       <div className="grid gap-2">
         <Label htmlFor="recipe-name">Name</Label>
@@ -209,72 +125,37 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
         />
       </div>
 
-      {mode === 'ingredients' ? (
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold">Ingredients</h2>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-9"
-              onClick={() => setIngredients((rows) => [...rows, newRow()])}
-            >
-              <Plus className="size-4" />
-              Add
-            </Button>
-          </div>
-          {ingredients.map((row) => (
-            <IngredientRow
-              key={row.key}
-              selectedId={row.food?.id ?? null}
-              selectedName={row.food?.name ?? null}
-              amount={row.amount}
-              onSelectFood={(food) => selectFood(row.key, food)}
-              onAmountChange={(v) =>
-                setIngredients((rows) =>
-                  rows.map((r) => (r.key === row.key ? { ...r, amount: v } : r)),
-                )
-              }
-              onRemove={() => setIngredients((rows) => rows.filter((r) => r.key !== row.key))}
-              canRemove={ingredients.length > 1}
-            />
-          ))}
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold">Ingredients</h2>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-9"
+            onClick={() => setIngredients((rows) => [...rows, newRow()])}
+          >
+            <Plus className="size-4" />
+            Add
+          </Button>
         </div>
-      ) : (
-        <div className="flex flex-col gap-3">
-          <p className="text-muted-foreground text-xs">
-            Enter macros per 100g (as on the label) plus the recipe’s total weight. Log it later by
-            grams or servings.
-          </p>
-          <div className="grid grid-cols-2 gap-3">
-            {MANUAL_FIELDS.map((f) => (
-              <div key={f.key} className="grid gap-2">
-                <Label htmlFor={`recipe-${f.key}`}>{f.label}</Label>
-                <Input
-                  id={`recipe-${f.key}`}
-                  inputMode="decimal"
-                  placeholder="0"
-                  className="h-11"
-                  value={macros[f.key]}
-                  onChange={(e) => setMacros((m) => ({ ...m, [f.key]: e.target.value }))}
-                />
-              </div>
-            ))}
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="recipe-total-grams">Total weight (g)</Label>
-            <Input
-              id="recipe-total-grams"
-              inputMode="decimal"
-              placeholder="e.g. 150"
-              className="h-11 w-40"
-              value={totalGrams}
-              onChange={(e) => setTotalGrams(e.target.value)}
-            />
-          </div>
-        </div>
-      )}
+        {ingredients.map((row) => (
+          <IngredientRow
+            key={row.key}
+            selectedId={row.food?.id ?? null}
+            selectedName={row.food?.name ?? null}
+            amount={row.amount}
+            onSelectFood={(food) => selectFood(row.key, food)}
+            onAmountChange={(v) =>
+              setIngredients((rows) =>
+                rows.map((r) => (r.key === row.key ? { ...r, amount: v } : r)),
+              )
+            }
+            onRemove={() => setIngredients((rows) => rows.filter((r) => r.key !== row.key))}
+            canRemove={ingredients.length > 1}
+          />
+        ))}
+      </div>
 
       <Card>
         <CardContent className="flex items-center justify-between gap-4">
