@@ -18,17 +18,17 @@ interface CalendarDayCellProps {
   planned: PlannedSessionWithTemplate[];
   strengthCount: number;
   activityCount: number;
+  // Names of the day's finished workouts (template snapshot / activity name).
+  workoutNames: string[];
   tags: { id: string; color: string }[];
   onSelect: (iso: string) => void;
 }
 
-const MAX_MARKERS = 4;
-
 // One day in the month grid: a drop target (drag a planned marker here to
-// reschedule) that opens the day detail on click. Markers encode type by icon
-// (Dumbbell = training, Activity = logged activity) and status by color (accent =
-// planned/to-do, green = finished); completed workouts' tags show as colored
-// badges. Planned to-dos come first, then the day's finished workouts.
+// reschedule) that opens the day detail on click. Planned to-dos show as draggable
+// markers (accent); finished workouts show one green icon (Dumbbell = training,
+// Activity = logged activity) plus their template names. Completed workouts' tags
+// show as colored badges below.
 export function CalendarDayCell({
   iso,
   dayNumber,
@@ -39,13 +39,13 @@ export function CalendarDayCell({
   planned,
   strengthCount,
   activityCount,
+  workoutNames,
   tags,
   onSelect,
 }: CalendarDayCellProps) {
   const { setNodeRef, isOver } = useDroppable({ id: iso });
 
   const finished = strengthCount + activityCount;
-  const total = planned.length + finished;
   // Tint the cell by its content for an at-a-glance read: green when something was
   // done, accent when only planned. Selection wins over the tint.
   const bgClass = isSelected
@@ -55,14 +55,6 @@ export function CalendarDayCell({
       : planned.length > 0
         ? 'bg-primary/10'
         : '';
-  // Planned markers are draggable, so keep them all; fill the rest with finished
-  // markers up to the cap, leaving room for a "+N" overflow chip.
-  const shownStrength = Math.max(0, Math.min(strengthCount, MAX_MARKERS - planned.length));
-  const shownActivity = Math.max(
-    0,
-    Math.min(activityCount, MAX_MARKERS - planned.length - shownStrength),
-  );
-  const overflow = total - planned.length - shownStrength - shownActivity;
 
   return (
     <div
@@ -95,17 +87,33 @@ export function CalendarDayCell({
         {dayNumber}
       </span>
 
-      <span className="flex flex-wrap items-center justify-center gap-0.5">
-        {planned.map((session) => (
-          <PlannedMarker key={session.id} session={session} />
-        ))}
-        {Array.from({ length: shownStrength }).map((_, index) => (
-          <Dumbbell key={`strength-${index}`} className="size-4 rotate-45 text-green-600" />
-        ))}
-        {Array.from({ length: shownActivity }).map((_, index) => (
-          <Activity key={`activity-${index}`} className="size-4 text-green-600" />
-        ))}
-        {overflow > 0 && <span className="text-muted-foreground text-[10px]">+{overflow}</span>}
+      <span className="flex w-full flex-col items-center gap-0.5">
+        {planned.length > 0 && (
+          <span className="flex flex-wrap items-center justify-center gap-0.5">
+            {planned.map((session) => (
+              <PlannedMarker key={session.id} session={session} />
+            ))}
+          </span>
+        )}
+        {finished > 0 && (
+          <span className="flex w-full items-start justify-center gap-1 text-green-700">
+            {strengthCount > 0 ? (
+              <Dumbbell className="mt-px size-3.5 shrink-0 rotate-45 text-green-600" />
+            ) : (
+              <Activity className="mt-px size-3.5 shrink-0 text-green-600" />
+            )}
+            <span className="flex min-w-0 flex-col items-center gap-0.5 text-[10px] leading-tight font-medium">
+              {workoutNames.slice(0, 3).map((name, index) => (
+                <span key={index} className="max-w-full truncate">
+                  {name}
+                </span>
+              ))}
+              {workoutNames.length > 3 && (
+                <span className="text-muted-foreground">+{workoutNames.length - 3}</span>
+              )}
+            </span>
+          </span>
+        )}
       </span>
 
       {tags.length > 0 && (
