@@ -14,6 +14,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
 import type { BodyMeasurement, UpsertBodyMeasurementInput } from '@gym-bro/shared';
 
@@ -42,6 +43,7 @@ const bodyFormSchema = z.object({
   waistCm: measurement(999.99),
   hipCm: measurement(999.99),
   thighCm: measurement(999.99),
+  notes: z.string().max(500, 'Too long (max 500 characters)'),
 });
 
 type BodyFormValues = z.infer<typeof bodyFormSchema>;
@@ -63,7 +65,7 @@ const numToStr = (n: number | null) => (n === null ? '' : String(n));
 
 function toDefaults(editing: BodyMeasurement | null): BodyFormValues {
   if (!editing) {
-    const blank = { measuredDate: format(new Date(), 'yyyy-MM-dd') } as BodyFormValues;
+    const blank = { measuredDate: format(new Date(), 'yyyy-MM-dd'), notes: '' } as BodyFormValues;
     MEASUREMENT_KEYS.forEach((k) => (blank[k] = ''));
     return blank;
   }
@@ -76,6 +78,7 @@ function toDefaults(editing: BodyMeasurement | null): BodyFormValues {
     waistCm: numToStr(editing.waistCm),
     hipCm: numToStr(editing.hipCm),
     thighCm: numToStr(editing.thighCm),
+    notes: editing.notes ?? '',
   };
 }
 
@@ -122,6 +125,14 @@ export function BodyMeasurementForm() {
       measuredDate: values.measuredDate,
       ...measurements,
     };
+    // Notes merge like a measurement: a value sets it, blank clears it when
+    // editing, and is omitted on create so a same-day re-save doesn't wipe it.
+    const notes = values.notes.trim();
+    if (notes !== '') {
+      input.notes = notes;
+    } else if (editing) {
+      input.notes = null;
+    }
     upsert.mutate(input, {
       onSuccess: () => (editing ? clearEditing() : form.reset(toDefaults(null))),
     });
@@ -173,6 +184,24 @@ export function BodyMeasurementForm() {
         >
           {showMore ? 'Show less' : 'Show more'}
         </Button>
+
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Notes</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="How you felt, conditions, context… (optional)"
+                  className="min-h-16"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         {error ? (
           <p role="alert" className="text-destructive text-sm">
