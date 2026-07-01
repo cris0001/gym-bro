@@ -1,8 +1,7 @@
 import { format, parseISO } from 'date-fns';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   CartesianGrid,
-  Legend,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -49,6 +48,12 @@ export function ExerciseProgressChart({ exerciseId, range }: ExerciseProgressCha
   const [dimension, setDimension] = useState<Dimension>('normal');
   const { data: points = [], isPending } = useExerciseProgress(exerciseId, range);
 
+  // Reset to the normal (back-off) set whenever a different exercise is picked —
+  // it's the fuller series, so it's the sensible default on each new selection.
+  useEffect(() => {
+    setDimension('normal');
+  }, [exerciseId]);
+
   if (exerciseId === null) {
     return <ChartPlaceholder>Select an exercise to see its progress.</ChartPlaceholder>;
   }
@@ -59,94 +64,70 @@ export function ExerciseProgressChart({ exerciseId, range }: ExerciseProgressCha
   const data = points.map((point) => ({
     date: point.date,
     weight: dimension === 'top' ? point.topWeight : point.normalWeight,
+    // Kept off the chart (a second line read weird) but surfaced in the tooltip.
     reps: dimension === 'top' ? point.topReps : point.normalReps,
   }));
   const weightDomain = paddedDomain(
     data.map((d) => d.weight),
     3,
   );
-  const repsDomain = paddedDomain(
-    data.map((d) => d.reps),
-    1,
-  );
-  const hasData = data.some((d) => d.weight !== null || d.reps !== null);
-  if (!hasData) {
-    return (
-      <ChartPlaceholder>
-        No {DIMENSIONS.find((d) => d.key === dimension)?.label.toLowerCase()} data for this exercise
-        yet.
-      </ChartPlaceholder>
-    );
-  }
+  const hasData = data.some((d) => d.weight !== null);
+  const dimensionLabel = DIMENSIONS.find((d) => d.key === dimension)?.label.toLowerCase();
 
+  // The Top/Normal switch stays mounted even with no data for the chosen tier, so
+  // you can always switch back (e.g. from an empty Top set to Normal).
   return (
     <div className="flex flex-col gap-3">
       <ToggleGroup options={DIMENSIONS} value={dimension} onChange={setDimension} />
 
-      <div className="h-64 w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: -8 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-            <XAxis
-              dataKey="date"
-              tickFormatter={(value: string) => format(parseISO(value), 'MMM d')}
-              tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
-              tickMargin={8}
-              minTickGap={24}
-            />
-            <YAxis
-              yAxisId="weight"
-              domain={weightDomain ?? ['auto', 'auto']}
-              tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
-              width={44}
-            />
-            <YAxis
-              yAxisId="reps"
-              orientation="right"
-              allowDecimals={false}
-              domain={repsDomain ?? ['auto', 'auto']}
-              tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
-              width={36}
-            />
-            <Tooltip
-              contentStyle={{
-                background: 'var(--card)',
-                border: '1px solid var(--border)',
-                borderRadius: 8,
-                color: 'var(--card-foreground)',
-              }}
-              labelFormatter={(label) => format(parseISO(String(label)), 'PP')}
-              formatter={(value, name) => {
-                if (value === null || value === undefined) return ['—', name];
-                return [name === 'Reps' ? `${String(value)} reps` : `${String(value)} kg`, name];
-              }}
-            />
-            <Legend />
-            <Line
-              yAxisId="weight"
-              name="Weight"
-              type="monotone"
-              dataKey="weight"
-              stroke="var(--chart-1)"
-              strokeWidth={2}
-              dot={{ r: 3 }}
-              activeDot={{ r: 5 }}
-              connectNulls={false}
-            />
-            <Line
-              yAxisId="reps"
-              name="Reps"
-              type="monotone"
-              dataKey="reps"
-              stroke="var(--chart-2)"
-              strokeWidth={2}
-              dot={{ r: 3 }}
-              activeDot={{ r: 5 }}
-              connectNulls={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+      {!hasData ? (
+        <ChartPlaceholder>No {dimensionLabel} data for this exercise yet.</ChartPlaceholder>
+      ) : (
+        <div className="h-64 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: -8 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+              <XAxis
+                dataKey="date"
+                tickFormatter={(value: string) => format(parseISO(value), 'MMM d')}
+                tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
+                tickMargin={8}
+                minTickGap={24}
+              />
+              <YAxis
+                domain={weightDomain ?? ['auto', 'auto']}
+                tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
+                width={44}
+              />
+              <Tooltip
+                content={({ active, payload, label }) => {
+                  if (!active || !payload || payload.length === 0) return null;
+                  const row = payload[0]!.payload as { weight: number | null; reps: number | null };
+                  const weight = row.weight === null ? 'BW' : `${row.weight} kg`;
+                  return (
+                    <div className="bg-card text-card-foreground rounded-lg border px-3 py-2 text-sm shadow-sm">
+                      <p className="mb-0.5 font-medium">{format(parseISO(String(label)), 'PP')}</p>
+                      <p>
+                        {weight}
+                        {row.reps !== null ? ` · ${row.reps} reps` : ''}
+                      </p>
+                    </div>
+                  );
+                }}
+              />
+              <Line
+                type="monotone"
+                dataKey="weight"
+                stroke="var(--primary)"
+                strokeWidth={2}
+                dot={{ r: 3 }}
+                activeDot={{ r: 5 }}
+                connectNulls={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </div>
   );
 }
