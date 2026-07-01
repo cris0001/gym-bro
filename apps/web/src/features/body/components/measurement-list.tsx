@@ -34,11 +34,18 @@ function MeasurementRow({ entry }: { entry: BodyMeasurement }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   return (
-    <li className="flex items-center gap-2 py-2 text-sm">
-      <span className="text-muted-foreground w-20 shrink-0">
+    <li className="flex items-start gap-2 py-2 text-sm">
+      <span className="text-muted-foreground w-20 shrink-0 pt-1.5">
         {format(parseISO(entry.measuredDate), 'd MMM yy')}
       </span>
-      <span className="min-w-0 flex-1 truncate">{summarize(entry)}</span>
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5 pt-1.5">
+        <span className="truncate">{summarize(entry)}</span>
+        {entry.notes ? (
+          <span className="text-muted-foreground text-xs break-words whitespace-pre-wrap">
+            {entry.notes}
+          </span>
+        ) : null}
+      </div>
       <Button
         type="button"
         variant="ghost"
