@@ -32,17 +32,40 @@ export const recipeIngredientInputSchema = z.object({
   amountGrams: positiveAmount,
 });
 
-// Create and edit share the shape — editing a recipe fully replaces its name,
-// servings, and ingredient list. At least one ingredient (a recipe needs
-// ingredients to have macros).
-export const createRecipeSchema = z.object({
-  name: itemName,
-  servings: z.number().int().positive('Servings must be at least 1').max(1000, 'Too many servings'),
-  ingredients: z
-    .array(recipeIngredientInputSchema)
-    .min(1, 'Add at least one ingredient')
-    .max(100, 'Too many ingredients'),
-});
+// A recipe is created/edited in one of two shapes, discriminated by `type`:
+//   - 'ingredients' → composed of foods (≥1), macros computed from them.
+//   - 'manual'      → a prepared product (e.g. a bought sandwich) with hand-entered
+//                     TOTAL macros and no ingredients. All four macros required.
+// Create and edit share the shape (editing fully replaces the recipe). A manual
+// recipe's total macros can be larger than a food's per-100g value, so they use a
+// wider bound matching the numeric(7,2) columns.
+const recipeMacroValue = z.number().min(0, 'Must be 0 or more').max(99999.99, 'Too large');
+const recipeServings = z
+  .number()
+  .int()
+  .positive('Servings must be at least 1')
+  .max(1000, 'Too many servings');
+
+export const createRecipeSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('ingredients'),
+    name: itemName,
+    servings: recipeServings,
+    ingredients: z
+      .array(recipeIngredientInputSchema)
+      .min(1, 'Add at least one ingredient')
+      .max(100, 'Too many ingredients'),
+  }),
+  z.object({
+    type: z.literal('manual'),
+    name: itemName,
+    servings: recipeServings,
+    kcal: recipeMacroValue,
+    proteinG: recipeMacroValue,
+    carbsG: recipeMacroValue,
+    fatG: recipeMacroValue,
+  }),
+]);
 export const updateRecipeSchema = createRecipeSchema;
 
 // --- Nutrition targets ---
