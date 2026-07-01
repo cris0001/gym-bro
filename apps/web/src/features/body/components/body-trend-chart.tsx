@@ -54,6 +54,17 @@ export function BodyTrendChart({
   const measures = active.filter((s) => !s.isCalories);
   const caloriesOn = active.some((s) => s.isCalories);
 
+  // Pad the calorie axis ~150 kcal beyond the actual target range (rounded to 50s)
+  // so a near-flat target line sits in the band instead of glued to the top/bottom
+  // edge. Without this, auto-domain hugs the values and it reads as a border line.
+  const caloriesDomain = ((): [number, number] | undefined => {
+    const values = rows.map((r) => r.kcal).filter((v): v is number => typeof v === 'number');
+    if (values.length === 0) return undefined;
+    const lo = Math.max(0, Math.floor((Math.min(...values) - 150) / 50) * 50);
+    const hi = Math.ceil((Math.max(...values) + 150) / 50) * 50;
+    return [lo, hi];
+  })();
+
   const toggle = (key: string) =>
     setSelected((prev) => {
       const next = new Set(prev);
@@ -127,7 +138,7 @@ export function BodyTrendChart({
               <YAxis
                 yAxisId="right"
                 orientation="right"
-                domain={['auto', 'auto']}
+                domain={caloriesDomain ?? ['auto', 'auto']}
                 tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
                 width={48}
               />

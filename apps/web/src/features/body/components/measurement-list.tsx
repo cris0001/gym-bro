@@ -163,29 +163,23 @@ export function MeasurementList({
   entries: BodyMeasurement[];
   targets: NutritionTarget[];
 }) {
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  // Only the newest month is open by default; the rest collapse. `overrides` holds
+  // groups the user has explicitly toggled, so their choice sticks per month.
+  const [overrides, setOverrides] = useState<Record<string, boolean>>({});
 
   if (entries.length === 0) {
     return <p className="text-muted-foreground py-4 text-sm">No measurements in this range.</p>;
   }
 
-  const toggle = (key: string) =>
-    setCollapsed((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
-
   return (
     <div className="flex flex-col divide-y">
-      {monthGroups(entries).map((group) => {
-        const open = !collapsed.has(group.key);
+      {monthGroups(entries).map((group, index) => {
+        const open = overrides[group.key] ?? index === 0;
         return (
           <section key={group.key}>
             <button
               type="button"
-              onClick={() => toggle(group.key)}
+              onClick={() => setOverrides((prev) => ({ ...prev, [group.key]: !open }))}
               className="flex w-full items-center gap-2 py-2.5 text-left"
             >
               {open ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
