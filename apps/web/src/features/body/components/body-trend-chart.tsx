@@ -1,5 +1,5 @@
 import { format, parseISO } from 'date-fns';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   CartesianGrid,
   Legend,
@@ -14,51 +14,32 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-import { movingAverage, type BodyMeasurement } from '@gym-bro/shared';
+import type { BodyMeasurement, NutritionTarget } from '@gym-bro/shared';
 
-// Each chartable measurement and how its values read.
-const MEASURES = [
-  { key: 'weightKg', label: 'Weight', unit: 'kg' },
-  { key: 'bodyFatPct', label: 'Body fat', unit: '%' },
-  { key: 'bicepsCm', label: 'Biceps', unit: 'cm' },
-  { key: 'chestCm', label: 'Chest', unit: 'cm' },
-  { key: 'waistCm', label: 'Waist', unit: 'cm' },
-  { key: 'hipCm', label: 'Hip', unit: 'cm' },
-  { key: 'thighCm', label: 'Thigh', unit: 'cm' },
-] as const;
+import { buildTrendData, CALORIES_SERIES, type SeriesDef } from '../utils/trend-series';
 
-type MeasureKey = (typeof MEASURES)[number]['key'];
+// On by default: body weight + target calories.
+const DEFAULT_SELECTED = ['weightKg', 'kcal'];
 
-// Build the chart rows for one measure: the raw value plus its 7- and 30-day
-// (calendar-window) moving averages, oldest first. Entries arrive newest-first.
-function buildData(entries: BodyMeasurement[], key: MeasureKey) {
-  const series = entries
-    .filter((e) => e[key] !== null)
-    .map((e) => ({ date: e.measuredDate, value: e[key]! }))
-    .sort((a, b) => a.date.localeCompare(b.date));
-  const ma7 = movingAverage(series, 7);
-  const ma30 = movingAverage(series, 30);
-  return series.map((p, i) => ({
-    date: p.date,
-    value: p.value,
-    ma7: ma7[i]!.average,
-    ma30: ma30[i]!.average,
-  }));
-}
+// Flexible trend chart: pick any combination of body measurements plus the
+// target-calorie overlay (weight + calories by default). Measurements share the
+// left axis; calories get the right axis (very different scale). 7- and 30-day
+// moving-average overlays are optional toggles applied to the selected measures.
+export function BodyTrendChart({
+  entries,
+  targets,
+}: {
+  entries: BodyMeasurement[];
+  targets: NutritionTarget[];
+}) {
+  const { rows, availableMeasures, hasCalories } = buildTrendData(entries, targets);
+  const selectable: SeriesDef[] = [...availableMeasures, ...(hasCalories ? [CALORIES_SERIES] : [])];
 
-// Trend chart for a selectable body measurement: the raw series with 7- and
-// 30-day moving-average overlays. Only measures with data are offered.
-export function BodyTrendChart({ entries }: { entries: BodyMeasurement[] }) {
-  const available = MEASURES.filter((m) => entries.some((e) => e[m.key] !== null));
-  const [selected, setSelected] = useState<MeasureKey>('weightKg');
+  const [selected, setSelected] = useState<Set<string>>(() => new Set(DEFAULT_SELECTED));
+  const [showMa7, setShowMa7] = useState(false);
+  const [showMa30, setShowMa30] = useState(false);
 
-  useEffect(() => {
-    if (available.length > 0 && !available.some((m) => m.key === selected)) {
-      setSelected(available[0]!.key);
-    }
-  }, [available, selected]);
-
-  if (available.length === 0) {
+  if (selectable.length === 0) {
     return (
       <p className="text-muted-foreground flex h-64 items-center justify-center text-sm">
         Log measurements to see trends.
@@ -66,29 +47,68 @@ export function BodyTrendChart({ entries }: { entries: BodyMeasurement[] }) {
     );
   }
 
-  const measure = MEASURES.find((m) => m.key === selected) ?? available[0]!;
-  const data = buildData(entries, measure.key);
+  // Render the selected series that actually have data; fall back to the first
+  // available so the chart is never empty.
+  let active = selectable.filter((s) => selected.has(s.key));
+  if (active.length === 0) active = [selectable[0]!];
+  const measures = active.filter((s) => !s.isCalories);
+  const caloriesOn = active.some((s) => s.isCalories);
+
+  const toggle = (key: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
 
   return (
     <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap gap-1.5">
+        {selectable.map((s) => {
+          const on = active.some((a) => a.key === s.key);
+          return (
+            <button
+              key={s.key}
+              type="button"
+              onClick={() => toggle(s.key)}
+              className={cn(
+                'flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors',
+                on
+                  ? 'bg-primary text-primary-foreground border-transparent'
+                  : 'text-muted-foreground hover:bg-muted',
+              )}
+            >
+              <span className="size-2 rounded-full" style={{ background: s.color }} />
+              {s.label}
+            </button>
+          );
+        })}
+      </div>
+
       <div className="flex flex-wrap gap-1">
-        {available.map((m) => (
+        {(
+          [
+            ['7-day avg', showMa7, setShowMa7],
+            ['30-day avg', showMa30, setShowMa30],
+          ] as const
+        ).map(([label, value, set]) => (
           <Button
-            key={m.key}
+            key={label}
             type="button"
             size="sm"
-            variant={measure.key === m.key ? 'default' : 'ghost'}
-            className={cn('h-8', measure.key !== m.key && 'text-muted-foreground')}
-            onClick={() => setSelected(m.key)}
+            variant={value ? 'secondary' : 'ghost'}
+            className={cn('h-7 px-2 text-xs', !value && 'text-muted-foreground')}
+            onClick={() => set((v) => !v)}
           >
-            {m.label}
+            {label}
           </Button>
         ))}
       </div>
 
       <div className="h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: -8 }}>
+          <LineChart data={rows} margin={{ top: 8, right: 12, bottom: 0, left: -8 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
             <XAxis
               dataKey="date"
@@ -98,10 +118,20 @@ export function BodyTrendChart({ entries }: { entries: BodyMeasurement[] }) {
               minTickGap={24}
             />
             <YAxis
+              yAxisId="left"
               domain={['auto', 'auto']}
               tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
               width={44}
             />
+            {caloriesOn && (
+              <YAxis
+                yAxisId="right"
+                orientation="right"
+                domain={['auto', 'auto']}
+                tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
+                width={48}
+              />
+            )}
             <Tooltip
               contentStyle={{
                 background: 'var(--card)',
@@ -110,34 +140,69 @@ export function BodyTrendChart({ entries }: { entries: BodyMeasurement[] }) {
                 color: 'var(--card-foreground)',
               }}
               labelFormatter={(label) => format(parseISO(String(label)), 'PP')}
-              formatter={(value) => `${Number(value).toFixed(1)} ${measure.unit}`}
+              formatter={(value, name) => {
+                if (value === null || value === undefined) return ['—', name];
+                const n = Number(value);
+                return [name === 'Calories' ? `${Math.round(n)} kcal` : n.toFixed(1), name];
+              }}
             />
             <Legend />
-            <Line
-              name={measure.label}
-              type="monotone"
-              dataKey="value"
-              stroke="var(--chart-1)"
-              strokeWidth={2}
-              dot={{ r: 2 }}
-              activeDot={{ r: 5 }}
-            />
-            <Line
-              name="7-day avg"
-              type="monotone"
-              dataKey="ma7"
-              stroke="var(--chart-2)"
-              strokeWidth={2}
-              dot={false}
-            />
-            <Line
-              name="30-day avg"
-              type="monotone"
-              dataKey="ma30"
-              stroke="var(--chart-4)"
-              strokeWidth={2}
-              dot={false}
-            />
+            {measures.map((s) => (
+              <Line
+                key={s.key}
+                yAxisId="left"
+                name={s.label}
+                type="monotone"
+                dataKey={s.key}
+                stroke={s.color}
+                strokeWidth={2}
+                dot={{ r: 2 }}
+                activeDot={{ r: 5 }}
+                connectNulls
+              />
+            ))}
+            {showMa7 &&
+              measures.map((s) => (
+                <Line
+                  key={`${s.key}-ma7`}
+                  yAxisId="left"
+                  name={`${s.label} 7d`}
+                  type="monotone"
+                  dataKey={`${s.key}__ma7`}
+                  stroke={s.color}
+                  strokeWidth={1.5}
+                  strokeDasharray="4 3"
+                  dot={false}
+                  connectNulls
+                />
+              ))}
+            {showMa30 &&
+              measures.map((s) => (
+                <Line
+                  key={`${s.key}-ma30`}
+                  yAxisId="left"
+                  name={`${s.label} 30d`}
+                  type="monotone"
+                  dataKey={`${s.key}__ma30`}
+                  stroke={s.color}
+                  strokeWidth={1.5}
+                  strokeDasharray="1 3"
+                  dot={false}
+                  connectNulls
+                />
+              ))}
+            {caloriesOn && (
+              <Line
+                yAxisId="right"
+                name="Calories"
+                type="stepAfter"
+                dataKey="kcal"
+                stroke={CALORIES_SERIES.color}
+                strokeWidth={2}
+                dot={false}
+                connectNulls={false}
+              />
+            )}
           </LineChart>
         </ResponsiveContainer>
       </div>
