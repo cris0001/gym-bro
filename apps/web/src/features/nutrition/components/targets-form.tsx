@@ -48,21 +48,27 @@ const FIELDS = [
 
 interface TargetsFormProps {
   current: NutritionTarget | null;
+  // A past target being edited (loaded from history); its date and macros seed the
+  // form. Absent = the normal "set today's target" mode.
+  editing?: NutritionTarget | null;
+  onDone?: () => void;
 }
 
-// Set/change the daily target. Saving creates today's history entry (or updates
-// it if already set today); the current target and history refresh on success.
-export function TargetsForm({ current }: TargetsFormProps) {
+// Set/change a target. In normal mode it seeds from the current target and defaults
+// to today; in edit mode it seeds from the selected history entry (date + macros).
+// Saving upserts that date; the current target and history refresh on success.
+export function TargetsForm({ current, editing, onDone }: TargetsFormProps) {
+  const source = editing ?? current;
   const form = useForm<TargetFormValues>({
     resolver: zodResolver(targetFormSchema),
     defaultValues: {
-      effectiveDate: format(new Date(), 'yyyy-MM-dd'),
-      ...(current
+      effectiveDate: editing?.effectiveDate ?? format(new Date(), 'yyyy-MM-dd'),
+      ...(source
         ? {
-            kcal: String(current.kcal),
-            proteinG: String(current.proteinG),
-            carbsG: String(current.carbsG),
-            fatG: String(current.fatG),
+            kcal: String(source.kcal),
+            proteinG: String(source.proteinG),
+            carbsG: String(source.carbsG),
+            fatG: String(source.fatG),
           }
         : { kcal: '', proteinG: '', carbsG: '', fatG: '' }),
     },
@@ -78,7 +84,7 @@ export function TargetsForm({ current }: TargetsFormProps) {
       carbsG: Number(values.carbsG),
       fatG: Number(values.fatG),
     };
-    setTarget.mutate(input);
+    setTarget.mutate(input, { onSuccess: () => onDone?.() });
   }
 
   return (
@@ -132,9 +138,16 @@ export function TargetsForm({ current }: TargetsFormProps) {
         ) : null}
         {setTarget.isSuccess ? <p className="text-muted-foreground text-sm">Saved.</p> : null}
 
-        <Button type="submit" className="h-11" disabled={setTarget.isPending}>
-          {setTarget.isPending ? 'Saving…' : 'Save target'}
-        </Button>
+        <div className="flex gap-2">
+          <Button type="submit" className="h-11 flex-1" disabled={setTarget.isPending}>
+            {setTarget.isPending ? 'Saving…' : editing ? 'Save changes' : 'Save target'}
+          </Button>
+          {editing ? (
+            <Button type="button" variant="outline" className="h-11" onClick={() => onDone?.()}>
+              Cancel
+            </Button>
+          ) : null}
+        </div>
       </form>
     </Form>
   );
