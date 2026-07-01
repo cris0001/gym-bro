@@ -141,7 +141,7 @@ export function BodyPage() {
       <section className="flex flex-col gap-2">
         <h2 className="font-semibold">History</h2>
         <div className="bg-card rounded-xl border px-4">
-          <MeasurementList entries={filtered} />
+          <MeasurementList entries={filtered} targets={targets ?? []} />
         </div>
       </section>
     </div>
