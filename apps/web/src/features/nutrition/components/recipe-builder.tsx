@@ -54,10 +54,10 @@ function fromDetail(recipe: RecipeDetail): IngredientDraft[] {
 }
 
 const MANUAL_FIELDS = [
-  { key: 'kcal', label: 'Calories (kcal)' },
-  { key: 'proteinG', label: 'Protein (g)' },
-  { key: 'carbsG', label: 'Carbs (g)' },
-  { key: 'fatG', label: 'Fat (g)' },
+  { key: 'kcal', label: 'Calories /100g' },
+  { key: 'proteinG', label: 'Protein /100g' },
+  { key: 'carbsG', label: 'Carbs /100g' },
+  { key: 'fatG', label: 'Fat /100g' },
 ] as const;
 
 type ManualMacros = Record<(typeof MANUAL_FIELDS)[number]['key'], string>;
@@ -82,12 +82,21 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
   const [ingredients, setIngredients] = useState<IngredientDraft[]>(
     editing?.type === 'ingredients' ? fromDetail(editing) : [newRow()],
   );
+  // Seed the manual macro fields as per-100g, reconstructed from the saved
+  // whole-recipe total ÷ weight (manual recipes are stored per 100g).
+  const editingPer100g =
+    editing?.type === 'manual' && editing.totalGrams > 0
+      ? multiplyMacros(editing.total, 100 / editing.totalGrams)
+      : null;
   const [macros, setMacros] = useState<ManualMacros>({
-    kcal: editing?.type === 'manual' ? String(editing.total.kcal) : '',
-    proteinG: editing?.type === 'manual' ? String(editing.total.proteinG) : '',
-    carbsG: editing?.type === 'manual' ? String(editing.total.carbsG) : '',
-    fatG: editing?.type === 'manual' ? String(editing.total.fatG) : '',
+    kcal: editingPer100g ? String(editingPer100g.kcal) : '',
+    proteinG: editingPer100g ? String(editingPer100g.proteinG) : '',
+    carbsG: editingPer100g ? String(editingPer100g.carbsG) : '',
+    fatG: editingPer100g ? String(editingPer100g.fatG) : '',
   });
+  const [totalGrams, setTotalGrams] = useState(
+    editing?.type === 'manual' ? String(editing.totalGrams) : '',
+  );
 
   const create = useCreateRecipe();
   const update = useUpdateRecipe();
@@ -111,27 +120,37 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
     const v = macros[f.key];
     return v.trim() !== '' && Number.isFinite(Number(v)) && Number(v) >= 0;
   });
+  const totalGramsNum = Number(totalGrams);
+  const validWeight =
+    totalGrams.trim() !== '' && Number.isFinite(totalGramsNum) && totalGramsNum > 0;
+  const per100g: MacroTotals = {
+    kcal: Number(macros.kcal) || 0,
+    proteinG: Number(macros.proteinG) || 0,
+    carbsG: Number(macros.carbsG) || 0,
+    fatG: Number(macros.fatG) || 0,
+  };
 
   const total: MacroTotals =
     mode === 'manual'
-      ? {
-          kcal: Number(macros.kcal) || 0,
-          proteinG: Number(macros.proteinG) || 0,
-          carbsG: Number(macros.carbsG) || 0,
-          fatG: Number(macros.fatG) || 0,
-        }
+      ? scaleMacros(per100g, validWeight ? totalGramsNum : 0)
       : sumMacros(validRows.map((r) => scaleMacros(r.food.per100g, Number(r.amount))));
   const servingsNum = Number(servings);
   const validServings = Number.isInteger(servingsNum) && servingsNum > 0;
   const perServing = validServings ? divideMacros(total, servingsNum) : total;
-  const contentValid = mode === 'manual' ? validMacros : validRows.length > 0;
+  const contentValid = mode === 'manual' ? validMacros && validWeight : validRows.length > 0;
   const canSave = name.trim().length > 0 && validServings && contentValid && !isPending;
 
   function save() {
     if (!canSave) return;
     const input: CreateRecipeInput =
       mode === 'manual'
-        ? { type: 'manual', name: name.trim(), servings: servingsNum, ...total }
+        ? {
+            type: 'manual',
+            name: name.trim(),
+            servings: servingsNum,
+            ...per100g,
+            totalGrams: totalGramsNum,
+          }
         : {
             type: 'ingredients',
             name: name.trim(),
@@ -223,20 +242,37 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
-          {MANUAL_FIELDS.map((f) => (
-            <div key={f.key} className="grid gap-2">
-              <Label htmlFor={`recipe-${f.key}`}>{f.label}</Label>
-              <Input
-                id={`recipe-${f.key}`}
-                inputMode="decimal"
-                placeholder="0"
-                className="h-11"
-                value={macros[f.key]}
-                onChange={(e) => setMacros((m) => ({ ...m, [f.key]: e.target.value }))}
-              />
-            </div>
-          ))}
+        <div className="flex flex-col gap-3">
+          <p className="text-muted-foreground text-xs">
+            Enter macros per 100g (as on the label) plus the recipe’s total weight. Log it later by
+            grams or servings.
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            {MANUAL_FIELDS.map((f) => (
+              <div key={f.key} className="grid gap-2">
+                <Label htmlFor={`recipe-${f.key}`}>{f.label}</Label>
+                <Input
+                  id={`recipe-${f.key}`}
+                  inputMode="decimal"
+                  placeholder="0"
+                  className="h-11"
+                  value={macros[f.key]}
+                  onChange={(e) => setMacros((m) => ({ ...m, [f.key]: e.target.value }))}
+                />
+              </div>
+            ))}
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="recipe-total-grams">Total weight (g)</Label>
+            <Input
+              id="recipe-total-grams"
+              inputMode="decimal"
+              placeholder="e.g. 150"
+              className="h-11 w-40"
+              value={totalGrams}
+              onChange={(e) => setTotalGrams(e.target.value)}
+            />
+          </div>
         </div>
       )}
 

@@ -60,15 +60,7 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
   const canAdd = selected !== null && Number.isFinite(amount) && amount > 0 && !create.isPending;
   const selectedRecipe = recipe ? recipes.find((r) => r.id === recipe.id) : undefined;
   const recipeServings = selectedRecipe?.servings;
-  // A manual recipe has no ingredients (no total weight), so it can only be logged
-  // by servings — the grams option is hidden and the unit forced.
-  const isManualRecipe = selectedRecipe?.type === 'manual';
   const quantityLabel = mode === 'food' || recipeUnit === 'grams' ? 'Amount (g)' : 'Servings';
-
-  // Force servings when a manual recipe is selected (it can't be logged by grams).
-  useEffect(() => {
-    if (isManualRecipe) setRecipeUnit('servings');
-  }, [isManualRecipe]);
 
   function pickRecent(item: RecentDiaryItem) {
     setMode(item.type);
@@ -149,28 +141,25 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
               {recipeServings !== undefined && (
                 <p className="text-muted-foreground text-xs">
                   Makes {recipeServings} {recipeServings === 1 ? 'serving' : 'servings'} per recipe.
-                  {isManualRecipe ? ' Logged by servings.' : ''}
                 </p>
               )}
-              {!isManualRecipe && (
-                <div className="bg-muted flex gap-1 rounded-md p-1">
-                  {(['servings', 'grams'] as FoodLogUnit[]).map((u) => (
-                    <Button
-                      key={u}
-                      type="button"
-                      size="sm"
-                      variant={recipeUnit === u ? 'default' : 'ghost'}
-                      className={cn(
-                        'h-9 flex-1 capitalize',
-                        recipeUnit !== u && 'text-muted-foreground',
-                      )}
-                      onClick={() => setRecipeUnit(u)}
-                    >
-                      {u}
-                    </Button>
-                  ))}
-                </div>
-              )}
+              <div className="bg-muted flex gap-1 rounded-md p-1">
+                {(['servings', 'grams'] as FoodLogUnit[]).map((u) => (
+                  <Button
+                    key={u}
+                    type="button"
+                    size="sm"
+                    variant={recipeUnit === u ? 'default' : 'ghost'}
+                    className={cn(
+                      'h-9 flex-1 capitalize',
+                      recipeUnit !== u && 'text-muted-foreground',
+                    )}
+                    onClick={() => setRecipeUnit(u)}
+                  >
+                    {u}
+                  </Button>
+                ))}
+              </div>
             </>
           )}
 
