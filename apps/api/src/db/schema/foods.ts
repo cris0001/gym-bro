@@ -31,6 +31,10 @@ export const foods = pgTable(
     proteinG: numeric('protein_g', { precision: 6, scale: 2 }).notNull(),
     carbsG: numeric('carbs_g', { precision: 6, scale: 2 }).notNull(),
     fatG: numeric('fat_g', { precision: 6, scale: 2 }).notNull(),
+    // Optional weight of one serving (grams). When set, the food can be logged by
+    // serving as well as by grams (e.g. a bought item: "1 serving = 150 g"). Null =
+    // grams-only. numeric(7,2) to match other gram amounts.
+    servingGrams: numeric('serving_grams', { precision: 7, scale: 2 }),
     isActive: boolean('is_active').notNull().default(true),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     // Service sets this to now() on every update (no DB trigger).
@@ -46,6 +50,7 @@ export const foods = pgTable(
     check('foods_protein_non_negative', sql`${table.proteinG} >= 0`),
     check('foods_carbs_non_negative', sql`${table.carbsG} >= 0`),
     check('foods_fat_non_negative', sql`${table.fatG} >= 0`),
+    check('foods_serving_grams_positive', sql`${table.servingGrams} > 0`),
   ],
 );
 

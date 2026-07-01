@@ -3,7 +3,6 @@ import type {
   CreateFoodLogInput,
   CreateRecipeInput,
   MealType,
-  RecipeType,
   SetNutritionTargetInput,
   UpdateFoodInput,
   UpdateFoodLogInput,
@@ -91,55 +90,18 @@ async function assertIngredientFoodsExist(
   }
 }
 
-// The recipe read/write endpoints' computed detail. For an 'ingredients' recipe the
-// totals come from its lines (each food scaled to its amount, then summed); for a
-// 'manual' recipe they're the stored total macros with no ingredient lines.
-// Per-serving = total / servings in both cases.
+// Resolve a recipe's ingredient lines into macros (each food scaled to its amount),
+// then sum to whole-recipe totals and divide by servings — the computed detail
+// returned by the recipe read/write endpoints.
 async function buildRecipeDetail(recipe: {
   id: string;
   userId: string;
   name: string;
-  type: RecipeType;
   servings: number;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
-  kcal: string | null;
-  proteinG: string | null;
-  carbsG: string | null;
-  fatG: string | null;
-  totalGrams: string | null;
 }) {
-  const meta = {
-    id: recipe.id,
-    userId: recipe.userId,
-    name: recipe.name,
-    type: recipe.type,
-    servings: recipe.servings,
-    isActive: recipe.isActive,
-    createdAt: recipe.createdAt,
-    updatedAt: recipe.updatedAt,
-  };
-
-  if (recipe.type === 'manual') {
-    // Stored macros are per 100g; scale by the total weight for the whole-recipe total.
-    const per100g = {
-      kcal: Number(recipe.kcal),
-      proteinG: Number(recipe.proteinG),
-      carbsG: Number(recipe.carbsG),
-      fatG: Number(recipe.fatG),
-    };
-    const grams = recipe.totalGrams === null ? 0 : Number(recipe.totalGrams);
-    const total = scaleMacros(per100g, grams);
-    return {
-      ...meta,
-      ingredients: [],
-      totalGrams: grams,
-      total,
-      perServing: divideMacros(total, recipe.servings),
-    };
-  }
-
   const lines = await nutritionRepository.listRecipeIngredientsWithFood(recipe.userId, recipe.id);
   const ingredients = lines.map((line) => ({
     id: line.id,
@@ -152,7 +114,7 @@ async function buildRecipeDetail(recipe: {
   const total = sumMacros(ingredients.map((i) => i.macros));
   const totalGrams = ingredients.reduce((sum, i) => sum + i.amountGrams, 0);
   return {
-    ...meta,
+    ...recipe,
     ingredients,
     totalGrams,
     total,
@@ -166,7 +128,6 @@ export async function listRecipes(userId: string) {
     id: row.id,
     userId: row.userId,
     name: row.name,
-    type: row.type,
     servings: row.servings,
     isActive: row.isActive,
     createdAt: row.createdAt,
@@ -185,9 +146,7 @@ export async function getRecipe(userId: string, id: string) {
 }
 
 export async function createRecipe(userId: string, input: CreateRecipeInput) {
-  if (input.type === 'ingredients') {
-    await assertIngredientFoodsExist(userId, input.ingredients);
-  }
+  await assertIngredientFoodsExist(userId, input.ingredients);
   let recipe;
   try {
     recipe = await nutritionRepository.createRecipe({ userId, ...input });
@@ -201,9 +160,7 @@ export async function createRecipe(userId: string, input: CreateRecipeInput) {
 }
 
 export async function updateRecipe(userId: string, id: string, input: UpdateRecipeInput) {
-  if (input.type === 'ingredients') {
-    await assertIngredientFoodsExist(userId, input.ingredients);
-  }
+  await assertIngredientFoodsExist(userId, input.ingredients);
   let recipe;
   try {
     recipe = await nutritionRepository.replaceRecipe(id, { userId, ...input });
@@ -256,14 +213,25 @@ export async function getRecentDiaryItems(userId: string, meal: MealType) {
     .map((row) => ({ type: row.type, id: row.id, name: row.name }));
 }
 
-// Create an entry, snapshotting the macros from the referenced source at the
-// logged quantity: a food scales its per-100g macros by grams; a recipe scales
-// its per-serving macros by the number of servings. itemName is snapshotted too.
+// Create an entry, snapshotting the macros from the referenced source at the logged
+// quantity: a food scales its per-100g macros by grams (or by serving, when it has a
+// serving size); a recipe scales its per-serving or per-gram macros. itemName + unit
+// are snapshotted too.
 export async function createFoodLogEntry(userId: string, input: CreateFoodLogInput) {
   if (input.type === 'food') {
     const food = await nutritionRepository.findFoodById(userId, input.foodId);
     if (!food?.isActive) {
       throw new ValidationError('Food not found');
+    }
+    // Resolve the logged amount to grams: servings need the food's serving size.
+    let grams = input.quantity;
+    if (input.unit === 'servings') {
+      if (food.servingGrams === null) {
+        throw new ValidationError(
+          'This food has no serving size, so it can only be logged by grams',
+        );
+      }
+      grams = input.quantity * food.servingGrams;
     }
     return nutritionRepository.createFoodLogEntry({
       userId,
@@ -272,22 +240,15 @@ export async function createFoodLogEntry(userId: string, input: CreateFoodLogInp
       foodId: input.foodId,
       recipeId: null,
       itemName: food.name,
-      unit: 'grams',
+      unit: input.unit,
       quantity: input.quantity,
-      ...scaleMacros(food, input.quantity),
+      ...scaleMacros(food, grams),
     });
   }
 
   const recipe = await nutritionRepository.findRecipeById(userId, input.recipeId);
   if (!recipe) {
     throw new ValidationError('Recipe not found');
-  }
-  // A manual recipe can be logged by grams only if it has a total weight; without
-  // one there's no per-gram basis, so it's servings-only.
-  if (recipe.type === 'manual' && input.unit === 'grams' && recipe.totalGrams === null) {
-    throw new ValidationError(
-      'This recipe has no weight set, so it can only be logged by servings',
-    );
   }
   const detail = await buildRecipeDetail(recipe);
   // Per-serving for a servings log; per-gram (total / total weight) for a grams log.
