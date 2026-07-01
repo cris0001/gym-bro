@@ -47,9 +47,12 @@ export const updateRecipeSchema = createRecipeSchema;
 
 // --- Nutrition targets ---
 
-// Set/change the current target. effective_date is stamped "today" server-side
-// (a same-day change upserts), so it isn't part of the input. All four required.
+// Set/change a target. effectiveDate is optional: omitted → stamped "today"
+// server-side (the normal "change my current target" case); provided → back-fill a
+// historical target on that date. Either way a same-day change upserts that date's
+// row. All four macro fields required.
 export const setNutritionTargetSchema = z.object({
+  effectiveDate: z.iso.date().optional(),
   kcal: macroValue,
   proteinG: macroValue,
   carbsG: macroValue,
