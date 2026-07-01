@@ -12,9 +12,10 @@ export interface SeriesDef {
   isCalories?: boolean;
 }
 
-// Measurement series, in display order. Weight first (the primary metric).
+// Measurement series, in display order. Weight first (the primary metric) — the app
+// primary (blue) so it reads as the main line.
 export const MEASURE_SERIES: SeriesDef[] = [
-  { key: 'weightKg', label: 'Weight', unit: 'kg', axis: 'left', color: 'var(--chart-1)' },
+  { key: 'weightKg', label: 'Weight', unit: 'kg', axis: 'left', color: 'var(--primary)' },
   { key: 'bodyFatPct', label: 'Body fat', unit: '%', axis: 'left', color: 'var(--chart-3)' },
   { key: 'bicepsCm', label: 'Biceps', unit: 'cm', axis: 'left', color: 'var(--chart-4)' },
   { key: 'chestCm', label: 'Chest', unit: 'cm', axis: 'left', color: 'var(--chart-5)' },
@@ -23,12 +24,15 @@ export const MEASURE_SERIES: SeriesDef[] = [
   { key: 'thighCm', label: 'Thigh', unit: 'cm', axis: 'left', color: '#f59e0b' },
 ];
 
+// Calories is secondary to weight, so it's a muted gray (and drawn thinner /
+// semi-transparent in the chart) — present for context without competing with the
+// weight line.
 export const CALORIES_SERIES: SeriesDef = {
   key: 'kcal',
   label: 'Calories',
   unit: 'kcal',
   axis: 'right',
-  color: 'var(--chart-2)',
+  color: '#94a3b8',
   isCalories: true,
 };
 

@@ -209,7 +209,8 @@ export function BodyTrendChart({
                 type="stepAfter"
                 dataKey="kcal"
                 stroke={CALORIES_SERIES.color}
-                strokeWidth={2}
+                strokeWidth={1.5}
+                strokeOpacity={0.7}
                 dot={false}
                 connectNulls={false}
               />
