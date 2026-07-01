@@ -29,6 +29,7 @@ function fakeFood(overrides: Partial<FoodRow> = {}): FoodRow {
     proteinG: 31,
     carbsG: 0,
     fatG: 3.6,
+    servingGrams: null,
     isActive: true,
     createdAt: new Date('2026-01-01T00:00:00Z'),
     updatedAt: new Date('2026-01-01T00:00:00Z'),
@@ -176,13 +177,7 @@ function fakeRecipe(overrides: Partial<Recipe> = {}): Recipe {
     id: RECIPE_ID,
     userId: 'user-1',
     name: 'Chili',
-    type: 'ingredients',
     servings: 4,
-    kcal: null,
-    proteinG: null,
-    carbsG: null,
-    fatG: null,
-    totalGrams: null,
     isActive: true,
     createdAt: new Date('2026-01-01T00:00:00Z'),
     updatedAt: new Date('2026-01-01T00:00:00Z'),
@@ -212,7 +207,6 @@ const INGREDIENT_LINES: RecipeIngredientWithFoodRow[] = [
 ];
 
 const VALID_RECIPE = {
-  type: 'ingredients',
   name: 'Chili',
   servings: 4,
   ingredients: [
@@ -286,72 +280,11 @@ describe('recipe create route (macro computation)', () => {
   it('POST /api/recipes with no ingredients returns 400', async () => {
     const res = await request('POST', '/api/recipes', {
       cookie: await authCookie(),
-      body: { type: 'ingredients', name: 'Empty', servings: 1, ingredients: [] },
+      body: { name: 'Empty', servings: 1, ingredients: [] },
     });
 
     expect(res.status).toBe(400);
     expect(repo.findActiveFoodsByIds).not.toHaveBeenCalled();
-  });
-
-  it('POST /api/recipes type=manual stores per-100g macros and computes totals', async () => {
-    repo.createRecipe.mockResolvedValue(
-      fakeRecipe({
-        type: 'manual',
-        name: 'Shop sandwich',
-        servings: 2,
-        kcal: '300',
-        proteinG: '20',
-        carbsG: '30',
-        fatG: '10',
-        totalGrams: '200',
-      }),
-    );
-
-    const res = await request('POST', '/api/recipes', {
-      cookie: await authCookie(),
-      body: {
-        type: 'manual',
-        name: 'Shop sandwich',
-        servings: 2,
-        kcal: 300,
-        proteinG: 20,
-        carbsG: 30,
-        fatG: 10,
-        totalGrams: 200,
-      },
-    });
-    const body = (await res.json()) as {
-      data: {
-        total: Record<string, number>;
-        perServing: Record<string, number>;
-        ingredients: unknown[];
-      };
-    };
-
-    expect(res.status).toBe(201);
-    expect(repo.findActiveFoodsByIds).not.toHaveBeenCalled();
-    // per-100g x 200g = whole recipe; / 2 servings = per serving.
-    expect(body.data.total).toEqual({ kcal: 600, proteinG: 40, carbsG: 60, fatG: 20 });
-    expect(body.data.perServing).toEqual({ kcal: 300, proteinG: 20, carbsG: 30, fatG: 10 });
-    expect(body.data.ingredients).toEqual([]);
-  });
-
-  it('POST /api/recipes type=manual without totalGrams returns 400', async () => {
-    const res = await request('POST', '/api/recipes', {
-      cookie: await authCookie(),
-      body: {
-        type: 'manual',
-        name: 'No weight',
-        servings: 1,
-        kcal: 300,
-        proteinG: 20,
-        carbsG: 30,
-        fatG: 10,
-      },
-    });
-
-    expect(res.status).toBe(400);
-    expect(repo.createRecipe).not.toHaveBeenCalled();
   });
 });
 
@@ -480,6 +413,59 @@ describe('food-log create route (snapshot)', () => {
     });
   });
 
+  it('POST /api/food-log for a food by servings scales its serving weight', async () => {
+    repo.findFoodById.mockResolvedValue(fakeFood({ servingGrams: 150 }));
+    repo.createFoodLogEntry.mockResolvedValue(fakeLogEntry());
+
+    const res = await request('POST', '/api/food-log', {
+      cookie: await authCookie(),
+      body: {
+        type: 'food',
+        foodId: FOOD_ID,
+        quantity: 2,
+        unit: 'servings',
+        meal: 'breakfast',
+        loggedDate: '2026-06-29',
+      },
+    });
+
+    expect(res.status).toBe(201);
+    // 2 servings x 150g = 300g @ 165/31/0/3.6 per 100g -> 495/93/0/10.8.
+    expect(repo.createFoodLogEntry).toHaveBeenCalledWith({
+      userId: 'user-1',
+      loggedDate: '2026-06-29',
+      meal: 'breakfast',
+      foodId: FOOD_ID,
+      recipeId: null,
+      itemName: 'Chicken breast',
+      unit: 'servings',
+      quantity: 2,
+      kcal: 495,
+      proteinG: 93,
+      carbsG: 0,
+      fatG: 10.8,
+    });
+  });
+
+  it('POST /api/food-log for a food by servings with no serving size returns 400', async () => {
+    repo.findFoodById.mockResolvedValue(fakeFood({ servingGrams: null }));
+
+    const res = await request('POST', '/api/food-log', {
+      cookie: await authCookie(),
+      body: {
+        type: 'food',
+        foodId: FOOD_ID,
+        quantity: 1,
+        unit: 'servings',
+        meal: 'breakfast',
+        loggedDate: '2026-06-29',
+      },
+    });
+
+    expect(res.status).toBe(400);
+    expect(repo.createFoodLogEntry).not.toHaveBeenCalled();
+  });
+
   it('POST /api/food-log for a recipe by servings snapshots per-serving x servings', async () => {
     repo.findRecipeById.mockResolvedValue(fakeRecipe());
     repo.listRecipeIngredientsWithFood.mockResolvedValue(INGREDIENT_LINES);
@@ -512,70 +498,6 @@ describe('food-log create route (snapshot)', () => {
       proteinG: 77,
       carbsG: 30,
       fatG: 38.5,
-    });
-  });
-
-  it('POST /api/food-log for a manual recipe by grams returns 400', async () => {
-    repo.findRecipeById.mockResolvedValue(
-      fakeRecipe({ type: 'manual', kcal: '450', proteinG: '20', carbsG: '48', fatG: '18' }),
-    );
-
-    const res = await request('POST', '/api/food-log', {
-      cookie: await authCookie(),
-      body: {
-        type: 'recipe',
-        recipeId: RECIPE_ID,
-        quantity: 100,
-        unit: 'grams',
-        meal: 'lunch',
-        loggedDate: '2026-06-29',
-      },
-    });
-
-    expect(res.status).toBe(400);
-    expect(repo.createFoodLogEntry).not.toHaveBeenCalled();
-  });
-
-  it('POST /api/food-log for a manual recipe with a weight logs by grams', async () => {
-    repo.findRecipeById.mockResolvedValue(
-      fakeRecipe({
-        type: 'manual',
-        kcal: '300',
-        proteinG: '20',
-        carbsG: '30',
-        fatG: '10',
-        totalGrams: '200',
-      }),
-    );
-    repo.createFoodLogEntry.mockResolvedValue(fakeLogEntry({ recipeId: RECIPE_ID, foodId: null }));
-
-    const res = await request('POST', '/api/food-log', {
-      cookie: await authCookie(),
-      body: {
-        type: 'recipe',
-        recipeId: RECIPE_ID,
-        quantity: 100,
-        unit: 'grams',
-        meal: 'lunch',
-        loggedDate: '2026-06-29',
-      },
-    });
-
-    expect(res.status).toBe(201);
-    // Macros are per 100g, so logging 100g snapshots them directly.
-    expect(repo.createFoodLogEntry).toHaveBeenCalledWith({
-      userId: 'user-1',
-      loggedDate: '2026-06-29',
-      meal: 'lunch',
-      foodId: null,
-      recipeId: RECIPE_ID,
-      itemName: 'Chili',
-      unit: 'grams',
-      quantity: 100,
-      kcal: 300,
-      proteinG: 20,
-      carbsG: 30,
-      fatG: 10,
     });
   });
 

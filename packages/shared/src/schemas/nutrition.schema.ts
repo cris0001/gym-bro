@@ -14,12 +14,15 @@ const positiveAmount = z.number().positive('Must be greater than 0').max(99999.9
 // --- Foods (per-100g macros) ---
 
 // Create and edit share the shape — editing a food fully replaces its fields.
+// servingGrams is optional: set it (e.g. a bought product where "1 serving = 150 g")
+// to allow logging the food by serving as well as by grams.
 export const createFoodSchema = z.object({
   name: itemName,
   kcal: macroValue,
   proteinG: macroValue,
   carbsG: macroValue,
   fatG: macroValue,
+  servingGrams: positiveAmount.optional(),
 });
 export const updateFoodSchema = createFoodSchema;
 
@@ -32,44 +35,18 @@ export const recipeIngredientInputSchema = z.object({
   amountGrams: positiveAmount,
 });
 
-// A recipe is created/edited in one of two shapes, discriminated by `type`:
-//   - 'ingredients' → composed of foods (≥1), macros computed from them.
-//   - 'manual'      → a prepared product (e.g. a bought sandwich): macros entered PER
-//                     100g (off the label) + the recipe's total weight, no ingredients.
-//                     Whole-recipe & per-serving totals are computed from these.
-// Create and edit share the shape (editing fully replaces the recipe). Per-100g
-// values use the same wide bound as the numeric(7,2) columns.
-const recipeMacroValue = z.number().min(0, 'Must be 0 or more').max(99999.99, 'Too large');
-const recipeServings = z
-  .number()
-  .int()
-  .positive('Servings must be at least 1')
-  .max(1000, 'Too many servings');
-
-export const createRecipeSchema = z.discriminatedUnion('type', [
-  z.object({
-    type: z.literal('ingredients'),
-    name: itemName,
-    servings: recipeServings,
-    ingredients: z
-      .array(recipeIngredientInputSchema)
-      .min(1, 'Add at least one ingredient')
-      .max(100, 'Too many ingredients'),
-  }),
-  z.object({
-    type: z.literal('manual'),
-    name: itemName,
-    // Macros are PER 100g. totalGrams is the recipe's total weight — required, since
-    // it defines a serving (weight / servings) and lets the recipe be logged by grams
-    // or servings.
-    kcal: recipeMacroValue,
-    proteinG: recipeMacroValue,
-    carbsG: recipeMacroValue,
-    fatG: recipeMacroValue,
-    servings: recipeServings,
-    totalGrams: positiveAmount,
-  }),
-]);
+// A recipe is composed of foods (≥1); its macros are computed from the ingredients.
+// Create and edit share the shape — editing fully replaces the name, servings, and
+// ingredient list. (Prepared/bought products are modelled as foods with a serving
+// size, not recipes.)
+export const createRecipeSchema = z.object({
+  name: itemName,
+  servings: z.number().int().positive('Servings must be at least 1').max(1000, 'Too many servings'),
+  ingredients: z
+    .array(recipeIngredientInputSchema)
+    .min(1, 'Add at least one ingredient')
+    .max(100, 'Too many ingredients'),
+});
 export const updateRecipeSchema = createRecipeSchema;
 
 // --- Nutrition targets ---
@@ -99,6 +76,8 @@ export const createFoodLogSchema = z.discriminatedUnion('type', [
     type: z.literal('food'),
     foodId: z.uuid(),
     quantity: positiveAmount,
+    // Grams by default; 'servings' when the food has a serving size (server checks).
+    unit: z.enum(FOOD_LOG_UNITS).default('grams'),
     meal,
     loggedDate: z.iso.date(),
   }),
