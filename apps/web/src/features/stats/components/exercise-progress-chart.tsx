@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
+import type { StatsRange } from '../api/stats';
 import { useExerciseProgress } from '../hooks/use-stats';
 
 import { ChartPlaceholder } from './chart-placeholder';
@@ -27,17 +28,26 @@ const DIMENSIONS: { key: Dimension; label: string }[] = [
   { key: 'normal', label: 'Normal' },
 ];
 
+// Expand an axis a fixed amount beyond its data so the lines don't touch the top /
+// bottom edges. Null values (bodyweight, or a tier not logged) are ignored.
+function paddedDomain(values: (number | null)[], pad: number): [number, number] | undefined {
+  const nums = values.filter((v): v is number => v !== null);
+  if (nums.length === 0) return undefined;
+  return [Math.max(0, Math.floor(Math.min(...nums) - pad)), Math.ceil(Math.max(...nums) + pad)];
+}
+
 interface ExerciseProgressChartProps {
   exerciseId: string | null;
+  range?: StatsRange | undefined;
 }
 
 // Per-session progress for the picked exercise: weight and reps plotted together
 // (weight on the left axis, reps on the right — different scales), switchable
 // between the top set and the normal (back-off) set. Normal is the default since
 // most history's uniform back-off sets are the fuller series.
-export function ExerciseProgressChart({ exerciseId }: ExerciseProgressChartProps) {
+export function ExerciseProgressChart({ exerciseId, range }: ExerciseProgressChartProps) {
   const [dimension, setDimension] = useState<Dimension>('normal');
-  const { data: points = [], isPending } = useExerciseProgress(exerciseId);
+  const { data: points = [], isPending } = useExerciseProgress(exerciseId, range);
 
   if (exerciseId === null) {
     return <ChartPlaceholder>Select an exercise to see its progress.</ChartPlaceholder>;
@@ -51,6 +61,14 @@ export function ExerciseProgressChart({ exerciseId }: ExerciseProgressChartProps
     weight: dimension === 'top' ? point.topWeight : point.normalWeight,
     reps: dimension === 'top' ? point.topReps : point.normalReps,
   }));
+  const weightDomain = paddedDomain(
+    data.map((d) => d.weight),
+    3,
+  );
+  const repsDomain = paddedDomain(
+    data.map((d) => d.reps),
+    1,
+  );
   const hasData = data.some((d) => d.weight !== null || d.reps !== null);
   if (!hasData) {
     return (
@@ -78,6 +96,7 @@ export function ExerciseProgressChart({ exerciseId }: ExerciseProgressChartProps
             />
             <YAxis
               yAxisId="weight"
+              domain={weightDomain ?? ['auto', 'auto']}
               tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
               width={44}
             />
@@ -85,6 +104,7 @@ export function ExerciseProgressChart({ exerciseId }: ExerciseProgressChartProps
               yAxisId="reps"
               orientation="right"
               allowDecimals={false}
+              domain={repsDomain ?? ['auto', 'auto']}
               tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
               width={36}
             />
