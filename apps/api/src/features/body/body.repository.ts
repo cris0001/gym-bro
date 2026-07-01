@@ -54,18 +54,24 @@ export interface BodyMeasurementUpsert extends UpsertBodyMeasurementInput {
   userId: string;
 }
 
-// Translate the present measurement fields to their numeric-column form (number →
-// string for the driver, null stays null). Omitted fields are skipped, so they
-// neither insert a value nor appear in the conflict-update set — that's the merge.
-function toColumnValues(
-  data: BodyMeasurementUpsert,
-): Partial<Record<MeasurementKey, string | null>> {
-  const values: Partial<Record<MeasurementKey, string | null>> = {};
+// The present columns to write, in driver form. Measurement numbers become
+// strings (null stays null); notes is already string | null. Omitted fields are
+// skipped, so they neither insert a value nor appear in the conflict-update set —
+// that's the merge.
+type ColumnValues = Partial<Record<MeasurementKey, string | null>> & {
+  notes?: string | null;
+};
+
+function toColumnValues(data: BodyMeasurementUpsert): ColumnValues {
+  const values: ColumnValues = {};
   for (const key of MEASUREMENT_KEYS) {
     const value = data[key];
     if (value !== undefined) {
       values[key] = value === null ? null : value.toString();
     }
+  }
+  if (data.notes !== undefined) {
+    values.notes = data.notes;
   }
   return values;
 }
