@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import type { BodyMeasurement } from '@gym-bro/shared';
 
 import { useBodyMeasurements } from '../hooks/use-body-measurements';
+import { useTargetHistory } from '../hooks/use-target-history';
 import { useBodyUiStore } from '../stores/body-ui.store';
 import { BodyMeasurementForm } from './body-measurement-form';
 import { BodyStatsPanel } from './body-stats-panel';
@@ -46,6 +47,9 @@ function filterByRange(entries: BodyMeasurement[], from: string, to: string): Bo
 // (period-filtered) measurement history. Mobile-first single column.
 export function BodyPage() {
   const { data } = useBodyMeasurements();
+  // Full target history (unfiltered): the chart step-holds each date's applicable
+  // target, so a target set before the visible window still applies within it.
+  const { data: targets } = useTargetHistory();
   const editing = useBodyUiStore((s) => s.editing);
   const [period, setPeriod] = useState<Period>('3m');
   const [from, setFrom] = useState('');
@@ -129,7 +133,7 @@ export function BodyPage() {
               )}
             </div>
             <BodyStatsPanel entries={filtered} />
-            <BodyTrendChart entries={filtered} />
+            <BodyTrendChart entries={filtered} targets={targets ?? []} />
           </CardContent>
         </Card>
       </div>
