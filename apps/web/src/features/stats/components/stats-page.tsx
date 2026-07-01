@@ -2,17 +2,21 @@ import { useState } from 'react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
+import type { StatsRange } from '../api/stats';
 import { ExerciseProgressChart } from './exercise-progress-chart';
 import { ExerciseStatPicker } from './exercise-stat-picker';
 import { RatingTrendChart } from './rating-trend-chart';
+import { StatsDateRange } from './stats-date-range';
 
 import type { StatExercise } from '@gym-bro/shared';
 
-// Training stats: per-exercise progress (top set vs normal set — weight, reps, or
-// volume) and the workout rating trend. Side by side on desktop, stacked on
-// mobile. The selected exercise lives here so the picker and chart stay in sync.
+// Training stats: per-exercise progress (top set vs normal set — weight + reps,
+// over a selectable date window) and the workout rating trend. Side by side on
+// desktop, stacked on mobile. The selected exercise and window live here so the
+// picker, range control, and chart stay in sync.
 export function StatsPage() {
   const [exercise, setExercise] = useState<StatExercise | null>(null);
+  const [range, setRange] = useState<StatsRange | undefined>(undefined);
 
   return (
     <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-4 p-4">
@@ -22,11 +26,12 @@ export function StatsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Exercise progress</CardTitle>
-            <CardDescription>Top-set vs normal-set, by weight, reps, or volume.</CardDescription>
+            <CardDescription>Top-set vs normal-set weight and reps.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <ExerciseStatPicker value={exercise} onSelect={setExercise} />
-            <ExerciseProgressChart exerciseId={exercise?.id ?? null} />
+            <StatsDateRange onChange={setRange} />
+            <ExerciseProgressChart exerciseId={exercise?.id ?? null} range={range} />
           </CardContent>
         </Card>
 
