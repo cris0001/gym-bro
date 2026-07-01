@@ -38,12 +38,17 @@ export const recipes = pgTable(
     type: recipeTypeEnum('type').notNull().default('ingredients'),
     // How many servings the recipe yields; per-serving macros = total / servings.
     servings: integer('servings').notNull().default(1),
-    // Manual-recipe TOTAL macros (null for ingredient recipes). "All four present
+    // Manual-recipe macros, stored PER 100g (null for ingredient recipes). Whole-recipe
+    // and per-serving totals are computed from these + total_grams. "All four present
     // for manual, all null for ingredients" is enforced in Zod/service, not the DB.
     kcal: numeric('kcal', { precision: 7, scale: 2 }),
     proteinG: numeric('protein_g', { precision: 7, scale: 2 }),
     carbsG: numeric('carbs_g', { precision: 7, scale: 2 }),
     fatG: numeric('fat_g', { precision: 7, scale: 2 }),
+    // A manual recipe's total weight (required for manual, enforced in Zod/service): it
+    // defines a serving (weight / servings) and lets the recipe be logged by grams or
+    // servings. Null for ingredient recipes (weight is summed from their lines).
+    totalGrams: numeric('total_grams', { precision: 7, scale: 2 }),
     isActive: boolean('is_active').notNull().default(true),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     // Service sets this to now() on every update (no DB trigger).
@@ -59,6 +64,7 @@ export const recipes = pgTable(
     check('recipes_protein_non_negative', sql`${table.proteinG} >= 0`),
     check('recipes_carbs_non_negative', sql`${table.carbsG} >= 0`),
     check('recipes_fat_non_negative', sql`${table.fatG} >= 0`),
+    check('recipes_total_grams_positive', sql`${table.totalGrams} > 0`),
   ],
 );
 
