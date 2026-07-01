@@ -170,6 +170,7 @@ export async function listRecipesWithTotals(userId: string): Promise<RecipeWithT
       manualProteinG: recipes.proteinG,
       manualCarbsG: recipes.carbsG,
       manualFatG: recipes.fatG,
+      manualGrams: recipes.totalGrams,
     })
     .from(recipes)
     .leftJoin(recipeIngredients, eq(recipeIngredients.recipeId, recipes.id))
@@ -187,13 +188,15 @@ export async function listRecipesWithTotals(userId: string): Promise<RecipeWithT
     isActive: row.isActive,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    // Manual macros are per 100g, so scale by the stored weight for the whole-recipe
+    // total; ingredient recipes use the SQL aggregate.
     total:
       row.type === 'manual'
         ? {
-            kcal: Number(row.manualKcal),
-            proteinG: Number(row.manualProteinG),
-            carbsG: Number(row.manualCarbsG),
-            fatG: Number(row.manualFatG),
+            kcal: (Number(row.manualKcal) * Number(row.manualGrams)) / 100,
+            proteinG: (Number(row.manualProteinG) * Number(row.manualGrams)) / 100,
+            carbsG: (Number(row.manualCarbsG) * Number(row.manualGrams)) / 100,
+            fatG: (Number(row.manualFatG) * Number(row.manualGrams)) / 100,
           }
         : {
             kcal: Number(row.aggKcal),
@@ -201,7 +204,7 @@ export async function listRecipesWithTotals(userId: string): Promise<RecipeWithT
             carbsG: Number(row.aggCarbsG),
             fatG: Number(row.aggFatG),
           },
-    totalGrams: Number(row.totalGrams),
+    totalGrams: row.type === 'manual' ? Number(row.manualGrams) : Number(row.totalGrams),
   }));
 }
 
@@ -269,15 +272,17 @@ type RecipeInput = CreateRecipeInput & { userId: string };
 function recipeColumns(data: RecipeInput) {
   const base = { name: data.name, type: data.type, servings: data.servings };
   if (data.type === 'manual') {
+    // Macros stored per 100g; totalGrams is the required total weight.
     return {
       ...base,
       kcal: data.kcal.toString(),
       proteinG: data.proteinG.toString(),
       carbsG: data.carbsG.toString(),
       fatG: data.fatG.toString(),
+      totalGrams: data.totalGrams.toString(),
     };
   }
-  return { ...base, kcal: null, proteinG: null, carbsG: null, fatG: null };
+  return { ...base, kcal: null, proteinG: null, carbsG: null, fatG: null, totalGrams: null };
 }
 
 // Insert a recipe (+ its ordered ingredient lines for an ingredient recipe) in one

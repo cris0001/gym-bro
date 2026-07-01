@@ -108,6 +108,7 @@ async function buildRecipeDetail(recipe: {
   proteinG: string | null;
   carbsG: string | null;
   fatG: string | null;
+  totalGrams: string | null;
 }) {
   const meta = {
     id: recipe.id,
@@ -121,16 +122,19 @@ async function buildRecipeDetail(recipe: {
   };
 
   if (recipe.type === 'manual') {
-    const total = {
+    // Stored macros are per 100g; scale by the total weight for the whole-recipe total.
+    const per100g = {
       kcal: Number(recipe.kcal),
       proteinG: Number(recipe.proteinG),
       carbsG: Number(recipe.carbsG),
       fatG: Number(recipe.fatG),
     };
+    const grams = recipe.totalGrams === null ? 0 : Number(recipe.totalGrams);
+    const total = scaleMacros(per100g, grams);
     return {
       ...meta,
       ingredients: [],
-      totalGrams: 0,
+      totalGrams: grams,
       total,
       perServing: divideMacros(total, recipe.servings),
     };
@@ -278,10 +282,12 @@ export async function createFoodLogEntry(userId: string, input: CreateFoodLogInp
   if (!recipe) {
     throw new ValidationError('Recipe not found');
   }
-  // A manual recipe has no ingredients (no total weight), so it can't be logged by
-  // grams — only by servings.
-  if (recipe.type === 'manual' && input.unit === 'grams') {
-    throw new ValidationError('This recipe can only be logged by servings');
+  // A manual recipe can be logged by grams only if it has a total weight; without
+  // one there's no per-gram basis, so it's servings-only.
+  if (recipe.type === 'manual' && input.unit === 'grams' && recipe.totalGrams === null) {
+    throw new ValidationError(
+      'This recipe has no weight set, so it can only be logged by servings',
+    );
   }
   const detail = await buildRecipeDetail(recipe);
   // Per-serving for a servings log; per-gram (total / total weight) for a grams log.

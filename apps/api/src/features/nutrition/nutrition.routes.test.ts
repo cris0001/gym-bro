@@ -182,6 +182,7 @@ function fakeRecipe(overrides: Partial<Recipe> = {}): Recipe {
     proteinG: null,
     carbsG: null,
     fatG: null,
+    totalGrams: null,
     isActive: true,
     createdAt: new Date('2026-01-01T00:00:00Z'),
     updatedAt: new Date('2026-01-01T00:00:00Z'),
@@ -292,16 +293,17 @@ describe('recipe create route (macro computation)', () => {
     expect(repo.findActiveFoodsByIds).not.toHaveBeenCalled();
   });
 
-  it('POST /api/recipes type=manual stores entered totals and skips food validation', async () => {
+  it('POST /api/recipes type=manual stores per-100g macros and computes totals', async () => {
     repo.createRecipe.mockResolvedValue(
       fakeRecipe({
         type: 'manual',
         name: 'Shop sandwich',
-        servings: 1,
-        kcal: '450',
+        servings: 2,
+        kcal: '300',
         proteinG: '20',
-        carbsG: '48',
-        fatG: '18',
+        carbsG: '30',
+        fatG: '10',
+        totalGrams: '200',
       }),
     );
 
@@ -310,11 +312,12 @@ describe('recipe create route (macro computation)', () => {
       body: {
         type: 'manual',
         name: 'Shop sandwich',
-        servings: 1,
-        kcal: 450,
+        servings: 2,
+        kcal: 300,
         proteinG: 20,
-        carbsG: 48,
-        fatG: 18,
+        carbsG: 30,
+        fatG: 10,
+        totalGrams: 200,
       },
     });
     const body = (await res.json()) as {
@@ -327,9 +330,28 @@ describe('recipe create route (macro computation)', () => {
 
     expect(res.status).toBe(201);
     expect(repo.findActiveFoodsByIds).not.toHaveBeenCalled();
-    expect(body.data.total).toEqual({ kcal: 450, proteinG: 20, carbsG: 48, fatG: 18 });
-    expect(body.data.perServing).toEqual({ kcal: 450, proteinG: 20, carbsG: 48, fatG: 18 });
+    // per-100g x 200g = whole recipe; / 2 servings = per serving.
+    expect(body.data.total).toEqual({ kcal: 600, proteinG: 40, carbsG: 60, fatG: 20 });
+    expect(body.data.perServing).toEqual({ kcal: 300, proteinG: 20, carbsG: 30, fatG: 10 });
     expect(body.data.ingredients).toEqual([]);
+  });
+
+  it('POST /api/recipes type=manual without totalGrams returns 400', async () => {
+    const res = await request('POST', '/api/recipes', {
+      cookie: await authCookie(),
+      body: {
+        type: 'manual',
+        name: 'No weight',
+        servings: 1,
+        kcal: 300,
+        proteinG: 20,
+        carbsG: 30,
+        fatG: 10,
+      },
+    });
+
+    expect(res.status).toBe(400);
+    expect(repo.createRecipe).not.toHaveBeenCalled();
   });
 });
 
@@ -512,6 +534,49 @@ describe('food-log create route (snapshot)', () => {
 
     expect(res.status).toBe(400);
     expect(repo.createFoodLogEntry).not.toHaveBeenCalled();
+  });
+
+  it('POST /api/food-log for a manual recipe with a weight logs by grams', async () => {
+    repo.findRecipeById.mockResolvedValue(
+      fakeRecipe({
+        type: 'manual',
+        kcal: '300',
+        proteinG: '20',
+        carbsG: '30',
+        fatG: '10',
+        totalGrams: '200',
+      }),
+    );
+    repo.createFoodLogEntry.mockResolvedValue(fakeLogEntry({ recipeId: RECIPE_ID, foodId: null }));
+
+    const res = await request('POST', '/api/food-log', {
+      cookie: await authCookie(),
+      body: {
+        type: 'recipe',
+        recipeId: RECIPE_ID,
+        quantity: 100,
+        unit: 'grams',
+        meal: 'lunch',
+        loggedDate: '2026-06-29',
+      },
+    });
+
+    expect(res.status).toBe(201);
+    // Macros are per 100g, so logging 100g snapshots them directly.
+    expect(repo.createFoodLogEntry).toHaveBeenCalledWith({
+      userId: 'user-1',
+      loggedDate: '2026-06-29',
+      meal: 'lunch',
+      foodId: null,
+      recipeId: RECIPE_ID,
+      itemName: 'Chili',
+      unit: 'grams',
+      quantity: 100,
+      kcal: 300,
+      proteinG: 20,
+      carbsG: 30,
+      fatG: 10,
+    });
   });
 
   it('POST /api/food-log for a recipe by grams snapshots per-gram x grams', async () => {

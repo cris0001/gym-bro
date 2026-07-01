@@ -34,11 +34,11 @@ export const recipeIngredientInputSchema = z.object({
 
 // A recipe is created/edited in one of two shapes, discriminated by `type`:
 //   - 'ingredients' → composed of foods (≥1), macros computed from them.
-//   - 'manual'      → a prepared product (e.g. a bought sandwich) with hand-entered
-//                     TOTAL macros and no ingredients. All four macros required.
-// Create and edit share the shape (editing fully replaces the recipe). A manual
-// recipe's total macros can be larger than a food's per-100g value, so they use a
-// wider bound matching the numeric(7,2) columns.
+//   - 'manual'      → a prepared product (e.g. a bought sandwich): macros entered PER
+//                     100g (off the label) + the recipe's total weight, no ingredients.
+//                     Whole-recipe & per-serving totals are computed from these.
+// Create and edit share the shape (editing fully replaces the recipe). Per-100g
+// values use the same wide bound as the numeric(7,2) columns.
 const recipeMacroValue = z.number().min(0, 'Must be 0 or more').max(99999.99, 'Too large');
 const recipeServings = z
   .number()
@@ -59,11 +59,15 @@ export const createRecipeSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('manual'),
     name: itemName,
-    servings: recipeServings,
+    // Macros are PER 100g. totalGrams is the recipe's total weight — required, since
+    // it defines a serving (weight / servings) and lets the recipe be logged by grams
+    // or servings.
     kcal: recipeMacroValue,
     proteinG: recipeMacroValue,
     carbsG: recipeMacroValue,
     fatG: recipeMacroValue,
+    servings: recipeServings,
+    totalGrams: positiveAmount,
   }),
 ]);
 export const updateRecipeSchema = createRecipeSchema;
