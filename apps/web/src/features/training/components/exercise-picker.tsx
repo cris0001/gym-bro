@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
@@ -13,10 +14,13 @@ interface ExercisePickerProps {
 }
 
 // Filterable list of the user's exercise library for picking one to add to a
-// template. Empty library points the user to the exercise library to add some.
+// template. Once an exercise is chosen the list collapses to that pick (with a
+// "Change" to reopen), so the rest of the form isn't buried under the full list.
+// Empty library points the user to the exercise library to add some.
 export function ExercisePicker({ value, onChange }: ExercisePickerProps) {
   const { data: exercises, isPending, isError, error } = useExercises();
   const [query, setQuery] = useState('');
+  const [changing, setChanging] = useState(false);
 
   if (isPending) {
     return <p className="text-muted-foreground text-sm">Loading exercises…</p>;
@@ -42,9 +46,35 @@ export function ExercisePicker({ value, onChange }: ExercisePickerProps) {
     );
   }
 
+  const selected = exercises.find((e) => e.id === value);
+
+  // Collapsed state: an exercise is picked and we're not actively changing it.
+  if (selected && !changing) {
+    return (
+      <div className="flex items-center justify-between gap-2 rounded-lg border px-3 py-2">
+        <span className="min-w-0 truncate font-medium">{selected.name}</span>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-8 shrink-0"
+          onClick={() => setChanging(true)}
+        >
+          Change
+        </Button>
+      </div>
+    );
+  }
+
   const filtered = exercises.filter((e) =>
     e.name.toLowerCase().includes(query.trim().toLowerCase()),
   );
+
+  const pick = (exerciseId: string) => {
+    onChange(exerciseId);
+    setChanging(false);
+    setQuery('');
+  };
 
   return (
     <div className="grid gap-2">
@@ -67,7 +97,7 @@ export function ExercisePicker({ value, onChange }: ExercisePickerProps) {
                   'flex w-full items-center justify-between gap-2 px-3 py-2 text-left',
                   value === exercise.id ? 'bg-accent' : 'hover:bg-accent/50',
                 )}
-                onClick={() => onChange(exercise.id)}
+                onClick={() => pick(exercise.id)}
               >
                 <span className="truncate">{exercise.name}</span>
                 <span className="text-muted-foreground shrink-0 text-xs">{exercise.category}</span>
