@@ -1,4 +1,4 @@
-import { Pencil, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -8,27 +8,28 @@ import type { FoodLogEntry } from '@gym-bro/shared';
 
 import { useDeleteFoodLogEntry } from '../hooks/use-delete-food-log-entry';
 import { useUpdateFoodLogEntry } from '../hooks/use-update-food-log-entry';
-import { MacrosSummary } from './macros-summary';
 
-// One diary entry: the snapshotted item with its quantity and macros. Tapping edit
-// reveals an inline quantity field (the server rescales the macros); delete is
-// low-stakes and easily re-added, so no confirm.
+// Short unit label for the compact portion prefix.
+function unitLabel(unit: FoodLogEntry['unit']): string {
+  if (unit === 'servings') return 'serv';
+  if (unit === 'units') return 'u';
+  return 'g';
+}
+
+// One diary entry: the item name over a single very-compact line combining the
+// portion with the macros ("1 serv · 930-10/22/33"). Tapping the item opens an
+// inline quantity edit (the server rescales the macros); delete is low-stakes and
+// easily re-added, so no confirm.
 export function DiaryEntryRow({ entry }: { entry: FoodLogEntry }) {
   const remove = useDeleteFoodLogEntry();
   const update = useUpdateFoodLogEntry();
   const [editing, setEditing] = useState(false);
   const [quantity, setQuantity] = useState(String(entry.quantity));
 
-  const unit =
-    entry.unit === 'servings'
-      ? entry.quantity === 1
-        ? 'serving'
-        : 'servings'
-      : entry.unit === 'units'
-        ? entry.quantity === 1
-          ? 'unit'
-          : 'units'
-        : 'g';
+  const label = unitLabel(entry.unit);
+  const macros = `${Math.round(entry.kcal)}-${Math.round(entry.proteinG)}/${Math.round(
+    entry.carbsG,
+  )}/${Math.round(entry.fatG)}`;
 
   function save() {
     const amount = Number(quantity);
@@ -44,11 +45,11 @@ export function DiaryEntryRow({ entry }: { entry: FoodLogEntry }) {
     setEditing(false);
   }
 
-  return (
-    <li className="flex items-start gap-2 py-3">
-      <div className="min-w-0 flex-1">
-        <p className="font-medium">{entry.itemName}</p>
-        {editing ? (
+  if (editing) {
+    return (
+      <li className="flex items-center gap-2 py-2">
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-medium">{entry.itemName}</p>
           <div className="mt-1 flex flex-wrap items-center gap-2">
             <Input
               inputMode="decimal"
@@ -57,7 +58,7 @@ export function DiaryEntryRow({ entry }: { entry: FoodLogEntry }) {
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
             />
-            <span className="text-muted-foreground text-sm">{unit}</span>
+            <span className="text-muted-foreground text-sm">{label}</span>
             <Button
               type="button"
               size="sm"
@@ -71,41 +72,35 @@ export function DiaryEntryRow({ entry }: { entry: FoodLogEntry }) {
               Cancel
             </Button>
           </div>
-        ) : (
-          <>
-            <p className="text-muted-foreground text-sm">
-              {entry.quantity} {unit}
-            </p>
-            <MacrosSummary macros={entry} />
-          </>
-        )}
-      </div>
-
-      {!editing && (
-        <div className="flex shrink-0 items-center">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="size-11"
-            aria-label={`Edit ${entry.itemName}`}
-            onClick={() => setEditing(true)}
-          >
-            <Pencil className="size-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="text-destructive size-11"
-            aria-label={`Remove ${entry.itemName}`}
-            disabled={remove.isPending}
-            onClick={() => remove.mutate(entry.id)}
-          >
-            <Trash2 className="size-4" />
-          </Button>
         </div>
-      )}
+      </li>
+    );
+  }
+
+  return (
+    <li className="flex items-center gap-2 py-2">
+      <button
+        type="button"
+        className="min-w-0 flex-1 text-left"
+        aria-label={`Edit ${entry.itemName}`}
+        onClick={() => setEditing(true)}
+      >
+        <p className="truncate font-medium">{entry.itemName}</p>
+        <p className="text-muted-foreground text-[11px] leading-tight">
+          {entry.quantity} {label} · {macros}
+        </p>
+      </button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="text-destructive size-9 shrink-0"
+        aria-label={`Remove ${entry.itemName}`}
+        disabled={remove.isPending}
+        onClick={() => remove.mutate(entry.id)}
+      >
+        <Trash2 className="size-4" />
+      </Button>
     </li>
   );
 }
