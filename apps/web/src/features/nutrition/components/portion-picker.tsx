@@ -1,9 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
 import type { FoodLogUnit } from '@gym-bro/shared';
+
+// The custom-input option id for each unit (used to preselect an initial portion).
+const CUSTOM_OPTION_ID: Record<FoodLogUnit, string> = { grams: 'gx', servings: 'sx', units: 'ux' };
 
 interface PortionOption {
   id: string;
@@ -45,6 +48,9 @@ interface PortionPickerProps {
   gramsPerUnit?: number | undefined;
   // kcal for a given portion, or null when it can't be computed (no item / no weight).
   kcalFor: (unit: FoodLogUnit, quantity: number) => number | null;
+  // Preselect this portion (for editing an existing entry). Seeded into the matching
+  // custom input so its value shows and is editable.
+  initial?: PortionChoice | undefined;
   onChange: (choice: PortionChoice | null) => void;
 }
 
@@ -57,19 +63,33 @@ export function PortionPicker({
   gramsPerServing,
   gramsPerUnit,
   kcalFor,
+  initial,
   onChange,
 }: PortionPickerProps) {
   const options = useMemo(() => buildOptions(hasServings, hasUnits), [hasServings, hasUnits]);
-  const [selected, setSelected] = useState(options[0]!.id);
-  // Custom-input value per unit, keyed by unit.
-  const [inputs, setInputs] = useState<Record<FoodLogUnit, string>>({
+  const [selected, setSelected] = useState(() => {
+    if (initial) {
+      const id = CUSTOM_OPTION_ID[initial.unit];
+      if (options.some((o) => o.id === id)) return id;
+    }
+    return options[0]!.id;
+  });
+  // Custom-input value per unit, keyed by unit; the initial portion seeds its unit.
+  const [inputs, setInputs] = useState<Record<FoodLogUnit, string>>(() => ({
     grams: '',
     servings: '',
     units: '',
-  });
+    ...(initial ? { [initial.unit]: String(initial.quantity) } : {}),
+  }));
 
-  // Reset to the first preset when the option set changes (different item shape).
+  // Reset to the first preset when the option set changes (different item shape), but
+  // not on the initial mount — that would clobber a seeded `initial` portion.
+  const mounted = useRef(false);
   useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
     setSelected(options[0]!.id);
   }, [options]);
 
