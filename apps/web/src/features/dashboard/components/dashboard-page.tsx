@@ -1,36 +1,28 @@
 import { Link } from '@tanstack/react-router';
 import { addDays, format } from 'date-fns';
 
-import { usePlannedSessions, useWorkoutSessions } from '@/features/sessions';
+import { usePlannedSessions } from '@/features/sessions';
 import { Button } from '@/components/ui/button';
 
-import { computeWeeklyStreak, countWorkoutsThisWeek } from '../utils/compute-weekly-streak';
 import { LatestWeightCard } from './latest-weight-card';
 import { NextSessionCard } from './next-session-card';
-import { StreakCard } from './streak-card';
 import { TodayNutritionCard } from './today-nutrition-card';
 
 const ISO = 'yyyy-MM-dd';
 // Window for finding the next planned session.
 const LOOKAHEAD_DAYS = 60;
-// Recent workouts are enough to compute the streak (≥2/week ≈ 50 weeks of cover).
-const RECENT_LIMIT = 100;
 
-// Home screen: weekly streak + next planned session, with a quick start action.
-// Composes the sessions feature's public hooks — no dashboard-specific backend.
+// Home screen: next planned session, today's nutrition, and latest weight, with a
+// quick start action. Composes the sessions feature's public hooks — no
+// dashboard-specific backend.
 export function DashboardPage() {
   const today = new Date();
   const todayIso = format(today, ISO);
 
-  const { data: history } = useWorkoutSessions(RECENT_LIMIT, 0);
   const { data: planned = [] } = usePlannedSessions(
     todayIso,
     format(addDays(today, LOOKAHEAD_DAYS), ISO),
   );
-
-  const performedDates = (history?.items ?? []).map((session) => session.performedDate);
-  const streak = computeWeeklyStreak(performedDates, today);
-  const thisWeekCount = countWorkoutsThisWeek(performedDates, today);
 
   const nextSession =
     planned
@@ -46,8 +38,7 @@ export function DashboardPage() {
         </Button>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StreakCard streak={streak} thisWeekCount={thisWeekCount} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <NextSessionCard session={nextSession} />
         <TodayNutritionCard date={todayIso} />
         <LatestWeightCard />
