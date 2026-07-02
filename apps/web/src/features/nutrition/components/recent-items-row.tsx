@@ -20,7 +20,7 @@ export function RecentItemsRow({
   if (recent.length === 0) return null;
 
   return (
-    <div className="mt-3 flex flex-col gap-1.5">
+    <div className="flex flex-col gap-1.5">
       <span className="text-muted-foreground text-xs">Recent</span>
       <div className="flex flex-wrap gap-1.5">
         {recent.map((item) => (
