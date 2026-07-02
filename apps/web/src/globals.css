@@ -229,7 +229,16 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Mobile-first density: everything is sized in rem (spacing, fonts, tap targets),
+     so shrinking the root font-size scales the whole app down uniformly on phones.
+     Restored to 16px from the sm breakpoint up so tablet/desktop keep full size. */
   html {
     @apply font-sans;
+    font-size: 15px;
+  }
+  @media (min-width: 640px) {
+    html {
+      font-size: 16px;
+    }
   }
 }
