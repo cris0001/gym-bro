@@ -172,30 +172,35 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
             Add
           </Button>
         </div>
-        {ingredients.map((row) => (
-          <IngredientRow
-            key={row.key}
-            selectedId={row.food?.id ?? null}
-            selectedName={row.food?.name ?? null}
-            amount={row.amount}
-            unit={row.unit}
-            hasServings={row.food?.servingGrams != null}
-            hasUnits={row.food?.unitGrams != null}
-            gramsPerServing={row.food?.servingGrams ?? null}
-            gramsPerUnit={row.food?.unitGrams ?? null}
-            onSelectFood={(food) => selectFood(row.key, food)}
-            onAmountChange={(v) =>
-              setIngredients((rows) =>
-                rows.map((r) => (r.key === row.key ? { ...r, amount: v } : r)),
-              )
-            }
-            onUnitChange={(unit) =>
-              setIngredients((rows) => rows.map((r) => (r.key === row.key ? { ...r, unit } : r)))
-            }
-            onRemove={() => setIngredients((rows) => rows.filter((r) => r.key !== row.key))}
-            canRemove={ingredients.length > 1}
-          />
-        ))}
+        {ingredients.map((row) => {
+          const grams = rowGrams(row);
+          const macros = row.food && grams > 0 ? scaleMacros(row.food.per100g, grams) : null;
+          return (
+            <IngredientRow
+              key={row.key}
+              selectedId={row.food?.id ?? null}
+              selectedName={row.food?.name ?? null}
+              amount={row.amount}
+              unit={row.unit}
+              hasServings={row.food?.servingGrams != null}
+              hasUnits={row.food?.unitGrams != null}
+              gramsPerServing={row.food?.servingGrams ?? null}
+              gramsPerUnit={row.food?.unitGrams ?? null}
+              macros={macros}
+              onSelectFood={(food) => selectFood(row.key, food)}
+              onAmountChange={(v) =>
+                setIngredients((rows) =>
+                  rows.map((r) => (r.key === row.key ? { ...r, amount: v } : r)),
+                )
+              }
+              onUnitChange={(unit) =>
+                setIngredients((rows) => rows.map((r) => (r.key === row.key ? { ...r, unit } : r)))
+              }
+              onRemove={() => setIngredients((rows) => rows.filter((r) => r.key !== row.key))}
+              canRemove={ingredients.length > 1}
+            />
+          );
+        })}
       </div>
 
       <Card>
