@@ -1,8 +1,10 @@
+import { format } from 'date-fns';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
+import { usePlannedSessions } from '../hooks/use-planned-sessions';
 import { useStartWorkout } from '../hooks/use-start-workout';
 import { useWorkoutDraftStore } from '../stores/workout-draft.store';
 import { ExercisePerformanceCard } from './exercise-performance-card';
@@ -24,6 +26,10 @@ export function ActiveSessionPage() {
   const discard = useWorkoutDraftStore((s) => s.discard);
   const { startFromTemplate, startEmpty } = useStartWorkout();
 
+  const todayIso = format(new Date(), 'yyyy-MM-dd');
+  const { data: plannedToday = [] } = usePlannedSessions(todayIso, todayIso);
+  const todaysPlanned = plannedToday.filter((session) => session.status === 'planned');
+
   const [picker, setPicker] = useState<PickerMode | null>(null);
   const [finishing, setFinishing] = useState(false);
 
@@ -31,6 +37,35 @@ export function ActiveSessionPage() {
     return (
       <div className="mx-auto flex w-full max-w-sm flex-col gap-4 p-8 lg:col-span-3">
         <h1 className="text-center text-2xl font-bold">Start a workout</h1>
+
+        {todaysPlanned.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <p className="text-muted-foreground text-sm">Planned for today</p>
+            {todaysPlanned.map((session) => (
+              <Button
+                key={session.id}
+                variant="outline"
+                className="h-11 justify-start"
+                onClick={() =>
+                  void startFromTemplate({
+                    templateId: session.template.id,
+                    templateName: session.template.name,
+                    plannedSessionId: session.id,
+                    scheduledDate: session.scheduledDate,
+                  })
+                }
+              >
+                {session.template.name}
+              </Button>
+            ))}
+            <div className="text-muted-foreground flex items-center gap-3 text-xs">
+              <span className="bg-border h-px flex-1" />
+              or pick another
+              <span className="bg-border h-px flex-1" />
+            </div>
+          </div>
+        )}
+
         <p className="text-muted-foreground text-center text-sm">
           Pick a template, or begin an empty session and add exercises as you go.
         </p>
