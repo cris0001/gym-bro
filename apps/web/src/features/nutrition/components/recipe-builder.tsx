@@ -15,25 +15,38 @@ import { useUpdateRecipe } from '../hooks/use-update-recipe';
 import { IngredientRow } from './ingredient-row';
 import { MacrosSummary } from './macros-summary';
 
+type IngredientUnit = 'grams' | 'servings';
+
 interface IngredientFood {
   id: string;
   name: string;
   per100g: MacroTotals;
+  servingGrams: number | null;
 }
 
 interface IngredientDraft {
   key: string;
   food: IngredientFood | null;
   amount: string;
+  unit: IngredientUnit;
 }
 
 function newRow(): IngredientDraft {
-  return { key: crypto.randomUUID(), food: null, amount: '' };
+  return { key: crypto.randomUUID(), food: null, amount: '', unit: 'grams' };
+}
+
+// Grams an ingredient contributes: servings resolve via the food's serving weight,
+// otherwise the amount is already grams. 0 when the row isn't usable yet.
+function rowGrams(row: IngredientDraft): number {
+  const n = Number(row.amount);
+  if (!row.food || !Number.isFinite(n) || n <= 0) return 0;
+  return row.unit === 'servings' && row.food.servingGrams ? n * row.food.servingGrams : n;
 }
 
 // Seed the builder from a saved recipe. A line's per-100g macros are reconstructed
 // from its stored (amount-scaled) macros, so editing recomputes correctly even when
-// the source food was soft-deleted and is no longer in the picker.
+// the source food was soft-deleted and is no longer in the picker. Stored amounts are
+// grams, so lines start in grams (re-pick the food to switch to servings).
 function fromDetail(recipe: RecipeDetail): IngredientDraft[] {
   return recipe.ingredients.map((ing) => ({
     key: ing.id,
@@ -41,8 +54,10 @@ function fromDetail(recipe: RecipeDetail): IngredientDraft[] {
       id: ing.foodId,
       name: ing.foodName,
       per100g: multiplyMacros(ing.macros, 100 / ing.amountGrams),
+      servingGrams: null,
     },
     amount: String(ing.amountGrams),
+    unit: 'grams',
   }));
 }
 
@@ -72,16 +87,26 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
       id: food.id,
       name: food.name,
       per100g: { kcal: food.kcal, proteinG: food.proteinG, carbsG: food.carbsG, fatG: food.fatG },
+      servingGrams: food.servingGrams,
     };
-    setIngredients((rows) => rows.map((r) => (r.key === key ? { ...r, food: picked } : r)));
+    setIngredients((rows) =>
+      rows.map((r) =>
+        r.key === key
+          ? // Drop back to grams if the newly-picked food can't be measured by serving.
+            { ...r, food: picked, unit: food.servingGrams === null ? 'grams' : r.unit }
+          : r,
+      ),
+    );
   }
 
-  const validRows = ingredients.filter(
-    (r): r is IngredientDraft & { food: IngredientFood } =>
-      r.food !== null && Number.isFinite(Number(r.amount)) && Number(r.amount) > 0,
-  );
+  const validRows = ingredients
+    .map((r) => ({ row: r, grams: rowGrams(r) }))
+    .filter(
+      (x): x is { row: IngredientDraft & { food: IngredientFood }; grams: number } =>
+        x.row.food !== null && x.grams > 0,
+    );
 
-  const total = sumMacros(validRows.map((r) => scaleMacros(r.food.per100g, Number(r.amount))));
+  const total = sumMacros(validRows.map((x) => scaleMacros(x.row.food.per100g, x.grams)));
   const servingsNum = Number(servings);
   const validServings = Number.isInteger(servingsNum) && servingsNum > 0;
   const perServing = validServings ? divideMacros(total, servingsNum) : total;
@@ -92,7 +117,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
     const input: CreateRecipeInput = {
       name: name.trim(),
       servings: servingsNum,
-      ingredients: validRows.map((r) => ({ foodId: r.food.id, amountGrams: Number(r.amount) })),
+      ingredients: validRows.map((x) => ({ foodId: x.row.food.id, amountGrams: x.grams })),
     };
     const onSuccess = () => void navigate({ to: '/recipes' });
     if (editing) update.mutate({ id: editing.id, input }, { onSuccess });
@@ -145,11 +170,17 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
             selectedId={row.food?.id ?? null}
             selectedName={row.food?.name ?? null}
             amount={row.amount}
+            unit={row.unit}
+            hasServings={row.food?.servingGrams != null}
+            gramsPerServing={row.food?.servingGrams ?? null}
             onSelectFood={(food) => selectFood(row.key, food)}
             onAmountChange={(v) =>
               setIngredients((rows) =>
                 rows.map((r) => (r.key === row.key ? { ...r, amount: v } : r)),
               )
+            }
+            onUnitChange={(unit) =>
+              setIngredients((rows) => rows.map((r) => (r.key === row.key ? { ...r, unit } : r)))
             }
             onRemove={() => setIngredients((rows) => rows.filter((r) => r.key !== row.key))}
             canRemove={ingredients.length > 1}
