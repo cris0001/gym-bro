@@ -64,30 +64,35 @@ export function StatsDateRange({
           </Button>
         ))}
       </div>
-      <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-sm">
-        <input
-          type="date"
-          aria-label="From date"
-          className="border-input text-foreground h-9 rounded-md border bg-background px-2 text-sm"
-          value={from}
-          max={to || undefined}
-          onChange={(e) => setFrom(e.target.value)}
-        />
-        <span>–</span>
-        <input
-          type="date"
-          aria-label="To date"
-          className="border-input text-foreground h-9 rounded-md border bg-background px-2 text-sm"
-          value={to}
-          min={from || undefined}
-          onChange={(e) => setTo(e.target.value)}
-        />
+      <div className="flex items-end gap-2 text-sm">
+        <label className="flex min-w-0 flex-1 flex-col gap-1">
+          <span className="text-muted-foreground text-xs">From</span>
+          <input
+            type="date"
+            aria-label="From date"
+            className="border-input text-foreground h-9 w-full min-w-0 rounded-md border bg-background px-2 text-sm"
+            value={from}
+            max={to || undefined}
+            onChange={(e) => setFrom(e.target.value)}
+          />
+        </label>
+        <label className="flex min-w-0 flex-1 flex-col gap-1">
+          <span className="text-muted-foreground text-xs">To</span>
+          <input
+            type="date"
+            aria-label="To date"
+            className="border-input text-foreground h-9 w-full min-w-0 rounded-md border bg-background px-2 text-sm"
+            value={to}
+            min={from || undefined}
+            onChange={(e) => setTo(e.target.value)}
+          />
+        </label>
         {customRange ? (
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className="h-9"
+            className="h-9 shrink-0"
             onClick={() => selectPeriod(period)}
           >
             Clear
