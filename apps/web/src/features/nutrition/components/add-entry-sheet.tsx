@@ -12,9 +12,11 @@ import {
 import type { CreateFoodLogInput, FoodLogUnit, RecentDiaryItem } from '@gym-bro/shared';
 
 import { useCreateFoodLogEntry } from '../hooks/use-create-food-log-entry';
+import { useDailyFoodLog } from '../hooks/use-daily-food-log';
 import { useFoods } from '../hooks/use-foods';
 import { useRecipes } from '../hooks/use-recipes';
 import { useDiaryUiStore } from '../stores/diary-ui.store';
+import { DiaryEntryRow } from './diary-entry-row';
 import { DiaryItemCombobox, type DiaryItem } from './diary-item-combobox';
 import { PortionPicker, type PortionChoice } from './portion-picker';
 import { RecentItemsRow } from './recent-items-row';
@@ -30,17 +32,18 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
 
   const [selected, setSelected] = useState<DiaryItem | null>(null);
   const [choice, setChoice] = useState<PortionChoice | null>(null);
-  const [addedCount, setAddedCount] = useState(0);
 
   const create = useCreateFoodLogEntry();
   const { data: foods = [] } = useFoods('');
   const { data: recipes = [] } = useRecipes();
+  // The meal's current entries, shown as an editable list at the bottom of the sheet.
+  const { data: dayLog } = useDailyFoodLog(loggedDate);
+  const mealEntries = dayLog?.entries.filter((entry) => entry.meal === addMeal) ?? [];
 
   useEffect(() => {
     if (open) {
       setSelected(null);
       setChoice(null);
-      setAddedCount(0);
       create.reset();
     }
   }, [open]);
@@ -113,7 +116,7 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
             meal: addMeal,
             loggedDate,
           };
-    create.mutate(input, { onSuccess: () => setAddedCount((count) => count + 1) });
+    create.mutate(input);
   }
 
   function add() {
@@ -139,7 +142,6 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
     create.mutate(input, {
       onSuccess: () => {
         setSelected(null);
-        setAddedCount((count) => count + 1);
       },
     });
   }
@@ -206,10 +208,16 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
               Done
             </Button>
           </div>
-          {addedCount > 0 && (
-            <p className="text-muted-foreground text-center text-xs">
-              {addedCount} added to this meal
-            </p>
+
+          {mealEntries.length > 0 && (
+            <div className="border-t pt-2">
+              <p className="text-muted-foreground mb-1 text-xs">In this meal</p>
+              <ul className="divide-y">
+                {mealEntries.map((entry) => (
+                  <DiaryEntryRow key={entry.id} entry={entry} />
+                ))}
+              </ul>
+            </div>
           )}
         </div>
       </SheetContent>
