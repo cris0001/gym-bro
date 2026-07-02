@@ -24,8 +24,9 @@ const MEAL_LABELS: Record<MealType, string> = {
   dinner: 'Dinner',
 };
 
-// The daily food diary: a day picker (today by default, no future), the day's
-// summary vs target, and the five meal sections (each with its own add action).
+// The daily food diary: a day picker (today by default; you can move to past or
+// future days to plan/back-fill), the day's summary vs target, and the five meal
+// sections (each with its own add action).
 export function DiaryPage() {
   const today = format(new Date(), ISO);
   const [date, setDate] = useState(today);
@@ -74,7 +75,6 @@ export function DiaryPage() {
               size="icon"
               className="size-11"
               aria-label="Next day"
-              disabled={isToday}
               onClick={() => shift(1)}
             >
               <ChevronRight className="size-5" />
