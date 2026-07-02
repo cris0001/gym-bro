@@ -9,12 +9,18 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 
-import type { CreateFoodLogInput, FoodLogUnit, RecentDiaryItem } from '@gym-bro/shared';
+import type {
+  CreateFoodLogInput,
+  FoodLogEntry,
+  FoodLogUnit,
+  RecentDiaryItem,
+} from '@gym-bro/shared';
 
 import { useCreateFoodLogEntry } from '../hooks/use-create-food-log-entry';
 import { useDailyFoodLog } from '../hooks/use-daily-food-log';
 import { useFoods } from '../hooks/use-foods';
 import { useRecipes } from '../hooks/use-recipes';
+import { useUpdateFoodLogEntry } from '../hooks/use-update-food-log-entry';
 import { useDiaryUiStore } from '../stores/diary-ui.store';
 import { DiaryEntryRow } from './diary-entry-row';
 import { DiaryItemCombobox, type DiaryItem } from './diary-item-combobox';
@@ -32,8 +38,11 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
 
   const [selected, setSelected] = useState<DiaryItem | null>(null);
   const [choice, setChoice] = useState<PortionChoice | null>(null);
+  // The id of the entry being edited (via the shared form), or null when adding new.
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const create = useCreateFoodLogEntry();
+  const update = useUpdateFoodLogEntry();
   const { data: foods = [] } = useFoods('');
   const { data: recipes = [] } = useRecipes();
   // The meal's current entries, shown as an editable list at the bottom of the sheet.
@@ -44,7 +53,9 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
     if (open) {
       setSelected(null);
       setChoice(null);
+      setEditingId(null);
       create.reset();
+      update.reset();
     }
   }, [open]);
 
@@ -93,7 +104,41 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
     return null;
   }
 
-  const canAdd = selected !== null && choice !== null && !create.isPending;
+  const isEditing = editingId !== null;
+  const editingEntry = isEditing ? mealEntries.find((entry) => entry.id === editingId) : undefined;
+  const editInitial: PortionChoice | undefined = editingEntry
+    ? { unit: editingEntry.unit, quantity: editingEntry.quantity }
+    : undefined;
+  const busy = create.isPending || update.isPending;
+  const canSubmit = selected !== null && choice !== null && !busy;
+  const error = create.error ?? update.error;
+
+  // Load an existing entry into this same form: preselect its product and seed its
+  // portion, switching the primary action to "Save".
+  function startEditEntry(entry: FoodLogEntry) {
+    const sourceId = entry.foodId ?? entry.recipeId;
+    if (sourceId === null) return;
+    setSelected({ kind: entry.foodId ? 'food' : 'recipe', id: sourceId, name: entry.itemName });
+    setEditingId(entry.id);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setSelected(null);
+  }
+
+  function saveEdit() {
+    if (editingId === null || choice === null) return;
+    update.mutate(
+      { id: editingId, input: { quantity: choice.quantity, unit: choice.unit } },
+      {
+        onSuccess: () => {
+          setEditingId(null);
+          setSelected(null);
+        },
+      },
+    );
+  }
 
   // One-tap re-add of a recent item with the portion it was last logged at.
   function addRecent(item: RecentDiaryItem) {
@@ -120,7 +165,7 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
   }
 
   function add() {
-    if (!canAdd || addMeal === null || selected === null || choice === null) return;
+    if (!canSubmit || addMeal === null || selected === null || choice === null) return;
     const input: CreateFoodLogInput =
       selected.kind === 'food'
         ? {
@@ -163,7 +208,14 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
             <RecentItemsRow meal={addMeal} onPick={addRecent} disabled={create.isPending} />
           )}
 
-          <DiaryItemCombobox selected={selected} onSelect={setSelected} />
+          <DiaryItemCombobox
+            selected={selected}
+            onSelect={(item) => {
+              // A manual pick is always a new add, never a continuation of an edit.
+              setSelected(item);
+              setEditingId(null);
+            }}
+          />
 
           {selectedRecipe !== undefined && (
             <p className="text-muted-foreground text-xs">
@@ -185,27 +237,39 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
 
           {selected !== null && (
             <PortionPicker
+              key={editingId ?? selected.id}
               hasServings={hasServings}
               hasUnits={hasUnits}
               gramsPerServing={gramsPerServing}
               gramsPerUnit={gramsPerUnit}
               kcalFor={kcalFor}
+              initial={editInitial}
               onChange={setChoice}
             />
           )}
 
-          {create.error ? (
+          {error ? (
             <p role="alert" className="text-destructive text-sm">
-              {create.error.message}
+              {error.message}
             </p>
           ) : null}
 
           <div className="flex gap-2">
-            <Button type="button" className="h-11 flex-1" disabled={!canAdd} onClick={add}>
-              {create.isPending ? 'Adding…' : 'Add'}
+            <Button
+              type="button"
+              className="h-11 flex-1"
+              disabled={!canSubmit}
+              onClick={isEditing ? saveEdit : add}
+            >
+              {busy ? 'Saving…' : isEditing ? 'Save' : 'Add'}
             </Button>
-            <Button type="button" variant="outline" className="h-11" onClick={closeAdd}>
-              Done
+            <Button
+              type="button"
+              variant="outline"
+              className="h-11"
+              onClick={isEditing ? cancelEdit : closeAdd}
+            >
+              {isEditing ? 'Cancel' : 'Done'}
             </Button>
           </div>
 
@@ -214,7 +278,7 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
               <p className="text-muted-foreground mb-1 text-xs">In this meal</p>
               <ul className="divide-y">
                 {mealEntries.map((entry) => (
-                  <DiaryEntryRow key={entry.id} entry={entry} />
+                  <DiaryEntryRow key={entry.id} entry={entry} onEdit={startEditEntry} />
                 ))}
               </ul>
             </div>

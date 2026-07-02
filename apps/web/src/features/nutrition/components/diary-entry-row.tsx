@@ -16,10 +16,17 @@ function unitLabel(unit: FoodLogEntry['unit']): string {
 }
 
 // One diary entry: the item name over a single very-compact line combining the
-// portion with the macros ("1 serv · 930-10/22/33"). Tapping the item opens the full
-// portion editor (grams / servings / units); delete is low-stakes and easily
-// re-added, so no confirm.
-export function DiaryEntryRow({ entry }: { entry: FoodLogEntry }) {
+// portion with the macros ("1 serv · 930-10/22/33"). Tapping the item edits it — by
+// default via the inline full portion editor; when `onEdit` is given (e.g. in the add
+// sheet, which already has a form) the tap is delegated there instead. Delete is
+// low-stakes and easily re-added, so no confirm.
+export function DiaryEntryRow({
+  entry,
+  onEdit,
+}: {
+  entry: FoodLogEntry;
+  onEdit?: (entry: FoodLogEntry) => void;
+}) {
   const remove = useDeleteFoodLogEntry();
   const [editing, setEditing] = useState(false);
 
@@ -43,7 +50,7 @@ export function DiaryEntryRow({ entry }: { entry: FoodLogEntry }) {
         type="button"
         className="min-w-0 flex-1 text-left"
         aria-label={`Edit ${entry.itemName}`}
-        onClick={() => setEditing(true)}
+        onClick={() => (onEdit ? onEdit(entry) : setEditing(true))}
       >
         <p className="truncate font-medium">{entry.itemName}</p>
         <p className="text-muted-foreground text-[11px] leading-tight">
