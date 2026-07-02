@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
-import type { Food } from '@gym-bro/shared';
+import type { Food, MacroTotals } from '@gym-bro/shared';
 
 import { FoodCombobox } from './food-combobox';
 
@@ -23,6 +23,8 @@ interface IngredientRowProps {
   // Grams in one serving / one unit, for the amount→grams hint. Null when unknown.
   gramsPerServing: number | null;
   gramsPerUnit: number | null;
+  // This ingredient's macros at the current amount, or null when not computable yet.
+  macros: MacroTotals | null;
   onSelectFood: (food: Food) => void;
   onAmountChange: (value: string) => void;
   onUnitChange: (unit: IngredientUnit) => void;
@@ -43,6 +45,7 @@ export function IngredientRow({
   hasUnits,
   gramsPerServing,
   gramsPerUnit,
+  macros,
   onSelectFood,
   onAmountChange,
   onUnitChange,
@@ -104,6 +107,12 @@ export function IngredientRow({
           <Trash2 className="size-4" />
         </Button>
       </div>
+      {macros ? (
+        <p className="text-muted-foreground text-xs">
+          {Math.round(macros.kcal)} kcal · P {Math.round(macros.proteinG)} · C{' '}
+          {Math.round(macros.carbsG)} · F {Math.round(macros.fatG)}
+        </p>
+      ) : null}
     </div>
   );
 }
