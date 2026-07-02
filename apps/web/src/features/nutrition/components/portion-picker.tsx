@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -14,18 +14,21 @@ interface PortionOption {
   input?: boolean;
 }
 
-// Items with a serving size (recipes, or products with grams-per-serving) offer
-// serving + gram presets; grams-only items just offer grams.
-const SERVING_OPTIONS: PortionOption[] = [
-  { id: 's1', label: '1 serving', unit: 'servings', quantity: 1 },
-  { id: 'g100', label: '100 g', unit: 'grams', quantity: 100 },
-  { id: 'sx', label: 'Servings', unit: 'servings', quantity: null, input: true },
-  { id: 'gx', label: 'Grams', unit: 'grams', quantity: null, input: true },
-];
-const GRAMS_OPTIONS: PortionOption[] = [
-  { id: 'g100', label: '100 g', unit: 'grams', quantity: 100 },
-  { id: 'gx', label: 'Grams', unit: 'grams', quantity: null, input: true },
-];
+// Build the preset list from what the item supports: grams are always available;
+// servings / units appear only when the item has that size. Presets first (1 serving,
+// 1 unit, 100 g), then the custom inputs.
+function buildOptions(hasServings: boolean, hasUnits: boolean): PortionOption[] {
+  const options: PortionOption[] = [];
+  if (hasServings) options.push({ id: 's1', label: '1 serving', unit: 'servings', quantity: 1 });
+  if (hasUnits) options.push({ id: 'u1', label: '1 unit', unit: 'units', quantity: 1 });
+  options.push({ id: 'g100', label: '100 g', unit: 'grams', quantity: 100 });
+  if (hasServings)
+    options.push({ id: 'sx', label: 'Servings', unit: 'servings', quantity: null, input: true });
+  if (hasUnits)
+    options.push({ id: 'ux', label: 'Units', unit: 'units', quantity: null, input: true });
+  options.push({ id: 'gx', label: 'Grams', unit: 'grams', quantity: null, input: true });
+  return options;
+}
 
 export interface PortionChoice {
   unit: FoodLogUnit;
@@ -33,53 +36,64 @@ export interface PortionChoice {
 }
 
 interface PortionPickerProps {
-  // Whether the item can be logged by serving (recipe, or product with a serving size).
+  // Whether the item can be logged by serving / by unit (recipe, or a product with
+  // a serving / unit size). Grams are always available.
   hasServings: boolean;
-  // Grams in one serving, for the serving-row weight hint. Undefined when unknown.
+  hasUnits: boolean;
+  // Grams in one serving / one unit, for the weight hints. Undefined when unknown.
   gramsPerServing?: number | undefined;
+  gramsPerUnit?: number | undefined;
   // kcal for a given portion, or null when it can't be computed (no item / no weight).
   kcalFor: (unit: FoodLogUnit, quantity: number) => number | null;
   onChange: (choice: PortionChoice | null) => void;
 }
 
-// Fitatu-style portion selector: pick a preset (1 serving / 100 g) or type a custom
-// amount, each row showing its live calories. Emits the chosen {unit, quantity} (or
-// null when a custom input is empty/invalid) to the parent for logging.
+// Fitatu-style portion selector: pick a preset (1 serving / 1 unit / 100 g) or type a
+// custom amount, each row showing its live calories. Emits the chosen {unit, quantity}
+// (or null when a custom input is empty/invalid) to the parent for logging.
 export function PortionPicker({
   hasServings,
+  hasUnits,
   gramsPerServing,
+  gramsPerUnit,
   kcalFor,
   onChange,
 }: PortionPickerProps) {
-  const options = hasServings ? SERVING_OPTIONS : GRAMS_OPTIONS;
+  const options = useMemo(() => buildOptions(hasServings, hasUnits), [hasServings, hasUnits]);
   const [selected, setSelected] = useState(options[0]!.id);
-  const [gramsInput, setGramsInput] = useState('');
-  const [servingsInput, setServingsInput] = useState('');
+  // Custom-input value per unit, keyed by unit.
+  const [inputs, setInputs] = useState<Record<FoodLogUnit, string>>({
+    grams: '',
+    servings: '',
+    units: '',
+  });
 
-  // Reset to the first preset when the option set changes.
+  // Reset to the first preset when the option set changes (different item shape).
   useEffect(() => {
-    setSelected((hasServings ? SERVING_OPTIONS : GRAMS_OPTIONS)[0]!.id);
-  }, [hasServings]);
+    setSelected(options[0]!.id);
+  }, [options]);
+
+  const gramsPerUnitOf = (unit: FoodLogUnit): number | undefined =>
+    unit === 'servings' ? gramsPerServing : unit === 'units' ? gramsPerUnit : undefined;
 
   const quantityOf = (option: PortionOption): number | null => {
     if (option.quantity !== null) return option.quantity;
-    const raw = option.unit === 'grams' ? gramsInput : servingsInput;
+    const raw = inputs[option.unit];
     const n = Number(raw);
     return raw.trim() !== '' && Number.isFinite(n) && n > 0 ? n : null;
   };
 
   // Report the current choice up whenever the selection or inputs change.
   useEffect(() => {
-    const opts = hasServings ? SERVING_OPTIONS : GRAMS_OPTIONS;
-    const current = opts.find((o) => o.id === selected) ?? opts[0]!;
+    const current = options.find((o) => o.id === selected) ?? options[0]!;
     let quantity: number | null = current.quantity;
     if (quantity === null) {
-      const raw = current.unit === 'grams' ? gramsInput : servingsInput;
+      const raw = inputs[current.unit];
       const n = Number(raw);
       quantity = raw.trim() !== '' && Number.isFinite(n) && n > 0 ? n : null;
     }
     onChange(quantity !== null ? { unit: current.unit, quantity } : null);
-  }, [selected, gramsInput, servingsInput, hasServings, onChange]);
+  }, [selected, inputs, options, onChange]);
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -87,11 +101,12 @@ export function PortionPicker({
         const isSelected = option.id === selected;
         const quantity = quantityOf(option);
         const kcal = quantity !== null ? kcalFor(option.unit, quantity) : null;
-        // For serving portions, the gram equivalent (quantity × grams-per-serving).
+        // For serving/unit portions, the gram equivalent (quantity × grams-per-x).
+        const gpx = gramsPerUnitOf(option.unit);
         const gramsHint =
-          option.unit === 'servings' && gramsPerServing !== undefined && quantity !== null
-            ? `${Math.round(quantity * gramsPerServing)} g`
-            : null;
+          gpx !== undefined && quantity !== null ? `${Math.round(quantity * gpx)} g` : null;
+        const inputLabel =
+          option.unit === 'grams' ? 'g' : option.unit === 'servings' ? 'servings' : 'units';
         return (
           <button
             key={option.id}
@@ -113,10 +128,9 @@ export function PortionPicker({
             {option.input ? (
               <div className="flex items-center gap-2">
                 <Input
-                  value={option.unit === 'grams' ? gramsInput : servingsInput}
+                  value={inputs[option.unit]}
                   onChange={(e) => {
-                    if (option.unit === 'grams') setGramsInput(e.target.value);
-                    else setServingsInput(e.target.value);
+                    setInputs((prev) => ({ ...prev, [option.unit]: e.target.value }));
                     setSelected(option.id);
                   }}
                   onFocus={() => setSelected(option.id)}
@@ -124,9 +138,7 @@ export function PortionPicker({
                   placeholder="0"
                   className="h-9 w-20"
                 />
-                <span className="text-muted-foreground text-sm">
-                  {option.unit === 'grams' ? 'g' : 'servings'}
-                </span>
+                <span className="text-muted-foreground text-sm">{inputLabel}</span>
                 {gramsHint ? (
                   <span className="text-muted-foreground text-xs">≈ {gramsHint}</span>
                 ) : null}

@@ -52,21 +52,29 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
   // Recipes always have servings; a product does only when it has a serving size.
   const hasServings =
     selected?.kind === 'recipe' ? true : (selectedFood?.servingGrams ?? null) !== null;
+  // Only products can have a unit size; recipes are never logged by unit.
+  const hasUnits = selected?.kind === 'food' && (selectedFood?.unitGrams ?? null) !== null;
   const gramsPerServing =
     selected?.kind === 'recipe'
       ? selectedRecipe && selectedRecipe.servings > 0
         ? selectedRecipe.totalGrams / selectedRecipe.servings
         : undefined
       : (selectedFood?.servingGrams ?? undefined);
+  const gramsPerUnit = selectedFood?.unitGrams ?? undefined;
 
   // Calories for a portion of the selected item. A product scales its per-100g kcal
-  // by grams, or by (servings × serving weight); a recipe uses per-serving or
-  // per-gram (total ÷ weight).
+  // by grams, or by (servings × serving weight) / (units × unit weight); a recipe
+  // uses per-serving or per-gram (total ÷ weight).
   function kcalFor(unit: FoodLogUnit, quantity: number): number | null {
     if (selectedFood) {
       if (unit === 'servings') {
         return selectedFood.servingGrams !== null
           ? (selectedFood.kcal * quantity * selectedFood.servingGrams) / 100
+          : null;
+      }
+      if (unit === 'units') {
+        return selectedFood.unitGrams !== null
+          ? (selectedFood.kcal * quantity * selectedFood.unitGrams) / 100
           : null;
       }
       return (selectedFood.kcal * quantity) / 100;
@@ -134,16 +142,22 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
               {Math.round(selectedRecipe.totalGrams / selectedRecipe.servings)} g).
             </p>
           )}
-          {selectedFood?.servingGrams != null && (
+          {(selectedFood?.servingGrams != null || selectedFood?.unitGrams != null) && (
             <p className="text-muted-foreground text-xs">
-              1 serving = {Math.round(selectedFood.servingGrams)} g.
+              {selectedFood.servingGrams != null &&
+                `1 serving = ${Math.round(selectedFood.servingGrams)} g.`}
+              {selectedFood.servingGrams != null && selectedFood.unitGrams != null && ' '}
+              {selectedFood.unitGrams != null &&
+                `1 unit = ${Math.round(selectedFood.unitGrams)} g.`}
             </p>
           )}
 
           {selected !== null && (
             <PortionPicker
               hasServings={hasServings}
+              hasUnits={hasUnits}
               gramsPerServing={gramsPerServing}
+              gramsPerUnit={gramsPerUnit}
               kcalFor={kcalFor}
               onChange={setChoice}
             />

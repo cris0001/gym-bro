@@ -32,9 +32,9 @@ const macroField = z
     return Number.isFinite(n) && n >= 0 && n <= 9999.99;
   }, 'Enter a number 0–9999.99');
 
-// Optional serving size (grams). Blank = grams-only; a value lets the food be logged
-// by serving too (e.g. a bought product: "1 serving = 150 g").
-const servingField = z
+// Optional gram-size field (serving or unit weight). Blank = not set; a value lets
+// the food be logged by that portion too (e.g. "1 serving = 150 g", "1 unit = 9 g").
+const gramSizeField = z
   .string()
   .trim()
   .refine((v) => {
@@ -49,7 +49,8 @@ const foodFormSchema = z.object({
   proteinG: macroField,
   carbsG: macroField,
   fatG: macroField,
-  servingGrams: servingField,
+  servingGrams: gramSizeField,
+  unitGrams: gramSizeField,
 });
 
 type FoodFormValues = z.infer<typeof foodFormSchema>;
@@ -80,8 +81,17 @@ export function FoodForm({ editing, onSuccess }: FoodFormProps) {
           carbsG: String(editing.carbsG),
           fatG: String(editing.fatG),
           servingGrams: editing.servingGrams !== null ? String(editing.servingGrams) : '',
+          unitGrams: editing.unitGrams !== null ? String(editing.unitGrams) : '',
         }
-      : { name: '', kcal: '', proteinG: '', carbsG: '', fatG: '', servingGrams: '' },
+      : {
+          name: '',
+          kcal: '',
+          proteinG: '',
+          carbsG: '',
+          fatG: '',
+          servingGrams: '',
+          unitGrams: '',
+        },
   });
 
   const create = useCreateFood();
@@ -97,6 +107,7 @@ export function FoodForm({ editing, onSuccess }: FoodFormProps) {
       carbsG: Number(values.carbsG),
       fatG: Number(values.fatG),
       ...(values.servingGrams.trim() !== '' ? { servingGrams: Number(values.servingGrams) } : {}),
+      ...(values.unitGrams.trim() !== '' ? { unitGrams: Number(values.unitGrams) } : {}),
     };
     if (editing) {
       update.mutate({ id: editing.id, input }, { onSuccess });
@@ -159,6 +170,23 @@ export function FoodForm({ editing, onSuccess }: FoodFormProps) {
               </FormControl>
               <p className="text-muted-foreground text-xs">
                 Set this to log the food by serving as well as by grams.
+              </p>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="unitGrams"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Grams per unit (optional)</FormLabel>
+              <FormControl>
+                <Input inputMode="decimal" placeholder="e.g. 9" className="h-11 w-40" {...field} />
+              </FormControl>
+              <p className="text-muted-foreground text-xs">
+                Set this to log the food by unit/piece (e.g. 1 cracker) as well as by grams.
               </p>
               <FormMessage />
             </FormItem>

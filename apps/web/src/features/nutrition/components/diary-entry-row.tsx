@@ -19,7 +19,16 @@ export function DiaryEntryRow({ entry }: { entry: FoodLogEntry }) {
   const [editing, setEditing] = useState(false);
   const [quantity, setQuantity] = useState(String(entry.quantity));
 
-  const unit = entry.unit === 'servings' ? (entry.quantity === 1 ? 'serving' : 'servings') : 'g';
+  const unit =
+    entry.unit === 'servings'
+      ? entry.quantity === 1
+        ? 'serving'
+        : 'servings'
+      : entry.unit === 'units'
+        ? entry.quantity === 1
+          ? 'unit'
+          : 'units'
+        : 'g';
 
   function save() {
     const amount = Number(quantity);
