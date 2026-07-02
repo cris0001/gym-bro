@@ -278,7 +278,12 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
               <p className="text-muted-foreground mb-1 text-xs">In this meal</p>
               <ul className="divide-y">
                 {mealEntries.map((entry) => (
-                  <DiaryEntryRow key={entry.id} entry={entry} onEdit={startEditEntry} />
+                  <DiaryEntryRow
+                    key={entry.id}
+                    entry={entry}
+                    onEdit={startEditEntry}
+                    highlighted={entry.id === editingId}
+                  />
                 ))}
               </ul>
             </div>
