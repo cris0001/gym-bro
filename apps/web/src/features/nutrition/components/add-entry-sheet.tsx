@@ -9,7 +9,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 
-import type { CreateFoodLogInput, FoodLogUnit, RecentDiaryItem } from '@gym-bro/shared';
+import type { CreateFoodLogInput, FoodLogUnit } from '@gym-bro/shared';
 
 import { useCreateFoodLogEntry } from '../hooks/use-create-food-log-entry';
 import { useFoods } from '../hooks/use-foods';
@@ -17,7 +17,6 @@ import { useRecipes } from '../hooks/use-recipes';
 import { useDiaryUiStore } from '../stores/diary-ui.store';
 import { DiaryItemCombobox, type DiaryItem } from './diary-item-combobox';
 import { PortionPicker, type PortionChoice } from './portion-picker';
-import { RecentItemsRow } from './recent-items-row';
 
 // Log products or recipes to the meal preset on the store, Fitatu-style: one search
 // over both, then a portion (1 serving / 100 g / custom) with live calories per
@@ -84,10 +83,6 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
 
   const canAdd = selected !== null && choice !== null && !create.isPending;
 
-  function pickRecent(item: RecentDiaryItem) {
-    setSelected({ kind: item.type, id: item.id, name: item.name });
-  }
-
   function add() {
     if (!canAdd || addMeal === null || selected === null || choice === null) return;
     const input: CreateFoodLogInput =
@@ -129,8 +124,6 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
         </SheetHeader>
 
         <div className="grid gap-4 p-4">
-          {addMeal !== null && <RecentItemsRow meal={addMeal} onPick={pickRecent} />}
-
           <DiaryItemCombobox selected={selected} onSelect={setSelected} />
 
           {selectedRecipe !== undefined && (

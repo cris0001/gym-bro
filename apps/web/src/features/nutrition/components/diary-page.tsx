@@ -87,6 +87,7 @@ export function DiaryPage() {
               meal={meal}
               label={MEAL_LABELS[meal]}
               entries={entries.filter((entry) => entry.meal === meal)}
+              loggedDate={date}
             />
           ))}
         </div>

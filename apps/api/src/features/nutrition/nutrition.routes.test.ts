@@ -642,22 +642,48 @@ describe('food-log read/update/delete routes', () => {
 describe('recent diary items route', () => {
   it('GET /api/food-log/recent ranks by use count then recency and maps to source refs', async () => {
     repo.findRecentDiaryRows.mockResolvedValue([
-      { type: 'food', id: FOOD_ID, name: 'Banana', count: 1, lastDate: '2026-06-28' },
-      { type: 'recipe', id: RECIPE_ID, name: 'Chili', count: 5, lastDate: '2026-06-20' },
-      { type: 'food', id: 'food-2', name: 'Eggs', count: 5, lastDate: '2026-06-29' },
+      {
+        type: 'food',
+        id: FOOD_ID,
+        name: 'Banana',
+        count: 1,
+        lastDate: '2026-06-28',
+        unit: 'grams',
+        quantity: 120,
+      },
+      {
+        type: 'recipe',
+        id: RECIPE_ID,
+        name: 'Chili',
+        count: 5,
+        lastDate: '2026-06-20',
+        unit: 'servings',
+        quantity: 1,
+      },
+      {
+        type: 'food',
+        id: 'food-2',
+        name: 'Eggs',
+        count: 5,
+        lastDate: '2026-06-29',
+        unit: 'grams',
+        quantity: 100,
+      },
     ]);
 
     const res = await request('GET', '/api/food-log/recent?meal=breakfast', {
       cookie: await authCookie(),
     });
-    const body = (await res.json()) as { data: { type: string; id: string; name: string }[] };
+    const body = (await res.json()) as {
+      data: { type: string; id: string; name: string; unit: string; quantity: number }[];
+    };
 
     expect(res.status).toBe(200);
     // count 5 before count 1; within count 5, the more recent (Eggs) first.
     expect(body.data).toEqual([
-      { type: 'food', id: 'food-2', name: 'Eggs' },
-      { type: 'recipe', id: RECIPE_ID, name: 'Chili' },
-      { type: 'food', id: FOOD_ID, name: 'Banana' },
+      { type: 'food', id: 'food-2', name: 'Eggs', unit: 'grams', quantity: 100 },
+      { type: 'recipe', id: RECIPE_ID, name: 'Chili', unit: 'servings', quantity: 1 },
+      { type: 'food', id: FOOD_ID, name: 'Banana', unit: 'grams', quantity: 120 },
     ]);
     expect(repo.findRecentDiaryRows).toHaveBeenCalledWith(
       'user-1',
