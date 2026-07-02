@@ -87,10 +87,16 @@ export function CalendarDayCell({
       </span>
 
       {planned.length > 0 && (
-        <span className="flex flex-wrap items-center justify-center gap-0.5">
-          {planned.map((session) => (
-            <PlannedMarker key={session.id} session={session} />
-          ))}
+        <span className="flex items-center justify-center gap-0.5">
+          {/* One marker regardless of how many are planned; a count when >1. The
+              shown marker stays draggable to reschedule; manage the rest in the day
+              detail. */}
+          <PlannedMarker session={planned[0]!} />
+          {planned.length > 1 && (
+            <span className="text-primary text-[10px] font-semibold leading-none">
+              ×{planned.length}
+            </span>
+          )}
         </span>
       )}
 
