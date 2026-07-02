@@ -18,6 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 
 import type { BodyMeasurement, UpsertBodyMeasurementInput } from '@gym-bro/shared';
 
+import { useDeleteBodyMeasurement } from '../hooks/use-delete-body-measurement';
 import { useUpsertBodyMeasurement } from '../hooks/use-upsert-body-measurement';
 import { useBodyUiStore } from '../stores/body-ui.store';
 
@@ -93,6 +94,7 @@ export function BodyMeasurementForm() {
   const editing = useBodyUiStore((s) => s.editing);
   const clearEditing = useBodyUiStore((s) => s.clearEditing);
   const upsert = useUpsertBodyMeasurement();
+  const remove = useDeleteBodyMeasurement();
   const [showMore, setShowMore] = useState(false);
 
   const form = useForm<BodyFormValues>({
@@ -134,7 +136,19 @@ export function BodyMeasurementForm() {
       input.notes = null;
     }
     upsert.mutate(input, {
-      onSuccess: () => (editing ? clearEditing() : form.reset(toDefaults(null))),
+      onSuccess: () => {
+        // Entries are keyed by date (one per day). If an edit MOVED the entry to a
+        // different date, the upsert wrote a new row and left the original at the old
+        // date — delete it so the stale value doesn't linger on the chart.
+        if (editing && editing.measuredDate !== values.measuredDate) {
+          remove.mutate(editing.id);
+        }
+        if (editing) {
+          clearEditing();
+        } else {
+          form.reset(toDefaults(null));
+        }
+      },
     });
   }
 
