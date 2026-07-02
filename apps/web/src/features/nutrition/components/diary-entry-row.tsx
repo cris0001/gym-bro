@@ -36,11 +36,11 @@ export function DiaryEntryRow({ entry }: { entry: FoodLogEntry }) {
   }
 
   return (
-    <li className="flex items-center gap-3 py-3">
+    <li className="flex items-start gap-2 py-3">
       <div className="min-w-0 flex-1">
-        <p className="truncate font-medium">{entry.itemName}</p>
+        <p className="font-medium">{entry.itemName}</p>
         {editing ? (
-          <div className="mt-1 flex items-center gap-2">
+          <div className="mt-1 flex flex-wrap items-center gap-2">
             <Input
               inputMode="decimal"
               aria-label="Quantity"
@@ -63,20 +63,22 @@ export function DiaryEntryRow({ entry }: { entry: FoodLogEntry }) {
             </Button>
           </div>
         ) : (
-          <p className="text-muted-foreground text-sm">
-            {entry.quantity} {unit}
-          </p>
+          <>
+            <p className="text-muted-foreground text-sm">
+              {entry.quantity} {unit}
+            </p>
+            <MacrosSummary macros={entry} />
+          </>
         )}
       </div>
 
       {!editing && (
-        <>
-          <MacrosSummary macros={entry} />
+        <div className="flex shrink-0 items-center">
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="size-11 shrink-0"
+            className="size-11"
             aria-label={`Edit ${entry.itemName}`}
             onClick={() => setEditing(true)}
           >
@@ -86,14 +88,14 @@ export function DiaryEntryRow({ entry }: { entry: FoodLogEntry }) {
             type="button"
             variant="ghost"
             size="icon"
-            className="text-destructive size-11 shrink-0"
+            className="text-destructive size-11"
             aria-label={`Remove ${entry.itemName}`}
             disabled={remove.isPending}
             onClick={() => remove.mutate(entry.id)}
           >
             <Trash2 className="size-4" />
           </Button>
-        </>
+        </div>
       )}
     </li>
   );
