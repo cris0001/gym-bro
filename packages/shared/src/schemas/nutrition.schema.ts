@@ -14,8 +14,9 @@ const positiveAmount = z.number().positive('Must be greater than 0').max(99999.9
 // --- Foods (per-100g macros) ---
 
 // Create and edit share the shape — editing a food fully replaces its fields.
-// servingGrams is optional: set it (e.g. a bought product where "1 serving = 150 g")
-// to allow logging the food by serving as well as by grams.
+// servingGrams / unitGrams are optional and independent: set servingGrams (e.g. "1
+// serving = 150 g") to log by serving, and/or unitGrams (e.g. "1 cracker = 9 g") to
+// log by unit/piece, in addition to grams.
 export const createFoodSchema = z.object({
   name: itemName,
   kcal: macroValue,
@@ -23,6 +24,7 @@ export const createFoodSchema = z.object({
   carbsG: macroValue,
   fatG: macroValue,
   servingGrams: positiveAmount.optional(),
+  unitGrams: positiveAmount.optional(),
 });
 export const updateFoodSchema = createFoodSchema;
 

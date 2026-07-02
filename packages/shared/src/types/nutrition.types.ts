@@ -42,13 +42,15 @@ export interface MacroTotals {
   fatG: number;
 }
 
-// A food's macros are per 100g. servingGrams (when set) is the weight of one serving,
-// so the food can be logged by serving as well as by grams.
+// A food's macros are per 100g. servingGrams / unitGrams (when set) are the weights of
+// one serving / one unit-piece, so the food can be logged by serving or by unit as
+// well as by grams. Both are independent and may be null.
 export interface Food extends MacroTotals {
   id: string;
   userId: string;
   name: string;
   servingGrams: number | null;
+  unitGrams: number | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
