@@ -1,5 +1,4 @@
 import { useDroppable } from '@dnd-kit/core';
-import { Activity, Dumbbell } from 'lucide-react';
 
 import type { PlannedSessionWithTemplate } from '@gym-bro/shared';
 
@@ -26,9 +25,9 @@ interface CalendarDayCellProps {
 
 // One day in the month grid: a drop target (drag a planned marker here to
 // reschedule) that opens the day detail on click. Planned to-dos show as draggable
-// markers (accent); finished workouts show one green icon (Dumbbell = training,
-// Activity = logged activity) plus their template names. Completed workouts' tags
-// show as colored badges below.
+// markers (accent) near the top; finished workouts show their template names anchored
+// at the bottom of the cell (green = done). Completed workouts' tags show as colored
+// badges below.
 export function CalendarDayCell({
   iso,
   dayNumber,
@@ -87,34 +86,26 @@ export function CalendarDayCell({
         {dayNumber}
       </span>
 
-      <span className="flex w-full flex-col items-center gap-0.5">
-        {planned.length > 0 && (
-          <span className="flex flex-wrap items-center justify-center gap-0.5">
-            {planned.map((session) => (
-              <PlannedMarker key={session.id} session={session} />
-            ))}
-          </span>
-        )}
-        {finished > 0 && (
-          <span className="flex w-full items-start justify-center gap-1 text-green-700">
-            {strengthCount > 0 ? (
-              <Dumbbell className="mt-px size-3.5 shrink-0 rotate-45 text-green-600" />
-            ) : (
-              <Activity className="mt-px size-3.5 shrink-0 text-green-600" />
-            )}
-            <span className="flex min-w-0 flex-col items-center gap-0.5 text-[10px] leading-tight font-medium">
-              {workoutNames.slice(0, 3).map((name, index) => (
-                <span key={index} className="max-w-full truncate">
-                  {name}
-                </span>
-              ))}
-              {workoutNames.length > 3 && (
-                <span className="text-muted-foreground">+{workoutNames.length - 3}</span>
-              )}
+      {planned.length > 0 && (
+        <span className="flex flex-wrap items-center justify-center gap-0.5">
+          {planned.map((session) => (
+            <PlannedMarker key={session.id} session={session} />
+          ))}
+        </span>
+      )}
+
+      {finished > 0 && (
+        <span className="mt-auto flex w-full min-w-0 flex-col items-center gap-0.5 text-[10px] leading-tight font-medium text-green-700">
+          {workoutNames.slice(0, 3).map((name, index) => (
+            <span key={index} className="max-w-full truncate">
+              {name}
             </span>
-          </span>
-        )}
-      </span>
+          ))}
+          {workoutNames.length > 3 && (
+            <span className="text-muted-foreground">+{workoutNames.length - 3}</span>
+          )}
+        </span>
+      )}
 
       {tags.length > 0 && (
         <span className="flex flex-wrap items-center justify-center gap-1">
