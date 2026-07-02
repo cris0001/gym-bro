@@ -44,7 +44,7 @@ export function DiaryEntryRow({
   }
 
   const label = unitLabel(entry.unit);
-  const macros = `${Math.round(entry.kcal)}-${Math.round(entry.proteinG)}/${Math.round(
+  const macros = `${Math.round(entry.kcal)}kcal ${Math.round(entry.proteinG)}/${Math.round(
     entry.carbsG,
   )}/${Math.round(entry.fatG)}`;
 
