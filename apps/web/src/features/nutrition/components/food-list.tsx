@@ -1,4 +1,4 @@
-import { Pencil, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
@@ -14,7 +14,7 @@ interface FoodListProps {
 
 // The food dictionary list. Fetches the full dictionary once and filters by name
 // client-side (a personal list is small; avoids a request per keystroke). Each
-// row shows the per-100g macros and edit/delete; delete confirms first.
+// row shows the per-100g macros; tapping it opens the edit sheet, delete confirms.
 export function FoodList({ search }: FoodListProps) {
   const { data: foods = [], isPending } = useFoods('');
   const openEdit = useFoodUiStore((s) => s.openEdit);
@@ -47,23 +47,18 @@ export function FoodList({ search }: FoodListProps) {
           key={food.id}
           className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/50"
         >
-          <div className="min-w-0 flex-1">
+          <button
+            type="button"
+            className="min-w-0 flex-1 text-left"
+            aria-label={`Edit ${food.name}`}
+            onClick={() => openEdit(food)}
+          >
             <p className="truncate font-medium">{food.name}</p>
             <p className="text-muted-foreground text-sm">
               {food.kcal} kcal · P {food.proteinG} · C {food.carbsG} · F {food.fatG}
               <span className="text-xs"> / 100g</span>
             </p>
-          </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="size-11 shrink-0"
-            aria-label={`Edit ${food.name}`}
-            onClick={() => openEdit(food)}
-          >
-            <Pencil className="size-4" />
-          </Button>
+          </button>
           <Button
             type="button"
             variant="ghost"

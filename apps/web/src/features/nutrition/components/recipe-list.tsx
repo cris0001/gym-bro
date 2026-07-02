@@ -7,10 +7,9 @@ import type { RecipeListItem } from '@gym-bro/shared';
 
 import { useDeleteRecipe } from '../hooks/use-delete-recipe';
 import { useRecipes } from '../hooks/use-recipes';
-import { MacrosSummary } from './macros-summary';
 
-// Recipe list. Each row links to the builder for editing; the delete button is a
-// sibling of the link (not nested) and confirms first.
+// Recipe list. Each row (name over per-serving macros) links to the builder for
+// editing; the delete button is a sibling of the link (not nested) and confirms first.
 export function RecipeList() {
   const { data: recipes = [], isPending } = useRecipes();
   const remove = useDeleteRecipe();
@@ -39,16 +38,14 @@ export function RecipeList() {
           key={recipe.id}
           className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/50"
         >
-          <Link
-            to="/recipes/$recipeId"
-            params={{ recipeId: recipe.id }}
-            className="flex min-w-0 flex-1 items-center gap-3"
-          >
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-medium">{recipe.name}</p>
-              <p className="text-muted-foreground text-sm">{recipe.servings} servings</p>
-            </div>
-            <MacrosSummary macros={recipe.perServing} />
+          <Link to="/recipes/$recipeId" params={{ recipeId: recipe.id }} className="min-w-0 flex-1">
+            <p className="truncate font-medium">{recipe.name}</p>
+            <p className="text-muted-foreground text-sm">
+              {recipe.servings} {recipe.servings === 1 ? 'serving' : 'servings'} ·{' '}
+              {Math.round(recipe.perServing.kcal)} kcal · P {Math.round(recipe.perServing.proteinG)}{' '}
+              · C {Math.round(recipe.perServing.carbsG)} · F {Math.round(recipe.perServing.fatG)}
+              <span className="text-xs"> / serving</span>
+            </p>
           </Link>
           <Button
             type="button"
