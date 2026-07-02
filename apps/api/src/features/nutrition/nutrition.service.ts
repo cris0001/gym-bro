@@ -210,7 +210,13 @@ export async function getRecentDiaryItems(userId: string, meal: MealType) {
   return rows
     .sort((a, b) => b.count - a.count || b.lastDate.localeCompare(a.lastDate))
     .slice(0, RECENT_LIMIT)
-    .map((row) => ({ type: row.type, id: row.id, name: row.name }));
+    .map((row) => ({
+      type: row.type,
+      id: row.id,
+      name: row.name,
+      unit: row.unit,
+      quantity: row.quantity,
+    }));
 }
 
 // Create an entry, snapshotting the macros from the referenced source at the logged

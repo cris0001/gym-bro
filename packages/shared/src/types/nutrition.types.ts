@@ -124,9 +124,12 @@ export interface DailyFoodLog {
 
 // A recently-logged source for a meal, for the quick re-add list. `type`
 // discriminates which dictionary `id` points at; only still-active sources are
-// returned (a soft-deleted food/recipe can't be re-logged).
+// returned (a soft-deleted food/recipe can't be re-logged). `unit` + `quantity` are
+// the portion last used for this meal, so it can be re-added in one tap.
 export interface RecentDiaryItem {
   type: 'food' | 'recipe';
   id: string;
   name: string;
+  unit: FoodLogUnit;
+  quantity: number;
 }

@@ -390,13 +390,16 @@ export async function findFoodLogEntryById(
 }
 
 // A recently-logged source for a meal with how often and how recently it was used
-// (for frequency ranking). Counts come back as numbers; lastDate is a date string.
+// (for frequency ranking) plus its last-used portion (unit + quantity), so it can be
+// re-added in one tap. Counts/quantities come back as numbers; lastDate is a string.
 export interface RecentDiaryRow {
   type: 'food' | 'recipe';
   id: string;
   name: string;
   count: number;
   lastDate: string;
+  unit: FoodLogUnit;
+  quantity: number;
 }
 
 // Distinct active foods and recipes logged for `meal` on/after `sinceDate`, each
@@ -439,6 +442,38 @@ export async function findRecentDiaryRows(
     .where(and(inWindow, eq(recipes.isActive, true)))
     .groupBy(recipes.id, recipes.name);
 
+  // The most recent entry's unit + quantity per source (DISTINCT ON, newest first),
+  // to prefill a one-tap re-add with the portion last used for that meal.
+  const foodPortions = await db
+    .selectDistinctOn([foodLog.foodId], {
+      id: foodLog.foodId,
+      unit: foodLog.unit,
+      quantity: foodLog.quantity,
+    })
+    .from(foodLog)
+    .innerJoin(foods, eq(foodLog.foodId, foods.id))
+    .where(and(inWindow, eq(foods.isActive, true)))
+    .orderBy(foodLog.foodId, desc(foodLog.createdAt));
+  const recipePortions = await db
+    .selectDistinctOn([foodLog.recipeId], {
+      id: foodLog.recipeId,
+      unit: foodLog.unit,
+      quantity: foodLog.quantity,
+    })
+    .from(foodLog)
+    .innerJoin(recipes, eq(foodLog.recipeId, recipes.id))
+    .where(and(inWindow, eq(recipes.isActive, true)))
+    .orderBy(foodLog.recipeId, desc(foodLog.createdAt));
+
+  const portionById = new Map(
+    [...foodPortions, ...recipePortions].map((p) => [
+      p.id,
+      { unit: p.unit, quantity: Number(p.quantity) },
+    ]),
+  );
+  const portionOf = (id: string) =>
+    portionById.get(id) ?? { unit: 'grams' as FoodLogUnit, quantity: 100 };
+
   return [
     ...foodRows.map((row) => ({
       type: 'food' as const,
@@ -446,6 +481,7 @@ export async function findRecentDiaryRows(
       name: row.name,
       count: Number(row.count),
       lastDate: row.lastDate ?? sinceDate,
+      ...portionOf(row.id),
     })),
     ...recipeRows.map((row) => ({
       type: 'recipe' as const,
@@ -453,6 +489,7 @@ export async function findRecentDiaryRows(
       name: row.name,
       count: Number(row.count),
       lastDate: row.lastDate ?? sinceDate,
+      ...portionOf(row.id),
     })),
   ];
 }
