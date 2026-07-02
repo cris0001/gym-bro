@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { Trash2 } from 'lucide-react';
+import { ChevronRight, Trash2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
@@ -36,16 +36,24 @@ export function RecipeList() {
       {recipes.map((recipe) => (
         <li
           key={recipe.id}
-          className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/50"
+          className="hover:bg-muted/50 active:bg-muted flex items-center gap-2 px-4 py-3 transition-colors"
         >
-          <Link to="/recipes/$recipeId" params={{ recipeId: recipe.id }} className="min-w-0 flex-1">
-            <p className="truncate font-medium">{recipe.name}</p>
-            <p className="text-muted-foreground text-sm">
-              {recipe.servings} {recipe.servings === 1 ? 'serving' : 'servings'} ·{' '}
-              {Math.round(recipe.perServing.kcal)} kcal · P {Math.round(recipe.perServing.proteinG)}{' '}
-              · C {Math.round(recipe.perServing.carbsG)} · F {Math.round(recipe.perServing.fatG)}
-              <span className="text-xs"> / serving</span>
-            </p>
+          <Link
+            to="/recipes/$recipeId"
+            params={{ recipeId: recipe.id }}
+            className="flex min-w-0 flex-1 items-center gap-2"
+          >
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-medium">{recipe.name}</p>
+              <p className="text-muted-foreground text-sm">
+                {recipe.servings} {recipe.servings === 1 ? 'serving' : 'servings'} ·{' '}
+                {Math.round(recipe.perServing.kcal)} kcal · P{' '}
+                {Math.round(recipe.perServing.proteinG)} · C {Math.round(recipe.perServing.carbsG)}{' '}
+                · F {Math.round(recipe.perServing.fatG)}
+                <span className="text-xs"> / serving</span>
+              </p>
+            </div>
+            <ChevronRight className="text-muted-foreground size-5 shrink-0" />
           </Link>
           <Button
             type="button"

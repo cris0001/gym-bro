@@ -1,4 +1,4 @@
-import { Trash2 } from 'lucide-react';
+import { ChevronRight, Trash2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
@@ -45,19 +45,22 @@ export function FoodList({ search }: FoodListProps) {
       {filtered.map((food) => (
         <li
           key={food.id}
-          className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/50"
+          className="hover:bg-muted/50 active:bg-muted flex items-center gap-2 px-4 py-3 transition-colors"
         >
           <button
             type="button"
-            className="min-w-0 flex-1 text-left"
+            className="flex min-w-0 flex-1 items-center gap-2 text-left"
             aria-label={`Edit ${food.name}`}
             onClick={() => openEdit(food)}
           >
-            <p className="truncate font-medium">{food.name}</p>
-            <p className="text-muted-foreground text-sm">
-              {food.kcal} kcal · P {food.proteinG} · C {food.carbsG} · F {food.fatG}
-              <span className="text-xs"> / 100g</span>
-            </p>
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-medium">{food.name}</p>
+              <p className="text-muted-foreground text-sm">
+                {food.kcal} kcal · P {food.proteinG} · C {food.carbsG} · F {food.fatG}
+                <span className="text-xs"> / 100g</span>
+              </p>
+            </div>
+            <ChevronRight className="text-muted-foreground size-5 shrink-0" />
           </button>
           <Button
             type="button"
