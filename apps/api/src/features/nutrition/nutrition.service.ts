@@ -2,6 +2,7 @@ import type {
   CreateFoodInput,
   CreateFoodLogInput,
   CreateRecipeInput,
+  FoodLogUnit,
   MealType,
   SetNutritionTargetInput,
   UpdateFoodInput,
@@ -219,81 +220,114 @@ export async function getRecentDiaryItems(userId: string, meal: MealType) {
     }));
 }
 
-// Create an entry, snapshotting the macros from the referenced source at the logged
-// quantity: a food scales its per-100g macros by grams (or by serving/unit, when it
-// has a serving/unit size); a recipe scales its per-serving or per-gram macros.
-// itemName + unit are snapshotted too.
-export async function createFoodLogEntry(userId: string, input: CreateFoodLogInput) {
-  if (input.type === 'food') {
-    const food = await nutritionRepository.findFoodById(userId, input.foodId);
+// Compute the snapshot (itemName + macros) for logging a source at a unit+quantity.
+// Shared by create and unit-changing edits, so both round-trip identically. The
+// source must still be active: a food scales its per-100g macros by grams (or by
+// serving/unit weight); a recipe scales its per-serving or per-gram macros. Units
+// only make sense for foods.
+async function computeLogSnapshot(
+  userId: string,
+  opts: { foodId: string | null; recipeId: string | null; unit: FoodLogUnit; quantity: number },
+): Promise<{ itemName: string; kcal: number; proteinG: number; carbsG: number; fatG: number }> {
+  if (opts.foodId !== null) {
+    const food = await nutritionRepository.findFoodById(userId, opts.foodId);
     if (!food?.isActive) {
       throw new ValidationError('Food not found');
     }
-    // Resolve the logged amount to grams: servings/units need the food's serving/unit
-    // size; grams are already grams.
-    let grams = input.quantity;
-    if (input.unit === 'servings') {
+    let grams = opts.quantity;
+    if (opts.unit === 'servings') {
       if (food.servingGrams === null) {
         throw new ValidationError(
           'This food has no serving size, so it can only be logged by grams',
         );
       }
-      grams = input.quantity * food.servingGrams;
-    } else if (input.unit === 'units') {
+      grams = opts.quantity * food.servingGrams;
+    } else if (opts.unit === 'units') {
       if (food.unitGrams === null) {
         throw new ValidationError('This food has no unit size, so it can only be logged by grams');
       }
-      grams = input.quantity * food.unitGrams;
+      grams = opts.quantity * food.unitGrams;
     }
-    return nutritionRepository.createFoodLogEntry({
-      userId,
-      loggedDate: input.loggedDate,
-      meal: input.meal,
-      foodId: input.foodId,
-      recipeId: null,
-      itemName: food.name,
-      unit: input.unit,
-      quantity: input.quantity,
-      ...scaleMacros(food, grams),
-    });
+    return { itemName: food.name, ...scaleMacros(food, grams) };
   }
 
-  const recipe = await nutritionRepository.findRecipeById(userId, input.recipeId);
+  if (opts.recipeId === null) {
+    throw new ValidationError('Log entry has no source');
+  }
+  const recipe = await nutritionRepository.findRecipeById(userId, opts.recipeId);
   if (!recipe) {
     throw new ValidationError('Recipe not found');
   }
-  if (input.unit === 'units') {
+  if (opts.unit === 'units') {
     throw new ValidationError('A recipe can only be logged by servings or grams');
   }
   const detail = await buildRecipeDetail(recipe);
   // Per-serving for a servings log; per-gram (total / total weight) for a grams log.
   const perUnit =
-    input.unit === 'servings' ? detail.perServing : divideMacros(detail.total, detail.totalGrams);
+    opts.unit === 'servings' ? detail.perServing : divideMacros(detail.total, detail.totalGrams);
+  return { itemName: recipe.name, ...multiplyMacros(perUnit, opts.quantity) };
+}
+
+// Create an entry, snapshotting the macros from the referenced source at the logged
+// unit+quantity (itemName + unit are snapshotted too).
+export async function createFoodLogEntry(userId: string, input: CreateFoodLogInput) {
+  const foodId = input.type === 'food' ? input.foodId : null;
+  const recipeId = input.type === 'recipe' ? input.recipeId : null;
+  const snapshot = await computeLogSnapshot(userId, {
+    foodId,
+    recipeId,
+    unit: input.unit,
+    quantity: input.quantity,
+  });
   return nutritionRepository.createFoodLogEntry({
     userId,
     loggedDate: input.loggedDate,
     meal: input.meal,
-    foodId: null,
-    recipeId: input.recipeId,
-    itemName: recipe.name,
+    foodId,
+    recipeId,
+    itemName: snapshot.itemName,
     unit: input.unit,
     quantity: input.quantity,
-    ...multiplyMacros(perUnit, input.quantity),
+    kcal: snapshot.kcal,
+    proteinG: snapshot.proteinG,
+    carbsG: snapshot.carbsG,
+    fatG: snapshot.fatG,
   });
 }
 
-// Edit an entry's quantity and/or day. The snapshot is linear in quantity, so a
-// quantity change rescales the stored macros by the ratio — no need to refetch
-// the (possibly soft-deleted) source.
+// Edit an entry's quantity, unit, and/or day. A same-unit quantity change is a linear
+// rescale of the snapshot (no source needed, so it still works when the source was
+// soft-deleted). A unit change can't be a linear rescale — grams-per-unit differs —
+// so it re-snapshots from the (still-active) source.
 export async function updateFoodLogEntry(userId: string, id: string, input: UpdateFoodLogInput) {
   const entry = await nutritionRepository.findFoodLogEntryById(userId, id);
   if (!entry) {
     throw new NotFoundError('Log entry not found');
   }
   const newQuantity = input.quantity ?? entry.quantity;
-  const macros = multiplyMacros(entry, newQuantity / entry.quantity);
+  const newUnit = input.unit ?? entry.unit;
+
+  let macros: { kcal: number; proteinG: number; carbsG: number; fatG: number };
+  if (input.unit !== undefined && input.unit !== entry.unit) {
+    const snapshot = await computeLogSnapshot(userId, {
+      foodId: entry.foodId,
+      recipeId: entry.recipeId,
+      unit: newUnit,
+      quantity: newQuantity,
+    });
+    macros = {
+      kcal: snapshot.kcal,
+      proteinG: snapshot.proteinG,
+      carbsG: snapshot.carbsG,
+      fatG: snapshot.fatG,
+    };
+  } else {
+    macros = multiplyMacros(entry, newQuantity / entry.quantity);
+  }
+
   const updated = await nutritionRepository.updateFoodLogEntry(userId, id, {
     quantity: newQuantity,
+    unit: newUnit,
     ...macros,
     ...(input.loggedDate !== undefined ? { loggedDate: input.loggedDate } : {}),
   });

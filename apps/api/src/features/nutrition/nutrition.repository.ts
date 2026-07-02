@@ -498,10 +498,11 @@ export async function findRecentDiaryRows(
   ];
 }
 
-// Re-snapshot + optionally move the entry to another day. The source reference is
-// left unchanged. loggedDate is only set when provided.
+// Re-snapshot + optionally change the unit / move the entry to another day. The
+// source reference is left unchanged. unit / loggedDate are only set when provided.
 interface FoodLogUpdate {
   quantity: number;
+  unit?: FoodLogUnit;
   loggedDate?: string;
   kcal: number;
   proteinG: number;
@@ -523,6 +524,7 @@ export async function updateFoodLogEntry(
       carbsG: data.carbsG.toString(),
       fatG: data.fatG.toString(),
       updatedAt: new Date(),
+      ...(data.unit !== undefined ? { unit: data.unit } : {}),
       ...(data.loggedDate !== undefined ? { loggedDate: data.loggedDate } : {}),
     })
     .where(and(eq(foodLog.id, id), eq(foodLog.userId, userId)))
