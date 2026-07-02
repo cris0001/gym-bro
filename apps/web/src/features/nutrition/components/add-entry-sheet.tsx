@@ -59,6 +59,15 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
     }
   }, [open]);
 
+  // If the entry loaded into the form is deleted (from the list), close the edit.
+  useEffect(() => {
+    if (editingId !== null && dayLog && !dayLog.entries.some((entry) => entry.id === editingId)) {
+      setEditingId(null);
+      setSelected(null);
+      setChoice(null);
+    }
+  }, [editingId, dayLog]);
+
   const selectedFood =
     selected?.kind === 'food' ? foods.find((f) => f.id === selected.id) : undefined;
   const selectedRecipe =
