@@ -64,7 +64,7 @@ export function IngredientRow({
       : null;
 
   return (
-    <div className="flex flex-col gap-2 rounded-lg border p-3">
+    <div className="bg-card flex flex-col gap-2 rounded-lg border p-3">
       <FoodCombobox selectedId={selectedId} selectedName={selectedName} onSelect={onSelectFood} />
       <div className="flex items-center gap-2">
         <Input
