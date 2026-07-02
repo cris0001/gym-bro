@@ -1,12 +1,14 @@
 import { Link, useNavigate } from '@tanstack/react-router';
-import { ChevronLeft, Plus } from 'lucide-react';
+import { ChevronLeft, Plus, Star } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
 import type { PlanWithTemplates } from '@gym-bro/shared';
 
+import { useActivePlan } from '../hooks/use-active-plan';
 import { useDeletePlan } from '../hooks/use-delete-plan';
 import { usePlan } from '../hooks/use-plan';
+import { useSetActivePlan } from '../hooks/use-set-active-plan';
 import { usePlanUiStore } from '../stores/plan-ui.store';
 import { useTemplateUiStore } from '../stores/template-ui.store';
 import { PlanSheet } from './plan-sheet';
@@ -21,6 +23,8 @@ interface PlanDetailProps {
 // with create/edit/delete and drag-to-reorder.
 export function PlanDetail({ planId }: PlanDetailProps) {
   const { data: plan, isPending, isError, error } = usePlan(planId);
+  const { data: activePlan } = useActivePlan();
+  const setActive = useSetActivePlan();
   const openEdit = usePlanUiStore((s) => s.openEdit);
   const openCreateTemplate = useTemplateUiStore((s) => s.openCreate);
   const remove = useDeletePlan();
@@ -76,6 +80,27 @@ export function PlanDetail({ planId }: PlanDetailProps) {
               Delete
             </Button>
           </div>
+        </div>
+
+        <div className="mt-3">
+          {activePlan?.id === plan.id ? (
+            <span className="text-primary inline-flex items-center gap-1.5 text-sm font-medium">
+              <Star className="size-4 fill-current" />
+              Active plan
+            </span>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-9"
+              disabled={setActive.isPending}
+              onClick={() => setActive.mutate(plan.id)}
+            >
+              <Star className="size-4" />
+              Set as active plan
+            </Button>
+          )}
         </div>
       </div>
 
