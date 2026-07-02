@@ -93,15 +93,17 @@ export const createFoodLogSchema = z.discriminatedUnion('type', [
   }),
 ]);
 
-// Editing an entry changes only its quantity and/or day; the referenced food or
-// recipe is fixed at creation (change it by deleting and re-adding). The service
-// recomputes the snapshot from the unchanged source and the new quantity.
+// Editing an entry changes its quantity, unit, and/or day; the referenced food or
+// recipe is fixed at creation (change it by deleting and re-adding). A quantity-only
+// change is a linear rescale of the snapshot; changing the unit re-snapshots from the
+// (still-active) source.
 export const updateFoodLogSchema = z
   .object({
     quantity: positiveAmount.optional(),
+    unit: z.enum(FOOD_LOG_UNITS).optional(),
     loggedDate: z.iso.date().optional(),
   })
-  .refine((v) => v.quantity !== undefined || v.loggedDate !== undefined, {
+  .refine((v) => v.quantity !== undefined || v.unit !== undefined || v.loggedDate !== undefined, {
     message: 'Nothing to update',
   });
 

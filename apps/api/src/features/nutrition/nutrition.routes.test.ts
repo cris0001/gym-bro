@@ -671,13 +671,37 @@ describe('food-log read/update/delete routes', () => {
     });
 
     expect(res.status).toBe(200);
-    // 200g -> 100g halves the stored 330/62/0/7.2 snapshot.
+    // 200g -> 100g halves the stored 330/62/0/7.2 snapshot; unit stays grams.
     expect(repo.updateFoodLogEntry).toHaveBeenCalledWith('user-1', LOG_ID, {
       quantity: 100,
+      unit: 'grams',
       kcal: 165,
       proteinG: 31,
       carbsG: 0,
       fatG: 3.6,
+    });
+  });
+
+  it('PATCH /api/food-log/:id re-snapshots from the source when the unit changes', async () => {
+    // A grams entry re-logged as 2 servings of a 150g-serving food -> 300g -> the
+    // per-100g macros x3 (165/31/0/3.6 -> 495/93/0/10.8), recomputed from the source.
+    repo.findFoodLogEntryById.mockResolvedValue(fakeLogEntry({ unit: 'grams', quantity: 200 }));
+    repo.findFoodById.mockResolvedValue(fakeFood({ servingGrams: 150 }));
+    repo.updateFoodLogEntry.mockResolvedValue(fakeLogEntry({ unit: 'servings', quantity: 2 }));
+
+    const res = await request('PATCH', `/api/food-log/${LOG_ID}`, {
+      cookie: await authCookie(),
+      body: { unit: 'servings', quantity: 2 },
+    });
+
+    expect(res.status).toBe(200);
+    expect(repo.updateFoodLogEntry).toHaveBeenCalledWith('user-1', LOG_ID, {
+      quantity: 2,
+      unit: 'servings',
+      kcal: 495,
+      proteinG: 93,
+      carbsG: 0,
+      fatG: 10.8,
     });
   });
 
