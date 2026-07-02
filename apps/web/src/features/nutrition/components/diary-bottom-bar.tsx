@@ -46,7 +46,7 @@ export function DiaryBottomBar({ totals }: { totals: MacroTotals }) {
   const kcalPercent = target.kcal > 0 ? Math.min(100, (totals.kcal / target.kcal) * 100) : 0;
 
   return (
-    <div className="bg-background/95 fixed inset-x-0 bottom-14 z-20 border-t px-4 py-2.5 backdrop-blur lg:hidden">
+    <div className="bg-background/95 fixed inset-x-0 bottom-12 z-20 border-t px-4 py-2.5 backdrop-blur lg:hidden">
       <div className="mx-auto flex max-w-2xl items-end gap-3">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <span className="leading-none font-bold">

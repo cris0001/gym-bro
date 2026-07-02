@@ -14,7 +14,7 @@ export function BottomNav() {
   const activeSection = findActiveSection(pathname);
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-20 flex h-14 bg-sky-500 text-white lg:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-20 flex h-12 bg-sky-500 text-white lg:hidden">
       {NAV_SECTIONS.map((section) => {
         const Icon = section.icon;
         const isActive = section.label === activeSection.label;
@@ -23,11 +23,11 @@ export function BottomNav() {
             key={section.label}
             to={section.to}
             className={cn(
-              'flex flex-1 flex-col items-center justify-center gap-0.5 text-xs font-medium transition-colors',
+              'flex flex-1 flex-col items-center justify-center gap-0.5 text-[11px] font-medium transition-colors',
               isActive ? 'bg-white/15 font-semibold text-white' : 'text-white/85',
             )}
           >
-            <Icon className="size-6" />
+            <Icon className="size-5" />
             {section.label}
           </Link>
         );
