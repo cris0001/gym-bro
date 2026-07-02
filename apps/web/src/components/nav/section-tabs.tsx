@@ -16,7 +16,7 @@ export function SectionTabs() {
 
   return (
     <div className="bg-background/80 sticky top-14 z-10 border-b backdrop-blur lg:hidden">
-      <nav className="flex gap-1 overflow-x-auto px-3 py-2">
+      <nav className="no-scrollbar flex gap-1 overflow-x-auto px-3 py-2">
         {section.children.map((child) => (
           <Link
             key={child.to}
