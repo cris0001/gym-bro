@@ -15,13 +15,14 @@ import { useUpdateRecipe } from '../hooks/use-update-recipe';
 import { IngredientRow } from './ingredient-row';
 import { MacrosSummary } from './macros-summary';
 
-type IngredientUnit = 'grams' | 'servings';
+type IngredientUnit = 'grams' | 'servings' | 'units';
 
 interface IngredientFood {
   id: string;
   name: string;
   per100g: MacroTotals;
   servingGrams: number | null;
+  unitGrams: number | null;
 }
 
 interface IngredientDraft {
@@ -35,12 +36,14 @@ function newRow(): IngredientDraft {
   return { key: crypto.randomUUID(), food: null, amount: '', unit: 'grams' };
 }
 
-// Grams an ingredient contributes: servings resolve via the food's serving weight,
-// otherwise the amount is already grams. 0 when the row isn't usable yet.
+// Grams an ingredient contributes: servings/units resolve via the food's serving/unit
+// weight, otherwise the amount is already grams. 0 when the row isn't usable yet.
 function rowGrams(row: IngredientDraft): number {
   const n = Number(row.amount);
   if (!row.food || !Number.isFinite(n) || n <= 0) return 0;
-  return row.unit === 'servings' && row.food.servingGrams ? n * row.food.servingGrams : n;
+  if (row.unit === 'servings' && row.food.servingGrams) return n * row.food.servingGrams;
+  if (row.unit === 'units' && row.food.unitGrams) return n * row.food.unitGrams;
+  return n;
 }
 
 // Seed the builder from a saved recipe. A line's per-100g macros are reconstructed
@@ -55,6 +58,7 @@ function fromDetail(recipe: RecipeDetail): IngredientDraft[] {
       name: ing.foodName,
       per100g: multiplyMacros(ing.macros, 100 / ing.amountGrams),
       servingGrams: null,
+      unitGrams: null,
     },
     amount: String(ing.amountGrams),
     unit: 'grams',
@@ -88,14 +92,18 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
       name: food.name,
       per100g: { kcal: food.kcal, proteinG: food.proteinG, carbsG: food.carbsG, fatG: food.fatG },
       servingGrams: food.servingGrams,
+      unitGrams: food.unitGrams,
     };
     setIngredients((rows) =>
-      rows.map((r) =>
-        r.key === key
-          ? // Drop back to grams if the newly-picked food can't be measured by serving.
-            { ...r, food: picked, unit: food.servingGrams === null ? 'grams' : r.unit }
-          : r,
-      ),
+      rows.map((r) => {
+        if (r.key !== key) return r;
+        // Keep the current unit only if the newly-picked food supports it; else grams.
+        const keepUnit =
+          r.unit === 'grams' ||
+          (r.unit === 'servings' && food.servingGrams !== null) ||
+          (r.unit === 'units' && food.unitGrams !== null);
+        return { ...r, food: picked, unit: keepUnit ? r.unit : 'grams' };
+      }),
     );
   }
 
@@ -172,7 +180,9 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
             amount={row.amount}
             unit={row.unit}
             hasServings={row.food?.servingGrams != null}
+            hasUnits={row.food?.unitGrams != null}
             gramsPerServing={row.food?.servingGrams ?? null}
+            gramsPerUnit={row.food?.unitGrams ?? null}
             onSelectFood={(food) => selectFood(row.key, food)}
             onAmountChange={(v) =>
               setIngredients((rows) =>
