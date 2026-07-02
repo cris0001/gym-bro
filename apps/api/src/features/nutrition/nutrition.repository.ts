@@ -26,6 +26,7 @@ function mapFoodRow(row: typeof foods.$inferSelect) {
     carbsG: Number(row.carbsG),
     fatG: Number(row.fatG),
     servingGrams: row.servingGrams === null ? null : Number(row.servingGrams),
+    unitGrams: row.unitGrams === null ? null : Number(row.unitGrams),
   };
 }
 
@@ -39,6 +40,7 @@ interface FoodInput {
   carbsG: number;
   fatG: number;
   servingGrams?: number | undefined;
+  unitGrams?: number | undefined;
 }
 
 // Active foods for the user, case-insensitive alphabetical, optionally filtered
@@ -91,6 +93,7 @@ export async function createFood(userId: string, data: FoodInput): Promise<FoodR
       carbsG: data.carbsG.toString(),
       fatG: data.fatG.toString(),
       servingGrams: data.servingGrams !== undefined ? data.servingGrams.toString() : null,
+      unitGrams: data.unitGrams !== undefined ? data.unitGrams.toString() : null,
     })
     .returning();
   if (!row) {
@@ -114,6 +117,7 @@ export async function updateFood(
       carbsG: data.carbsG.toString(),
       fatG: data.fatG.toString(),
       servingGrams: data.servingGrams !== undefined ? data.servingGrams.toString() : null,
+      unitGrams: data.unitGrams !== undefined ? data.unitGrams.toString() : null,
       updatedAt: new Date(),
     })
     .where(and(eq(foods.id, id), eq(foods.userId, userId), eq(foods.isActive, true)))

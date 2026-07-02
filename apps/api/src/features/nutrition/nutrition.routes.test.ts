@@ -30,6 +30,7 @@ function fakeFood(overrides: Partial<FoodRow> = {}): FoodRow {
     carbsG: 0,
     fatG: 3.6,
     servingGrams: null,
+    unitGrams: null,
     isActive: true,
     createdAt: new Date('2026-01-01T00:00:00Z'),
     updatedAt: new Date('2026-01-01T00:00:00Z'),

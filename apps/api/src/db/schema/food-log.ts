@@ -24,9 +24,10 @@ export const mealTypeEnum = pgEnum('meal_type', [
   'dinner',
 ]);
 
-// The unit a quantity is expressed in: a food is always grams; a recipe can be
-// logged by grams or by servings. Mirrored as FOOD_LOG_UNITS in shared.
-export const foodLogUnitEnum = pgEnum('food_log_unit', ['grams', 'servings']);
+// The unit a quantity is expressed in: grams, servings (foods with a serving size,
+// and recipes), or units/pieces (foods with a unit size). Mirrored as FOOD_LOG_UNITS
+// in shared.
+export const foodLogUnitEnum = pgEnum('food_log_unit', ['grams', 'servings', 'units']);
 
 // A daily diary entry referencing EITHER a food or a recipe (exactly one), with
 // macros SNAPSHOTTED at log time so editing/renaming/soft-deleting the source
