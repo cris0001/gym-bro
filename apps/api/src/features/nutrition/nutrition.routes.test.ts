@@ -467,6 +467,78 @@ describe('food-log create route (snapshot)', () => {
     expect(repo.createFoodLogEntry).not.toHaveBeenCalled();
   });
 
+  it('POST /api/food-log for a food by units scales its unit weight', async () => {
+    repo.findFoodById.mockResolvedValue(fakeFood({ unitGrams: 50 }));
+    repo.createFoodLogEntry.mockResolvedValue(fakeLogEntry());
+
+    const res = await request('POST', '/api/food-log', {
+      cookie: await authCookie(),
+      body: {
+        type: 'food',
+        foodId: FOOD_ID,
+        quantity: 2,
+        unit: 'units',
+        meal: 'breakfast',
+        loggedDate: '2026-06-29',
+      },
+    });
+
+    expect(res.status).toBe(201);
+    // 2 units x 50g = 100g -> exactly the per-100g macros.
+    expect(repo.createFoodLogEntry).toHaveBeenCalledWith({
+      userId: 'user-1',
+      loggedDate: '2026-06-29',
+      meal: 'breakfast',
+      foodId: FOOD_ID,
+      recipeId: null,
+      itemName: 'Chicken breast',
+      unit: 'units',
+      quantity: 2,
+      kcal: 165,
+      proteinG: 31,
+      carbsG: 0,
+      fatG: 3.6,
+    });
+  });
+
+  it('POST /api/food-log for a food by units with no unit size returns 400', async () => {
+    repo.findFoodById.mockResolvedValue(fakeFood({ unitGrams: null }));
+
+    const res = await request('POST', '/api/food-log', {
+      cookie: await authCookie(),
+      body: {
+        type: 'food',
+        foodId: FOOD_ID,
+        quantity: 1,
+        unit: 'units',
+        meal: 'breakfast',
+        loggedDate: '2026-06-29',
+      },
+    });
+
+    expect(res.status).toBe(400);
+    expect(repo.createFoodLogEntry).not.toHaveBeenCalled();
+  });
+
+  it('POST /api/food-log for a recipe by units returns 400', async () => {
+    repo.findRecipeById.mockResolvedValue(fakeRecipe());
+
+    const res = await request('POST', '/api/food-log', {
+      cookie: await authCookie(),
+      body: {
+        type: 'recipe',
+        recipeId: RECIPE_ID,
+        quantity: 1,
+        unit: 'units',
+        meal: 'breakfast',
+        loggedDate: '2026-06-29',
+      },
+    });
+
+    expect(res.status).toBe(400);
+    expect(repo.createFoodLogEntry).not.toHaveBeenCalled();
+  });
+
   it('POST /api/food-log for a recipe by servings snapshots per-serving x servings', async () => {
     repo.findRecipeById.mockResolvedValue(fakeRecipe());
     repo.listRecipeIngredientsWithFood.mockResolvedValue(INGREDIENT_LINES);
