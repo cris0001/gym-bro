@@ -220,16 +220,17 @@ export async function getRecentDiaryItems(userId: string, meal: MealType) {
 }
 
 // Create an entry, snapshotting the macros from the referenced source at the logged
-// quantity: a food scales its per-100g macros by grams (or by serving, when it has a
-// serving size); a recipe scales its per-serving or per-gram macros. itemName + unit
-// are snapshotted too.
+// quantity: a food scales its per-100g macros by grams (or by serving/unit, when it
+// has a serving/unit size); a recipe scales its per-serving or per-gram macros.
+// itemName + unit are snapshotted too.
 export async function createFoodLogEntry(userId: string, input: CreateFoodLogInput) {
   if (input.type === 'food') {
     const food = await nutritionRepository.findFoodById(userId, input.foodId);
     if (!food?.isActive) {
       throw new ValidationError('Food not found');
     }
-    // Resolve the logged amount to grams: servings need the food's serving size.
+    // Resolve the logged amount to grams: servings/units need the food's serving/unit
+    // size; grams are already grams.
     let grams = input.quantity;
     if (input.unit === 'servings') {
       if (food.servingGrams === null) {
@@ -238,6 +239,11 @@ export async function createFoodLogEntry(userId: string, input: CreateFoodLogInp
         );
       }
       grams = input.quantity * food.servingGrams;
+    } else if (input.unit === 'units') {
+      if (food.unitGrams === null) {
+        throw new ValidationError('This food has no unit size, so it can only be logged by grams');
+      }
+      grams = input.quantity * food.unitGrams;
     }
     return nutritionRepository.createFoodLogEntry({
       userId,
@@ -255,6 +261,9 @@ export async function createFoodLogEntry(userId: string, input: CreateFoodLogInp
   const recipe = await nutritionRepository.findRecipeById(userId, input.recipeId);
   if (!recipe) {
     throw new ValidationError('Recipe not found');
+  }
+  if (input.unit === 'units') {
+    throw new ValidationError('A recipe can only be logged by servings or grams');
   }
   const detail = await buildRecipeDetail(recipe);
   // Per-serving for a servings log; per-gram (total / total weight) for a grams log.
