@@ -2,6 +2,7 @@ import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 import type { FoodLogEntry } from '@gym-bro/shared';
 
@@ -23,9 +24,12 @@ function unitLabel(unit: FoodLogEntry['unit']): string {
 export function DiaryEntryRow({
   entry,
   onEdit,
+  highlighted = false,
 }: {
   entry: FoodLogEntry;
   onEdit?: (entry: FoodLogEntry) => void;
+  // Tints the row when it's the one currently loaded into an external edit form.
+  highlighted?: boolean;
 }) {
   const remove = useDeleteFoodLogEntry();
   const [editing, setEditing] = useState(false);
@@ -45,7 +49,12 @@ export function DiaryEntryRow({
   )}/${Math.round(entry.fatG)}`;
 
   return (
-    <li className="flex items-center gap-2 py-2">
+    <li
+      className={cn(
+        'flex items-center gap-2 py-2',
+        highlighted && 'bg-primary/10 -mx-2 rounded-md px-2',
+      )}
+    >
       <button
         type="button"
         className="min-w-0 flex-1 text-left"
