@@ -424,15 +424,25 @@ AlertDialog, Skeleton, EmptyState, ErrorState, ThemeToggle; a promise-based
       <html>, no-flash inline init in index.html, and a ThemeToggle in the header +
       sidebar. (The `.dark` tokens already existed in globals.css.)
 
-### Stage 15 — Production deployment
+### Stage 15 — Production deployment ✅ MOSTLY DONE (on Netlify)
 
-- [ ] Deploy frontend to Vercel
-- [ ] Deploy backend to Fly.io
-- [ ] Production env vars
-- [ ] GitHub Actions auto-deploy
-- [ ] Verify cross-origin cookies
-- [ ] Demo account with test data
-- [ ] Smoke test
+Deployed to **Netlify**, not Vercel/Fly.io as originally planned: the SPA
+(`apps/web`) ships as static files and the Hono API (`apps/api`) runs as a single
+Netlify Function, both served from one site/origin (a `/api/*` rewrite), with the DB
+on Neon. Same-origin means the HttpOnly auth cookie needs no cross-origin CORS. Fully
+documented in `docs/DEPLOYMENT.md`.
+
+- [x] Deploy frontend — Netlify static (Vite build → `apps/web/dist`)
+- [x] Deploy backend — Netlify Function (`apps/api/netlify/functions/api.ts`)
+- [x] Production env vars — DATABASE_URL / JWT_SECRET / NODE_ENV / CORS_ORIGIN in the
+      Netlify dashboard (see DEPLOYMENT.md)
+- [x] Auto-deploy — Netlify builds on push to the default branch (replaces the
+      planned GitHub Actions deploy; CI still runs lint/typecheck/test on PRs)
+- [x] Cross-origin cookies — N/A by design: API is same-origin via the `/api/*`
+      rewrite, so the cookie just works
+- [ ] Demo account with test data — NOT done yet (filled manually per CLAUDE.md, not
+      seeded); the last real to-do for this stage
+- [~] Smoke test — done ad hoc through daily personal use; no scripted smoke test
 
 ### Stage 16 — Full documentation
 
