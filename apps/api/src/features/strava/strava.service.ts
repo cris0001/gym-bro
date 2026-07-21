@@ -13,6 +13,7 @@ import * as stravaRepository from './strava.repository';
 const AUTHORIZE_URL = 'https://www.strava.com/oauth/authorize';
 const TOKEN_URL = 'https://www.strava.com/oauth/token';
 const ACTIVITIES_URL = 'https://www.strava.com/api/v3/athlete/activities';
+const ACTIVITY_DETAIL_URL = 'https://www.strava.com/api/v3/activities';
 // How many recent activities a manual "import recent" pulls (one page).
 const IMPORT_PER_PAGE = 50;
 // Read-all so private activities are importable too.
@@ -254,9 +255,30 @@ function toUpsert(userId: string, activity: ActivitySummary): stravaRepository.S
   };
 }
 
+// Calories live only on Strava's per-activity detail endpoint (not the summary list).
+const activityDetailSchema = z.object({ calories: z.number().nullable().optional() }).passthrough();
+
+// One extra call to get an activity's calories. Resilient: any failure (rate limit,
+// network) returns null so a single bad detail never fails the whole import.
+async function fetchActivityCalories(
+  accessToken: string,
+  activityId: string,
+): Promise<number | null> {
+  try {
+    const response = await fetch(`${ACTIVITY_DETAIL_URL}/${activityId}`, {
+      headers: { authorization: `Bearer ${accessToken}` },
+    });
+    if (!response.ok) return null;
+    const parsed = activityDetailSchema.safeParse(await response.json());
+    return parsed.success ? (parsed.data.calories ?? null) : null;
+  } catch {
+    return null;
+  }
+}
+
 // Fetch the most recent activities and upsert them (idempotent). Returns how many were
-// imported. Summary-only for now: calories stays null (it lives on the detail
-// endpoint); a later enhancement can backfill it.
+// imported. Calories come from the detail endpoint, fetched only for activities that
+// don't already have them stored — so re-imports don't re-spend the rate budget.
 export async function importRecentActivities(userId: string): Promise<{ imported: number }> {
   const accessToken = await getFreshAccessToken(userId);
   const url = `${ACTIVITIES_URL}?per_page=${IMPORT_PER_PAGE}`;
@@ -273,9 +295,18 @@ export async function importRecentActivities(userId: string): Promise<{ imported
   if (!parsed.success) {
     throw new InternalError('Unexpected activities response from Strava');
   }
-  for (const activity of parsed.data) {
-    await stravaRepository.upsertStravaSession(toUpsert(userId, activity));
+  const activities = parsed.data;
+  const storedCalories = await stravaRepository.findStoredCaloriesByIds(
+    userId,
+    activities.map((a) => String(a.id)),
+  );
+  for (const activity of activities) {
+    const id = String(activity.id);
+    // Keep already-stored calories; otherwise fetch the detail once.
+    let calories = storedCalories.get(id) ?? null;
+    calories ??= await fetchActivityCalories(accessToken, id);
+    await stravaRepository.upsertStravaSession({ ...toUpsert(userId, activity), calories });
   }
   await stravaRepository.updateLastSync(userId, new Date());
-  return { imported: parsed.data.length };
+  return { imported: activities.length };
 }

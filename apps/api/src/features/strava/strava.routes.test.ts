@@ -162,12 +162,16 @@ describe('strava import route', () => {
   it('POST /api/strava/import upserts the fetched activities and returns the count', async () => {
     // A non-expired connection, so getFreshAccessToken skips the refresh fetch.
     repo.findConnectionByUserId.mockResolvedValue(fakeConnection());
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify(activities), {
-        status: 200,
-        headers: { 'content-type': 'application/json' },
-      }),
-    );
+    // Nothing stored yet → calories fetched from the detail endpoint for each.
+    repo.findStoredCaloriesByIds.mockResolvedValue(new Map());
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
+      const url = input instanceof Request ? input.url : String(input);
+      if (url.includes('/athlete/activities')) {
+        return Promise.resolve(new Response(JSON.stringify(activities), { status: 200 }));
+      }
+      // Per-activity detail (calories).
+      return Promise.resolve(new Response(JSON.stringify({ calories: 612 }), { status: 200 }));
+    });
 
     const res = await request('POST', '/api/strava/import', await authCookie());
     const body = (await res.json()) as { data: { imported: number } };
@@ -183,6 +187,7 @@ describe('strava import route', () => {
         distanceM: 8043.2,
         movingTimeS: 2610,
         maxHeartrate: 171,
+        calories: 612,
       }),
     );
     expect(repo.upsertStravaSession).toHaveBeenCalledWith(
