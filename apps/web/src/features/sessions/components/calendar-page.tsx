@@ -27,6 +27,10 @@ export function CalendarPage() {
             <span className="bg-primary size-2.5 rounded-full" />
             Planned
           </span>
+          <span className="flex items-center gap-1.5">
+            <span className="size-2.5 rounded-full bg-orange-500" />
+            Strava
+          </span>
         </div>
       </div>
 
