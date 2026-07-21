@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, lte } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, lte } from 'drizzle-orm';
 import { z } from 'zod';
 
 import { db } from '../../db/client';
@@ -122,6 +122,22 @@ export interface StravaSessionUpsert {
 }
 
 const numStr = (value: number | null): string | null => (value === null ? null : value.toString());
+
+// Stored calories for the given activity ids (activityId → kcal | null). The import
+// uses this to skip the extra Strava detail call for activities that already have it.
+export async function findStoredCaloriesByIds(
+  userId: string,
+  activityIds: string[],
+): Promise<Map<string, number | null>> {
+  if (activityIds.length === 0) return new Map();
+  const rows = await db
+    .select({ id: stravaSessions.stravaActivityId, calories: stravaSessions.calories })
+    .from(stravaSessions)
+    .where(
+      and(eq(stravaSessions.userId, userId), inArray(stravaSessions.stravaActivityId, activityIds)),
+    );
+  return new Map(rows.map((r) => [r.id, r.calories === null ? null : Number(r.calories)]));
+}
 
 // Upsert one imported activity — idempotent on (user_id, strava_activity_id). A
 // re-import (or auto-sync) refreshes the snapshot instead of duplicating the row.
