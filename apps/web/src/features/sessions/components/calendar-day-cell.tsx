@@ -1,4 +1,5 @@
 import { useDroppable } from '@dnd-kit/core';
+import { Activity } from 'lucide-react';
 
 import type { PlannedSessionWithTemplate } from '@gym-bro/shared';
 
@@ -19,8 +20,8 @@ interface CalendarDayCellProps {
   activityCount: number;
   // Names of the day's finished workouts (template snapshot / activity name).
   workoutNames: string[];
-  // Names of the day's imported Strava activities (shown in orange).
-  stravaNames: string[];
+  // How many imported Strava activities the day has (shown as an orange icon).
+  stravaCount: number;
   tags: { id: string; color: string }[];
   onSelect: (iso: string) => void;
 }
@@ -41,7 +42,7 @@ export function CalendarDayCell({
   strengthCount,
   activityCount,
   workoutNames,
-  stravaNames,
+  stravaCount,
   tags,
   onSelect,
 }: CalendarDayCellProps) {
@@ -55,7 +56,7 @@ export function CalendarDayCell({
     ? 'bg-accent'
     : finished > 0
       ? 'bg-green-500/10'
-      : stravaNames.length > 0
+      : stravaCount > 0
         ? 'bg-orange-500/10'
         : planned.length > 0
           ? 'bg-primary/10'
@@ -92,37 +93,41 @@ export function CalendarDayCell({
         {dayNumber}
       </span>
 
-      {planned.length > 0 && (
-        <span className="flex items-center justify-center gap-0.5">
-          {/* One marker regardless of how many are planned; a count when >1. The
-              shown marker stays draggable to reschedule; manage the rest in the day
-              detail. */}
-          <PlannedMarker session={planned[0]!} />
-          {planned.length > 1 && (
-            <span className="text-primary text-[10px] font-semibold leading-none">
-              ×{planned.length}
+      {(planned.length > 0 || stravaCount > 0) && (
+        <span className="flex flex-wrap items-center justify-center gap-x-1 gap-y-0.5">
+          {planned.length > 0 && (
+            <span className="flex items-center gap-0.5">
+              {/* One marker regardless of how many are planned; a count when >1. The
+                  shown marker stays draggable to reschedule; manage the rest in the
+                  day detail. */}
+              <PlannedMarker session={planned[0]!} />
+              {planned.length > 1 && (
+                <span className="text-primary text-[10px] font-semibold leading-none">
+                  ×{planned.length}
+                </span>
+              )}
+            </span>
+          )}
+          {stravaCount > 0 && (
+            <span className="flex items-center gap-0.5 text-orange-600">
+              <Activity className="size-3.5" />
+              {stravaCount > 1 && (
+                <span className="text-[10px] font-semibold leading-none">×{stravaCount}</span>
+              )}
             </span>
           )}
         </span>
       )}
 
-      {(finished > 0 || stravaNames.length > 0) && (
-        <span className="mt-auto flex w-full min-w-0 flex-col items-center gap-0.5 text-[10px] leading-tight font-medium">
+      {finished > 0 && (
+        <span className="mt-auto flex w-full min-w-0 flex-col items-center gap-0.5 text-[10px] leading-tight font-medium text-green-700">
           {workoutNames.slice(0, 3).map((name, index) => (
-            <span key={`w-${index}`} className="max-w-full truncate text-green-700">
+            <span key={index} className="max-w-full truncate">
               {name}
             </span>
           ))}
           {workoutNames.length > 3 && (
             <span className="text-muted-foreground">+{workoutNames.length - 3}</span>
-          )}
-          {stravaNames.slice(0, 2).map((name, index) => (
-            <span key={`s-${index}`} className="max-w-full truncate text-orange-600">
-              {name}
-            </span>
-          ))}
-          {stravaNames.length > 2 && (
-            <span className="text-muted-foreground">+{stravaNames.length - 2}</span>
           )}
         </span>
       )}
