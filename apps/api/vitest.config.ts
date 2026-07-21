@@ -11,6 +11,10 @@ export default defineConfig({
       DATABASE_URL: 'postgres://test:test@localhost:5432/test',
       JWT_SECRET: 'test-secret-at-least-32-characters-long-000000',
       CORS_ORIGIN: 'http://localhost:5173',
+      // Strava config so the OAuth service's requireConfig() passes in tests.
+      STRAVA_CLIENT_ID: 'test-client-id',
+      STRAVA_CLIENT_SECRET: 'test-client-secret',
+      STRAVA_REDIRECT_URI: 'http://localhost:3000/api/strava/callback',
     },
   },
 });

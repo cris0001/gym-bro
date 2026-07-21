@@ -6,6 +6,7 @@ import { bodyRoutes } from './features/body/body.routes';
 import { nutritionRoutes } from './features/nutrition/nutrition.routes';
 import { sessionsRoutes } from './features/sessions/sessions.routes';
 import { statsRoutes } from './features/stats/stats.routes';
+import { stravaRoutes } from './features/strava/strava.routes';
 import { trainingRoutes } from './features/training/training.routes';
 import { env } from './lib/env';
 import { errorHandler } from './middleware/error';
@@ -42,3 +43,6 @@ app.route('/api', nutritionRoutes);
 // Body routes (/body-measurements) — per-route auth, mounted at the shared /api
 // prefix.
 app.route('/api', bodyRoutes);
+// Strava routes (/strava/connect, /strava/callback, /strava/status) — OAuth connect
+// + status; the callback is unauthenticated (trusts the signed state).
+app.route('/api', stravaRoutes);
