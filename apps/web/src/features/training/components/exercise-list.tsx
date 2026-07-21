@@ -2,6 +2,7 @@ import { Dumbbell, Pencil, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { EmptyState } from '@/components/empty-state';
+import { ErrorState } from '@/components/error-state';
 import { ListSkeleton } from '@/components/list-skeleton';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/stores/confirm.store';
@@ -21,7 +22,13 @@ interface ExerciseListProps {
 // page's category), then name-filtered client-side by the search box. Edit through
 // the UI store's Sheet, delete with a confirm. Add is owned by the page header.
 export function ExerciseList({ category, search }: ExerciseListProps) {
-  const { data: exercises, isPending, isError, error } = useExercises(category ?? undefined);
+  const {
+    data: exercises,
+    isPending,
+    isError,
+    error,
+    refetch,
+  } = useExercises(category ?? undefined);
   const openEdit = useExerciseUiStore((s) => s.openEdit);
   const openCreate = useExerciseUiStore((s) => s.openCreate);
   const remove = useDeleteExercise();
@@ -32,11 +39,7 @@ export function ExerciseList({ category, search }: ExerciseListProps) {
   }
 
   if (isError) {
-    return (
-      <p role="alert" className="text-destructive p-4 text-sm">
-        {error.message}
-      </p>
-    );
+    return <ErrorState message={error.message} onRetry={() => void refetch()} />;
   }
 
   if (exercises.length === 0) {
