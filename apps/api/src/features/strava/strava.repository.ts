@@ -1,4 +1,5 @@
 import { and, desc, eq, gte, lte } from 'drizzle-orm';
+import { z } from 'zod';
 
 import { db } from '../../db/client';
 import { stravaConnections } from '../../db/schema/strava-connections';
@@ -154,6 +155,32 @@ export async function upsertStravaSession(data: StravaSessionUpsert): Promise<vo
 // A numeric column comes back as a string, or null when not recorded.
 const num = (value: string | null): number | null => (value === null ? null : Number(value));
 
+// Extra numeric metrics we surface from the raw Strava payload (not their own
+// columns). All optional/nullable — most activities record only some.
+const rawExtrasSchema = z
+  .object({
+    average_cadence: z.number().nullable(),
+    average_watts: z.number().nullable(),
+    max_watts: z.number().nullable(),
+    suffer_score: z.number().nullable(),
+    kudos_count: z.number().nullable(),
+    achievement_count: z.number().nullable(),
+  })
+  .partial();
+
+function extrasFromRaw(raw: unknown) {
+  const parsed = rawExtrasSchema.safeParse(raw);
+  const d = parsed.success ? parsed.data : {};
+  return {
+    averageCadence: d.average_cadence ?? null,
+    averageWatts: d.average_watts ?? null,
+    maxWatts: d.max_watts ?? null,
+    sufferScore: d.suffer_score ?? null,
+    kudosCount: d.kudos_count ?? null,
+    achievementCount: d.achievement_count ?? null,
+  };
+}
+
 // The wire shape of an imported activity (raw payload + tokens excluded, numerics
 // coerced). startedAt stays a Date — Hono serializes it to ISO.
 function mapSessionRow(row: {
@@ -175,6 +202,7 @@ function mapSessionRow(row: {
   calories: string | null;
   rating: number | null;
   note: string | null;
+  raw: unknown;
 }) {
   return {
     id: row.id,
@@ -195,6 +223,7 @@ function mapSessionRow(row: {
     calories: num(row.calories),
     rating: row.rating,
     note: row.note,
+    ...extrasFromRaw(row.raw),
   };
 }
 
@@ -228,6 +257,7 @@ export async function listStravaSessions(
       calories: stravaSessions.calories,
       rating: stravaSessions.rating,
       note: stravaSessions.note,
+      raw: stravaSessions.raw,
     })
     .from(stravaSessions)
     .where(
