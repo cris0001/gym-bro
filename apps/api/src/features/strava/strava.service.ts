@@ -12,6 +12,9 @@ import * as stravaRepository from './strava.repository';
 
 const AUTHORIZE_URL = 'https://www.strava.com/oauth/authorize';
 const TOKEN_URL = 'https://www.strava.com/oauth/token';
+const ACTIVITIES_URL = 'https://www.strava.com/api/v3/athlete/activities';
+// How many recent activities a manual "import recent" pulls (one page).
+const IMPORT_PER_PAGE = 50;
 // Read-all so private activities are importable too.
 const SCOPE = 'activity:read_all';
 // The `state` is a short-lived signed token carrying the user id, so the callback
@@ -186,4 +189,88 @@ export async function getFreshAccessToken(userId: string): Promise<string> {
     expiresAt: new Date(token.expires_at * 1000),
   });
   return token.access_token;
+}
+
+// --- Import ---
+
+// The summary fields we keep from Strava's /athlete/activities. Optional metrics are
+// leniently typed — Strava omits HR fields for non-HR activities, etc. `passthrough`
+// keeps the rest of the payload so it lands in `raw`.
+const activitySummarySchema = z
+  .object({
+    id: z.number(),
+    name: z.string(),
+    sport_type: z.string().optional(),
+    type: z.string().optional(),
+    start_date: z.string(),
+    start_date_local: z.string(),
+    timezone: z.string().optional(),
+    distance: z.number().optional(),
+    moving_time: z.number().optional(),
+    elapsed_time: z.number().optional(),
+    total_elevation_gain: z.number().optional(),
+    average_speed: z.number().optional(),
+    max_speed: z.number().optional(),
+    average_heartrate: z.number().optional(),
+    max_heartrate: z.number().optional(),
+  })
+  .passthrough();
+const activitiesResponseSchema = z.array(activitySummarySchema);
+type ActivitySummary = z.infer<typeof activitySummarySchema>;
+
+// A positive number, else null — keeps zero/absent durations out of the "> 0" CHECKs.
+const positiveOrNull = (value: number | undefined): number | null =>
+  typeof value === 'number' && value > 0 ? value : null;
+const numberOrNull = (value: number | undefined): number | null =>
+  typeof value === 'number' ? value : null;
+
+function toUpsert(userId: string, activity: ActivitySummary): stravaRepository.StravaSessionUpsert {
+  return {
+    userId,
+    stravaActivityId: String(activity.id),
+    // sport_type is the current field; fall back to the legacy `type`.
+    activityType: activity.sport_type ?? activity.type ?? 'Workout',
+    name: activity.name,
+    startedAt: new Date(activity.start_date),
+    timezone: activity.timezone ?? null,
+    // Calendar day = the local date part; Strava already localizes start_date_local.
+    localDate: activity.start_date_local.slice(0, 10),
+    distanceM: numberOrNull(activity.distance),
+    movingTimeS: positiveOrNull(activity.moving_time),
+    elapsedTimeS: positiveOrNull(activity.elapsed_time),
+    elevationGainM: numberOrNull(activity.total_elevation_gain),
+    averageSpeedMs: numberOrNull(activity.average_speed),
+    maxSpeedMs: numberOrNull(activity.max_speed),
+    averageHeartrate: numberOrNull(activity.average_heartrate),
+    maxHeartrate: activity.max_heartrate != null ? Math.round(activity.max_heartrate) : null,
+    // Not in the summary response — only Strava's per-activity detail has it.
+    calories: null,
+    raw: activity,
+  };
+}
+
+// Fetch the most recent activities and upsert them (idempotent). Returns how many were
+// imported. Summary-only for now: calories stays null (it lives on the detail
+// endpoint); a later enhancement can backfill it.
+export async function importRecentActivities(userId: string): Promise<{ imported: number }> {
+  const accessToken = await getFreshAccessToken(userId);
+  const url = `${ACTIVITIES_URL}?per_page=${IMPORT_PER_PAGE}`;
+  let response: Response;
+  try {
+    response = await fetch(url, { headers: { authorization: `Bearer ${accessToken}` } });
+  } catch {
+    throw new InternalError('Could not reach Strava');
+  }
+  if (!response.ok) {
+    throw new InternalError('Strava activity fetch failed');
+  }
+  const parsed = activitiesResponseSchema.safeParse(await response.json());
+  if (!parsed.success) {
+    throw new InternalError('Unexpected activities response from Strava');
+  }
+  for (const activity of parsed.data) {
+    await stravaRepository.upsertStravaSession(toUpsert(userId, activity));
+  }
+  await stravaRepository.updateLastSync(userId, new Date());
+  return { imported: parsed.data.length };
 }

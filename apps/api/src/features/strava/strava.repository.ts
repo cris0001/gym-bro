@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm';
 
 import { db } from '../../db/client';
 import { stravaConnections } from '../../db/schema/strava-connections';
+import { stravaSessions } from '../../db/schema/strava-sessions';
 
 // Drizzle queries for the Strava connection (OAuth tokens) — plain rows, no business
 // logic. One row per user (UNIQUE user_id). Timestamps stay Date; Hono serializes
@@ -85,4 +86,67 @@ export async function deleteConnection(userId: string): Promise<StravaConnection
     .where(eq(stravaConnections.userId, userId))
     .returning();
   return row;
+}
+
+// Move the connection's sync high-water mark forward (used after an import completes).
+export async function updateLastSync(userId: string, when: Date): Promise<void> {
+  await db
+    .update(stravaConnections)
+    .set({ lastSyncAt: when, updatedAt: new Date() })
+    .where(eq(stravaConnections.userId, userId));
+}
+
+// --- Imported activities ---
+
+// The service passes already-mapped values (numbers, not driver strings). numeric
+// columns are stringified for the driver; null stays null.
+export interface StravaSessionUpsert {
+  userId: string;
+  stravaActivityId: string;
+  activityType: string;
+  name: string;
+  startedAt: Date;
+  timezone: string | null;
+  localDate: string;
+  distanceM: number | null;
+  movingTimeS: number | null;
+  elapsedTimeS: number | null;
+  elevationGainM: number | null;
+  averageSpeedMs: number | null;
+  maxSpeedMs: number | null;
+  averageHeartrate: number | null;
+  maxHeartrate: number | null;
+  calories: number | null;
+  raw: unknown;
+}
+
+const numStr = (value: number | null): string | null => (value === null ? null : value.toString());
+
+// Upsert one imported activity — idempotent on (user_id, strava_activity_id). A
+// re-import (or auto-sync) refreshes the snapshot instead of duplicating the row.
+export async function upsertStravaSession(data: StravaSessionUpsert): Promise<void> {
+  const values = {
+    activityType: data.activityType,
+    name: data.name,
+    startedAt: data.startedAt,
+    timezone: data.timezone,
+    localDate: data.localDate,
+    distanceM: numStr(data.distanceM),
+    movingTimeS: data.movingTimeS,
+    elapsedTimeS: data.elapsedTimeS,
+    elevationGainM: numStr(data.elevationGainM),
+    averageSpeedMs: numStr(data.averageSpeedMs),
+    maxSpeedMs: numStr(data.maxSpeedMs),
+    averageHeartrate: numStr(data.averageHeartrate),
+    maxHeartrate: data.maxHeartrate,
+    calories: numStr(data.calories),
+    raw: data.raw,
+  };
+  await db
+    .insert(stravaSessions)
+    .values({ userId: data.userId, stravaActivityId: data.stravaActivityId, ...values })
+    .onConflictDoUpdate({
+      target: [stravaSessions.userId, stravaSessions.stravaActivityId],
+      set: { ...values, lastSyncedAt: new Date(), updatedAt: new Date() },
+    });
 }
