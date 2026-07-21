@@ -10,8 +10,9 @@ import * as stravaService from './strava.service';
 export const stravaRoutes = new Hono<AppEnv>();
 
 // Where the callback sends the browser back to (the SPA), with a status flag the
-// Strava page reads. CORS_ORIGIN is the app origin (same site in prod).
-const appUrl = env.CORS_ORIGIN;
+// Strava page reads. CORS_ORIGIN is the app origin (same site in prod); strip a
+// trailing slash so the redirect never doubles up (e.g. "https://x//strava").
+const appUrl = env.CORS_ORIGIN.replace(/\/$/, '');
 const connectedRedirect = `${appUrl}/strava?connected=1`;
 const errorRedirect = `${appUrl}/strava?error=1`;
 
