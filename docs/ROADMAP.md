@@ -397,16 +397,32 @@ done here.
 Dropped from the roadmap. (Stage numbers 14–16 are left unchanged because code
 comments and CLAUDE.md reference them by number.)
 
-### Stage 14 — Polish + animations + responsive
+### Stage 14 — Polish + animations + responsive ✅ DONE
 
-- [ ] Comprehensive empty states
-- [ ] Consistent error states
-- [ ] Loading skeletons everywhere
-- [ ] Smooth transitions (transform/opacity)
-- [ ] Mobile responsive polish
-- [ ] Toast notification system
-- [ ] Confirm dialogs for destructive actions
-- [ ] Dark mode polish
+Shipped in focused slices. New shared primitives/components: sonner Toaster,
+AlertDialog, Skeleton, EmptyState, ErrorState, ThemeToggle; a promise-based
+`useConfirm` (global AlertDialog) and a Zustand theme store.
+
+- [x] Comprehensive empty states — reusable `EmptyState` (icon + title + CTA) on the
+      main lists (foods, recipes, exercises, tags, plans). Smaller inline empties
+      (diary "Nothing logged", plan-detail "No templates", comboboxes) left as text
+- [x] Consistent error states — reusable `ErrorState` with retry (wired to the query
+      `refetch`) on the main list/detail query failures
+- [x] Loading skeletons — `Skeleton` primitive + `ListSkeleton`; applied to the main
+      lists, the diary summary card, and the plan-detail page. Secondary/nested
+      loaders (expandable workout detail, charts, template builder) left as text
+- [~] Smooth transitions (transform/opacity) — sheets/dialogs already animate (Radix + tw-animate); a dedicated micro-animation pass was judged low-value and skipped
+- [~] Mobile responsive polish — handled across Stage 11–14 (compact density,
+  full-screen sheets, aligned rows); no separate pass needed
+- [x] Toast notification system — sonner Toaster at the root + a global
+      MutationCache onError so every failed write toasts (opt-out via
+      `meta.skipErrorToast`); success toasts on deletes. Follows the theme
+- [x] Confirm dialogs for destructive actions — promise-based `useConfirm` +
+      `<ConfirmDialog/>` replaced all 12 `window.confirm` calls (deletes, workout
+      discard/cancel, and the in-hook "workout already in progress" guards)
+- [x] Dark mode — Zustand theme store (system/light/dark, localStorage), `.dark` on
+      <html>, no-flash inline init in index.html, and a ThemeToggle in the header +
+      sidebar. (The `.dark` tokens already existed in globals.css.)
 
 ### Stage 15 — Production deployment
 
