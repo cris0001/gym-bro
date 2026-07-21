@@ -44,6 +44,9 @@ export interface NavLink {
 export interface NavSection extends NavLink {
   // Match only the exact path (for '/', which would otherwise match everything).
   exact?: boolean;
+  // Brand accent for a third-party section (Strava → its orange), so the nav entry
+  // reads as that integration's button.
+  brand?: 'strava';
   children: NavLink[];
 }
 
@@ -76,7 +79,7 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
   { to: '/body', label: 'Body', icon: Scale, children: [] },
-  { to: '/strava', label: 'Strava', icon: Activity, children: [] },
+  { to: '/strava', label: 'Strava', icon: Activity, brand: 'strava', children: [] },
 ];
 
 // True when `pathname` is the route itself or a child route under it (e.g.
