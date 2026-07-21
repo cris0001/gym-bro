@@ -34,4 +34,12 @@ export interface StravaSessionItem {
   calories: number | null;
   rating: number | null;
   note: string | null;
+  // Extra metrics pulled from the raw Strava payload when present (power, cadence,
+  // relative effort, social counts) — null when the activity didn't record them.
+  averageCadence: number | null;
+  averageWatts: number | null;
+  maxWatts: number | null;
+  sufferScore: number | null;
+  kudosCount: number | null;
+  achievementCount: number | null;
 }

@@ -13,10 +13,15 @@ export const stravaKeys = {
     [...stravaKeys.all, 'sessions', from ?? null, to ?? null] as const,
 };
 
+// Strava data only changes on a manual import/disconnect (which invalidate these
+// keys), so a long staleTime avoids needless refetches of our own DB while browsing.
+const STRAVA_STALE_MS = 10 * 60_000;
+
 export function stravaStatusQueryOptions() {
   return queryOptions<StravaConnectionStatus>({
     queryKey: stravaKeys.status(),
     queryFn: getStravaStatus,
+    staleTime: STRAVA_STALE_MS,
   });
 }
 
