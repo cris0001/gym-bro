@@ -1,6 +1,8 @@
-import { parseISO, subMonths } from 'date-fns';
+import { format, parseISO, subMonths } from 'date-fns';
 import { Activity } from 'lucide-react';
 import { useEffect, useState } from 'react';
+
+import type { StravaSessionItem } from '@gym-bro/shared';
 
 import { EmptyState } from '@/components/empty-state';
 import { ErrorState } from '@/components/error-state';
@@ -21,6 +23,24 @@ const PERIODS: { key: Period; label: string; months: number | null }[] = [
   { key: '1y', label: '1Y', months: 12 },
   { key: 'all', label: 'All', months: null },
 ];
+
+// Group activities (already newest-first) into month buckets, preserving order.
+function groupByMonth(
+  sessions: StravaSessionItem[],
+): { key: string; label: string; items: StravaSessionItem[] }[] {
+  const groups = new Map<string, StravaSessionItem[]>();
+  for (const session of sessions) {
+    const key = session.localDate.slice(0, 7); // YYYY-MM
+    const existing = groups.get(key);
+    if (existing) existing.push(session);
+    else groups.set(key, [session]);
+  }
+  return [...groups.entries()].map(([key, items]) => ({
+    key,
+    label: format(parseISO(items[0]!.localDate), 'MMMM yyyy'),
+    items,
+  }));
+}
 
 // The Strava page: connect/import panel, a period filter, and the imported activities
 // (newest first) each expandable to full metrics. `initialActivityId` (from a calendar
@@ -83,18 +103,27 @@ export function StravaPage({ initialActivityId }: { initialActivityId?: string |
               description="Import recent activities from Strava to see them here and on your calendar."
             />
           ) : (
-            <ul className="flex flex-col gap-2">
-              {filtered.map((session) => (
-                <StravaActivityRow
-                  key={session.id}
-                  session={session}
-                  expanded={expandedId === session.id}
-                  onToggle={() =>
-                    setExpandedId((current) => (current === session.id ? null : session.id))
-                  }
-                />
+            <div className="flex flex-col gap-4">
+              {groupByMonth(filtered).map((group) => (
+                <section key={group.key} className="flex flex-col gap-2">
+                  <h2 className="text-muted-foreground bg-background/95 sticky top-14 z-[1] py-1 text-xs font-semibold uppercase backdrop-blur lg:top-0">
+                    {group.label}
+                  </h2>
+                  <ul className="flex flex-col gap-2">
+                    {group.items.map((session) => (
+                      <StravaActivityRow
+                        key={session.id}
+                        session={session}
+                        expanded={expandedId === session.id}
+                        onToggle={() =>
+                          setExpandedId((current) => (current === session.id ? null : session.id))
+                        }
+                      />
+                    ))}
+                  </ul>
+                </section>
               ))}
-            </ul>
+            </div>
           )}
         </>
       )}
