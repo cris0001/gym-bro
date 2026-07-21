@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, desc, eq, gte, lte } from 'drizzle-orm';
 
 import { db } from '../../db/client';
 import { stravaConnections } from '../../db/schema/strava-connections';
@@ -149,4 +149,94 @@ export async function upsertStravaSession(data: StravaSessionUpsert): Promise<vo
       target: [stravaSessions.userId, stravaSessions.stravaActivityId],
       set: { ...values, lastSyncedAt: new Date(), updatedAt: new Date() },
     });
+}
+
+// A numeric column comes back as a string, or null when not recorded.
+const num = (value: string | null): number | null => (value === null ? null : Number(value));
+
+// The wire shape of an imported activity (raw payload + tokens excluded, numerics
+// coerced). startedAt stays a Date — Hono serializes it to ISO.
+function mapSessionRow(row: {
+  id: string;
+  stravaActivityId: string;
+  activityType: string;
+  name: string;
+  startedAt: Date;
+  timezone: string | null;
+  localDate: string;
+  distanceM: string | null;
+  movingTimeS: number | null;
+  elapsedTimeS: number | null;
+  elevationGainM: string | null;
+  averageSpeedMs: string | null;
+  maxSpeedMs: string | null;
+  averageHeartrate: string | null;
+  maxHeartrate: number | null;
+  calories: string | null;
+  rating: number | null;
+  note: string | null;
+}) {
+  return {
+    id: row.id,
+    stravaActivityId: row.stravaActivityId,
+    activityType: row.activityType,
+    name: row.name,
+    startedAt: row.startedAt,
+    timezone: row.timezone,
+    localDate: row.localDate,
+    distanceM: num(row.distanceM),
+    movingTimeS: row.movingTimeS,
+    elapsedTimeS: row.elapsedTimeS,
+    elevationGainM: num(row.elevationGainM),
+    averageSpeedMs: num(row.averageSpeedMs),
+    maxSpeedMs: num(row.maxSpeedMs),
+    averageHeartrate: num(row.averageHeartrate),
+    maxHeartrate: row.maxHeartrate,
+    calories: num(row.calories),
+    rating: row.rating,
+    note: row.note,
+  };
+}
+
+export type StravaSessionListItem = ReturnType<typeof mapSessionRow>;
+
+// A user's imported activities, newest first, optionally filtered to a local_date
+// window (used by the calendar for a month; the Strava page loads all). Excludes the
+// raw payload.
+export async function listStravaSessions(
+  userId: string,
+  from?: string,
+  to?: string,
+): Promise<StravaSessionListItem[]> {
+  const rows = await db
+    .select({
+      id: stravaSessions.id,
+      stravaActivityId: stravaSessions.stravaActivityId,
+      activityType: stravaSessions.activityType,
+      name: stravaSessions.name,
+      startedAt: stravaSessions.startedAt,
+      timezone: stravaSessions.timezone,
+      localDate: stravaSessions.localDate,
+      distanceM: stravaSessions.distanceM,
+      movingTimeS: stravaSessions.movingTimeS,
+      elapsedTimeS: stravaSessions.elapsedTimeS,
+      elevationGainM: stravaSessions.elevationGainM,
+      averageSpeedMs: stravaSessions.averageSpeedMs,
+      maxSpeedMs: stravaSessions.maxSpeedMs,
+      averageHeartrate: stravaSessions.averageHeartrate,
+      maxHeartrate: stravaSessions.maxHeartrate,
+      calories: stravaSessions.calories,
+      rating: stravaSessions.rating,
+      note: stravaSessions.note,
+    })
+    .from(stravaSessions)
+    .where(
+      and(
+        eq(stravaSessions.userId, userId),
+        from ? gte(stravaSessions.localDate, from) : undefined,
+        to ? lte(stravaSessions.localDate, to) : undefined,
+      ),
+    )
+    .orderBy(desc(stravaSessions.startedAt));
+  return rows.map(mapSessionRow);
 }
