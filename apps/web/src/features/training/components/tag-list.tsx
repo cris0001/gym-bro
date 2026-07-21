@@ -2,6 +2,7 @@ import { Pencil, Plus, Tag, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { EmptyState } from '@/components/empty-state';
+import { ErrorState } from '@/components/error-state';
 import { ListSkeleton } from '@/components/list-skeleton';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/stores/confirm.store';
@@ -14,7 +15,7 @@ import { useTagUiStore } from '../stores/tag-ui.store';
 // The workout-tag list: read state via TanStack Query, edit through the UI
 // store's Sheet, delete with a confirm. Add is owned by the page header.
 export function TagList() {
-  const { data: tags, isPending, isError, error } = useTags();
+  const { data: tags, isPending, isError, error, refetch } = useTags();
   const openEdit = useTagUiStore((s) => s.openEdit);
   const openCreate = useTagUiStore((s) => s.openCreate);
   const remove = useDeleteTag();
@@ -25,11 +26,7 @@ export function TagList() {
   }
 
   if (isError) {
-    return (
-      <p role="alert" className="text-destructive p-4 text-sm">
-        {error.message}
-      </p>
-    );
+    return <ErrorState message={error.message} onRetry={() => void refetch()} />;
   }
 
   if (tags.length === 0) {

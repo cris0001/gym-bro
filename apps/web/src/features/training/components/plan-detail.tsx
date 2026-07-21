@@ -2,6 +2,7 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { ChevronLeft, Plus, Star } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { ErrorState } from '@/components/error-state';
 import { ListSkeleton } from '@/components/list-skeleton';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -26,7 +27,7 @@ interface PlanDetailProps {
 // Plan detail: header (name/description + edit/delete) and the plan's templates
 // with create/edit/delete and drag-to-reorder.
 export function PlanDetail({ planId }: PlanDetailProps) {
-  const { data: plan, isPending, isError, error } = usePlan(planId);
+  const { data: plan, isPending, isError, error, refetch } = usePlan(planId);
   const { data: activePlan } = useActivePlan();
   const setActive = useSetActivePlan();
   const openEdit = usePlanUiStore((s) => s.openEdit);
@@ -46,11 +47,7 @@ export function PlanDetail({ planId }: PlanDetailProps) {
   }
 
   if (isError) {
-    return (
-      <p role="alert" className="text-destructive p-4 text-sm">
-        {error.message}
-      </p>
-    );
+    return <ErrorState message={error.message} onRetry={() => void refetch()} />;
   }
 
   async function onDelete(target: PlanWithTemplates) {
