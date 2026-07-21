@@ -1,6 +1,7 @@
-import { Pencil, Trash2 } from 'lucide-react';
+import { Dumbbell, Pencil, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { EmptyState } from '@/components/empty-state';
 import { ListSkeleton } from '@/components/list-skeleton';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/stores/confirm.store';
@@ -22,6 +23,7 @@ interface ExerciseListProps {
 export function ExerciseList({ category, search }: ExerciseListProps) {
   const { data: exercises, isPending, isError, error } = useExercises(category ?? undefined);
   const openEdit = useExerciseUiStore((s) => s.openEdit);
+  const openCreate = useExerciseUiStore((s) => s.openCreate);
   const remove = useDeleteExercise();
   const confirm = useConfirm();
 
@@ -39,11 +41,17 @@ export function ExerciseList({ category, search }: ExerciseListProps) {
 
   if (exercises.length === 0) {
     return (
-      <p className="text-muted-foreground p-4 text-sm">
-        {category
-          ? `No ${category} exercises yet.`
-          : 'No exercises yet. Add your first one to start building workouts.'}
-      </p>
+      <EmptyState
+        icon={<Dumbbell className="size-6" />}
+        title={category ? `No ${category} exercises yet` : 'No exercises yet'}
+        description="Add exercises to your library to start building workout templates."
+        action={
+          <Button type="button" className="h-11" onClick={openCreate}>
+            <Plus className="size-4" />
+            Add exercise
+          </Button>
+        }
+      />
     );
   }
 
