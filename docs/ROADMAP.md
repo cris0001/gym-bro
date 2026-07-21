@@ -444,23 +444,20 @@ documented in `docs/DEPLOYMENT.md`.
       seeded); the last real to-do for this stage
 - [~] Smoke test — done ad hoc through daily personal use; no scripted smoke test
 
-### Stage 16 — Full documentation
-
-- [ ] README rewrite with screenshots, demo link
-- [ ] ARCHITECTURE.md with diagrams
-- [ ] DECISIONS.md finalized
-- [ ] Demo account credentials in README
-- [ ] GIFs of key flows (mobile)
-- [ ] Performance metrics screenshots
-
----
-
-### Stage 17 — Strava integration 🔜 PLANNED
+### Stage 15.5 — Strava integration 🔜 PLANNED
 
 Import endurance activities from Strava via OAuth (no file uploads). Manual
 "import recent" on click first; automatic background sync later over the same code.
 This is the ONLY external integration — the schema is Strava-specific (no
 source-agnostic abstraction).
+
+**OAuth model:** ONE Strava API app registration (Client ID/Secret as app-level env
+vars) identifies the app; EACH connecting user does the OAuth consent flow and gets
+their OWN access/refresh token (a token only accesses its owner's activities — a
+shared "my token for everyone" is impossible and against Strava's ToS). In practice
+this app is single-user + demo, so it's really just the owner's one connection. Note:
+a fresh Strava app is in single-athlete mode (only the owner can authorize until an
+increase is requested) — fine here.
 
 **Storage — two new tables (schema approved as a text sketch; Drizzle TBD):**
 
@@ -488,6 +485,10 @@ source-agnostic abstraction).
   (timestamptz), scope (text), last_sync_at (timestamptz, nullable — feeds the
   incremental sync `after` param), created_at, updated_at
 
+**Prerequisite (owner action):** register a Strava API app for Client ID/Secret + set
+the OAuth callback URL to the Netlify domain; add `STRAVA_CLIENT_ID`,
+`STRAVA_CLIENT_SECRET` (+ a token-encryption key) to Netlify env.
+
 **Planned slices:**
 
 - [ ] Schema + migration for `strava_sessions` + `strava_connections` (Neon)
@@ -500,6 +501,17 @@ source-agnostic abstraction).
 - [ ] Auto-sync later: Strava webhook subscription (preferred over polling) or a
       scheduled incremental pull using `last_sync_at`
 - [ ] Rate-limit handling (100 req/15 min, 1000/day) + token-refresh on 401
+
+---
+
+### Stage 16 — Full documentation (LAST STAGE)
+
+- [ ] README rewrite with screenshots, demo link
+- [ ] ARCHITECTURE.md with diagrams
+- [ ] DECISIONS.md finalized
+- [ ] Demo account credentials in README
+- [ ] GIFs of key flows (mobile)
+- [ ] Performance metrics screenshots
 
 ---
 
