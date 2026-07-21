@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 
 import { env } from '../../lib/env';
+import { ValidationError } from '../../lib/errors';
 import { requireAuth, type AppEnv } from '../../middleware/auth';
 import * as stravaService from './strava.service';
 
@@ -54,6 +55,25 @@ stravaRoutes.get('/strava/callback', async (c) => {
 stravaRoutes.get('/strava/status', requireAuth, async (c) => {
   const status = await stravaService.getStatus(c.get('userId'));
   return c.json({ data: status });
+});
+
+// Imported activities, newest first. Optional from/to (local dates) filter — the
+// calendar passes a month window; the Strava page loads all.
+const sessionsQuerySchema = z.object({
+  from: z.iso.date().optional(),
+  to: z.iso.date().optional(),
+});
+stravaRoutes.get('/strava/sessions', requireAuth, async (c) => {
+  const parsed = sessionsQuerySchema.safeParse(c.req.query());
+  if (!parsed.success) {
+    throw new ValidationError('Invalid date range');
+  }
+  const sessions = await stravaService.listSessions(
+    c.get('userId'),
+    parsed.data.from,
+    parsed.data.to,
+  );
+  return c.json({ data: sessions });
 });
 
 // Import recent activities from Strava (idempotent upsert). Returns how many were

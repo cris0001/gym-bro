@@ -211,6 +211,35 @@ describe('strava import route', () => {
   });
 });
 
+describe('strava sessions read route', () => {
+  it('GET /api/strava/sessions returns the imported activities, forwarding from/to', async () => {
+    repo.listStravaSessions.mockResolvedValue([]);
+
+    const res = await request(
+      'GET',
+      '/api/strava/sessions?from=2026-07-01&to=2026-07-31',
+      await authCookie(),
+    );
+
+    expect(res.status).toBe(200);
+    expect(repo.listStravaSessions).toHaveBeenCalledWith('user-1', '2026-07-01', '2026-07-31');
+  });
+
+  it('GET /api/strava/sessions without a range loads all (no from/to)', async () => {
+    repo.listStravaSessions.mockResolvedValue([]);
+
+    const res = await request('GET', '/api/strava/sessions', await authCookie());
+
+    expect(res.status).toBe(200);
+    expect(repo.listStravaSessions).toHaveBeenCalledWith('user-1', undefined, undefined);
+  });
+
+  it('GET /api/strava/sessions without auth returns 401', async () => {
+    const res = await request('GET', '/api/strava/sessions');
+    expect(res.status).toBe(401);
+  });
+});
+
 describe('strava status + disconnect routes', () => {
   it('GET /api/strava/status returns connected details when linked', async () => {
     repo.findConnectionByUserId.mockResolvedValue(

@@ -10,3 +10,28 @@ export interface StravaConnectionStatus {
   scope: string | null;
   lastSyncAt: string | null;
 }
+
+// One imported Strava activity as sent to the client (numeric columns coerced to
+// numbers; startedAt is an ISO string; localDate is 'YYYY-MM-DD'). The raw payload
+// and tokens are never exposed. Metrics are null when the activity didn't record
+// them.
+export interface StravaSessionItem {
+  id: string;
+  stravaActivityId: string;
+  activityType: string;
+  name: string;
+  startedAt: string;
+  timezone: string | null;
+  localDate: string;
+  distanceM: number | null;
+  movingTimeS: number | null;
+  elapsedTimeS: number | null;
+  elevationGainM: number | null;
+  averageSpeedMs: number | null;
+  maxSpeedMs: number | null;
+  averageHeartrate: number | null;
+  maxHeartrate: number | null;
+  calories: number | null;
+  rating: number | null;
+  note: string | null;
+}

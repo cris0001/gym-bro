@@ -161,6 +161,11 @@ export async function disconnect(userId: string): Promise<void> {
   await stravaRepository.deleteConnection(userId);
 }
 
+// Imported activities, newest first, optionally within a local-date window.
+export async function listSessions(userId: string, from?: string, to?: string) {
+  return stravaRepository.listStravaSessions(userId, from, to);
+}
+
 // --- Access token for API calls (used by the import slice) ---
 
 // A minute of slack so a token about to expire mid-request is refreshed first.
