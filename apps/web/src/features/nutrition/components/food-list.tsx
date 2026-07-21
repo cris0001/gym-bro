@@ -1,6 +1,7 @@
 import { ChevronRight, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { ListSkeleton } from '@/components/list-skeleton';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/stores/confirm.store';
 
@@ -37,7 +38,7 @@ export function FoodList({ search }: FoodListProps) {
   }
 
   if (isPending) {
-    return <p className="text-muted-foreground p-4 text-sm">Loading…</p>;
+    return <ListSkeleton />;
   }
   if (filtered.length === 0) {
     return (

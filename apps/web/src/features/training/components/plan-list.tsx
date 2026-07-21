@@ -1,6 +1,8 @@
 import { Link } from '@tanstack/react-router';
 import { ChevronRight } from 'lucide-react';
 
+import { ListSkeleton } from '@/components/list-skeleton';
+
 import { usePlans } from '../hooks/use-plans';
 
 // The plans list: each row links to the plan's detail page. Create lives in the
@@ -9,7 +11,7 @@ export function PlanList() {
   const { data: plans, isPending, isError, error } = usePlans();
 
   if (isPending) {
-    return <p className="text-muted-foreground p-4 text-sm">Loading plans…</p>;
+    return <ListSkeleton />;
   }
 
   if (isError) {
