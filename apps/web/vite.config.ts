@@ -3,13 +3,31 @@ import { fileURLToPath } from 'node:url';
 import tailwindcss from '@tailwindcss/vite';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { visualizer } from 'rollup-plugin-visualizer';
+import { defineConfig, type PluginOption } from 'vite';
+
+// Set ANALYZE=true to emit a treemap of the bundle to dist/stats.html after a build
+// (`ANALYZE=true pnpm build`). Off by default so normal builds are unaffected.
+const analyze = process.env.ANALYZE === 'true';
 
 export default defineConfig({
   // tanstackRouter must precede the React plugin. It generates
   // src/routeTree.gen.ts from the files in src/routes and enables per-route
   // code-splitting.
-  plugins: [tanstackRouter({ target: 'react', autoCodeSplitting: true }), react(), tailwindcss()],
+  plugins: [
+    tanstackRouter({ target: 'react', autoCodeSplitting: true }),
+    react(),
+    tailwindcss(),
+    ...(analyze
+      ? [
+          visualizer({
+            filename: 'dist/stats.html',
+            gzipSize: true,
+            brotliSize: true,
+          }) as PluginOption,
+        ]
+      : []),
+  ],
   resolve: {
     // Mirrors the tsconfig "@/*" -> "./src/*" path alias for the bundler.
     alias: {
