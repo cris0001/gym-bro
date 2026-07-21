@@ -1,4 +1,5 @@
 import {
+  Activity,
   Apple,
   CalendarDays,
   ChefHat,
@@ -23,6 +24,7 @@ export type NavPath =
   | '/stats'
   | '/diary'
   | '/body'
+  | '/strava'
   | '/plans'
   | '/exercises'
   | '/tags'
@@ -74,6 +76,7 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
   { to: '/body', label: 'Body', icon: Scale, children: [] },
+  { to: '/strava', label: 'Strava', icon: Activity, children: [] },
 ];
 
 // True when `pathname` is the route itself or a child route under it (e.g.
