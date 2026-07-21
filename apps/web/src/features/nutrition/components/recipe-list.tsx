@@ -1,7 +1,8 @@
 import { Link } from '@tanstack/react-router';
-import { ChevronRight, Trash2 } from 'lucide-react';
+import { ChefHat, ChevronRight, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { EmptyState } from '@/components/empty-state';
 import { ListSkeleton } from '@/components/list-skeleton';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/stores/confirm.store';
@@ -33,9 +34,19 @@ export function RecipeList() {
   }
   if (recipes.length === 0) {
     return (
-      <p className="text-muted-foreground p-4 text-center text-sm">
-        No recipes yet. Create your first recipe.
-      </p>
+      <EmptyState
+        icon={<ChefHat className="size-6" />}
+        title="No recipes yet"
+        description="Combine foods into a recipe to log it in one tap."
+        action={
+          <Button asChild className="h-11">
+            <Link to="/recipes/new">
+              <Plus className="size-4" />
+              New recipe
+            </Link>
+          </Button>
+        }
+      />
     );
   }
 

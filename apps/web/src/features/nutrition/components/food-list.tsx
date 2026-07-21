@@ -1,6 +1,7 @@
-import { ChevronRight, Trash2 } from 'lucide-react';
+import { Apple, ChevronRight, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { EmptyState } from '@/components/empty-state';
 import { ListSkeleton } from '@/components/list-skeleton';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/stores/confirm.store';
@@ -21,6 +22,7 @@ interface FoodListProps {
 export function FoodList({ search }: FoodListProps) {
   const { data: foods = [], isPending } = useFoods('');
   const openEdit = useFoodUiStore((s) => s.openEdit);
+  const openCreate = useFoodUiStore((s) => s.openCreate);
   const remove = useDeleteFood();
   const confirm = useConfirm();
 
@@ -41,10 +43,21 @@ export function FoodList({ search }: FoodListProps) {
     return <ListSkeleton />;
   }
   if (filtered.length === 0) {
+    if (query) {
+      return <EmptyState title="No matches" description={`No foods match "${search.trim()}".`} />;
+    }
     return (
-      <p className="text-muted-foreground p-4 text-center text-sm">
-        {query ? 'No foods match your search.' : 'No foods yet. Add your first food.'}
-      </p>
+      <EmptyState
+        icon={<Apple className="size-6" />}
+        title="No foods yet"
+        description="Add your first food to start building recipes and logging meals."
+        action={
+          <Button type="button" className="h-11" onClick={openCreate}>
+            <Plus className="size-4" />
+            Add food
+          </Button>
+        }
+      />
     );
   }
 

@@ -1,14 +1,18 @@
 import { Link } from '@tanstack/react-router';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, ClipboardList, Plus } from 'lucide-react';
 
+import { EmptyState } from '@/components/empty-state';
 import { ListSkeleton } from '@/components/list-skeleton';
+import { Button } from '@/components/ui/button';
 
 import { usePlans } from '../hooks/use-plans';
+import { usePlanUiStore } from '../stores/plan-ui.store';
 
 // The plans list: each row links to the plan's detail page. Create lives in the
 // page header; edit/delete live on the detail page.
 export function PlanList() {
   const { data: plans, isPending, isError, error } = usePlans();
+  const openCreate = usePlanUiStore((s) => s.openCreate);
 
   if (isPending) {
     return <ListSkeleton />;
@@ -24,9 +28,17 @@ export function PlanList() {
 
   if (plans.length === 0) {
     return (
-      <p className="text-muted-foreground p-4 text-sm">
-        No plans yet. Create one to organize your workout templates.
-      </p>
+      <EmptyState
+        icon={<ClipboardList className="size-6" />}
+        title="No plans yet"
+        description="Create a plan (e.g. PPL, Upper/Lower) to organize your workout templates."
+        action={
+          <Button type="button" className="h-11" onClick={openCreate}>
+            <Plus className="size-4" />
+            New plan
+          </Button>
+        }
+      />
     );
   }
 
