@@ -21,9 +21,14 @@ import {
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 
-import type { PlannedSessionWithTemplate, WorkoutSessionListItem } from '@gym-bro/shared';
+import type {
+  PlannedSessionWithTemplate,
+  StravaSessionItem,
+  WorkoutSessionListItem,
+} from '@gym-bro/shared';
 
 import { Button } from '@/components/ui/button';
+import { useStravaSessions } from '@/features/strava';
 
 import { usePlannedSessions } from '../hooks/use-planned-sessions';
 import { useUpdatePlannedSession } from '../hooks/use-update-planned-session';
@@ -93,6 +98,17 @@ function namesByDate(workouts: WorkoutSessionListItem[]): Map<string, string[]> 
   return map;
 }
 
+// Imported Strava activity names per day (keyed by local_date) — shown in orange.
+function stravaNamesByDate(sessions: StravaSessionItem[]): Map<string, string[]> {
+  const map = new Map<string, string[]>();
+  for (const session of sessions) {
+    const existing = map.get(session.localDate) ?? [];
+    existing.push(session.name);
+    map.set(session.localDate, existing);
+  }
+  return map;
+}
+
 export function CalendarGrid() {
   const viewMode = useCalendarUiStore((s) => s.viewMode);
   const anchor = useCalendarUiStore((s) => s.anchor);
@@ -129,6 +145,8 @@ export function CalendarGrid() {
   const strengthCounts = countByDate(workouts, 'strength');
   const activityCounts = countByDate(workouts, 'activity');
   const finishedNames = namesByDate(workouts);
+  const { data: stravaSessions = [] } = useStravaSessions(fromIso, toIso);
+  const stravaNames = stravaNamesByDate(stravaSessions);
 
   const updateMutation = useUpdatePlannedSession();
   const [dragging, setDragging] = useState<PlannedSessionWithTemplate | null>(null);
@@ -216,6 +234,7 @@ export function CalendarGrid() {
                 strengthCount={strengthCounts.get(iso) ?? 0}
                 activityCount={activityCounts.get(iso) ?? 0}
                 workoutNames={finishedNames.get(iso) ?? []}
+                stravaNames={stravaNames.get(iso) ?? []}
                 tags={tagMarkers.get(iso) ?? []}
                 onSelect={selectDay}
               />

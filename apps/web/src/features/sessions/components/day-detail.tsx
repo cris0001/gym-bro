@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import { ChevronLeft, Trash2 } from 'lucide-react';
+import { useNavigate } from '@tanstack/react-router';
+import { ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import type { PlannedStatus } from '@gym-bro/shared';
 
 import { Button } from '@/components/ui/button';
+import { useStravaSessions } from '@/features/strava';
 import { cn } from '@/lib/utils';
 
 import { useDeletePlannedSession } from '../hooks/use-delete-planned-session';
@@ -41,8 +43,10 @@ export function DayDetail({ date }: { date: string }) {
     ...workoutsInRangeQueryOptions(date, date),
     enabled: date !== '',
   });
+  const { data: stravaSessions = [] } = useStravaSessions(date || undefined, date || undefined);
   const deleteMutation = useDeletePlannedSession();
   const { startFromTemplate } = useStartWorkout();
+  const navigate = useNavigate();
 
   const todos = planned.filter((session) => session.status !== 'completed');
   const workouts = workoutsPage?.items ?? [];
@@ -61,7 +65,7 @@ export function DayDetail({ date }: { date: string }) {
 
   return (
     <div className="flex flex-col gap-4 p-4">
-      {todos.length === 0 && workouts.length === 0 && (
+      {todos.length === 0 && workouts.length === 0 && stravaSessions.length === 0 && (
         <p className="text-muted-foreground text-sm">Nothing on this day.</p>
       )}
 
@@ -123,6 +127,29 @@ export function DayDetail({ date }: { date: string }) {
           </h3>
           {workouts.map((workout) => (
             <DayWorkoutItem key={workout.id} workout={workout} />
+          ))}
+        </section>
+      )}
+
+      {stravaSessions.length > 0 && (
+        <section className="flex flex-col gap-2">
+          <h3 className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium uppercase">
+            <span className="size-2 rounded-full bg-orange-500" />
+            Strava
+          </h3>
+          {stravaSessions.map((session) => (
+            <button
+              key={session.id}
+              type="button"
+              className="hover:bg-muted/50 active:bg-muted flex items-center gap-2 rounded-lg border px-3 py-2 text-left transition-colors"
+              onClick={() => void navigate({ to: '/strava', search: { activity: session.id } })}
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-medium">{session.name}</span>
+                <span className="text-muted-foreground text-xs">{session.activityType}</span>
+              </span>
+              <ChevronRight className="text-muted-foreground size-4 shrink-0" />
+            </button>
           ))}
         </section>
       )}

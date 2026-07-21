@@ -19,6 +19,8 @@ interface CalendarDayCellProps {
   activityCount: number;
   // Names of the day's finished workouts (template snapshot / activity name).
   workoutNames: string[];
+  // Names of the day's imported Strava activities (shown in orange).
+  stravaNames: string[];
   tags: { id: string; color: string }[];
   onSelect: (iso: string) => void;
 }
@@ -39,21 +41,25 @@ export function CalendarDayCell({
   strengthCount,
   activityCount,
   workoutNames,
+  stravaNames,
   tags,
   onSelect,
 }: CalendarDayCellProps) {
   const { setNodeRef, isOver } = useDroppable({ id: iso });
 
   const finished = strengthCount + activityCount;
-  // Tint the cell by its content for an at-a-glance read: green when something was
-  // done, accent when only planned. Selection wins over the tint.
+  // Tint the cell by its content for an at-a-glance read: green when a workout was
+  // done, orange when only a Strava activity, accent when only planned. Selection
+  // wins over the tint.
   const bgClass = isSelected
     ? 'bg-accent'
     : finished > 0
       ? 'bg-green-500/10'
-      : planned.length > 0
-        ? 'bg-primary/10'
-        : '';
+      : stravaNames.length > 0
+        ? 'bg-orange-500/10'
+        : planned.length > 0
+          ? 'bg-primary/10'
+          : '';
 
   return (
     <div
@@ -100,15 +106,23 @@ export function CalendarDayCell({
         </span>
       )}
 
-      {finished > 0 && (
-        <span className="mt-auto flex w-full min-w-0 flex-col items-center gap-0.5 text-[10px] leading-tight font-medium text-green-700">
+      {(finished > 0 || stravaNames.length > 0) && (
+        <span className="mt-auto flex w-full min-w-0 flex-col items-center gap-0.5 text-[10px] leading-tight font-medium">
           {workoutNames.slice(0, 3).map((name, index) => (
-            <span key={index} className="max-w-full truncate">
+            <span key={`w-${index}`} className="max-w-full truncate text-green-700">
               {name}
             </span>
           ))}
           {workoutNames.length > 3 && (
             <span className="text-muted-foreground">+{workoutNames.length - 3}</span>
+          )}
+          {stravaNames.slice(0, 2).map((name, index) => (
+            <span key={`s-${index}`} className="max-w-full truncate text-orange-600">
+              {name}
+            </span>
+          ))}
+          {stravaNames.length > 2 && (
+            <span className="text-muted-foreground">+{stravaNames.length - 2}</span>
           )}
         </span>
       )}
