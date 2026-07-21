@@ -18,13 +18,21 @@ export function BottomNav() {
       {NAV_SECTIONS.map((section) => {
         const Icon = section.icon;
         const isActive = section.label === activeSection.label;
+        // Strava reads as its own orange button within the bar.
+        const isStrava = section.brand === 'strava';
         return (
           <Link
             key={section.label}
             to={section.to}
             className={cn(
               'flex flex-1 flex-col items-center justify-center gap-0.5 text-[11px] font-medium transition-colors',
-              isActive ? 'bg-white/15 font-semibold text-white' : 'text-white/85',
+              isStrava
+                ? isActive
+                  ? 'bg-orange-600 font-semibold text-white'
+                  : 'bg-orange-500 text-white'
+                : isActive
+                  ? 'bg-white/15 font-semibold text-white'
+                  : 'text-white/85',
             )}
           >
             <Icon className="size-5" />

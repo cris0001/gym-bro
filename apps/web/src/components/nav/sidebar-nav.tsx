@@ -3,6 +3,7 @@ import { Dumbbell } from 'lucide-react';
 
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LogoutButton } from '@/features/auth';
+import { cn } from '@/lib/utils';
 
 import { NAV_SECTIONS } from './nav-items';
 
@@ -10,6 +11,9 @@ const sectionClass = 'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-
 const childClass = 'flex items-center gap-2.5 rounded-md px-3 py-1.5 text-sm';
 const activeClass = 'bg-primary/10 text-primary';
 const inactiveClass = 'text-muted-foreground hover:bg-accent hover:text-foreground';
+// Strava-branded section: orange like the Strava button, filled when active.
+const stravaActiveClass = 'bg-orange-600 text-white hover:bg-orange-600/90';
+const stravaInactiveClass = 'text-orange-600 hover:bg-orange-500/10';
 
 // Desktop navigation: a fixed, branded left sidebar with the four sections — each
 // lands on its main view, with its submenu nested beneath a guide rail. Hidden
@@ -36,8 +40,12 @@ export function SidebarNav() {
                 to={section.to}
                 activeOptions={{ exact: section.exact ?? false }}
                 className={sectionClass}
-                activeProps={{ className: activeClass }}
-                inactiveProps={{ className: inactiveClass }}
+                activeProps={{
+                  className: cn(section.brand === 'strava' ? stravaActiveClass : activeClass),
+                }}
+                inactiveProps={{
+                  className: cn(section.brand === 'strava' ? stravaInactiveClass : inactiveClass),
+                }}
               >
                 <Icon className="size-4" />
                 {section.label}
