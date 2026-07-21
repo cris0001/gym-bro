@@ -1,8 +1,8 @@
 import { useDroppable } from '@dnd-kit/core';
-import { Activity } from 'lucide-react';
 
 import type { PlannedSessionWithTemplate } from '@gym-bro/shared';
 
+import { stravaActivityIcon } from '@/features/strava';
 import { cn } from '@/lib/utils';
 
 import { PlannedMarker } from './planned-marker';
@@ -20,8 +20,8 @@ interface CalendarDayCellProps {
   activityCount: number;
   // Names of the day's finished workouts (template snapshot / activity name).
   workoutNames: string[];
-  // How many imported Strava activities the day has (shown as an orange icon).
-  stravaCount: number;
+  // The day's imported Strava activity types — each shown as its orange sport icon.
+  stravaTypes: string[];
   tags: { id: string; color: string }[];
   onSelect: (iso: string) => void;
 }
@@ -42,7 +42,7 @@ export function CalendarDayCell({
   strengthCount,
   activityCount,
   workoutNames,
-  stravaCount,
+  stravaTypes,
   tags,
   onSelect,
 }: CalendarDayCellProps) {
@@ -56,7 +56,7 @@ export function CalendarDayCell({
     ? 'bg-accent'
     : finished > 0
       ? 'bg-green-500/10'
-      : stravaCount > 0
+      : stravaTypes.length > 0
         ? 'bg-orange-500/10'
         : planned.length > 0
           ? 'bg-primary/10'
@@ -93,7 +93,7 @@ export function CalendarDayCell({
         {dayNumber}
       </span>
 
-      {(planned.length > 0 || stravaCount > 0) && (
+      {(planned.length > 0 || stravaTypes.length > 0) && (
         <span className="flex flex-wrap items-center justify-center gap-x-1 gap-y-0.5">
           {planned.length > 0 && (
             <span className="flex items-center gap-0.5">
@@ -108,11 +108,16 @@ export function CalendarDayCell({
               )}
             </span>
           )}
-          {stravaCount > 0 && (
+          {stravaTypes.length > 0 && (
             <span className="flex items-center gap-0.5 text-orange-600">
-              <Activity className="size-3.5" />
-              {stravaCount > 1 && (
-                <span className="text-[10px] font-semibold leading-none">×{stravaCount}</span>
+              {stravaTypes.slice(0, 3).map((type, index) => {
+                const Icon = stravaActivityIcon(type);
+                return <Icon key={index} className="size-3.5" />;
+              })}
+              {stravaTypes.length > 3 && (
+                <span className="text-[10px] font-semibold leading-none">
+                  +{stravaTypes.length - 3}
+                </span>
               )}
             </span>
           )}
