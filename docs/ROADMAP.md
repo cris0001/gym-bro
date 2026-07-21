@@ -455,6 +455,54 @@ documented in `docs/DEPLOYMENT.md`.
 
 ---
 
+### Stage 17 — Strava integration 🔜 PLANNED
+
+Import endurance activities from Strava via OAuth (no file uploads). Manual
+"import recent" on click first; automatic background sync later over the same code.
+This is the ONLY external integration — the schema is Strava-specific (no
+source-agnostic abstraction).
+
+**Storage — two new tables (schema approved as a text sketch; Drizzle TBD):**
+
+`strava_sessions` — one row per imported Strava activity, kept in its own table
+(separate from `workout_sessions`); calendar/history/stats read both and merge.
+
+- id (uuid pk), user_id (fk users, cascade)
+- strava_activity_id (text) — the dedup key; **UNIQUE (user_id, strava_activity_id)**
+  so manual re-import and auto-sync are idempotent (upsert, never duplicate)
+- activity_type (text — Strava sport_type, not an enum), name (text)
+- started_at (timestamptz), timezone (text, nullable), local_date (date —
+  denormalized for calendar range scans; **INDEX (user_id, local_date)**)
+- distance_m, moving_time_s, elapsed_time_s, elevation_gain_m, average_speed_ms,
+  max_speed_ms, average_heartrate, max_heartrate, calories — all nullable (not every
+  activity has them; calories only comes from Strava's detail endpoint)
+- rating (smallint, nullable), note (text, nullable) — the user's own annotations
+- raw (jsonb, nullable) — raw Strava payload, to backfill new columns later
+- last_synced_at, created_at, updated_at
+- CHECKs: non-negative distances/times, rating 1–5
+
+`strava_connections` — OAuth tokens, one per user.
+
+- id, user_id (fk users, cascade, **UNIQUE** — one connection per user)
+- athlete_id (text), access_token, refresh_token (encrypted at rest), expires_at
+  (timestamptz), scope (text), last_sync_at (timestamptz, nullable — feeds the
+  incremental sync `after` param), created_at, updated_at
+
+**Planned slices:**
+
+- [ ] Schema + migration for `strava_sessions` + `strava_connections` (Neon)
+- [ ] Backend OAuth: connect (authorize redirect) + callback (code→token exchange),
+      token refresh, store/clear connection
+- [ ] Backend import: fetch `GET /athlete/activities` (+ detail for calories),
+      upsert into `strava_sessions` (idempotent on the unique key)
+- [ ] Frontend: "Connect Strava" + "Import recent" in Settings/Body; show imported
+      activities on the calendar/history alongside workouts
+- [ ] Auto-sync later: Strava webhook subscription (preferred over polling) or a
+      scheduled incremental pull using `last_sync_at`
+- [ ] Rate-limit handling (100 req/15 min, 1000/day) + token-refresh on 401
+
+---
+
 ## Future considerations (not in scope)
 
 - OAuth (Google, GitHub)
