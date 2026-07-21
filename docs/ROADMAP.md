@@ -392,16 +392,10 @@ The one remaining lever, if a chart route ever feels heavy on mobile, is replaci
 Recharts with a lighter renderer — a real rewrite of the 3 chart components, not
 done here.
 
-### Stage 13 — Accessibility pass
+### Stage 13 — Accessibility pass [REMOVED — out of scope]
 
-- [ ] Keyboard navigation everywhere
-- [ ] Focus management for modals
-- [ ] ARIA labels and aria-live
-- [ ] Contrast check WCAG AA
-- [ ] Screen reader test
-- [ ] Skip links
-- [ ] Reduced motion support
-- [ ] Verify touch targets ≥44px
+Dropped from the roadmap. (Stage numbers 14–16 are left unchanged because code
+comments and CLAUDE.md reference them by number.)
 
 ### Stage 14 — Polish + animations + responsive
 
