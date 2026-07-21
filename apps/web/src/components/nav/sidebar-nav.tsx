@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { Dumbbell } from 'lucide-react';
 
+import { ThemeToggle } from '@/components/theme-toggle';
 import { LogoutButton } from '@/features/auth';
 
 import { NAV_SECTIONS } from './nav-items';
@@ -65,8 +66,9 @@ export function SidebarNav() {
         })}
       </nav>
 
-      <div className="border-t p-3">
+      <div className="flex items-center justify-between border-t p-3">
         <LogoutButton />
+        <ThemeToggle />
       </div>
     </aside>
   );

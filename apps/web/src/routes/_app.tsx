@@ -4,6 +4,7 @@ import { Dumbbell } from 'lucide-react';
 import { BottomNav } from '@/components/nav/bottom-nav';
 import { SectionTabs } from '@/components/nav/section-tabs';
 import { SidebarNav } from '@/components/nav/sidebar-nav';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { LogoutButton, OnboardingSheet, meQueryOptions } from '@/features/auth';
 
 // Protected layout. beforeLoad resolves the current user from the shared cache
@@ -33,7 +34,10 @@ function AppLayout() {
             </span>
             Gym Bro
           </span>
-          <LogoutButton />
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
+            <LogoutButton />
+          </div>
         </header>
         <SectionTabs />
         {/* Muted canvas so cards lift off the background. The grid tracks let each
