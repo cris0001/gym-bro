@@ -1,9 +1,11 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Pencil, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useConfirm } from '@/stores/confirm.store';
 import type { TemplateExerciseWithExercise } from '@gym-bro/shared';
 
 import { useDeleteTemplateExercise } from '../hooks/use-delete-template-exercise';
@@ -34,13 +36,23 @@ export function TemplateExerciseRow({ templateExercise }: TemplateExerciseRowPro
   });
   const openEdit = useTemplateExerciseUiStore((s) => s.openEdit);
   const remove = useDeleteTemplateExercise();
+  const confirm = useConfirm();
 
   const { exercise } = templateExercise;
   const targets = formatTargets(templateExercise);
 
-  function onDelete() {
-    if (window.confirm(`Remove "${exercise.name}" from this template?`)) {
-      remove.mutate({ id: templateExercise.id, templateId: templateExercise.workoutTemplateId });
+  async function onDelete() {
+    const ok = await confirm({
+      title: `Remove "${exercise.name}"?`,
+      description: 'It will be removed from this template.',
+      confirmText: 'Remove',
+      destructive: true,
+    });
+    if (ok) {
+      remove.mutate(
+        { id: templateExercise.id, templateId: templateExercise.workoutTemplateId },
+        { onSuccess: () => toast.success('Exercise removed') },
+      );
     }
   }
 
@@ -92,7 +104,7 @@ export function TemplateExerciseRow({ templateExercise }: TemplateExerciseRowPro
         className="text-destructive size-11 shrink-0"
         aria-label={`Remove ${exercise.name}`}
         disabled={remove.isPending}
-        onClick={onDelete}
+        onClick={() => void onDelete()}
       >
         <Trash2 className="size-4" />
       </Button>

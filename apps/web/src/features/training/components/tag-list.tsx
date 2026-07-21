@@ -1,6 +1,8 @@
 import { Pencil, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import { useConfirm } from '@/stores/confirm.store';
 import type { WorkoutTag } from '@gym-bro/shared';
 
 import { useDeleteTag } from '../hooks/use-delete-tag';
@@ -13,6 +15,7 @@ export function TagList() {
   const { data: tags, isPending, isError, error } = useTags();
   const openEdit = useTagUiStore((s) => s.openEdit);
   const remove = useDeleteTag();
+  const confirm = useConfirm();
 
   if (isPending) {
     return <p className="text-muted-foreground p-4 text-sm">Loading tags…</p>;
@@ -34,10 +37,14 @@ export function TagList() {
     );
   }
 
-  function onDelete(tag: WorkoutTag) {
-    if (window.confirm(`Delete "${tag.name}"? It will be removed from your tags.`)) {
-      remove.mutate(tag.id);
-    }
+  async function onDelete(tag: WorkoutTag) {
+    const ok = await confirm({
+      title: `Delete "${tag.name}"?`,
+      description: 'It will be removed from your tags.',
+      confirmText: 'Delete',
+      destructive: true,
+    });
+    if (ok) remove.mutate(tag.id, { onSuccess: () => toast.success('Tag deleted') });
   }
 
   return (
@@ -70,7 +77,7 @@ export function TagList() {
             className="text-destructive size-11 shrink-0"
             aria-label={`Delete ${tag.name}`}
             disabled={remove.isPending}
-            onClick={() => onDelete(tag)}
+            onClick={() => void onDelete(tag)}
           >
             <Trash2 className="size-4" />
           </Button>

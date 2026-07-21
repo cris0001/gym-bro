@@ -1,11 +1,13 @@
 import { Link } from '@tanstack/react-router';
 import { Activity, ChevronDown, Dumbbell } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 import type { WorkoutSessionListItem } from '@gym-bro/shared';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useConfirm } from '@/stores/confirm.store';
 
 import { useDeleteWorkoutSession } from '../hooks/use-delete-workout-session';
 import { useEditWorkout } from '../hooks/use-edit-workout';
@@ -20,12 +22,17 @@ export function DayWorkoutItem({ workout }: { workout: WorkoutSessionListItem })
   const { data: detail, isLoading } = useWorkoutSession(workout.id, expanded);
   const editWorkout = useEditWorkout();
   const remove = useDeleteWorkoutSession();
+  const confirm = useConfirm();
   const Icon = workout.sessionType === 'activity' ? Activity : Dumbbell;
 
-  function handleDelete() {
-    if (window.confirm('Delete this workout? This cannot be undone.')) {
-      remove.mutate(workout.id);
-    }
+  async function handleDelete() {
+    const ok = await confirm({
+      title: 'Delete this workout?',
+      description: 'This cannot be undone.',
+      confirmText: 'Delete',
+      destructive: true,
+    });
+    if (ok) remove.mutate(workout.id, { onSuccess: () => toast.success('Workout deleted') });
   }
 
   return (
@@ -78,7 +85,7 @@ export function DayWorkoutItem({ workout }: { workout: WorkoutSessionListItem })
               )}
               <div className="flex flex-wrap gap-2">
                 {detail.sessionType === 'strength' && (
-                  <Button size="sm" className="h-9" onClick={() => editWorkout(detail)}>
+                  <Button size="sm" className="h-9" onClick={() => void editWorkout(detail)}>
                     Edit
                   </Button>
                 )}
@@ -91,7 +98,7 @@ export function DayWorkoutItem({ workout }: { workout: WorkoutSessionListItem })
                   size="sm"
                   variant="outline"
                   className="text-destructive h-9"
-                  onClick={handleDelete}
+                  onClick={() => void handleDelete()}
                   disabled={remove.isPending}
                 >
                   Delete

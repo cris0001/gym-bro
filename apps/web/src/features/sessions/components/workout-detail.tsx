@@ -1,7 +1,9 @@
 import { Link, useNavigate } from '@tanstack/react-router';
 import { format, parseISO } from 'date-fns';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import { useConfirm } from '@/stores/confirm.store';
 
 import { useDeleteWorkoutSession } from '../hooks/use-delete-workout-session';
 import { useEditWorkout } from '../hooks/use-edit-workout';
@@ -20,10 +22,22 @@ export function WorkoutDetail({ sessionId }: WorkoutDetailProps) {
   const { data: session, isLoading, isError } = useWorkoutSession(sessionId);
   const deleteMutation = useDeleteWorkoutSession();
   const editWorkout = useEditWorkout();
+  const confirm = useConfirm();
 
-  function handleDelete() {
-    if (window.confirm('Delete this workout? This cannot be undone.')) {
-      deleteMutation.mutate(sessionId, { onSuccess: () => void navigate({ to: '/calendar' }) });
+  async function handleDelete() {
+    const ok = await confirm({
+      title: 'Delete this workout?',
+      description: 'This cannot be undone.',
+      confirmText: 'Delete',
+      destructive: true,
+    });
+    if (ok) {
+      deleteMutation.mutate(sessionId, {
+        onSuccess: () => {
+          toast.success('Workout deleted');
+          void navigate({ to: '/calendar' });
+        },
+      });
     }
   }
 
@@ -83,14 +97,14 @@ export function WorkoutDetail({ sessionId }: WorkoutDetailProps) {
 
       <div className="flex gap-2">
         {session.sessionType === 'strength' && (
-          <Button className="h-11 flex-1" onClick={() => editWorkout(session)}>
+          <Button className="h-11 flex-1" onClick={() => void editWorkout(session)}>
             Edit
           </Button>
         )}
         <Button
           variant="outline"
           className="text-destructive h-11 flex-1"
-          onClick={handleDelete}
+          onClick={() => void handleDelete()}
           disabled={deleteMutation.isPending}
         >
           Delete

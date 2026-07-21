@@ -1,6 +1,8 @@
 import { ChevronRight, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import { useConfirm } from '@/stores/confirm.store';
 
 import type { Food } from '@gym-bro/shared';
 
@@ -19,14 +21,19 @@ export function FoodList({ search }: FoodListProps) {
   const { data: foods = [], isPending } = useFoods('');
   const openEdit = useFoodUiStore((s) => s.openEdit);
   const remove = useDeleteFood();
+  const confirm = useConfirm();
 
   const query = search.trim().toLowerCase();
   const filtered = query ? foods.filter((f) => f.name.toLowerCase().includes(query)) : foods;
 
-  function onDelete(food: Food) {
-    if (window.confirm(`Delete "${food.name}"? It will be removed from your foods.`)) {
-      remove.mutate(food.id);
-    }
+  async function onDelete(food: Food) {
+    const ok = await confirm({
+      title: `Delete "${food.name}"?`,
+      description: 'It will be removed from your foods.',
+      confirmText: 'Delete',
+      destructive: true,
+    });
+    if (ok) remove.mutate(food.id, { onSuccess: () => toast.success('Food deleted') });
   }
 
   if (isPending) {
@@ -69,7 +76,7 @@ export function FoodList({ search }: FoodListProps) {
             className="text-destructive size-11 shrink-0"
             aria-label={`Delete ${food.name}`}
             disabled={remove.isPending}
-            onClick={() => onDelete(food)}
+            onClick={() => void onDelete(food)}
           >
             <Trash2 className="size-4" />
           </Button>

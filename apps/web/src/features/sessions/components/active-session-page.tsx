@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useConfirm } from '@/stores/confirm.store';
 
 import { usePlannedSessions } from '../hooks/use-planned-sessions';
 import { useStartWorkout } from '../hooks/use-start-workout';
@@ -25,6 +26,7 @@ export function ActiveSessionPage() {
   const setPerformedDate = useWorkoutDraftStore((s) => s.setPerformedDate);
   const discard = useWorkoutDraftStore((s) => s.discard);
   const { startFromTemplate, startEmpty } = useStartWorkout();
+  const confirm = useConfirm();
 
   const todayIso = format(new Date(), 'yyyy-MM-dd');
   const { data: plannedToday = [] } = usePlannedSessions(todayIso, todayIso);
@@ -79,7 +81,7 @@ export function ActiveSessionPage() {
           or
           <span className="bg-border h-px flex-1" />
         </div>
-        <Button variant="ghost" className="h-11" onClick={startEmpty}>
+        <Button variant="ghost" className="h-11" onClick={() => void startEmpty()}>
           Start empty workout
         </Button>
       </div>
@@ -91,11 +93,14 @@ export function ActiveSessionPage() {
   // (started empty) get a free, editable name.
   const isTemplateBased = draft.workoutTemplateId !== null;
 
-  function handleDiscard() {
-    const message = isEditing
-      ? "Stop editing? Your changes won't be saved."
-      : 'Discard this workout? Logged sets will be lost.';
-    if (window.confirm(message)) discard();
+  async function handleDiscard() {
+    const ok = await confirm({
+      title: isEditing ? 'Stop editing?' : 'Discard this workout?',
+      description: isEditing ? "Your changes won't be saved." : 'Logged sets will be lost.',
+      confirmText: isEditing ? 'Stop editing' : 'Discard',
+      destructive: true,
+    });
+    if (ok) discard();
   }
 
   return (
@@ -139,7 +144,7 @@ export function ActiveSessionPage() {
 
       <div className="bg-background/95 fixed inset-x-0 bottom-0 z-30 border-t p-3 backdrop-blur lg:left-60">
         <div className="flex w-full max-w-3xl gap-2">
-          <Button variant="ghost" className="h-11" onClick={handleDiscard}>
+          <Button variant="ghost" className="h-11" onClick={() => void handleDiscard()}>
             {isEditing ? 'Cancel' : 'Discard'}
           </Button>
           <Button className="h-11 flex-1" onClick={() => setFinishing(true)}>

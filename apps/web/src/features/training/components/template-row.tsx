@@ -2,9 +2,11 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Link } from '@tanstack/react-router';
 import { GripVertical, Pencil, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useConfirm } from '@/stores/confirm.store';
 import type { WorkoutTemplate } from '@gym-bro/shared';
 
 import { useDeleteTemplate } from '../hooks/use-delete-template';
@@ -22,11 +24,16 @@ export function TemplateRow({ template }: TemplateRowProps) {
   });
   const openEdit = useTemplateUiStore((s) => s.openEdit);
   const remove = useDeleteTemplate();
+  const confirm = useConfirm();
 
-  function onDelete() {
-    if (window.confirm(`Delete "${template.name}"? This removes its exercises too.`)) {
-      remove.mutate(template.id);
-    }
+  async function onDelete() {
+    const ok = await confirm({
+      title: `Delete "${template.name}"?`,
+      description: 'This removes its exercises too.',
+      confirmText: 'Delete',
+      destructive: true,
+    });
+    if (ok) remove.mutate(template.id, { onSuccess: () => toast.success('Template deleted') });
   }
 
   return (
@@ -73,7 +80,7 @@ export function TemplateRow({ template }: TemplateRowProps) {
         className="text-destructive size-11 shrink-0"
         aria-label={`Delete ${template.name}`}
         disabled={remove.isPending}
-        onClick={onDelete}
+        onClick={() => void onDelete()}
       >
         <Trash2 className="size-4" />
       </Button>

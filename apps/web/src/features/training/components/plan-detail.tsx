@@ -1,7 +1,9 @@
 import { Link, useNavigate } from '@tanstack/react-router';
 import { ChevronLeft, Plus, Star } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import { useConfirm } from '@/stores/confirm.store';
 
 import type { PlanWithTemplates } from '@gym-bro/shared';
 
@@ -28,6 +30,7 @@ export function PlanDetail({ planId }: PlanDetailProps) {
   const openEdit = usePlanUiStore((s) => s.openEdit);
   const openCreateTemplate = useTemplateUiStore((s) => s.openCreate);
   const remove = useDeletePlan();
+  const confirm = useConfirm();
   const navigate = useNavigate();
 
   if (isPending) {
@@ -42,9 +45,20 @@ export function PlanDetail({ planId }: PlanDetailProps) {
     );
   }
 
-  function onDelete(target: PlanWithTemplates) {
-    if (window.confirm(`Delete "${target.name}"? This also removes all of its templates.`)) {
-      remove.mutate(target.id, { onSuccess: () => void navigate({ to: '/plans' }) });
+  async function onDelete(target: PlanWithTemplates) {
+    const ok = await confirm({
+      title: `Delete "${target.name}"?`,
+      description: 'This also removes all of its templates.',
+      confirmText: 'Delete',
+      destructive: true,
+    });
+    if (ok) {
+      remove.mutate(target.id, {
+        onSuccess: () => {
+          toast.success('Plan deleted');
+          void navigate({ to: '/plans' });
+        },
+      });
     }
   }
 
@@ -75,7 +89,7 @@ export function PlanDetail({ planId }: PlanDetailProps) {
               variant="outline"
               className="text-destructive h-11"
               disabled={remove.isPending}
-              onClick={() => onDelete(plan)}
+              onClick={() => void onDelete(plan)}
             >
               Delete
             </Button>

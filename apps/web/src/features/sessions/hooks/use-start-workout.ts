@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { format } from 'date-fns';
 
 import { templateQueryOptions } from '@/features/training';
+import { useConfirm } from '@/stores/confirm.store';
 
 import { useWorkoutDraftStore } from '../stores/workout-draft.store';
 
@@ -23,12 +24,16 @@ export function useStartWorkout() {
   const queryClient = useQueryClient();
   const start = useWorkoutDraftStore((s) => s.start);
   const hasDraft = useWorkoutDraftStore((s) => s.draft !== null);
+  const confirm = useConfirm();
 
-  function confirmOverwrite(): boolean {
-    return (
-      !hasDraft ||
-      window.confirm('A workout is already in progress. Discard it and start a new one?')
-    );
+  async function confirmOverwrite(): Promise<boolean> {
+    if (!hasDraft) return true;
+    return confirm({
+      title: 'A workout is already in progress',
+      description: 'Discard it and start a new one?',
+      confirmText: 'Discard & start',
+      destructive: true,
+    });
   }
 
   // Seeds the session with the template's exercises (in order), each with a single
@@ -39,7 +44,7 @@ export function useStartWorkout() {
     plannedSessionId = null,
     scheduledDate,
   }: StartFromTemplateInput) {
-    if (!confirmOverwrite()) return;
+    if (!(await confirmOverwrite())) return;
     const template = await queryClient.fetchQuery(templateQueryOptions(templateId));
     start({
       name: templateName,
@@ -56,8 +61,8 @@ export function useStartWorkout() {
     void navigate({ to: '/session' });
   }
 
-  function startEmpty() {
-    if (!confirmOverwrite()) return;
+  async function startEmpty() {
+    if (!(await confirmOverwrite())) return;
     start({ name: 'Workout', performedDate: format(new Date(), 'yyyy-MM-dd'), exercises: [] });
     void navigate({ to: '/session' });
   }
