@@ -2,7 +2,9 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { ChevronLeft, Plus, Star } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { ListSkeleton } from '@/components/list-skeleton';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useConfirm } from '@/stores/confirm.store';
 
 import type { PlanWithTemplates } from '@gym-bro/shared';
@@ -34,7 +36,13 @@ export function PlanDetail({ planId }: PlanDetailProps) {
   const navigate = useNavigate();
 
   if (isPending) {
-    return <p className="text-muted-foreground p-4 text-sm">Loading plan…</p>;
+    return (
+      <div className="mx-auto lg:col-span-3 flex w-full max-w-2xl flex-col gap-4 p-4">
+        <Skeleton className="h-8 w-1/2" />
+        <Skeleton className="h-4 w-2/3" />
+        <ListSkeleton rows={3} />
+      </div>
+    );
   }
 
   if (isError) {

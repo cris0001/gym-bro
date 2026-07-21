@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { ChevronRight, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { ListSkeleton } from '@/components/list-skeleton';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/stores/confirm.store';
 
@@ -28,7 +29,7 @@ export function RecipeList() {
   }
 
   if (isPending) {
-    return <p className="text-muted-foreground p-4 text-sm">Loading…</p>;
+    return <ListSkeleton />;
   }
   if (recipes.length === 0) {
     return (

@@ -1,6 +1,7 @@
 import { Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { ListSkeleton } from '@/components/list-skeleton';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/stores/confirm.store';
 import type { WorkoutTag } from '@gym-bro/shared';
@@ -18,7 +19,7 @@ export function TagList() {
   const confirm = useConfirm();
 
   if (isPending) {
-    return <p className="text-muted-foreground p-4 text-sm">Loading tags…</p>;
+    return <ListSkeleton />;
   }
 
   if (isError) {

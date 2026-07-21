@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 import { MEAL_TYPES } from '@gym-bro/shared';
 import type { MealType } from '@gym-bro/shared';
@@ -49,7 +50,14 @@ export function DiaryPage() {
             {data ? (
               <DaySummary totals={data.totals} />
             ) : (
-              <p className="text-muted-foreground text-sm">Loading…</p>
+              <div className="grid gap-3">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="grid gap-1">
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-2 w-full" />
+                  </div>
+                ))}
+              </div>
             )}
           </CardContent>
         </Card>
