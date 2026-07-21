@@ -56,6 +56,13 @@ stravaRoutes.get('/strava/status', requireAuth, async (c) => {
   return c.json({ data: status });
 });
 
+// Import recent activities from Strava (idempotent upsert). Returns how many were
+// pulled. Fails 400 if not connected (surfaced from the service).
+stravaRoutes.post('/strava/import', requireAuth, async (c) => {
+  const result = await stravaService.importRecentActivities(c.get('userId'));
+  return c.json({ data: result });
+});
+
 // Disconnect: forget the stored tokens.
 stravaRoutes.delete('/strava/connect', requireAuth, async (c) => {
   await stravaService.disconnect(c.get('userId'));
