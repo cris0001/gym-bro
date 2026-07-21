@@ -1,6 +1,8 @@
 import { Pencil, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import { useConfirm } from '@/stores/confirm.store';
 import type { Exercise, ExerciseCategory } from '@gym-bro/shared';
 
 import { useDeleteExercise } from '../hooks/use-delete-exercise';
@@ -20,6 +22,7 @@ export function ExerciseList({ category, search }: ExerciseListProps) {
   const { data: exercises, isPending, isError, error } = useExercises(category ?? undefined);
   const openEdit = useExerciseUiStore((s) => s.openEdit);
   const remove = useDeleteExercise();
+  const confirm = useConfirm();
 
   if (isPending) {
     return <p className="text-muted-foreground p-4 text-sm">Loading exercises…</p>;
@@ -43,10 +46,14 @@ export function ExerciseList({ category, search }: ExerciseListProps) {
     );
   }
 
-  function onDelete(exercise: Exercise) {
-    if (window.confirm(`Delete "${exercise.name}"? It will be removed from your library.`)) {
-      remove.mutate(exercise.id);
-    }
+  async function onDelete(exercise: Exercise) {
+    const ok = await confirm({
+      title: `Delete "${exercise.name}"?`,
+      description: 'It will be removed from your library.',
+      confirmText: 'Delete',
+      destructive: true,
+    });
+    if (ok) remove.mutate(exercise.id, { onSuccess: () => toast.success('Exercise deleted') });
   }
 
   const query = search.trim().toLowerCase();
@@ -84,7 +91,7 @@ export function ExerciseList({ category, search }: ExerciseListProps) {
             className="text-destructive size-11 shrink-0"
             aria-label={`Delete ${exercise.name}`}
             disabled={remove.isPending}
-            onClick={() => onDelete(exercise)}
+            onClick={() => void onDelete(exercise)}
           >
             <Trash2 className="size-4" />
           </Button>

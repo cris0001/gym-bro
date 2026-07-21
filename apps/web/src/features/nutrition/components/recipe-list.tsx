@@ -1,7 +1,9 @@
 import { Link } from '@tanstack/react-router';
 import { ChevronRight, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import { useConfirm } from '@/stores/confirm.store';
 
 import type { RecipeListItem } from '@gym-bro/shared';
 
@@ -13,11 +15,16 @@ import { useRecipes } from '../hooks/use-recipes';
 export function RecipeList() {
   const { data: recipes = [], isPending } = useRecipes();
   const remove = useDeleteRecipe();
+  const confirm = useConfirm();
 
-  function onDelete(recipe: RecipeListItem) {
-    if (window.confirm(`Delete "${recipe.name}"? It will be removed from your recipes.`)) {
-      remove.mutate(recipe.id);
-    }
+  async function onDelete(recipe: RecipeListItem) {
+    const ok = await confirm({
+      title: `Delete "${recipe.name}"?`,
+      description: 'It will be removed from your recipes.',
+      confirmText: 'Delete',
+      destructive: true,
+    });
+    if (ok) remove.mutate(recipe.id, { onSuccess: () => toast.success('Recipe deleted') });
   }
 
   if (isPending) {
@@ -62,7 +69,7 @@ export function RecipeList() {
             className="text-destructive size-11 shrink-0"
             aria-label={`Delete ${recipe.name}`}
             disabled={remove.isPending}
-            onClick={() => onDelete(recipe)}
+            onClick={() => void onDelete(recipe)}
           >
             <Trash2 className="size-4" />
           </Button>
