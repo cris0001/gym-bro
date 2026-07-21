@@ -16,6 +16,7 @@ import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AppTargetsRouteImport } from './routes/_app/targets'
 import { Route as AppTagsRouteImport } from './routes/_app/tags'
+import { Route as AppStravaRouteImport } from './routes/_app/strava'
 import { Route as AppStatsRouteImport } from './routes/_app/stats'
 import { Route as AppSessionRouteImport } from './routes/_app/session'
 import { Route as AppFoodsRouteImport } from './routes/_app/foods'
@@ -62,6 +63,11 @@ const AppTargetsRoute = AppTargetsRouteImport.update({
 const AppTagsRoute = AppTagsRouteImport.update({
   id: '/tags',
   path: '/tags',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppStravaRoute = AppStravaRouteImport.update({
+  id: '/strava',
+  path: '/strava',
   getParentRoute: () => AppRoute,
 } as any)
 const AppStatsRoute = AppStatsRouteImport.update({
@@ -144,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/foods': typeof AppFoodsRoute
   '/session': typeof AppSessionRoute
   '/stats': typeof AppStatsRoute
+  '/strava': typeof AppStravaRoute
   '/tags': typeof AppTagsRoute
   '/targets': typeof AppTargetsRoute
   '/login': typeof AuthLoginRoute
@@ -165,6 +172,7 @@ export interface FileRoutesByTo {
   '/foods': typeof AppFoodsRoute
   '/session': typeof AppSessionRoute
   '/stats': typeof AppStatsRoute
+  '/strava': typeof AppStravaRoute
   '/tags': typeof AppTagsRoute
   '/targets': typeof AppTargetsRoute
   '/login': typeof AuthLoginRoute
@@ -188,6 +196,7 @@ export interface FileRoutesById {
   '/_app/foods': typeof AppFoodsRoute
   '/_app/session': typeof AppSessionRoute
   '/_app/stats': typeof AppStatsRoute
+  '/_app/strava': typeof AppStravaRoute
   '/_app/tags': typeof AppTagsRoute
   '/_app/targets': typeof AppTargetsRoute
   '/_auth/login': typeof AuthLoginRoute
@@ -212,6 +221,7 @@ export interface FileRouteTypes {
     | '/foods'
     | '/session'
     | '/stats'
+    | '/strava'
     | '/tags'
     | '/targets'
     | '/login'
@@ -233,6 +243,7 @@ export interface FileRouteTypes {
     | '/foods'
     | '/session'
     | '/stats'
+    | '/strava'
     | '/tags'
     | '/targets'
     | '/login'
@@ -255,6 +266,7 @@ export interface FileRouteTypes {
     | '/_app/foods'
     | '/_app/session'
     | '/_app/stats'
+    | '/_app/strava'
     | '/_app/tags'
     | '/_app/targets'
     | '/_auth/login'
@@ -323,6 +335,13 @@ declare module '@tanstack/react-router' {
       path: '/tags'
       fullPath: '/tags'
       preLoaderRoute: typeof AppTagsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/strava': {
+      id: '/_app/strava'
+      path: '/strava'
+      fullPath: '/strava'
+      preLoaderRoute: typeof AppStravaRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/stats': {
@@ -434,6 +453,7 @@ interface AppRouteChildren {
   AppFoodsRoute: typeof AppFoodsRoute
   AppSessionRoute: typeof AppSessionRoute
   AppStatsRoute: typeof AppStatsRoute
+  AppStravaRoute: typeof AppStravaRoute
   AppTagsRoute: typeof AppTagsRoute
   AppTargetsRoute: typeof AppTargetsRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -454,6 +474,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFoodsRoute: AppFoodsRoute,
   AppSessionRoute: AppSessionRoute,
   AppStatsRoute: AppStatsRoute,
+  AppStravaRoute: AppStravaRoute,
   AppTagsRoute: AppTagsRoute,
   AppTargetsRoute: AppTargetsRoute,
   AppIndexRoute: AppIndexRoute,
