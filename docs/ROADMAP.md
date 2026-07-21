@@ -496,8 +496,12 @@ the OAuth callback URL to the Netlify domain; add `STRAVA_CLIENT_ID`,
       token refresh, store/clear connection
 - [ ] Backend import: fetch `GET /athlete/activities` (+ detail for calories),
       upsert into `strava_sessions` (idempotent on the unique key)
-- [ ] Frontend: "Connect Strava" + "Import recent" in Settings/Body; show imported
-      activities on the calendar/history alongside workouts
+- [ ] Frontend — a dedicated **Strava** nav item/section (its own menu entry, not
+      buried in Settings): connection status + "Connect Strava" / "Import recent" +
+      the list of imported activities
+- [ ] Calendar — render Strava activities with **orange** markers, visually distinct
+      from finished workouts (green) and planned sessions (accent/primary); reuse the
+      day-cell marker slot. History list shows them alongside workouts too
 - [ ] Auto-sync later: Strava webhook subscription (preferred over polling) or a
       scheduled incremental pull using `last_sync_at`
 - [ ] Rate-limit handling (100 req/15 min, 1000/day) + token-refresh on 401
