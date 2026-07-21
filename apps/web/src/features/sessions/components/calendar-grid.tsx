@@ -98,12 +98,14 @@ function namesByDate(workouts: WorkoutSessionListItem[]): Map<string, string[]> 
   return map;
 }
 
-// Count of imported Strava activities per day (keyed by local_date) — shown as an
-// orange icon on the cell.
-function stravaCountByDate(sessions: StravaSessionItem[]): Map<string, number> {
-  const map = new Map<string, number>();
+// Imported Strava activity types per day (keyed by local_date) — each rendered as its
+// orange sport icon on the cell.
+function stravaTypesByDate(sessions: StravaSessionItem[]): Map<string, string[]> {
+  const map = new Map<string, string[]>();
   for (const session of sessions) {
-    map.set(session.localDate, (map.get(session.localDate) ?? 0) + 1);
+    const existing = map.get(session.localDate) ?? [];
+    existing.push(session.activityType);
+    map.set(session.localDate, existing);
   }
   return map;
 }
@@ -145,7 +147,7 @@ export function CalendarGrid() {
   const activityCounts = countByDate(workouts, 'activity');
   const finishedNames = namesByDate(workouts);
   const { data: stravaSessions = [] } = useStravaSessions(fromIso, toIso);
-  const stravaCounts = stravaCountByDate(stravaSessions);
+  const stravaTypes = stravaTypesByDate(stravaSessions);
 
   const updateMutation = useUpdatePlannedSession();
   const [dragging, setDragging] = useState<PlannedSessionWithTemplate | null>(null);
@@ -233,7 +235,7 @@ export function CalendarGrid() {
                 strengthCount={strengthCounts.get(iso) ?? 0}
                 activityCount={activityCounts.get(iso) ?? 0}
                 workoutNames={finishedNames.get(iso) ?? []}
-                stravaCount={stravaCounts.get(iso) ?? 0}
+                stravaTypes={stravaTypes.get(iso) ?? []}
                 tags={tagMarkers.get(iso) ?? []}
                 onSelect={selectDay}
               />

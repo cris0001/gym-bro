@@ -1,5 +1,5 @@
 import { format, parseISO } from 'date-fns';
-import { Activity, Bike, ChevronDown, Footprints, Waves } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
@@ -15,14 +15,7 @@ import {
   formatSpeed,
   isPaceType,
 } from '../utils/format';
-
-// A rough icon per activity family; anything else falls back to a generic activity.
-function iconFor(activityType: string) {
-  if (/ride|bike|cycl/i.test(activityType)) return Bike;
-  if (/swim/i.test(activityType)) return Waves;
-  if (/run|walk|hike/i.test(activityType)) return Footprints;
-  return Activity;
-}
+import { stravaActivityIcon } from '../utils/activity-icon';
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
@@ -74,7 +67,7 @@ export function StravaActivityRow({
   expanded: boolean;
   onToggle: () => void;
 }) {
-  const Icon = iconFor(session.activityType);
+  const Icon = stravaActivityIcon(session.activityType);
   const primary =
     session.distanceM !== null
       ? formatDistance(session.distanceM)
