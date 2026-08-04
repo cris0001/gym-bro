@@ -43,7 +43,9 @@ export function DiaryItemCombobox({
     selected?.kind === kind && selected.id === id;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    // modal: this combobox lives inside a bottom Sheet (Radix Dialog). Without it the
+    // Sheet's scroll-lock blocks wheel/touch scrolling on the portalled list.
+    <Popover open={open} onOpenChange={setOpen} modal>
       <PopoverTrigger asChild>
         <Button variant="outline" className="h-11 w-full justify-between font-normal">
           <span className={cn('truncate', !selected && 'text-muted-foreground')}>
