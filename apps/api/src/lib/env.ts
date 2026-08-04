@@ -21,6 +21,9 @@ const envSchema = z
     // same origin. Unset in local dev, where Vite serves the SPA instead. Relative to
     // the process CWD (the container sets it to the copied apps/web/dist).
     STATIC_DIR: z.string().optional(),
+    // Sent as the User-Agent when calling OpenFoodFacts (they ask apps to identify
+    // themselves). Has a sane default so it's never required.
+    OFF_USER_AGENT: z.string().default('gym-bro/1.0 (personal fitness tracker)'),
     // Strava integration (optional — the app boots fine without it; the Strava
     // routes fail with a clear error if they're hit while unconfigured). Set all
     // three together (guarded below) once the Strava API app is registered.

@@ -4,6 +4,7 @@ import type {
   CreateRecipeInput,
   FoodLogUnit,
   MealType,
+  OffDraft,
   SetNutritionTargetInput,
   UpdateFoodInput,
   UpdateFoodLogInput,
@@ -14,6 +15,7 @@ import { divideMacros, multiplyMacros, scaleMacros, sumMacros } from '@gym-bro/s
 
 import { ConflictError, NotFoundError, ValidationError } from '../../lib/errors';
 import * as nutritionRepository from './nutrition.repository';
+import { fetchOffProduct, type OffProductData } from './off-client';
 
 // Business logic for the nutrition domain — ownership checks, conflict mapping,
 // macro computation. No Drizzle here. Grown per resource, foods first.
@@ -42,6 +44,11 @@ export async function listFoods(userId: string, search?: string) {
 }
 
 export async function createFood(userId: string, input: CreateFoodInput) {
+  // A barcode-backed food goes through the catalog + pantry flow; a plain custom food
+  // (no ean) is inserted as before.
+  if (input.ean !== undefined) {
+    return saveScannedFood(userId, input.ean, input);
+  }
   try {
     return await nutritionRepository.createFood(userId, input);
   } catch (error) {
@@ -50,6 +57,86 @@ export async function createFood(userId: string, input: CreateFoodInput) {
     }
     throw error;
   }
+}
+
+// Ensure the shared global exists (created from the confirmed data on first scan), then
+// add or revive the user's pantry copy linked to it. Idempotent — re-adding a global
+// you already have returns the existing pantry entry.
+async function saveScannedFood(userId: string, ean: string, input: CreateFoodInput) {
+  const global =
+    (await nutritionRepository.findGlobalByEan(ean)) ??
+    (await nutritionRepository.createGlobalProduct({
+      ean,
+      name: input.name,
+      brand: input.brand,
+      kcal: input.kcal,
+      proteinG: input.proteinG,
+      carbsG: input.carbsG,
+      fatG: input.fatG,
+      servingGrams: input.servingGrams,
+      unitGrams: input.unitGrams,
+      imageUrl: input.imageUrl,
+      firstScannedBy: userId,
+    }));
+
+  const existing = await nutritionRepository.findFoodByGlobalId(userId, global.id);
+  if (existing) {
+    if (existing.isActive) return existing;
+    return (await nutritionRepository.reactivateFood(userId, existing.id)) ?? existing;
+  }
+  return nutritionRepository.createFood(userId, input, global.id);
+}
+
+// Barcode lookup: our catalog first (with whether it's already in the user's pantry),
+// then OpenFoodFacts (a draft to confirm), else nowhere.
+export async function lookupByEan(userId: string, ean: string) {
+  const global = await nutritionRepository.findGlobalByEan(ean);
+  if (global) {
+    const pantry = await nutritionRepository.findFoodByGlobalId(userId, global.id);
+    return {
+      status: 'found' as const,
+      product: toGlobalDto(global),
+      inPantry: pantry?.isActive === true,
+    };
+  }
+  const off = await fetchOffProduct(ean);
+  if (off) {
+    return { status: 'off' as const, draft: toOffDraft(off) };
+  }
+  return { status: 'not_found' as const, ean };
+}
+
+// Public catalog shape — drops the internal offRaw + firstScannedBy.
+function toGlobalDto(global: nutritionRepository.GlobalProductRow) {
+  return {
+    id: global.id,
+    ean: global.ean,
+    name: global.name,
+    brand: global.brand,
+    kcal: global.kcal,
+    proteinG: global.proteinG,
+    carbsG: global.carbsG,
+    fatG: global.fatG,
+    servingGrams: global.servingGrams,
+    unitGrams: global.unitGrams,
+    imageUrl: global.imageUrl,
+    createdAt: global.createdAt,
+    updatedAt: global.updatedAt,
+  };
+}
+
+function toOffDraft(off: OffProductData): OffDraft {
+  return {
+    ean: off.ean,
+    name: off.name,
+    brand: off.brand,
+    kcal: off.kcal,
+    proteinG: off.proteinG,
+    carbsG: off.carbsG,
+    fatG: off.fatG,
+    servingGrams: off.servingGrams,
+    imageUrl: off.imageUrl,
+  };
 }
 
 export async function updateFood(userId: string, id: string, input: UpdateFoodInput) {
