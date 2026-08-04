@@ -11,7 +11,7 @@ const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
     // Coerce because every env var arrives as a string; default for local dev.
-    PORT: z.coerce.number().int().positive().default(3000),
+    PORT: z.coerce.number().int().positive().default(3001),
     DATABASE_URL: z.url(),
     // jose HS256 signing needs sufficient entropy; 32 chars is a sane floor.
     JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),

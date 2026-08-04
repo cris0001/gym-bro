@@ -76,7 +76,9 @@ export default defineConfig({
     // same Hono server serves both the SPA and /api. Keeps the auth cookie same-origin.
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        // Must match the API's PORT (apps/api/.env, default 3001). 3000 was moved to
+        // 3001 to avoid a clash with another local app on 3000.
+        target: 'http://localhost:3001',
         changeOrigin: true,
       },
     },
