@@ -24,9 +24,12 @@ interface FoodUiState {
   open: boolean;
   editing: Food | null;
   prefill: ScanPrefill | null;
+  // Called with the created food when a scanned product is saved — lets the diary
+  // select it straight away to log. Null outside the scan-from-diary flow.
+  onCreated: ((food: Food) => void) | null;
   openCreate: () => void;
   openEdit: (food: Food) => void;
-  openScanned: (prefill: ScanPrefill) => void;
+  openScanned: (prefill: ScanPrefill, onCreated?: (food: Food) => void) => void;
   close: () => void;
 }
 
@@ -34,8 +37,10 @@ export const useFoodUiStore = create<FoodUiState>((set) => ({
   open: false,
   editing: null,
   prefill: null,
-  openCreate: () => set({ open: true, editing: null, prefill: null }),
-  openEdit: (food) => set({ open: true, editing: food, prefill: null }),
-  openScanned: (prefill) => set({ open: true, editing: null, prefill }),
-  close: () => set({ open: false, editing: null, prefill: null }),
+  onCreated: null,
+  openCreate: () => set({ open: true, editing: null, prefill: null, onCreated: null }),
+  openEdit: (food) => set({ open: true, editing: food, prefill: null, onCreated: null }),
+  openScanned: (prefill, onCreated) =>
+    set({ open: true, editing: null, prefill, onCreated: onCreated ?? null }),
+  close: () => set({ open: false, editing: null, prefill: null, onCreated: null }),
 }));

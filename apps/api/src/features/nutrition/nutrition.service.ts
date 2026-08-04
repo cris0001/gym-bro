@@ -93,10 +93,13 @@ export async function lookupByEan(userId: string, ean: string) {
   const global = await nutritionRepository.findGlobalByEan(ean);
   if (global) {
     const pantry = await nutritionRepository.findFoodByGlobalId(userId, global.id);
+    const inPantry = pantry?.isActive === true;
     return {
       status: 'found' as const,
       product: toGlobalDto(global),
-      inPantry: pantry?.isActive === true,
+      inPantry,
+      // The pantry food id when it's live, so the client can select it straight away.
+      foodId: inPantry ? (pantry?.id ?? null) : null,
     };
   }
   const off = await fetchOffProduct(ean);

@@ -70,10 +70,21 @@ export function FoodList({ search }: FoodListProps) {
         >
           <button
             type="button"
-            className="flex min-w-0 flex-1 items-center gap-2 text-left"
+            className="flex min-w-0 flex-1 items-center gap-3 text-left"
             aria-label={`Edit ${food.name}`}
             onClick={() => openEdit(food)}
           >
+            {food.imageUrl ? (
+              <img
+                src={food.imageUrl}
+                alt=""
+                className="bg-muted size-10 shrink-0 rounded-md border object-cover"
+              />
+            ) : (
+              <span className="bg-muted text-muted-foreground flex size-10 shrink-0 items-center justify-center rounded-md">
+                <Apple className="size-5" />
+              </span>
+            )}
             <div className="min-w-0 flex-1">
               <p className="truncate font-medium">{food.name}</p>
               <p className="text-muted-foreground text-sm">

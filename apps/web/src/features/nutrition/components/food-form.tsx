@@ -71,6 +71,8 @@ interface FoodFormProps {
   editing: Food | null;
   // Seed values when adding a scanned product (barcode + whatever we know).
   prefill?: ScanPrefill | null;
+  // Called with the created food (create only) — lets the diary select it to log.
+  onCreated?: ((food: Food) => void) | undefined;
   onSuccess: () => void;
 }
 
@@ -78,7 +80,7 @@ interface FoodFormProps {
 // source of truth on the server; this local schema mirrors it with form-friendly
 // string inputs and messages. A scan prefill seeds the fields and carries the
 // barcode/brand/image through to submit.
-export function FoodForm({ editing, prefill = null, onSuccess }: FoodFormProps) {
+export function FoodForm({ editing, prefill = null, onCreated, onSuccess }: FoodFormProps) {
   // Barcode metadata carried from an edited row or a scan — not editable string
   // fields, so kept aside and merged back in on submit.
   const ean = editing?.ean ?? prefill?.ean ?? null;
@@ -144,7 +146,12 @@ export function FoodForm({ editing, prefill = null, onSuccess }: FoodFormProps) 
     if (editing) {
       update.mutate({ id: editing.id, input }, { onSuccess });
     } else {
-      create.mutate(input, { onSuccess });
+      create.mutate(input, {
+        onSuccess: (food) => {
+          onSuccess();
+          onCreated?.(food);
+        },
+      });
     }
   }
 

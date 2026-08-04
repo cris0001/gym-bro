@@ -15,6 +15,7 @@ export function FoodSheet() {
   const open = useFoodUiStore((s) => s.open);
   const editing = useFoodUiStore((s) => s.editing);
   const prefill = useFoodUiStore((s) => s.prefill);
+  const onCreated = useFoodUiStore((s) => s.onCreated);
   const close = useFoodUiStore((s) => s.close);
 
   return (
@@ -34,6 +35,7 @@ export function FoodSheet() {
           key={editing?.id ?? prefill?.ean ?? 'new'}
           editing={editing}
           prefill={prefill}
+          onCreated={onCreated ?? undefined}
           onSuccess={close}
         />
       </SheetContent>
