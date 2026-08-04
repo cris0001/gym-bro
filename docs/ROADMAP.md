@@ -424,22 +424,22 @@ AlertDialog, Skeleton, EmptyState, ErrorState, ThemeToggle; a promise-based
       <html>, no-flash inline init in index.html, and a ThemeToggle in the header +
       sidebar. (The `.dark` tokens already existed in globals.css.)
 
-### Stage 15 — Production deployment ✅ MOSTLY DONE (on Netlify)
+### Stage 15 — Production deployment ✅ DONE (on Fly.io)
 
-Deployed to **Netlify**, not Vercel/Fly.io as originally planned: the SPA
-(`apps/web`) ships as static files and the Hono API (`apps/api`) runs as a single
-Netlify Function, both served from one site/origin (a `/api/*` rewrite), with the DB
-on Neon. Same-origin means the HttpOnly auth cookie needs no cross-origin CORS. Fully
-documented in `docs/DEPLOYMENT.md`.
+Deployed to **Fly.io** as a single app/container: the Hono API (`apps/api`) runs as a
+long-lived Node server (via `tsx`) that also serves the built SPA (`apps/web/dist`) on
+the same origin, with the DB on Neon. Same-origin means the HttpOnly auth cookie needs
+no cross-origin CORS. Migrated off the initial Netlify setup (static SPA + one Netlify
+Function). Fully documented in `docs/DEPLOYMENT.md`.
 
-- [x] Deploy frontend — Netlify static (Vite build → `apps/web/dist`)
-- [x] Deploy backend — Netlify Function (`apps/api/netlify/functions/api.ts`)
-- [x] Production env vars — DATABASE_URL / JWT_SECRET / NODE_ENV / CORS_ORIGIN in the
-      Netlify dashboard (see DEPLOYMENT.md)
-- [x] Auto-deploy — Netlify builds on push to the default branch (replaces the
-      planned GitHub Actions deploy; CI still runs lint/typecheck/test on PRs)
-- [x] Cross-origin cookies — N/A by design: API is same-origin via the `/api/*`
-      rewrite, so the cookie just works
+- [x] Deploy frontend — SPA built by Vite (`apps/web/dist`), served by the API
+- [x] Deploy backend — Hono on Fly (`apps/api/src/index.ts` via `@hono/node-server`)
+- [x] Production env vars — DATABASE_URL / JWT_SECRET / CORS_ORIGIN as Fly secrets
+      (see DEPLOYMENT.md)
+- [x] Auto-deploy — GitHub Actions on push to `main`, gated by typecheck + tests
+      (`.github/workflows/deploy.yml`)
+- [x] Cross-origin cookies — N/A by design: API + SPA are one origin, so the cookie
+      just works
 - [ ] Demo account with test data — NOT done yet (filled manually per CLAUDE.md, not
       seeded); the last real to-do for this stage
 - [~] Smoke test — done ad hoc through daily personal use; no scripted smoke test
@@ -486,8 +486,8 @@ increase is requested) — fine here.
   incremental sync `after` param), created_at, updated_at
 
 **Prerequisite (owner action):** register a Strava API app for Client ID/Secret + set
-the OAuth callback URL to the Netlify domain; add `STRAVA_CLIENT_ID`,
-`STRAVA_CLIENT_SECRET` (+ a token-encryption key) to Netlify env.
+the OAuth callback domain to the Fly domain; add `STRAVA_CLIENT_ID`,
+`STRAVA_CLIENT_SECRET`, `STRAVA_REDIRECT_URI` as Fly secrets.
 
 **Planned slices:**
 

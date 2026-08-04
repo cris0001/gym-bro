@@ -103,7 +103,7 @@ commit that change.
 
 - `https://<app>.fly.dev/` loads the SPA.
 - `https://<app>.fly.dev/health` returns `{"data":{"status":"ok"}}` (the single app
-  serves it now — unlike the old Netlify setup).
+  serves it too).
 - Log in / register to confirm an `/api/...` round-trip and the auth cookie.
 - `fly logs` to watch the server; `fly status` for machine health.
 
@@ -154,7 +154,8 @@ corepack pnpm install
 corepack pnpm dev      # web on :5173, API on :3000 via @hono/node-server
 ```
 
-## Legacy Netlify config
+## History
 
-`netlify.toml` and `apps/api/netlify/functions/` remain in the repo until the Fly
-deploy is verified, then get removed. See the Git history / the migration commit.
+Previously deployed on Netlify (static SPA + one Netlify Function). Migrated to the
+single-Fly-app model above; the Netlify config and function were removed. See the Git
+history for the migration commits.

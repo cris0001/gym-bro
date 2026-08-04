@@ -1,6 +1,6 @@
 // Base URL of the API. Empty by default → requests use relative "/api/..." paths,
 // so the browser always hits the SAME origin: the Vite dev-server proxy in dev
-// (see vite.config.ts) and the Netlify Function in production. VITE_API_URL is an
+// (see vite.config.ts) and the same Fly app in production. VITE_API_URL is an
 // optional override for pointing the SPA at a remote/absolute API.
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? '';
 
