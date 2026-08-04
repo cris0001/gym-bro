@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 import { format } from 'date-fns';
-import { Minimize2 } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -122,12 +122,13 @@ export function ActiveSessionPage() {
           )}
           <Button
             variant="ghost"
-            size="icon"
-            className="size-11 shrink-0"
+            size="sm"
+            className="text-muted-foreground shrink-0 gap-1.5"
             aria-label="Minimize — the session keeps running"
             onClick={() => void navigate({ to: '/' })}
           >
-            <Minimize2 className="size-5" />
+            <ChevronDown className="size-4" />
+            Minimize
           </Button>
         </div>
         <label className="text-muted-foreground flex items-center gap-2 text-sm">
