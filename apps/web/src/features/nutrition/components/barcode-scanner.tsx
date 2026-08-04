@@ -71,6 +71,17 @@ function autoPickMain(cams: MediaDeviceInfo[]): string | undefined {
   return (main ?? pool[0])?.deviceId;
 }
 
+// Remember the chosen camera per device so a user only picks the good lens once. The
+// deviceId is stable per origin after permission is granted.
+const CAMERA_KEY = 'gym-bro-scanner-camera';
+function readSavedCamera(): string | null {
+  try {
+    return localStorage.getItem(CAMERA_KEY);
+  } catch {
+    return null;
+  }
+}
+
 // Scan an EAN with the camera, an uploaded photo, or by typing it. zxing is imported
 // lazily (only when the sheet opens) so it never weighs on the main bundle. Auto-picks
 // the main rear lens (avoids the ultra-wide that can't focus close) with a manual camera
@@ -91,6 +102,16 @@ export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProp
     trackRef.current = null;
   }
 
+  // Switch camera and remember the choice on this device.
+  function selectCamera(id: string) {
+    setDeviceId(id);
+    try {
+      localStorage.setItem(CAMERA_KEY, id);
+    } catch {
+      // storage unavailable — ignore.
+    }
+  }
+
   // On open: load the camera list and auto-pick the main rear lens. Reset on close.
   useEffect(() => {
     if (!open) {
@@ -105,7 +126,13 @@ export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProp
       const cams = await listCameras();
       if (cancelled) return;
       setCameras(cams);
-      setDeviceId((current) => current ?? autoPickMain(cams) ?? cams[0]?.deviceId ?? null);
+      setDeviceId((current) => {
+        if (current) return current;
+        // Prefer the camera this device chose before, then auto-pick the main lens.
+        const saved = readSavedCamera();
+        if (saved && cams.some((c) => c.deviceId === saved)) return saved;
+        return autoPickMain(cams) ?? cams[0]?.deviceId ?? null;
+      });
     })();
     return () => {
       cancelled = true;
@@ -244,7 +271,7 @@ export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProp
               Camera
               <select
                 value={deviceId ?? ''}
-                onChange={(e) => setDeviceId(e.target.value)}
+                onChange={(e) => selectCamera(e.target.value)}
                 className="border-input h-9 min-w-0 flex-1 rounded-md border bg-background px-2 text-sm"
               >
                 {rearCams.map((cam, i) => (
