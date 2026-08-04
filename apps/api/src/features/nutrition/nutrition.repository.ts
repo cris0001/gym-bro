@@ -5,6 +5,7 @@ import type { CreateRecipeInput, FoodLogUnit, MealType } from '@gym-bro/shared';
 import { db } from '../../db/client';
 import { foodLog } from '../../db/schema/food-log';
 import { foods } from '../../db/schema/foods';
+import { globalProducts } from '../../db/schema/global-products';
 import { nutritionTargets } from '../../db/schema/nutrition-targets';
 import { recipeIngredients } from '../../db/schema/recipe-ingredients';
 import { recipes } from '../../db/schema/recipes';
@@ -33,6 +34,7 @@ function mapFoodRow(row: typeof foods.$inferSelect) {
 export type FoodRow = ReturnType<typeof mapFoodRow>;
 
 // Caller passes already-validated numbers; stringified for the numeric columns.
+// ean/brand/imageUrl are the optional barcode-product fields (null when absent).
 interface FoodInput {
   name: string;
   kcal: number;
@@ -41,6 +43,9 @@ interface FoodInput {
   fatG: number;
   servingGrams?: number | undefined;
   unitGrams?: number | undefined;
+  ean?: string | undefined;
+  brand?: string | undefined;
+  imageUrl?: string | undefined;
 }
 
 // Active foods for the user, case-insensitive alphabetical, optionally filtered
@@ -82,12 +87,22 @@ export async function findActiveFoodsByIds(userId: string, ids: string[]): Promi
   return rows.map(mapFoodRow);
 }
 
-export async function createFood(userId: string, data: FoodInput): Promise<FoodRow> {
+// `globalProductId` links this pantry entry to a shared catalog product (set when the
+// food comes from a scanned barcode); null for a fully custom food.
+export async function createFood(
+  userId: string,
+  data: FoodInput,
+  globalProductId: string | null = null,
+): Promise<FoodRow> {
   const [row] = await db
     .insert(foods)
     .values({
       userId,
+      globalProductId,
       name: data.name,
+      ean: data.ean ?? null,
+      brand: data.brand ?? null,
+      imageUrl: data.imageUrl ?? null,
       kcal: data.kcal.toString(),
       proteinG: data.proteinG.toString(),
       carbsG: data.carbsG.toString(),
@@ -112,6 +127,9 @@ export async function updateFood(
     .update(foods)
     .set({
       name: data.name,
+      ean: data.ean ?? null,
+      brand: data.brand ?? null,
+      imageUrl: data.imageUrl ?? null,
       kcal: data.kcal.toString(),
       proteinG: data.proteinG.toString(),
       carbsG: data.carbsG.toString(),
@@ -133,6 +151,94 @@ export async function softDeleteFood(userId: string, id: string): Promise<FoodRo
     .set({ isActive: false, updatedAt: new Date() })
     .where(and(eq(foods.id, id), eq(foods.userId, userId), eq(foods.isActive, true)))
     .returning();
+  return row ? mapFoodRow(row) : undefined;
+}
+
+// Un-delete a pantry food. Re-scanning a global you'd deleted revives the row rather
+// than inserting a new one (the (user, global) unique index also covers inactive rows).
+export async function reactivateFood(userId: string, id: string): Promise<FoodRow | undefined> {
+  const [row] = await db
+    .update(foods)
+    .set({ isActive: true, updatedAt: new Date() })
+    .where(and(eq(foods.id, id), eq(foods.userId, userId)))
+    .returning();
+  return row ? mapFoodRow(row) : undefined;
+}
+
+// --- Global products (shared, EAN-keyed catalog) ---
+
+// Coerce numeric strings to numbers. offRaw + firstScannedBy stay for internal use;
+// the service strips them for the API response.
+function mapGlobalRow(row: typeof globalProducts.$inferSelect) {
+  return {
+    ...row,
+    kcal: Number(row.kcal),
+    proteinG: Number(row.proteinG),
+    carbsG: Number(row.carbsG),
+    fatG: Number(row.fatG),
+    servingGrams: row.servingGrams === null ? null : Number(row.servingGrams),
+    unitGrams: row.unitGrams === null ? null : Number(row.unitGrams),
+  };
+}
+
+export type GlobalProductRow = ReturnType<typeof mapGlobalRow>;
+
+export async function findGlobalByEan(ean: string): Promise<GlobalProductRow | undefined> {
+  const [row] = await db.select().from(globalProducts).where(eq(globalProducts.ean, ean)).limit(1);
+  return row ? mapGlobalRow(row) : undefined;
+}
+
+// Macros are required on a global (NOT NULL); serving/unit/image optional.
+interface GlobalProductInput {
+  ean: string;
+  name: string;
+  brand?: string | undefined;
+  kcal: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+  servingGrams?: number | undefined;
+  unitGrams?: number | undefined;
+  imageUrl?: string | undefined;
+  offRaw?: unknown;
+  firstScannedBy: string;
+}
+
+export async function createGlobalProduct(data: GlobalProductInput): Promise<GlobalProductRow> {
+  const [row] = await db
+    .insert(globalProducts)
+    .values({
+      ean: data.ean,
+      name: data.name,
+      brand: data.brand ?? null,
+      kcal: data.kcal.toString(),
+      proteinG: data.proteinG.toString(),
+      carbsG: data.carbsG.toString(),
+      fatG: data.fatG.toString(),
+      servingGrams: data.servingGrams !== undefined ? data.servingGrams.toString() : null,
+      unitGrams: data.unitGrams !== undefined ? data.unitGrams.toString() : null,
+      imageUrl: data.imageUrl ?? null,
+      offRaw: data.offRaw ?? null,
+      firstScannedBy: data.firstScannedBy,
+    })
+    .returning();
+  if (!row) {
+    throw new Error('Global product insert returned no row');
+  }
+  return mapGlobalRow(row);
+}
+
+// The user's pantry entry for a given global, if any (dedup + "in pantry" check).
+// Returns inactive rows too, so a soft-deleted entry can be revived on re-scan.
+export async function findFoodByGlobalId(
+  userId: string,
+  globalProductId: string,
+): Promise<FoodRow | undefined> {
+  const [row] = await db
+    .select()
+    .from(foods)
+    .where(and(eq(foods.userId, userId), eq(foods.globalProductId, globalProductId)))
+    .limit(1);
   return row ? mapFoodRow(row) : undefined;
 }
 

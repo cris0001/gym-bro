@@ -7,16 +7,21 @@ import { signToken } from '../../lib/jwt';
 import type {
   FoodLogEntryRow,
   FoodRow,
+  GlobalProductRow,
   NutritionTargetRow,
   RecipeIngredientWithFoodRow,
   RecipeWithTotalsRow,
 } from './nutrition.repository';
 import * as nutritionRepository from './nutrition.repository';
+import { fetchOffProduct } from './off-client';
 
 // Mock the Drizzle boundary so tests drive the real Hono app + service over fake
-// rows. Grown per resource, foods first.
+// rows. Grown per resource, foods first. OFF (the external HTTP boundary) is mocked
+// too so the barcode flow doesn't hit the network.
 vi.mock('./nutrition.repository');
+vi.mock('./off-client');
 const repo = vi.mocked(nutritionRepository);
+const mockFetchOff = vi.mocked(fetchOffProduct);
 
 const FOOD_ID = '11111111-1111-4111-8111-111111111111';
 
@@ -891,5 +896,122 @@ describe('nutrition target routes', () => {
 
     expect(res.status).toBe(400);
     expect(repo.upsertTargetOnDate).not.toHaveBeenCalled();
+  });
+});
+
+const GLOBAL_ID = '22222222-2222-4222-8222-222222222222';
+const EAN = '5902180202333';
+
+function fakeGlobal(overrides: Partial<GlobalProductRow> = {}): GlobalProductRow {
+  return {
+    id: GLOBAL_ID,
+    ean: EAN,
+    name: 'Cola',
+    brand: 'Coca-Cola',
+    kcal: 42,
+    proteinG: 0,
+    carbsG: 10.6,
+    fatG: 0,
+    servingGrams: 250,
+    unitGrams: null,
+    imageUrl: 'https://img/cola.jpg',
+    offRaw: null,
+    firstScannedBy: 'user-1',
+    createdAt: new Date('2026-01-01T00:00:00Z'),
+    updatedAt: new Date('2026-01-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
+describe('barcode products', () => {
+  it('GET /api/products/by-ean/:ean returns a catalog product + inPantry, without internal fields', async () => {
+    repo.findGlobalByEan.mockResolvedValue(fakeGlobal());
+    repo.findFoodByGlobalId.mockResolvedValue(fakeFood({ globalProductId: GLOBAL_ID, ean: EAN }));
+
+    const res = await request('GET', `/api/products/by-ean/${EAN}`, { cookie: await authCookie() });
+    const body = (await res.json()) as {
+      data: { status: string; inPantry: boolean; product: Record<string, unknown> };
+    };
+
+    expect(res.status).toBe(200);
+    expect(body.data.status).toBe('found');
+    expect(body.data.inPantry).toBe(true);
+    expect(body.data.product.ean).toBe(EAN);
+    expect(body.data.product).not.toHaveProperty('offRaw');
+    expect(body.data.product).not.toHaveProperty('firstScannedBy');
+    expect(mockFetchOff).not.toHaveBeenCalled();
+  });
+
+  it('GET falls back to OpenFoodFacts when the catalog misses', async () => {
+    repo.findGlobalByEan.mockResolvedValue(undefined);
+    mockFetchOff.mockResolvedValue({
+      ean: EAN,
+      name: 'Cola',
+      brand: 'Coca-Cola',
+      kcal: 42,
+      proteinG: 0,
+      carbsG: 10.6,
+      fatG: 0,
+      servingGrams: 250,
+      imageUrl: 'https://img/cola.jpg',
+      raw: { product_name: 'Cola' },
+    });
+
+    const res = await request('GET', `/api/products/by-ean/${EAN}`, { cookie: await authCookie() });
+    const body = (await res.json()) as { data: { status: string; draft: Record<string, unknown> } };
+
+    expect(body.data.status).toBe('off');
+    expect(body.data.draft.name).toBe('Cola');
+    expect(body.data.draft).not.toHaveProperty('raw');
+  });
+
+  it('GET returns not_found when neither the catalog nor OFF has it', async () => {
+    repo.findGlobalByEan.mockResolvedValue(undefined);
+    mockFetchOff.mockResolvedValue(null);
+
+    const res = await request('GET', `/api/products/by-ean/${EAN}`, { cookie: await authCookie() });
+    const body = (await res.json()) as { data: { status: string; ean: string } };
+
+    expect(body.data.status).toBe('not_found');
+    expect(body.data.ean).toBe(EAN);
+  });
+
+  it('GET rejects a non-numeric barcode with 400', async () => {
+    const res = await request('GET', '/api/products/by-ean/not-a-code', {
+      cookie: await authCookie(),
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it('POST /api/foods with an ean creates the global and links a pantry copy', async () => {
+    repo.findGlobalByEan.mockResolvedValue(undefined);
+    repo.createGlobalProduct.mockResolvedValue(fakeGlobal());
+    repo.findFoodByGlobalId.mockResolvedValue(undefined);
+    repo.createFood.mockResolvedValue(fakeFood({ globalProductId: GLOBAL_ID, ean: EAN }));
+
+    const res = await request('POST', '/api/foods', {
+      cookie: await authCookie(),
+      body: { name: 'Cola', kcal: 42, proteinG: 0, carbsG: 10.6, fatG: 0, ean: EAN },
+    });
+
+    expect(res.status).toBe(201);
+    expect(repo.createGlobalProduct).toHaveBeenCalledTimes(1);
+    expect(repo.createFood).toHaveBeenCalledWith('user-1', expect.anything(), GLOBAL_ID);
+  });
+
+  it('POST /api/foods with an ean reuses an existing active pantry entry (idempotent)', async () => {
+    repo.findGlobalByEan.mockResolvedValue(fakeGlobal());
+    repo.findFoodByGlobalId.mockResolvedValue(
+      fakeFood({ globalProductId: GLOBAL_ID, isActive: true }),
+    );
+
+    const res = await request('POST', '/api/foods', {
+      cookie: await authCookie(),
+      body: { name: 'Cola', kcal: 42, proteinG: 0, carbsG: 10.6, fatG: 0, ean: EAN },
+    });
+
+    expect(res.status).toBe(201);
+    expect(repo.createGlobalProduct).not.toHaveBeenCalled();
+    expect(repo.createFood).not.toHaveBeenCalled();
   });
 });

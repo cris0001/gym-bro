@@ -4,6 +4,7 @@ import {
   createFoodLogSchema,
   createFoodSchema,
   createRecipeSchema,
+  eanParamSchema,
   foodLogDateQuerySchema,
   recentFoodLogQuerySchema,
   setNutritionTargetSchema,
@@ -58,6 +59,19 @@ nutritionRoutes.delete('/foods/:id', requireAuth, async (c) => {
   const id = parseUuidParam(c, 'id');
   await nutritionService.deleteFood(c.get('userId'), id);
   return c.json({ data: { success: true } });
+});
+
+// --- Products (barcode lookup) ---
+
+// Scan lookup: our catalog first, then OpenFoodFacts, else "not found" (blank form).
+// The pantry copy is created via POST /foods (barcode-aware when `ean` is present).
+nutritionRoutes.get('/products/by-ean/:ean', requireAuth, async (c) => {
+  const parsed = eanParamSchema.safeParse({ ean: c.req.param('ean') });
+  if (!parsed.success) {
+    throw new ValidationError('Invalid barcode');
+  }
+  const result = await nutritionService.lookupByEan(c.get('userId'), parsed.data.ean);
+  return c.json({ data: result });
 });
 
 // --- Recipes ---

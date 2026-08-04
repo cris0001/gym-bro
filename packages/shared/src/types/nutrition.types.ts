@@ -79,6 +79,29 @@ export interface GlobalProduct extends MacroTotals {
   updatedAt: string;
 }
 
+// A not-yet-persisted product pulled from OpenFoodFacts, used to prefill the add form
+// when a scanned barcode isn't in our catalog yet. Macros are per 100g; any field OFF
+// didn't provide is null (the user completes it before saving).
+export interface OffDraft {
+  ean: string;
+  name: string;
+  brand: string | null;
+  kcal: number | null;
+  proteinG: number | null;
+  carbsG: number | null;
+  fatG: number | null;
+  servingGrams: number | null;
+  imageUrl: string | null;
+}
+
+// Result of a barcode lookup: already in our catalog (+ whether it's in the user's
+// pantry), found only on OpenFoodFacts (a draft to confirm), or nowhere (blank form,
+// ean remembered).
+export type EanLookupResult =
+  | { status: 'found'; product: GlobalProduct; inPantry: boolean }
+  | { status: 'off'; draft: OffDraft }
+  | { status: 'not_found'; ean: string };
+
 export interface NutritionTarget extends MacroTotals {
   id: string;
   userId: string;
