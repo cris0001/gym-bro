@@ -4,6 +4,7 @@ import type { Food, GlobalProduct } from '@gym-bro/shared';
 
 import { useFoodUiStore, type ScanPrefill } from '../stores/food-ui.store';
 import { globalToInput } from '../utils/global-to-input';
+import { scannedFoodName } from '../utils/product-name';
 import { useCreateFood } from './use-create-food';
 import { useEanLookup } from './use-ean-lookup';
 
@@ -92,7 +93,13 @@ export function useScanFlow(onResolved?: (food: ResolvedFood) => void) {
         return;
       }
       const prefill =
-        result.status === 'off' ? { ...result.draft, unitGrams: null } : blankPrefill(result.ean);
+        result.status === 'off'
+          ? {
+              ...result.draft,
+              name: scannedFoodName(result.draft.name, result.draft.brand),
+              unitGrams: null,
+            }
+          : blankPrefill(result.ean);
       openScanned(prefill, onResolved ? resolved : undefined);
     } catch {
       toast.error('Barcode lookup failed. Try again.');
