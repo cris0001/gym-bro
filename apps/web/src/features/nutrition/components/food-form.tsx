@@ -17,6 +17,7 @@ import type { CreateFoodInput, Food } from '@gym-bro/shared';
 
 import { useCreateFood } from '../hooks/use-create-food';
 import { useUpdateFood } from '../hooks/use-update-food';
+import type { ScanPrefill } from '../stores/food-ui.store';
 
 // A required macro field: kept as a string in the form (so a half-typed "2." is
 // preserved and an empty field is a clear "Required", not a silent 0) and
@@ -64,24 +65,34 @@ const MACRO_FIELDS = [
 
 interface FoodFormProps {
   editing: Food | null;
+  // Seed values when adding a scanned product (barcode + whatever we know).
+  prefill?: ScanPrefill | null;
   onSuccess: () => void;
 }
 
 // Create/edit a food. Macros are entered per 100g. The shared schema is the
 // source of truth on the server; this local schema mirrors it with form-friendly
-// string inputs and messages.
-export function FoodForm({ editing, onSuccess }: FoodFormProps) {
+// string inputs and messages. A scan prefill seeds the fields and carries the
+// barcode/brand/image through to submit.
+export function FoodForm({ editing, prefill = null, onSuccess }: FoodFormProps) {
+  // Barcode metadata carried from an edited row or a scan — not editable string
+  // fields, so kept aside and merged back in on submit.
+  const ean = editing?.ean ?? prefill?.ean ?? null;
+  const brand = editing?.brand ?? prefill?.brand ?? null;
+  const imageUrl = editing?.imageUrl ?? prefill?.imageUrl ?? null;
+
+  const seed = editing ?? prefill;
   const form = useForm<FoodFormValues>({
     resolver: zodResolver(foodFormSchema),
-    defaultValues: editing
+    defaultValues: seed
       ? {
-          name: editing.name,
-          kcal: String(editing.kcal),
-          proteinG: String(editing.proteinG),
-          carbsG: String(editing.carbsG),
-          fatG: String(editing.fatG),
-          servingGrams: editing.servingGrams !== null ? String(editing.servingGrams) : '',
-          unitGrams: editing.unitGrams !== null ? String(editing.unitGrams) : '',
+          name: seed.name,
+          kcal: seed.kcal !== null ? String(seed.kcal) : '',
+          proteinG: seed.proteinG !== null ? String(seed.proteinG) : '',
+          carbsG: seed.carbsG !== null ? String(seed.carbsG) : '',
+          fatG: seed.fatG !== null ? String(seed.fatG) : '',
+          servingGrams: seed.servingGrams !== null ? String(seed.servingGrams) : '',
+          unitGrams: seed.unitGrams !== null ? String(seed.unitGrams) : '',
         }
       : {
           name: '',
@@ -108,6 +119,9 @@ export function FoodForm({ editing, onSuccess }: FoodFormProps) {
       fatG: Number(values.fatG),
       ...(values.servingGrams.trim() !== '' ? { servingGrams: Number(values.servingGrams) } : {}),
       ...(values.unitGrams.trim() !== '' ? { unitGrams: Number(values.unitGrams) } : {}),
+      ...(ean ? { ean } : {}),
+      ...(brand ? { brand } : {}),
+      ...(imageUrl ? { imageUrl } : {}),
     };
     if (editing) {
       update.mutate({ id: editing.id, input }, { onSuccess });
@@ -119,6 +133,19 @@ export function FoodForm({ editing, onSuccess }: FoodFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={(e) => void form.handleSubmit(onSubmit)(e)} className="grid gap-4 p-4">
+        {imageUrl ? (
+          <div className="flex flex-col items-center gap-1">
+            <img
+              src={imageUrl}
+              alt=""
+              className="bg-muted size-24 rounded-lg border object-cover"
+            />
+            {brand ? <p className="text-muted-foreground text-sm">{brand}</p> : null}
+          </div>
+        ) : brand ? (
+          <p className="text-muted-foreground text-sm">{brand}</p>
+        ) : null}
+
         <FormField
           control={form.control}
           name="name"
