@@ -13,6 +13,8 @@ export function useCreateActivitySession() {
     mutationFn: (input: CreateActivitySessionInput) => createActivitySession(input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: workoutSessionKeys.lists() });
+      // Stats feature's root key — an activity's rating feeds the rating-trend chart.
+      void queryClient.invalidateQueries({ queryKey: ['stats'] });
     },
   });
 }

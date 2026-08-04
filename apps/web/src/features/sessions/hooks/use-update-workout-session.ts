@@ -15,6 +15,8 @@ export function useUpdateWorkoutSession() {
     onSuccess: (detail, { id }) => {
       queryClient.setQueryData<WorkoutSessionDetail>(workoutSessionKeys.detail(id), detail);
       void queryClient.invalidateQueries({ queryKey: workoutSessionKeys.lists() });
+      // Stats feature's root key — an edited rating changes the rating-trend chart.
+      void queryClient.invalidateQueries({ queryKey: ['stats'] });
     },
   });
 }

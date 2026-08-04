@@ -18,6 +18,9 @@ export function useUpdateStrengthSession() {
       queryClient.setQueryData<WorkoutSessionDetail>(workoutSessionKeys.detail(id), detail);
       void queryClient.invalidateQueries({ queryKey: workoutSessionKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: exerciseHistoryKeys.all });
+      // Stats feature's root key — edited sets/weights/rating change the progress +
+      // rating-trend charts. Invalidated by literal key to avoid a cross-feature import.
+      void queryClient.invalidateQueries({ queryKey: ['stats'] });
     },
   });
 }

@@ -17,6 +17,8 @@ export function useDeleteWorkoutSession() {
       void queryClient.invalidateQueries({ queryKey: workoutSessionKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: plannedSessionKeys.all });
       void queryClient.invalidateQueries({ queryKey: exerciseHistoryKeys.all });
+      // Stats feature's root key — deleting a workout removes points from the charts.
+      void queryClient.invalidateQueries({ queryKey: ['stats'] });
     },
   });
 }

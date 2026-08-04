@@ -15,6 +15,8 @@ export function useCreateStrengthSession() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: workoutSessionKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: plannedSessionKeys.all });
+      // Stats feature's root key — a finished workout is a new data point on the charts.
+      void queryClient.invalidateQueries({ queryKey: ['stats'] });
     },
   });
 }
