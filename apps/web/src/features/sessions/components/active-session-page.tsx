@@ -1,4 +1,6 @@
+import { useNavigate } from '@tanstack/react-router';
 import { format } from 'date-fns';
+import { Minimize2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -27,6 +29,7 @@ export function ActiveSessionPage() {
   const discard = useWorkoutDraftStore((s) => s.discard);
   const { startFromTemplate, startEmpty } = useStartWorkout();
   const confirm = useConfirm();
+  const navigate = useNavigate();
 
   const todayIso = format(new Date(), 'yyyy-MM-dd');
   const { data: plannedToday = [] } = usePlannedSessions(todayIso, todayIso);
@@ -106,16 +109,27 @@ export function ActiveSessionPage() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-4 pb-28 lg:col-span-3">
       <header className="bg-card flex flex-col gap-2 rounded-xl border p-4">
-        {isTemplateBased ? (
-          <h1 className="flex h-11 items-center text-lg font-semibold">{draft.name}</h1>
-        ) : (
-          <Input
-            aria-label="Workout name"
-            className="h-11 text-lg font-semibold"
-            value={draft.name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        )}
+        <div className="flex items-center gap-2">
+          {isTemplateBased ? (
+            <h1 className="flex h-11 flex-1 items-center text-lg font-semibold">{draft.name}</h1>
+          ) : (
+            <Input
+              aria-label="Workout name"
+              className="h-11 flex-1 text-lg font-semibold"
+              value={draft.name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-11 shrink-0"
+            aria-label="Minimize — the session keeps running"
+            onClick={() => void navigate({ to: '/' })}
+          >
+            <Minimize2 className="size-5" />
+          </Button>
+        </div>
         <label className="text-muted-foreground flex items-center gap-2 text-sm">
           Date
           <input

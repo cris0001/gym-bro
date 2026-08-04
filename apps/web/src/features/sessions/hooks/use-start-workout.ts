@@ -1,9 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 
 import { templateQueryOptions } from '@/features/training';
-import { useConfirm } from '@/stores/confirm.store';
 
 import { useWorkoutDraftStore } from '../stores/workout-draft.store';
 
@@ -17,23 +17,21 @@ interface StartFromTemplateInput {
 }
 
 // Starts a workout draft and routes to the active-session view. Both entry points
-// (the calendar's "Start session" and the manual template combobox) go through
-// here so the discard-confirm and navigation live in one place.
+// (the calendar's "Start session" and the manual template combobox) go through here
+// so the active-session block and navigation live in one place.
 export function useStartWorkout() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const start = useWorkoutDraftStore((s) => s.start);
   const hasDraft = useWorkoutDraftStore((s) => s.draft !== null);
-  const confirm = useConfirm();
 
-  async function confirmOverwrite(): Promise<boolean> {
-    if (!hasDraft) return true;
-    return confirm({
-      title: 'A workout is already in progress',
-      description: 'Discard it and start a new one?',
-      confirmText: 'Discard & start',
-      destructive: true,
-    });
+  // Only one workout at a time: if one's already in progress, bounce to it instead
+  // of starting another (the user finishes or discards it there first).
+  function blockedByActive(): boolean {
+    if (!hasDraft) return false;
+    toast.error('You already have an active workout — finish or discard it first.');
+    void navigate({ to: '/session' });
+    return true;
   }
 
   // Seeds the session with the template's exercises (in order), each with a single
@@ -44,7 +42,7 @@ export function useStartWorkout() {
     plannedSessionId = null,
     scheduledDate,
   }: StartFromTemplateInput) {
-    if (!(await confirmOverwrite())) return;
+    if (blockedByActive()) return;
     const template = await queryClient.fetchQuery(templateQueryOptions(templateId));
     start({
       name: templateName,
@@ -61,8 +59,8 @@ export function useStartWorkout() {
     void navigate({ to: '/session' });
   }
 
-  async function startEmpty() {
-    if (!(await confirmOverwrite())) return;
+  function startEmpty() {
+    if (blockedByActive()) return;
     start({ name: 'Workout', performedDate: format(new Date(), 'yyyy-MM-dd'), exercises: [] });
     void navigate({ to: '/session' });
   }

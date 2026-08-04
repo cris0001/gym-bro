@@ -6,6 +6,7 @@ import { SectionTabs } from '@/components/nav/section-tabs';
 import { SidebarNav } from '@/components/nav/sidebar-nav';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LogoutButton, OnboardingSheet, meQueryOptions } from '@/features/auth';
+import { ActiveSessionBubble } from '@/features/sessions';
 
 // Protected layout. beforeLoad resolves the current user from the shared cache
 // (fetching once if needed); a 401 throws and we redirect to /login before any
@@ -49,6 +50,7 @@ function AppLayout() {
         </main>
       </div>
       <BottomNav />
+      <ActiveSessionBubble />
       <OnboardingSheet />
     </div>
   );
