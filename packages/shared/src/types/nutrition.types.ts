@@ -7,6 +7,7 @@ import type {
   createRecipeSchema,
   eanParamSchema,
   foodLogDateQuerySchema,
+  productSearchQuerySchema,
   recentFoodLogQuerySchema,
   recipeIngredientInputSchema,
   setNutritionTargetSchema,
@@ -28,6 +29,7 @@ export type UpdateFoodLogInput = z.infer<typeof updateFoodLogSchema>;
 export type FoodLogDateQueryInput = z.infer<typeof foodLogDateQuerySchema>;
 export type RecentFoodLogQueryInput = z.infer<typeof recentFoodLogQuerySchema>;
 export type EanParamInput = z.infer<typeof eanParamSchema>;
+export type ProductSearchQueryInput = z.infer<typeof productSearchQuerySchema>;
 
 // --- Wire entity shapes (numeric columns coerced to numbers by the service;
 // date columns are 'YYYY-MM-DD' strings; timestamps are ISO strings) ---

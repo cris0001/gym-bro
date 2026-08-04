@@ -1020,4 +1020,23 @@ describe('barcode products', () => {
     expect(repo.createGlobalProduct).not.toHaveBeenCalled();
     expect(repo.createFood).not.toHaveBeenCalled();
   });
+
+  it('GET /api/products/search returns catalog matches (capped at 20)', async () => {
+    repo.searchGlobalProducts.mockResolvedValue([fakeGlobal()]);
+
+    const res = await request('GET', '/api/products/search?q=cola', { cookie: await authCookie() });
+    const body = (await res.json()) as { data: { name: string }[] };
+
+    expect(res.status).toBe(200);
+    expect(body.data).toHaveLength(1);
+    expect(body.data[0]?.name).toBe('Cola');
+    expect(repo.searchGlobalProducts).toHaveBeenCalledWith('cola', 20);
+  });
+
+  it('GET /api/products/search with a blank query returns 400', async () => {
+    const res = await request('GET', '/api/products/search?q=', { cookie: await authCookie() });
+
+    expect(res.status).toBe(400);
+    expect(repo.searchGlobalProducts).not.toHaveBeenCalled();
+  });
 });

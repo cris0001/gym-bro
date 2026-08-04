@@ -6,6 +6,7 @@ import {
   createRecipeSchema,
   eanParamSchema,
   foodLogDateQuerySchema,
+  productSearchQuerySchema,
   recentFoodLogQuerySchema,
   setNutritionTargetSchema,
   updateFoodLogSchema,
@@ -61,7 +62,18 @@ nutritionRoutes.delete('/foods/:id', requireAuth, async (c) => {
   return c.json({ data: { success: true } });
 });
 
-// --- Products (barcode lookup) ---
+// --- Products (barcode lookup + catalog search) ---
+
+// Name search over the shared catalog — the "All products" picker tab. Selecting a
+// result adds it to the user's foods via POST /foods (barcode-aware).
+nutritionRoutes.get('/products/search', requireAuth, async (c) => {
+  const parsed = productSearchQuerySchema.safeParse({ q: c.req.query('q') });
+  if (!parsed.success) {
+    throw new ValidationError('Invalid search');
+  }
+  const products = await nutritionService.searchGlobalProducts(parsed.data.q);
+  return c.json({ data: products });
+});
 
 // Scan lookup: our catalog first, then OpenFoodFacts, else "not found" (blank form).
 // The pantry copy is created via POST /foods (barcode-aware when `ean` is present).

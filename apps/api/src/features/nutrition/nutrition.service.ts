@@ -87,6 +87,12 @@ async function saveScannedFood(userId: string, ean: string, input: CreateFoodInp
   return nutritionRepository.createFood(userId, input, global.id);
 }
 
+// Name search over the shared catalog for the "All products" picker tab, capped.
+export async function searchGlobalProducts(query: string) {
+  const rows = await nutritionRepository.searchGlobalProducts(query, 20);
+  return rows.map(toGlobalDto);
+}
+
 // Barcode lookup: our catalog first (with whether it's already in the user's pantry),
 // then OpenFoodFacts (a draft to confirm), else nowhere.
 export async function lookupByEan(userId: string, ean: string) {

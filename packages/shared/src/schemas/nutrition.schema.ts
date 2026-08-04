@@ -45,6 +45,11 @@ export const updateFoodSchema = createFoodSchema;
 // Barcode lookup — the `:ean` route param when scanning a product.
 export const eanParamSchema = z.object({ ean });
 
+// Name search over the shared global catalog (the "All products" picker tab).
+export const productSearchQuerySchema = z.object({
+  q: z.string().trim().min(1, 'Type something to search').max(100),
+});
+
 // --- Recipes ---
 
 // One ingredient line in a recipe: a food plus a gram amount. Position comes from
