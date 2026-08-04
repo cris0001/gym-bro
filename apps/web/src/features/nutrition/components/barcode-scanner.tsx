@@ -33,13 +33,10 @@ interface ZoomCap {
   value: number;
 }
 
-// Phones expose several rear cameras; `facingMode: 'environment'` often picks the
-// ultra-wide (0.5×/0.6×), which can't focus on a small barcode up close. Pick the main
-// (1×) rear lens instead: the back camera whose label isn't ultra-wide / tele / macro /
-// depth (iOS labels are descriptive; on Android the first back camera is the main one).
-// Labels are only populated after camera permission, so request it once if needed.
-async function pickRearCameraDeviceId(): Promise<string | undefined> {
-  if (!navigator.mediaDevices?.enumerateDevices) return undefined;
+// Enumerate video inputs. Labels are only populated once camera permission is granted,
+// so request it once if they're blank, then re-enumerate.
+async function listCameras(): Promise<MediaDeviceInfo[]> {
+  if (!navigator.mediaDevices?.enumerateDevices) return [];
   try {
     let videos = (await navigator.mediaDevices.enumerateDevices()).filter(
       (d) => d.kind === 'videoinput',
@@ -53,20 +50,31 @@ async function pickRearCameraDeviceId(): Promise<string | undefined> {
         (d) => d.kind === 'videoinput',
       );
     }
-    const back = videos.filter((d) => /back|rear|environment/i.test(d.label));
-    const pool = back.length > 0 ? back : videos;
-    const main = pool.find((d) => !/ultra|tele|macro|depth|zoom|wide-angle/i.test(d.label));
-    return (main ?? pool[0])?.deviceId;
+    return videos;
   } catch {
-    return undefined;
+    return [];
   }
 }
 
+// The rear cameras (fall back to all if none are labelled back-facing).
+function rearCameras(cams: MediaDeviceInfo[]): MediaDeviceInfo[] {
+  const back = cams.filter((d) => /back|rear|environment/i.test(d.label));
+  return back.length > 0 ? back : cams;
+}
+
+// Auto-pick the main (1×) rear lens: the back camera that isn't ultra-wide / tele /
+// macro / depth (those can't focus on a small barcode up close). On Android, where
+// labels are cryptic, this falls back to the first back camera (usually the main one).
+function autoPickMain(cams: MediaDeviceInfo[]): string | undefined {
+  const pool = rearCameras(cams);
+  const main = pool.find((d) => !/ultra|tele|macro|depth|zoom|wide-angle/i.test(d.label));
+  return (main ?? pool[0])?.deviceId;
+}
+
 // Scan an EAN with the camera, an uploaded photo, or by typing it. zxing is imported
-// lazily (only when the sheet opens) so it never weighs on the main bundle. Works
-// cross-browser incl. iOS; the manual + upload fallbacks cover the desktop / no-camera
-// path. Tap the preview to refocus; a zoom slider appears when the device supports it —
-// key for small barcodes the lens can't focus on up close (hold further + zoom in).
+// lazily (only when the sheet opens) so it never weighs on the main bundle. Auto-picks
+// the main rear lens (avoids the ultra-wide that can't focus close) with a manual camera
+// switcher; tap the preview to refocus; a zoom slider appears when supported.
 export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const controlsRef = useRef<{ stop: () => void } | null>(null);
@@ -74,6 +82,8 @@ export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProp
   const [manual, setManual] = useState('');
   const [note, setNote] = useState<string | null>(null);
   const [zoom, setZoom] = useState<ZoomCap | null>(null);
+  const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
+  const [deviceId, setDeviceId] = useState<string | null>(null);
 
   function stopCamera() {
     controlsRef.current?.stop();
@@ -81,25 +91,46 @@ export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProp
     trackRef.current = null;
   }
 
+  // On open: load the camera list and auto-pick the main rear lens. Reset on close.
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      setCameras([]);
+      setDeviceId(null);
+      return;
+    }
+    let cancelled = false;
+    setManual('');
+    setNote(null);
+    void (async () => {
+      const cams = await listCameras();
+      if (cancelled) return;
+      setCameras(cams);
+      setDeviceId((current) => current ?? autoPickMain(cams) ?? cams[0]?.deviceId ?? null);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
+
+  // Start (or restart, when the selected camera changes) the scanner.
+  useEffect(() => {
+    if (!open || !deviceId) return;
     let cancelled = false;
     setNote(null);
-    setManual('');
     setZoom(null);
     void (async () => {
       try {
         const { BrowserMultiFormatReader } = await import('@zxing/browser');
         const reader = new BrowserMultiFormatReader();
-        const deviceId = await pickRearCameraDeviceId();
         if (cancelled || !videoRef.current) return;
-        const video: MediaTrackConstraints = {
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-          ...(deviceId ? { deviceId: { exact: deviceId } } : { facingMode: 'environment' }),
-        };
         controlsRef.current = await reader.decodeFromConstraints(
-          { video },
+          {
+            video: {
+              deviceId: { exact: deviceId },
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+            },
+          },
           videoRef.current,
           (result) => {
             if (!result) return;
@@ -113,7 +144,6 @@ export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProp
           srcObject instanceof MediaStream ? (srcObject.getVideoTracks()[0] ?? null) : null;
         trackRef.current = track;
         if (track) {
-          // Continuous autofocus so close-up barcodes sharpen (best-effort).
           try {
             await track.applyConstraints(advancedConstraints({ focusMode: 'continuous' }));
           } catch {
@@ -139,13 +169,11 @@ export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProp
       cancelled = true;
       stopCamera();
     };
-    // Only `open` should (re)start the camera; onDetected is used for a one-shot scan.
-  }, [open]);
+  }, [open, deviceId]);
 
   async function refocus() {
     const track = trackRef.current;
     if (!track) return;
-    // Re-trigger autofocus — single-shot, then back to continuous (best-effort).
     try {
       await track.applyConstraints(advancedConstraints({ focusMode: 'single-shot' }));
       await track.applyConstraints(advancedConstraints({ focusMode: 'continuous' }));
@@ -185,14 +213,16 @@ export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProp
     else setNote('Enter a valid 8–14 digit barcode.');
   }
 
+  const rearCams = rearCameras(cameras);
+
   return (
     <Sheet open={open} onOpenChange={(next) => !next && onClose()}>
       <SheetContent side="bottom" className="gap-0">
         <SheetHeader>
           <SheetTitle>Scan a barcode</SheetTitle>
           <SheetDescription>
-            Point the camera at the barcode and tap to focus. If it won&rsquo;t sharpen up close,
-            hold it further away and zoom in — or upload a photo, or type the number.
+            Point the camera at the barcode and tap to focus. If it won&rsquo;t sharpen, switch
+            camera or zoom in — or upload a photo, or type the number.
           </SheetDescription>
         </SheetHeader>
 
@@ -208,6 +238,23 @@ export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProp
               Tap to focus
             </span>
           </button>
+
+          {rearCams.length > 1 ? (
+            <label className="flex items-center gap-2 text-sm">
+              Camera
+              <select
+                value={deviceId ?? ''}
+                onChange={(e) => setDeviceId(e.target.value)}
+                className="border-input h-9 min-w-0 flex-1 rounded-md border bg-background px-2 text-sm"
+              >
+                {rearCams.map((cam, i) => (
+                  <option key={cam.deviceId} value={cam.deviceId}>
+                    {cam.label || `Camera ${i + 1}`}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
 
           {zoom ? (
             <label className="flex items-center gap-3 text-sm">
