@@ -62,13 +62,23 @@ function rearCameras(cams: MediaDeviceInfo[]): MediaDeviceInfo[] {
   return back.length > 0 ? back : cams;
 }
 
-// Auto-pick the main (1×) rear lens: the back camera that isn't ultra-wide / tele /
-// macro / depth (those can't focus on a small barcode up close). On Android, where
-// labels are cryptic, this falls back to the first back camera (usually the main one).
+// Android labels the rear cameras "camera2 <id>, facing back"; the main sensor is the
+// lowest id (0). Pull that id out for ranking (Infinity when there's no such number).
+function cameraIndex(label: string): number {
+  const m = /camera2?\s+(\d+)/i.exec(label);
+  return m ? Number(m[1]) : Number.POSITIVE_INFINITY;
+}
+
+// Auto-pick the main (1×) rear lens. First drop lenses that focus poorly on close
+// barcodes (iOS: "Back Ultra Wide/Telephoto Camera"); then, among what's left, prefer
+// the lowest Android camera id (the main sensor), falling back to enumeration order.
 function autoPickMain(cams: MediaDeviceInfo[]): string | undefined {
   const pool = rearCameras(cams);
-  const main = pool.find((d) => !/ultra|tele|macro|depth|zoom|wide-angle/i.test(d.label));
-  return (main ?? pool[0])?.deviceId;
+  const usable = pool.filter((d) => !/ultra|tele|macro|depth/i.test(d.label));
+  const ranked = (usable.length > 0 ? usable : pool)
+    .slice()
+    .sort((a, b) => cameraIndex(a.label) - cameraIndex(b.label));
+  return ranked[0]?.deviceId;
 }
 
 // Remember the chosen camera per device so a user only picks the good lens once. The
