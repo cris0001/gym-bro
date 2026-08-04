@@ -98,7 +98,7 @@ export interface OffDraft {
 // pantry), found only on OpenFoodFacts (a draft to confirm), or nowhere (blank form,
 // ean remembered).
 export type EanLookupResult =
-  | { status: 'found'; product: GlobalProduct; inPantry: boolean }
+  | { status: 'found'; product: GlobalProduct; inPantry: boolean; foodId: string | null }
   | { status: 'off'; draft: OffDraft }
   | { status: 'not_found'; ean: string };
 

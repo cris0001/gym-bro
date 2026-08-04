@@ -1,61 +1,83 @@
 import { toast } from 'sonner';
 
-import type { GlobalProduct } from '@gym-bro/shared';
+import type { CreateFoodInput, Food, GlobalProduct } from '@gym-bro/shared';
 
 import { useFoodUiStore, type ScanPrefill } from '../stores/food-ui.store';
+import { useCreateFood } from './use-create-food';
 import { useEanLookup } from './use-ean-lookup';
 
-function fromGlobal(p: GlobalProduct): ScanPrefill {
+interface ResolvedItem {
+  kind: 'food';
+  id: string;
+  name: string;
+}
+
+// A catalog product has complete data, so it can be added to the pantry directly.
+function globalToInput(p: GlobalProduct): CreateFoodInput {
   return {
-    ean: p.ean,
     name: p.name,
-    brand: p.brand,
     kcal: p.kcal,
     proteinG: p.proteinG,
     carbsG: p.carbsG,
     fatG: p.fatG,
-    servingGrams: p.servingGrams,
-    unitGrams: p.unitGrams,
-    imageUrl: p.imageUrl,
+    ...(p.servingGrams !== null ? { servingGrams: p.servingGrams } : {}),
+    ...(p.unitGrams !== null ? { unitGrams: p.unitGrams } : {}),
+    ean: p.ean,
+    ...(p.brand !== null ? { brand: p.brand } : {}),
+    ...(p.imageUrl !== null ? { imageUrl: p.imageUrl } : {}),
   };
 }
 
-// Ties a scanned barcode to the next step: already in your foods → a toast; in our
-// catalog or on OpenFoodFacts → open the form prefilled; nowhere → open a blank form
-// with the barcode remembered.
-export function useScanFlow() {
+function blankPrefill(ean: string): ScanPrefill {
+  return {
+    ean,
+    name: '',
+    brand: null,
+    kcal: null,
+    proteinG: null,
+    carbsG: null,
+    fatG: null,
+    servingGrams: null,
+    unitGrams: null,
+    imageUrl: null,
+  };
+}
+
+// Ties a scanned barcode to the next step:
+// - in our catalog → add the pantry copy immediately (no form);
+// - only on OpenFoodFacts / nowhere → open the form to confirm/fill.
+// When `onResolved` is given (the diary), it fires with the resulting food so the
+// caller can select it to log; otherwise the product just lands in your foods.
+export function useScanFlow(onResolved?: (item: ResolvedItem) => void) {
   const lookup = useEanLookup();
+  const createFood = useCreateFood();
   const openScanned = useFoodUiStore((s) => s.openScanned);
+
+  function resolved(food: Food) {
+    if (onResolved) onResolved({ kind: 'food', id: food.id, name: food.name });
+    else toast.success(`Added ${food.name} to your foods.`);
+  }
 
   async function handleEan(ean: string) {
     try {
       const result = await lookup.mutateAsync(ean);
       if (result.status === 'found') {
-        if (result.inPantry) {
-          toast.info('This product is already in your foods.');
+        if (result.inPantry && result.foodId) {
+          if (onResolved)
+            onResolved({ kind: 'food', id: result.foodId, name: result.product.name });
+          else toast.info('This product is already in your foods.');
           return;
         }
-        openScanned(fromGlobal(result.product));
-      } else if (result.status === 'off') {
-        openScanned({ ...result.draft, unitGrams: null });
-      } else {
-        openScanned({
-          ean: result.ean,
-          name: '',
-          brand: null,
-          kcal: null,
-          proteinG: null,
-          carbsG: null,
-          fatG: null,
-          servingGrams: null,
-          unitGrams: null,
-          imageUrl: null,
-        });
+        resolved(await createFood.mutateAsync(globalToInput(result.product)));
+        return;
       }
+      const prefill =
+        result.status === 'off' ? { ...result.draft, unitGrams: null } : blankPrefill(result.ean);
+      openScanned(prefill, onResolved ? resolved : undefined);
     } catch {
       toast.error('Barcode lookup failed. Try again.');
     }
   }
 
-  return { handleEan, isPending: lookup.isPending };
+  return { handleEan, isPending: lookup.isPending || createFood.isPending };
 }

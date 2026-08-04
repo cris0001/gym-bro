@@ -45,9 +45,12 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
   // The id of the entry being edited (via the shared form), or null when adding new.
   const [editingId, setEditingId] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
-  // Scanning a barcode here adds it to your foods (via the same catalog/OFF flow); it
-  // then appears in the picker below to log.
-  const { handleEan } = useScanFlow();
+  // Scanning a barcode resolves to a food (from our catalog, OpenFoodFacts, or the
+  // form) and selects it here, ready to pick a portion and log.
+  const { handleEan } = useScanFlow((item) => {
+    setSelected(item);
+    setEditingId(null);
+  });
 
   const create = useCreateFoodLogEntry();
   const update = useUpdateFoodLogEntry();

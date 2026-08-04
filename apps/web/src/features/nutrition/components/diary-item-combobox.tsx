@@ -73,6 +73,13 @@ export function DiaryItemCombobox({
                         isPicked('food', food.id) ? 'opacity-100' : 'opacity-0',
                       )}
                     />
+                    {food.imageUrl ? (
+                      <img
+                        src={food.imageUrl}
+                        alt=""
+                        className="size-6 shrink-0 rounded object-cover"
+                      />
+                    ) : null}
                     <span className="truncate">{food.name}</span>
                     <span className="text-muted-foreground ml-auto text-xs">{food.kcal} kcal</span>
                   </CommandItem>

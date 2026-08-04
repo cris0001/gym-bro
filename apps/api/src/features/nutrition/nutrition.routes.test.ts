@@ -930,12 +930,18 @@ describe('barcode products', () => {
 
     const res = await request('GET', `/api/products/by-ean/${EAN}`, { cookie: await authCookie() });
     const body = (await res.json()) as {
-      data: { status: string; inPantry: boolean; product: Record<string, unknown> };
+      data: {
+        status: string;
+        inPantry: boolean;
+        foodId: string | null;
+        product: Record<string, unknown>;
+      };
     };
 
     expect(res.status).toBe(200);
     expect(body.data.status).toBe('found');
     expect(body.data.inPantry).toBe(true);
+    expect(body.data.foodId).toBe(FOOD_ID);
     expect(body.data.product.ean).toBe(EAN);
     expect(body.data.product).not.toHaveProperty('offRaw');
     expect(body.data.product).not.toHaveProperty('firstScannedBy');
