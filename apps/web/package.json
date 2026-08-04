@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "gen:pwa-assets": "pwa-assets-generator"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -42,10 +43,12 @@
     "@tanstack/router-plugin": "^1.168.18",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "@vite-pwa/assets-generator": "^1.0.2",
     "@vitejs/plugin-react": "^6.0.2",
     "rollup-plugin-visualizer": "^7.0.1",
     "tailwindcss": "^4.3.1",
     "vite": "^8.0.16",
+    "vite-plugin-pwa": "^1.3.0",
     "vitest": "^4.1.9"
   }
 }
