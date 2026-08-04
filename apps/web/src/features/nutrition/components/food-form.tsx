@@ -1,5 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Camera, X } from 'lucide-react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
@@ -18,6 +21,7 @@ import type { CreateFoodInput, Food } from '@gym-bro/shared';
 import { useCreateFood } from '../hooks/use-create-food';
 import { useUpdateFood } from '../hooks/use-update-food';
 import type { ScanPrefill } from '../stores/food-ui.store';
+import { resizeImageToDataUrl } from '../utils/resize-image';
 
 // A required macro field: kept as a string in the form (so a half-typed "2." is
 // preserved and an empty field is a clear "Required", not a silent 0) and
@@ -79,7 +83,21 @@ export function FoodForm({ editing, prefill = null, onSuccess }: FoodFormProps) 
   // fields, so kept aside and merged back in on submit.
   const ean = editing?.ean ?? prefill?.ean ?? null;
   const brand = editing?.brand ?? prefill?.brand ?? null;
-  const imageUrl = editing?.imageUrl ?? prefill?.imageUrl ?? null;
+
+  // The preview image: an OFF URL (scanned) or a resized data-URI (user photo).
+  // Editable — the user can take/replace or remove it.
+  const [image, setImage] = useState<string | null>(editing?.imageUrl ?? prefill?.imageUrl ?? null);
+
+  async function onPickImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      setImage(await resizeImageToDataUrl(file));
+    } catch {
+      toast.error("Couldn't process that image.");
+    }
+  }
 
   const seed = editing ?? prefill;
   const form = useForm<FoodFormValues>({
@@ -121,7 +139,7 @@ export function FoodForm({ editing, prefill = null, onSuccess }: FoodFormProps) 
       ...(values.unitGrams.trim() !== '' ? { unitGrams: Number(values.unitGrams) } : {}),
       ...(ean ? { ean } : {}),
       ...(brand ? { brand } : {}),
-      ...(imageUrl ? { imageUrl } : {}),
+      ...(image ? { imageUrl: image } : {}),
     };
     if (editing) {
       update.mutate({ id: editing.id, input }, { onSuccess });
@@ -133,18 +151,36 @@ export function FoodForm({ editing, prefill = null, onSuccess }: FoodFormProps) 
   return (
     <Form {...form}>
       <form onSubmit={(e) => void form.handleSubmit(onSubmit)(e)} className="grid gap-4 p-4">
-        {imageUrl ? (
-          <div className="flex flex-col items-center gap-1">
-            <img
-              src={imageUrl}
-              alt=""
-              className="bg-muted size-24 rounded-lg border object-cover"
-            />
-            {brand ? <p className="text-muted-foreground text-sm">{brand}</p> : null}
-          </div>
-        ) : brand ? (
-          <p className="text-muted-foreground text-sm">{brand}</p>
-        ) : null}
+        <div className="flex flex-col items-center gap-2">
+          {image ? (
+            <div className="relative">
+              <img src={image} alt="" className="bg-muted size-24 rounded-lg border object-cover" />
+              <button
+                type="button"
+                onClick={() => setImage(null)}
+                aria-label="Remove photo"
+                className="bg-background absolute -top-2 -right-2 rounded-full border p-1 shadow"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+          ) : (
+            <Button asChild type="button" variant="outline" className="h-11">
+              <label>
+                <Camera className="size-4" />
+                Add photo
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={(e) => void onPickImage(e)}
+                />
+              </label>
+            </Button>
+          )}
+          {brand ? <p className="text-muted-foreground text-sm">{brand}</p> : null}
+        </div>
 
         <FormField
           control={form.control}
