@@ -10,6 +10,13 @@ const meal = z.enum(MEAL_TYPES);
 const macroValue = z.number().min(0, 'Must be 0 or more').max(9999.99, 'Too large');
 // A gram amount or serving quantity: numeric(7,2), strictly positive.
 const positiveAmount = z.number().positive('Must be greater than 0').max(99999.99, 'Too large');
+// A product barcode: EAN-8, UPC-A (12), EAN-13 or GTIN-14 — 8 to 14 digits.
+const ean = z.string().regex(/^\d{8,14}$/, 'Invalid barcode');
+// Brand / producer name (from OpenFoodFacts or entered), optional and short.
+const brandName = z.string().trim().min(1).max(100);
+// A small preview image: an http(s) URL (scanned globals) or a resized data-URI (user
+// upload). Bounded so a data-URI can't bloat the row / request body.
+const imageUrl = z.string().trim().min(1).max(200_000);
 
 // --- Foods (per-100g macros) ---
 
@@ -25,8 +32,18 @@ export const createFoodSchema = z.object({
   fatG: macroValue,
   servingGrams: positiveAmount.optional(),
   unitGrams: positiveAmount.optional(),
+  // Optional barcode + brand + preview image. `ean` is remembered when a scan matched
+  // nothing and the user fills the form manually; brand / imageUrl come from OFF data
+  // or a user upload. globalProductId (pantry ↔ catalog link) is set server-side, not
+  // here.
+  ean: ean.optional(),
+  brand: brandName.optional(),
+  imageUrl: imageUrl.optional(),
 });
 export const updateFoodSchema = createFoodSchema;
+
+// Barcode lookup — the `:ean` route param when scanning a product.
+export const eanParamSchema = z.object({ ean });
 
 // --- Recipes ---
 

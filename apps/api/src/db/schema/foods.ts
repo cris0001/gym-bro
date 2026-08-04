@@ -10,6 +10,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 
+import { globalProducts } from './global-products';
 import { users } from './users';
 
 // Per-user food dictionary. Starts empty (nothing seeded). Macros are stored per
@@ -24,7 +25,17 @@ export const foods = pgTable(
     userId: uuid('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
+    // Link to the shared catalog when this pantry item came from a scanned global
+    // (provenance + dedup). NULL = a fully custom product. SET NULL if the global is
+    // ever removed — the macros copied onto this row stay valid.
+    globalProductId: uuid('global_product_id').references(() => globalProducts.id, {
+      onDelete: 'set null',
+    }),
     name: text('name').notNull(),
+    // Barcode + brand, copied from the global for search / identification. Null for
+    // fully custom products.
+    ean: text('ean'),
+    brand: text('brand'),
     // All per 100g. numeric(6,2) matches sets.weight precision; allows fractional
     // macros (e.g. 3.60) with headroom to 9999.99.
     kcal: numeric('kcal', { precision: 6, scale: 2 }).notNull(),
@@ -39,17 +50,25 @@ export const foods = pgTable(
     // unit as well (e.g. "1 rice cracker = 9 g"). Independent of servingGrams; null =
     // not sold by unit. Same precision as the other gram amounts.
     unitGrams: numeric('unit_grams', { precision: 7, scale: 2 }),
+    // Small preview image: an OFF URL (scanned globals) or a resized data-URI (user
+    // upload). Null = no image.
+    imageUrl: text('image_url'),
     isActive: boolean('is_active').notNull().default(true),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     // Service sets this to now() on every update (no DB trigger).
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
-    // No two active foods with the same name (case-insensitive) per user;
-    // soft-deleting frees the name for reuse. Same lower() trick as exercises.
+    // No two active CUSTOM foods with the same name (case-insensitive) per user;
+    // soft-deleting frees the name for reuse. Scanned globals are exempt, so a custom
+    // "Milk" and a global "Milk" can coexist. Same lower() trick as exercises.
     uniqueIndex('foods_user_name_active_unique')
       .on(table.userId, sql`lower(${table.name})`)
-      .where(sql`${table.isActive}`),
+      .where(sql`${table.isActive} AND ${table.globalProductId} IS NULL`),
+    // One pantry entry per global product per user (re-scanning reuses it).
+    uniqueIndex('foods_user_global_unique')
+      .on(table.userId, table.globalProductId)
+      .where(sql`${table.globalProductId} IS NOT NULL`),
     check('foods_kcal_non_negative', sql`${table.kcal} >= 0`),
     check('foods_protein_non_negative', sql`${table.proteinG} >= 0`),
     check('foods_carbs_non_negative', sql`${table.carbsG} >= 0`),
