@@ -4,9 +4,9 @@ import type { MealType, RecentDiaryItem } from '@gym-bro/shared';
 
 import { useRecentDiaryItems } from '../hooks/use-recent-diary-items';
 
-// Quick re-add chips for a meal: the items logged most often for it lately, each
-// tapped to log it in one go with its last-used portion. Renders nothing when
-// there's no history yet.
+// Quick re-add chips for a meal: the last-used items for it (most recent first, all
+// history), each tapped to log it in one go with its last-used portion. Renders
+// nothing when there's no history yet.
 export function RecentItemsRow({
   meal,
   onPick,

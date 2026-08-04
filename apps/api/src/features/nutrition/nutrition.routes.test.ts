@@ -737,7 +737,7 @@ describe('food-log read/update/delete routes', () => {
 });
 
 describe('recent diary items route', () => {
-  it('GET /api/food-log/recent ranks by use count then recency and maps to source refs', async () => {
+  it('GET /api/food-log/recent ranks by recency (last used first) and maps to source refs', async () => {
     repo.findRecentDiaryRows.mockResolvedValue([
       {
         type: 'food',
@@ -776,17 +776,14 @@ describe('recent diary items route', () => {
     };
 
     expect(res.status).toBe(200);
-    // count 5 before count 1; within count 5, the more recent (Eggs) first.
+    // Most recently used first: Eggs (06-29), Banana (06-28), then Chili (06-20) —
+    // regardless of use count.
     expect(body.data).toEqual([
       { type: 'food', id: 'food-2', name: 'Eggs', unit: 'grams', quantity: 100 },
-      { type: 'recipe', id: RECIPE_ID, name: 'Chili', unit: 'servings', quantity: 1 },
       { type: 'food', id: FOOD_ID, name: 'Banana', unit: 'grams', quantity: 120 },
+      { type: 'recipe', id: RECIPE_ID, name: 'Chili', unit: 'servings', quantity: 1 },
     ]);
-    expect(repo.findRecentDiaryRows).toHaveBeenCalledWith(
-      'user-1',
-      'breakfast',
-      expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
-    );
+    expect(repo.findRecentDiaryRows).toHaveBeenCalledWith('user-1', 'breakfast');
   });
 
   it('GET /api/food-log/recent without a meal returns 400', async () => {

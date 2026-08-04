@@ -193,23 +193,16 @@ export async function getDailyFoodLog(userId: string, date: string) {
   return { date, entries, totals: sumMacros(entries) };
 }
 
-// Recency window and cap for the quick re-add list.
-const RECENT_DAYS = 10;
-const RECENT_LIMIT = 10;
+// How many items the quick re-add row shows.
+const RECENT_LIMIT = 6;
 
-// `RECENT_DAYS` ago as 'YYYY-MM-DD' (UTC), inclusive of today.
-function recentSinceIso(): string {
-  const since = new Date();
-  since.setUTCDate(since.getUTCDate() - (RECENT_DAYS - 1));
-  return since.toISOString().slice(0, 10);
-}
-
-// Items recently logged for a meal, ranked most-used first (then most-recent), so
-// staples float up and one-off entries sink. Capped to a short list for re-adding.
+// The last-used items for a meal, most recently used first (with use count as a
+// tiebreaker), across all history so a staple logged a while ago still shows. Capped
+// to a short list for one-tap re-adding.
 export async function getRecentDiaryItems(userId: string, meal: MealType) {
-  const rows = await nutritionRepository.findRecentDiaryRows(userId, meal, recentSinceIso());
+  const rows = await nutritionRepository.findRecentDiaryRows(userId, meal);
   return rows
-    .sort((a, b) => b.count - a.count || b.lastDate.localeCompare(a.lastDate))
+    .sort((a, b) => b.lastDate.localeCompare(a.lastDate) || b.count - a.count)
     .slice(0, RECENT_LIMIT)
     .map((row) => ({
       type: row.type,

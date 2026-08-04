@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, gte, ilike, inArray, max, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, ilike, inArray, max, sql } from 'drizzle-orm';
 
 import type { CreateRecipeInput, FoodLogUnit, MealType } from '@gym-bro/shared';
 
@@ -406,21 +406,17 @@ export interface RecentDiaryRow {
   quantity: number;
 }
 
-// Distinct active foods and recipes logged for `meal` on/after `sinceDate`, each
-// with its use count and most recent day. Only active sources are returned (a
-// soft-deleted one can't be re-logged). The service merges, ranks, and caps.
+// Distinct active foods and recipes ever logged for `meal`, each with its use count
+// and most recent day. No date window — the service ranks by recency and caps, so the
+// quick re-add row always shows the last-used items however long ago. Only active
+// sources are returned (a soft-deleted one can't be re-logged).
 export async function findRecentDiaryRows(
   userId: string,
   meal: MealType,
-  sinceDate: string,
 ): Promise<RecentDiaryRow[]> {
-  // The shared filters; the inner join already restricts each query to food vs
-  // recipe entries, so no null-check on the polymorphic columns is needed.
-  const inWindow = and(
-    eq(foodLog.userId, userId),
-    eq(foodLog.meal, meal),
-    gte(foodLog.loggedDate, sinceDate),
-  );
+  // The shared filter; the inner join already restricts each query to food vs recipe
+  // entries, so no null-check on the polymorphic columns is needed.
+  const forMeal = and(eq(foodLog.userId, userId), eq(foodLog.meal, meal));
 
   const foodRows = await db
     .select({
@@ -431,7 +427,7 @@ export async function findRecentDiaryRows(
     })
     .from(foodLog)
     .innerJoin(foods, eq(foodLog.foodId, foods.id))
-    .where(and(inWindow, eq(foods.isActive, true)))
+    .where(and(forMeal, eq(foods.isActive, true)))
     .groupBy(foods.id, foods.name);
 
   const recipeRows = await db
@@ -443,7 +439,7 @@ export async function findRecentDiaryRows(
     })
     .from(foodLog)
     .innerJoin(recipes, eq(foodLog.recipeId, recipes.id))
-    .where(and(inWindow, eq(recipes.isActive, true)))
+    .where(and(forMeal, eq(recipes.isActive, true)))
     .groupBy(recipes.id, recipes.name);
 
   // The most recent entry's unit + quantity per source (DISTINCT ON, newest first),
@@ -456,7 +452,7 @@ export async function findRecentDiaryRows(
     })
     .from(foodLog)
     .innerJoin(foods, eq(foodLog.foodId, foods.id))
-    .where(and(inWindow, eq(foods.isActive, true)))
+    .where(and(forMeal, eq(foods.isActive, true)))
     .orderBy(foodLog.foodId, desc(foodLog.createdAt));
   const recipePortions = await db
     .selectDistinctOn([foodLog.recipeId], {
@@ -466,7 +462,7 @@ export async function findRecentDiaryRows(
     })
     .from(foodLog)
     .innerJoin(recipes, eq(foodLog.recipeId, recipes.id))
-    .where(and(inWindow, eq(recipes.isActive, true)))
+    .where(and(forMeal, eq(recipes.isActive, true)))
     .orderBy(foodLog.recipeId, desc(foodLog.createdAt));
 
   const portionById = new Map(
@@ -484,7 +480,7 @@ export async function findRecentDiaryRows(
       id: row.id,
       name: row.name,
       count: Number(row.count),
-      lastDate: row.lastDate ?? sinceDate,
+      lastDate: row.lastDate ?? '',
       ...portionOf(row.id),
     })),
     ...recipeRows.map((row) => ({
@@ -492,7 +488,7 @@ export async function findRecentDiaryRows(
       id: row.id,
       name: row.name,
       count: Number(row.count),
-      lastDate: row.lastDate ?? sinceDate,
+      lastDate: row.lastDate ?? '',
       ...portionOf(row.id),
     })),
   ];
