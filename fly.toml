@@ -1,21 +1,24 @@
-# Fly.io config — single service running the Hono API, which also serves the built
-# SPA on the same origin. Secrets are set out-of-band via `fly secrets set` (never
-# committed). The app name must be globally unique; `fly launch` confirms/changes it.
-app = "gym-bro"
-primary_region = "waw"
+# fly.toml app configuration file generated for gym-bro on 2026-08-04T10:16:22+02:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
 
+app = 'gym-bro'
+primary_region = 'ams'
+
+[build]
 [env]
-  PORT = "8080"
+  PORT = '8080'
 
 [http_service]
   internal_port = 8080
   force_https = true
-  # Scale to zero when idle (personal app); a request cold-starts a machine in a few
-  # seconds. Raise min_machines_running to 1 to keep it always warm.
-  auto_stop_machines = "stop"
+  auto_stop_machines = 'stop'
   auto_start_machines = true
   min_machines_running = 0
 
 [[vm]]
-  size = "shared-cpu-1x"
-  memory = "512mb"
+  size = 'shared-cpu-1x'
+  memory = '512mb'
+  cpus = 1
+  memory_mb = 512
