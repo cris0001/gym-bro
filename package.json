@@ -11,7 +11,7 @@
   },
   "scripts": {
     "build": "pnpm -r build",
-    "dev": "pnpm -r --parallel dev",
+    "dev": "concurrently -k -n api,web -c blue,green \"pnpm --filter @gym-bro/api dev\" \"pnpm --filter @gym-bro/web dev\"",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
+    "concurrently": "^10.0.4",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
     "globals": "^15.14.0",
