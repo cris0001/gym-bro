@@ -5,6 +5,7 @@ import type {
   createFoodLogSchema,
   createFoodSchema,
   createRecipeSchema,
+  eanParamSchema,
   foodLogDateQuerySchema,
   recentFoodLogQuerySchema,
   recipeIngredientInputSchema,
@@ -26,6 +27,7 @@ export type CreateFoodLogInput = z.infer<typeof createFoodLogSchema>;
 export type UpdateFoodLogInput = z.infer<typeof updateFoodLogSchema>;
 export type FoodLogDateQueryInput = z.infer<typeof foodLogDateQuerySchema>;
 export type RecentFoodLogQueryInput = z.infer<typeof recentFoodLogQuerySchema>;
+export type EanParamInput = z.infer<typeof eanParamSchema>;
 
 // --- Wire entity shapes (numeric columns coerced to numbers by the service;
 // date columns are 'YYYY-MM-DD' strings; timestamps are ISO strings) ---
@@ -42,16 +44,37 @@ export interface MacroTotals {
   fatG: number;
 }
 
-// A food's macros are per 100g. servingGrams / unitGrams (when set) are the weights of
-// one serving / one unit-piece, so the food can be logged by serving or by unit as
-// well as by grams. Both are independent and may be null.
+// A food in a user's pantry. Macros are per 100g. servingGrams / unitGrams (when set)
+// are the weights of one serving / one unit-piece, so the food can be logged by serving
+// or by unit as well as by grams. globalProductId links this entry to the shared
+// catalog when it came from a scanned barcode (null = a fully custom product); ean /
+// brand / imageUrl are copied from that global or entered by the user.
 export interface Food extends MacroTotals {
   id: string;
   userId: string;
+  globalProductId: string | null;
   name: string;
+  ean: string | null;
+  brand: string | null;
   servingGrams: number | null;
   unitGrams: number | null;
+  imageUrl: string | null;
   isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// A product from the shared, EAN-keyed catalog (built up as users scan). Macros per
+// 100g. Internal fields (offRaw, firstScannedBy) are not exposed — this is the shape
+// the barcode lookup returns, for a preview and to seed a pantry copy.
+export interface GlobalProduct extends MacroTotals {
+  id: string;
+  ean: string;
+  name: string;
+  brand: string | null;
+  servingGrams: number | null;
+  unitGrams: number | null;
+  imageUrl: string | null;
   createdAt: string;
   updatedAt: string;
 }
