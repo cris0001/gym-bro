@@ -1,14 +1,18 @@
-// Customized from the shadcn default: the bottom variant is a full-width,
-// rounded-top bottom sheet on mobile, and a centered, width-capped card lifted
-// off the bottom edge on sm+ screens (so it isn't an awkward full-width bar on
-// desktop).
+// Customized from the shadcn default:
+// - the bottom variant is a full-width, rounded-top bottom sheet on mobile, and a
+//   centered, width-capped card lifted off the bottom edge on sm+ screens (so it
+//   isn't an awkward full-width bar on desktop);
+// - Sheet wires up useSheetBackClose so the phone Back button closes an open sheet
+//   instead of navigating away to another URL (applies to every sheet in the app).
 import * as React from 'react';
 import { Dialog as SheetPrimitive } from 'radix-ui';
 import { XIcon } from 'lucide-react';
 
+import { useSheetBackClose } from '@/hooks/use-sheet-back-close';
 import { cn } from '@/lib/utils';
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
+  useSheetBackClose(props.open, props.onOpenChange);
   return <SheetPrimitive.Root data-slot="sheet" {...props} />;
 }
 
