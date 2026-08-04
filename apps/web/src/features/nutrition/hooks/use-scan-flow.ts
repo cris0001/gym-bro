@@ -1,8 +1,9 @@
 import { toast } from 'sonner';
 
-import type { CreateFoodInput, Food, GlobalProduct } from '@gym-bro/shared';
+import type { Food } from '@gym-bro/shared';
 
 import { useFoodUiStore, type ScanPrefill } from '../stores/food-ui.store';
+import { globalToInput } from '../utils/global-to-input';
 import { useCreateFood } from './use-create-food';
 import { useEanLookup } from './use-ean-lookup';
 
@@ -10,22 +11,6 @@ interface ResolvedItem {
   kind: 'food';
   id: string;
   name: string;
-}
-
-// A catalog product has complete data, so it can be added to the pantry directly.
-function globalToInput(p: GlobalProduct): CreateFoodInput {
-  return {
-    name: p.name,
-    kcal: p.kcal,
-    proteinG: p.proteinG,
-    carbsG: p.carbsG,
-    fatG: p.fatG,
-    ...(p.servingGrams !== null ? { servingGrams: p.servingGrams } : {}),
-    ...(p.unitGrams !== null ? { unitGrams: p.unitGrams } : {}),
-    ean: p.ean,
-    ...(p.brand !== null ? { brand: p.brand } : {}),
-    ...(p.imageUrl !== null ? { imageUrl: p.imageUrl } : {}),
-  };
 }
 
 function blankPrefill(ean: string): ScanPrefill {

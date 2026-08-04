@@ -188,6 +188,20 @@ export async function findGlobalByEan(ean: string): Promise<GlobalProductRow | u
   return row ? mapGlobalRow(row) : undefined;
 }
 
+// Name search over the shared catalog (the "All products" picker tab), capped.
+export async function searchGlobalProducts(
+  query: string,
+  limit: number,
+): Promise<GlobalProductRow[]> {
+  const rows = await db
+    .select()
+    .from(globalProducts)
+    .where(ilike(globalProducts.name, `%${query}%`))
+    .orderBy(asc(sql`lower(${globalProducts.name})`))
+    .limit(limit);
+  return rows.map(mapGlobalRow);
+}
+
 // Macros are required on a global (NOT NULL); serving/unit/image optional.
 interface GlobalProductInput {
   ean: string;
