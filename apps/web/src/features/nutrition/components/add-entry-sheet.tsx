@@ -45,15 +45,24 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
   // The id of the entry being edited (via the shared form), or null when adding new.
   const [editingId, setEditingId] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
-  // Scanning a barcode resolves to a food (from our catalog, OpenFoodFacts, or the
-  // form) and selects it here, ready to pick a portion and log.
-  const { handleEan } = useScanFlow((item) => {
-    setSelected(item);
-    setEditingId(null);
-  });
 
   const create = useCreateFoodLogEntry();
   const update = useUpdateFoodLogEntry();
+  // Scanning here logs the product straight to the meal you scanned from (added to your
+  // foods/pantry first if new). Default portion: 1 serving when it has a serving size,
+  // else 100 g — edit the amount from the meal list afterward.
+  const { handleEan } = useScanFlow((food) => {
+    if (addMeal === null) return;
+    const hasServing = food.servingGrams !== null;
+    create.mutate({
+      type: 'food',
+      foodId: food.id,
+      quantity: hasServing ? 1 : 100,
+      unit: hasServing ? 'servings' : 'grams',
+      meal: addMeal,
+      loggedDate,
+    });
+  });
   const { data: foods = [] } = useFoods('');
   const { data: recipes = [] } = useRecipes();
   // The meal's current entries, shown as an editable list at the bottom of the sheet.

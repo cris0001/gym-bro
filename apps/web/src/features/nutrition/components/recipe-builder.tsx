@@ -90,9 +90,26 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
   const error = create.error ?? update.error;
 
   const [scanning, setScanning] = useState(false);
-  // Scanning here just lands the product in your foods; it's then available to pick in
-  // the ingredient rows below.
-  const { handleEan } = useScanFlow();
+  // Scanning here adds the product to your foods and drops it straight in as an
+  // ingredient row (type the amount); a fresh empty row follows.
+  const { handleEan } = useScanFlow((food) => {
+    const picked: IngredientFood = {
+      id: food.id,
+      name: food.name,
+      per100g: { kcal: food.kcal, proteinG: food.proteinG, carbsG: food.carbsG, fatG: food.fatG },
+      servingGrams: food.servingGrams,
+      unitGrams: food.unitGrams,
+    };
+    setIngredients((rows) => {
+      const last = rows[rows.length - 1];
+      const trimmed = last && !last.food && last.amount.trim() === '' ? rows.slice(0, -1) : rows;
+      return [
+        ...trimmed,
+        { key: crypto.randomUUID(), food: picked, amount: '', unit: 'grams' },
+        newRow(),
+      ];
+    });
+  });
 
   function selectFood(key: string, food: Food) {
     const picked: IngredientFood = {
