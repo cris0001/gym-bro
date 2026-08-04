@@ -295,7 +295,8 @@ export async function listRecipesWithTotals(userId: string): Promise<RecipeWithT
     .leftJoin(foods, eq(recipeIngredients.foodId, foods.id))
     .where(and(eq(recipes.userId, userId), eq(recipes.isActive, true)))
     .groupBy(recipes.id)
-    .orderBy(asc(sql`lower(${recipes.name})`));
+    // Newest first, so a just-created recipe shows at the top of the list.
+    .orderBy(desc(recipes.createdAt));
 
   return rows.map((row) => ({
     id: row.id,
