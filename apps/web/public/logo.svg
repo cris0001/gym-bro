@@ -1,9 +1,9 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-  <rect width="512" height="512" rx="96" fill="#0284c7" />
+  <rect width="512" height="512" rx="96" fill="#ffffff" />
   <g
     transform="translate(136 136) scale(10)"
     fill="none"
-    stroke="#ffffff"
+    stroke="#0284c7"
     stroke-width="2"
     stroke-linecap="round"
     stroke-linejoin="round"
