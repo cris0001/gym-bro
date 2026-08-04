@@ -1,0 +1,10 @@
+# Keep the Docker build context small — deps and builds happen inside the image.
+**/node_modules
+**/dist
+**/dev-dist
+.git
+.husky
+**/.env
+**/.env.*
+!**/.env.example
+*.log

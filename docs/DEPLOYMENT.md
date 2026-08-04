@@ -1,89 +1,122 @@
-# Deployment (Netlify)
+# Deployment (Fly.io)
 
-The monorepo deploys to Netlify as two parts from a single site:
+The whole app deploys as **one Fly.io app** (a single container):
 
-- **Frontend** (`apps/web`) — a static SPA, built with Vite to `apps/web/dist`.
-- **Backend** (`apps/api`) — the Hono app running as **one** Netlify Function
-  (`apps/api/netlify/functions/api.ts`, a v1 classic `handler`). A `netlify.toml`
-  redirect rewrites every `/api/*` request to the function; the handler turns the
-  Netlify event into a Web `Request` (using `event.rawUrl` to preserve the original
-  `/api/...` path so Hono matches), runs `app.fetch`, and converts the `Response`
-  back.
-- **Database** — stays on **Neon** (pooled connection). Netlify never touches it;
+- **Backend** (`apps/api`) — the Hono app runs as a long-lived Node server
+  (`apps/api/src/index.ts` via `@hono/node-server`, started with `tsx` — no build
+  step; `@gym-bro/shared` ships its TS source directly).
+- **Frontend** (`apps/web`) — a static SPA built with Vite to `apps/web/dist`. The
+  **same** Hono server serves it: when `STATIC_DIR` is set, static assets are served
+  from that directory with an `index.html` fallback for client-side routes. `/api/*`
+  and `/health` stay API responses (matched first).
+- **Database** — stays on **Neon** (pooled). Fly never provisions a database;
   migrations are run manually (see below).
 
-Because the API is served from the **same origin** as the SPA (via the `/api/*`
-rewrite), the HttpOnly auth cookie works without cross-origin CORS.
+Because the API and SPA are the **same origin**, the HttpOnly auth cookie works with
+no cross-origin CORS.
 
-All of this is configured in **`netlify.toml`** at the repo root.
+Config lives in **`Dockerfile`** and **`fly.toml`** at the repo root.
 
-## Required environment variables
+## How the container is built and run
 
-Set these in the Netlify dashboard (**Site configuration → Environment
-variables**). They apply at build and/or function runtime.
+`Dockerfile` (node:22-slim):
 
-| Variable       | Value                                                          | Used by            |
-| -------------- | -------------------------------------------------------------- | ------------------ |
-| `DATABASE_URL` | Neon **pooled** connection string (host contains `-pooler`)    | Function (runtime) |
-| `JWT_SECRET`   | Long random string, e.g. `openssl rand -base64 32` (≥32 chars) | Function (runtime) |
-| `NODE_ENV`     | `production` (enables the Secure auth cookie)                  | Function (runtime) |
-| `CORS_ORIGIN`  | Your site URL, e.g. `https://your-site.netlify.app`            | Function (runtime) |
+1. `pnpm install --frozen-lockfile` for the whole workspace.
+2. `pnpm --filter @gym-bro/web build` → `apps/web/dist`.
+3. Runs `apps/api/node_modules/.bin/tsx apps/api/src/index.ts` from the repo root.
+
+Baked-in runtime env (not secrets): `NODE_ENV=production`, `PORT=8080`,
+`STATIC_DIR=/app/apps/web/dist` (absolute, so serving is CWD-independent). `fly.toml`
+maps the public HTTPS service to `internal_port = 8080`.
+
+## Required secrets
+
+Set these with `fly secrets set` (never commit them). Each `set` triggers a rolling
+redeploy.
+
+| Secret         | Value                                                          |
+| -------------- | -------------------------------------------------------------- |
+| `DATABASE_URL` | Neon **pooled** connection string (host contains `-pooler`)    |
+| `JWT_SECRET`   | Long random string, e.g. `openssl rand -base64 32` (≥32 chars) |
+| `CORS_ORIGIN`  | The app URL, e.g. `https://<app>.fly.dev` (no trailing slash)  |
+
+Optional — Strava integration (all three together or none):
+
+| Secret                 | Value                                       |
+| ---------------------- | ------------------------------------------- |
+| `STRAVA_CLIENT_ID`     | From your Strava API app                    |
+| `STRAVA_CLIENT_SECRET` | From your Strava API app                    |
+| `STRAVA_REDIRECT_URI`  | `https://<app>.fly.dev/api/strava/callback` |
 
 Notes:
 
-- **No `VITE_API_URL` needed.** The SPA calls relative `/api/...` URLs, which hit
-  the same origin (the Netlify Function in prod, the Vite dev-server proxy in dev),
-  so there's nothing to configure. (`VITE_API_URL` exists only as an optional
-  override to point the SPA at a remote/absolute API.)
-- `PORT` is **not** needed on Netlify (functions don't bind a port).
-- pnpm comes from the repo's `packageManager` field (`pnpm@11.6.0`) via Corepack;
-  `netlify.toml` only pins `NODE_VERSION = "22"`.
+- `NODE_ENV`, `PORT`, `STATIC_DIR` are set by the image/`fly.toml` — don't set them as
+  secrets.
+- **No `VITE_API_URL`.** The SPA calls relative `/api/...` URLs on the same origin.
+- `CORS_ORIGIN` doubles as the base for the Strava OAuth redirect back to the app, so
+  keep it exact and **without** a trailing slash.
 
 ## Getting the Neon pooled URL
 
 1. Neon dashboard → your project → **Connection Details**.
-2. Toggle/select **"Pooled connection"** (the host will contain `-pooler`).
+2. Select **"Pooled connection"** (the host contains `-pooler`).
 3. Copy the `postgres://…?sslmode=require` string into `DATABASE_URL`.
 
-The function uses the Neon **WebSocket Pool** driver (kept deliberately, because
-the app uses interactive transactions — finishing a workout, editing, etc. — which
-the HTTP driver can't do). The pooled endpoint suits short-lived invocations.
+The server uses the Neon **WebSocket Pool** driver (kept deliberately — the app uses
+interactive transactions, e.g. finishing a workout, which the HTTP driver can't do).
+On a long-lived server the pool stays warm between requests.
 
-## First deploy (Netlify dashboard)
+## First deploy
 
-1. **Connect the repo**: Netlify → **Add new site → Import an existing project**,
-   pick the Git provider and this repository.
-2. Netlify reads **`netlify.toml`**, so build settings are already filled:
-   - Build command: `pnpm --filter @gym-bro/web build`
-   - Publish directory: `apps/web/dist`
-   - Functions directory: `apps/api/netlify/functions` (esbuild bundler)
-     Leave them as detected.
-3. **Set the environment variables** from the table above before the first build.
-4. **Deploy**. Netlify installs deps with pnpm, builds the SPA, and bundles the
-   function (esbuild compiles the function plus its TS imports — the Hono app and
-   the `@gym-bro/shared` workspace source).
+Prerequisites: a Fly account and [`flyctl`](https://fly.io/docs/flyctl/install/)
+installed.
+
+```bash
+flyctl auth login
+
+# Reads the committed fly.toml + Dockerfile. Pick a globally-unique app name and a
+# region. Decline any offer to provision a Postgres/Redis — we use Neon.
+fly launch --no-deploy
+
+# Secrets (fill in your values). Use the app URL Fly assigned, e.g. gym-bro.fly.dev.
+fly secrets set \
+  DATABASE_URL="postgres://…-pooler…?sslmode=require" \
+  JWT_SECRET="$(openssl rand -base64 32)" \
+  CORS_ORIGIN="https://<app>.fly.dev"
+
+# Optional, if using Strava:
+fly secrets set \
+  STRAVA_CLIENT_ID="…" \
+  STRAVA_CLIENT_SECRET="…" \
+  STRAVA_REDIRECT_URI="https://<app>.fly.dev/api/strava/callback"
+
+fly deploy
+```
+
+If using Strava, also set the **Authorization Callback Domain** in your Strava API
+app to `<app>.fly.dev` (domain only, no path).
+
+`fly launch` may rewrite `app` / `primary_region` in `fly.toml` to what you pick —
+commit that change.
 
 ### Verify after deploy
 
-- `https://your-site.netlify.app/` loads the SPA.
-- An API call works, e.g. registering/logging in, or
-  `https://your-site.netlify.app/api/health` — wait, `/health` is **not** exposed
-  (it's a local-dev probe). Instead confirm via the app's login/register flow, or
-  any `/api/...` route returning the JSON `{ data }` / `{ error }` envelope.
-- If `/api/*` returns 404s, check the `api` function deployed (Netlify →
-  Functions tab) and that the `/api/* → /.netlify/functions/api` redirect in
-  `netlify.toml` is listed before the SPA fallback (Deploys → redirects).
+- `https://<app>.fly.dev/` loads the SPA.
+- `https://<app>.fly.dev/health` returns `{"data":{"status":"ok"}}` (the single app
+  serves it now — unlike the old Netlify setup).
+- Log in / register to confirm an `/api/...` round-trip and the auth cookie.
+- `fly logs` to watch the server; `fly status` for machine health.
 
-## Updating env vars later
+## Updating secrets / redeploying
 
-Netlify dashboard → **Site configuration → Environment variables** → edit. Then
-**trigger a redeploy** (Deploys → Trigger deploy → _Deploy site_) so the change
-takes effect (build-time vars only apply after a rebuild).
+- Change a secret: `fly secrets set KEY="…"` (auto-redeploys).
+- Ship code: `fly deploy` (or wire CI later). Pushing to Git does **not** deploy by
+  itself unless you add a GitHub Action / Fly GitHub integration.
 
 ## Database migrations
 
-Migrations are **not** run by Netlify. Run them yourself from a local checkout
-against Neon (use the same `DATABASE_URL`), reviewing the SQL first:
+Migrations are **not** run by Fly. Run them yourself from a local checkout against
+Neon (same `DATABASE_URL`), reviewing the SQL first:
 
 ```bash
 # from repo root, with apps/api/.env pointing at the Neon database
@@ -92,28 +125,36 @@ corepack pnpm --filter @gym-bro/api db:migrate
 
 ## Caveats / expectations
 
-- **Cold starts** (~0.5–1.5s): the first request after the function goes idle pays
-  for bundle init + establishing the Neon WebSocket pool. Warm invocations are
-  fast. Fine for a single-user/demo app.
-- **bcryptjs is pure JS** (swapped from native `bcrypt` so it runs on the
-  function). Hashing/verifying at cost 12 is a few hundred ms — noticeable only on
-  a cold-start login; otherwise irrelevant.
-- **esbuild bundles the `@gym-bro/shared` workspace TS** through its symlink. This
-  works in normal setups; if the first deploy fails to resolve `@gym-bro/shared`,
-  that's the place to look (the shared package exports its `./src/index.ts`
-  directly, no build step).
-- **Same-origin auth**: the cookie is `SameSite=Lax` + `Secure` (prod). It works
-  because the function is same-origin with the SPA. If you ever split the API onto
-  a different domain, you'd need `SameSite=None`.
+- **Scale to zero**: `fly.toml` stops the machine when idle (`min_machines_running =
+0`) and cold-starts it on the next request (a few seconds). Set it to `1` to stay
+  always warm at the cost of more machine hours.
+- **Image runs TS via `tsx`** (no compile step). Simple and matches dev; the image
+  carries the TS source + `tsx`. Swapping to a bundled JS build later would slim it.
+- **bcryptjs is pure JS** — no native build in the image.
+- **Same-origin auth**: the cookie is `SameSite=Lax` + `Secure` (prod), which works
+  because the API and SPA share an origin. Splitting them onto different domains would
+  need `SameSite=None`.
+
+## Custom domain (later)
+
+```bash
+fly certs add app.example.com     # then add the shown A/AAAA (or CNAME) DNS records
+```
+
+Then update `CORS_ORIGIN` (and `STRAVA_REDIRECT_URI` + the Strava callback domain) to
+the custom domain.
 
 ## Local development is unaffected
 
-Nothing here changes local dev. Still:
+`STATIC_DIR` is unset locally, so the API serves only `/api` + `/health` and Vite
+serves the SPA:
 
 ```bash
 corepack pnpm install
 corepack pnpm dev      # web on :5173, API on :3000 via @hono/node-server
 ```
 
-The Node server bootstrap (`apps/api/src/index.ts`) is local-only and isn't part
-of the Netlify function bundle.
+## Legacy Netlify config
+
+`netlify.toml` and `apps/api/netlify/functions/` remain in the repo until the Fly
+deploy is verified, then get removed. See the Git history / the migration commit.
