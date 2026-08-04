@@ -17,41 +17,54 @@ interface BarcodeScannerProps {
   onDetected: (ean: string) => void;
 }
 
+// focusMode / zoom aren't in the standard DOM constraint types yet.
+interface FocusZoom {
+  focusMode?: string;
+  zoom?: number;
+}
+function advancedConstraints(set: FocusZoom): MediaTrackConstraints {
+  return { advanced: [set] } as unknown as MediaTrackConstraints;
+}
+
+interface ZoomCap {
+  min: number;
+  max: number;
+  step: number;
+  value: number;
+}
+
 // Scan an EAN with the camera, an uploaded photo, or by typing it. zxing is imported
 // lazily (only when the sheet opens) so it never weighs on the main bundle. Works
-// cross-browser incl. iOS; if the camera is unavailable, the manual + upload fallbacks
-// still work (desktop path).
+// cross-browser incl. iOS; the manual + upload fallbacks cover the desktop / no-camera
+// path. Tap the preview to refocus; a zoom slider appears when the device supports it —
+// key for small barcodes the lens can't focus on up close (hold further + zoom in).
 export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const controlsRef = useRef<{ stop: () => void } | null>(null);
+  const trackRef = useRef<MediaStreamTrack | null>(null);
   const [manual, setManual] = useState('');
   const [note, setNote] = useState<string | null>(null);
+  const [zoom, setZoom] = useState<ZoomCap | null>(null);
 
   function stopCamera() {
     controlsRef.current?.stop();
     controlsRef.current = null;
+    trackRef.current = null;
   }
 
-  // Start the camera scanner while the sheet is open; stop it on close/unmount.
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
     setNote(null);
     setManual('');
+    setZoom(null);
     void (async () => {
       try {
         const { BrowserMultiFormatReader } = await import('@zxing/browser');
         const reader = new BrowserMultiFormatReader();
         if (cancelled || !videoRef.current) return;
         controlsRef.current = await reader.decodeFromConstraints(
-          {
-            video: {
-              facingMode: 'environment',
-              // A small product barcode needs enough pixels to decode up close.
-              width: { ideal: 1920 },
-              height: { ideal: 1080 },
-            },
-          },
+          { video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } },
           videoRef.current,
           (result) => {
             if (!result) return;
@@ -59,16 +72,28 @@ export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProp
             onDetected(result.getText());
           },
         );
-        // Enable continuous autofocus so small, close-up barcodes sharpen instead of
-        // blurring (best-effort — not every device exposes focusMode).
-        const stream = videoRef.current?.srcObject;
-        if (stream instanceof MediaStream) {
+
+        const srcObject = videoRef.current?.srcObject;
+        const track =
+          srcObject instanceof MediaStream ? (srcObject.getVideoTracks()[0] ?? null) : null;
+        trackRef.current = track;
+        if (track) {
+          // Continuous autofocus so close-up barcodes sharpen (best-effort).
           try {
-            await stream.getVideoTracks()[0]?.applyConstraints({
-              advanced: [{ focusMode: 'continuous' } as unknown as MediaTrackConstraintSet],
-            });
+            await track.applyConstraints(advancedConstraints({ focusMode: 'continuous' }));
           } catch {
-            // focusMode unsupported on this device — ignore.
+            // focusMode unsupported — ignore.
+          }
+          const caps = track.getCapabilities?.() as
+            | (MediaTrackCapabilities & { zoom?: { min: number; max: number; step?: number } })
+            | undefined;
+          if (caps?.zoom && caps.zoom.max > caps.zoom.min && !cancelled) {
+            setZoom({
+              min: caps.zoom.min,
+              max: caps.zoom.max,
+              step: caps.zoom.step ?? 0.1,
+              value: caps.zoom.min,
+            });
           }
         }
       } catch {
@@ -81,6 +106,27 @@ export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProp
     };
     // Only `open` should (re)start the camera; onDetected is used for a one-shot scan.
   }, [open]);
+
+  async function refocus() {
+    const track = trackRef.current;
+    if (!track) return;
+    // Re-trigger autofocus — single-shot, then back to continuous (best-effort).
+    try {
+      await track.applyConstraints(advancedConstraints({ focusMode: 'single-shot' }));
+      await track.applyConstraints(advancedConstraints({ focusMode: 'continuous' }));
+    } catch {
+      // unsupported — ignore.
+    }
+  }
+
+  async function applyZoom(value: number) {
+    setZoom((z) => (z ? { ...z, value } : z));
+    try {
+      await trackRef.current?.applyConstraints(advancedConstraints({ zoom: value }));
+    } catch {
+      // unsupported — ignore.
+    }
+  }
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -110,15 +156,38 @@ export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProp
         <SheetHeader>
           <SheetTitle>Scan a barcode</SheetTitle>
           <SheetDescription>
-            Point your camera at the barcode — hold it ~10 cm away and let it sharpen — or upload a
-            photo of it, or type the number.
+            Point the camera at the barcode and tap to focus. If it won&rsquo;t sharpen up close,
+            hold it further away and zoom in — or upload a photo, or type the number.
           </SheetDescription>
         </SheetHeader>
 
         <div className="grid gap-4 p-4">
-          <div className="bg-muted relative aspect-video overflow-hidden rounded-lg">
+          <button
+            type="button"
+            onClick={() => void refocus()}
+            aria-label="Tap to focus"
+            className="bg-muted relative block aspect-video w-full overflow-hidden rounded-lg"
+          >
             <video ref={videoRef} className="size-full object-cover" muted playsInline />
-          </div>
+            <span className="bg-background/70 text-muted-foreground absolute bottom-1 left-1/2 -translate-x-1/2 rounded px-2 py-0.5 text-xs">
+              Tap to focus
+            </span>
+          </button>
+
+          {zoom ? (
+            <label className="flex items-center gap-3 text-sm">
+              Zoom
+              <input
+                type="range"
+                min={zoom.min}
+                max={zoom.max}
+                step={zoom.step}
+                value={zoom.value}
+                onChange={(e) => void applyZoom(Number(e.target.value))}
+                className="flex-1"
+              />
+            </label>
+          ) : null}
 
           {note ? <p className="text-muted-foreground text-sm">{note}</p> : null}
 
