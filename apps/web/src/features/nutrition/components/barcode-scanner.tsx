@@ -33,6 +33,35 @@ interface ZoomCap {
   value: number;
 }
 
+// Phones expose several rear cameras; `facingMode: 'environment'` often picks the
+// ultra-wide (0.5×/0.6×), which can't focus on a small barcode up close. Pick the main
+// (1×) rear lens instead: the back camera whose label isn't ultra-wide / tele / macro /
+// depth (iOS labels are descriptive; on Android the first back camera is the main one).
+// Labels are only populated after camera permission, so request it once if needed.
+async function pickRearCameraDeviceId(): Promise<string | undefined> {
+  if (!navigator.mediaDevices?.enumerateDevices) return undefined;
+  try {
+    let videos = (await navigator.mediaDevices.enumerateDevices()).filter(
+      (d) => d.kind === 'videoinput',
+    );
+    if (videos.length > 0 && videos.every((d) => d.label === '')) {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' },
+      });
+      stream.getTracks().forEach((t) => t.stop());
+      videos = (await navigator.mediaDevices.enumerateDevices()).filter(
+        (d) => d.kind === 'videoinput',
+      );
+    }
+    const back = videos.filter((d) => /back|rear|environment/i.test(d.label));
+    const pool = back.length > 0 ? back : videos;
+    const main = pool.find((d) => !/ultra|tele|macro|depth|zoom|wide-angle/i.test(d.label));
+    return (main ?? pool[0])?.deviceId;
+  } catch {
+    return undefined;
+  }
+}
+
 // Scan an EAN with the camera, an uploaded photo, or by typing it. zxing is imported
 // lazily (only when the sheet opens) so it never weighs on the main bundle. Works
 // cross-browser incl. iOS; the manual + upload fallbacks cover the desktop / no-camera
@@ -62,9 +91,15 @@ export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProp
       try {
         const { BrowserMultiFormatReader } = await import('@zxing/browser');
         const reader = new BrowserMultiFormatReader();
+        const deviceId = await pickRearCameraDeviceId();
         if (cancelled || !videoRef.current) return;
+        const video: MediaTrackConstraints = {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          ...(deviceId ? { deviceId: { exact: deviceId } } : { facingMode: 'environment' }),
+        };
         controlsRef.current = await reader.decodeFromConstraints(
-          { video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } },
+          { video },
           videoRef.current,
           (result) => {
             if (!result) return;
