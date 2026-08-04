@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router';
-import { Plus } from 'lucide-react';
+import { Barcode, Plus } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,10 @@ import { divideMacros, multiplyMacros, scaleMacros, sumMacros } from '@gym-bro/s
 import type { CreateRecipeInput, Food, MacroTotals, RecipeDetail } from '@gym-bro/shared';
 
 import { useCreateRecipe } from '../hooks/use-create-recipe';
+import { useScanFlow } from '../hooks/use-scan-flow';
 import { useUpdateRecipe } from '../hooks/use-update-recipe';
+import { BarcodeScanner } from './barcode-scanner';
+import { FoodSheet } from './food-sheet';
 import { IngredientRow } from './ingredient-row';
 import { MacrosSummary } from './macros-summary';
 
@@ -86,6 +89,11 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
   const isPending = create.isPending || update.isPending;
   const error = create.error ?? update.error;
 
+  const [scanning, setScanning] = useState(false);
+  // Scanning here just lands the product in your foods; it's then available to pick in
+  // the ingredient rows below.
+  const { handleEan } = useScanFlow();
+
   function selectFood(key: string, food: Food) {
     const picked: IngredientFood = {
       id: food.id,
@@ -94,8 +102,8 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
       servingGrams: food.servingGrams,
       unitGrams: food.unitGrams,
     };
-    setIngredients((rows) =>
-      rows.map((r) => {
+    setIngredients((rows) => {
+      const mapped = rows.map((r) => {
         if (r.key !== key) return r;
         // Keep the current unit only if the newly-picked food supports it; else grams.
         const keepUnit =
@@ -103,8 +111,12 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
           (r.unit === 'servings' && food.servingGrams !== null) ||
           (r.unit === 'units' && food.unitGrams !== null);
         return { ...r, food: picked, unit: keepUnit ? r.unit : 'grams' };
-      }),
-    );
+      });
+      // Auto-grow: picking a food in the last row reveals a fresh empty one, so you
+      // just keep adding without hunting for the "Add" button.
+      const isLast = rows[rows.length - 1]?.key === key;
+      return isLast ? [...mapped, newRow()] : mapped;
+    });
   }
 
   const validRows = ingredients
@@ -161,16 +173,28 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <h2 className="font-semibold">Ingredients</h2>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-9"
-            onClick={() => setIngredients((rows) => [...rows, newRow()])}
-          >
-            <Plus className="size-4" />
-            Add
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-9"
+              onClick={() => setScanning(true)}
+            >
+              <Barcode className="size-4" />
+              Scan
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-9"
+              onClick={() => setIngredients((rows) => [...rows, newRow()])}
+            >
+              <Plus className="size-4" />
+              Add
+            </Button>
+          </div>
         </div>
         {ingredients.map((row) => {
           const grams = rowGrams(row);
@@ -229,6 +253,16 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
           {isPending ? 'Saving…' : editing ? 'Save changes' : 'Create recipe'}
         </Button>
       </div>
+
+      <BarcodeScanner
+        open={scanning}
+        onClose={() => setScanning(false)}
+        onDetected={(ean) => {
+          setScanning(false);
+          void handleEan(ean);
+        }}
+      />
+      <FoodSheet />
     </div>
   );
 }
