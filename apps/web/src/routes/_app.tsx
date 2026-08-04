@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
-import { Dumbbell } from 'lucide-react';
+import { BicepsFlexed } from 'lucide-react';
 
 import { BottomNav } from '@/components/nav/bottom-nav';
 import { SectionTabs } from '@/components/nav/section-tabs';
@@ -30,7 +30,7 @@ function AppLayout() {
         <header className="bg-background/80 sticky top-0 z-10 flex h-14 items-center justify-between border-b px-4 backdrop-blur lg:hidden">
           <span className="flex items-center gap-2 text-lg font-bold">
             <span className="bg-primary text-primary-foreground flex size-7 items-center justify-center rounded-md">
-              <Dumbbell className="size-4" />
+              <BicepsFlexed className="size-4" />
             </span>
             Gym Bro
           </span>
