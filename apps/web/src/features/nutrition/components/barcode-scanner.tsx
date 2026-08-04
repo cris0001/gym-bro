@@ -44,7 +44,14 @@ export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProp
         const reader = new BrowserMultiFormatReader();
         if (cancelled || !videoRef.current) return;
         controlsRef.current = await reader.decodeFromConstraints(
-          { video: { facingMode: 'environment' } },
+          {
+            video: {
+              facingMode: 'environment',
+              // A small product barcode needs enough pixels to decode up close.
+              width: { ideal: 1920 },
+              height: { ideal: 1080 },
+            },
+          },
           videoRef.current,
           (result) => {
             if (!result) return;
@@ -52,6 +59,18 @@ export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProp
             onDetected(result.getText());
           },
         );
+        // Enable continuous autofocus so small, close-up barcodes sharpen instead of
+        // blurring (best-effort — not every device exposes focusMode).
+        const stream = videoRef.current?.srcObject;
+        if (stream instanceof MediaStream) {
+          try {
+            await stream.getVideoTracks()[0]?.applyConstraints({
+              advanced: [{ focusMode: 'continuous' } as unknown as MediaTrackConstraintSet],
+            });
+          } catch {
+            // focusMode unsupported on this device — ignore.
+          }
+        }
       } catch {
         if (!cancelled) setNote('Camera unavailable — type the barcode or upload a photo.');
       }
@@ -91,7 +110,8 @@ export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProp
         <SheetHeader>
           <SheetTitle>Scan a barcode</SheetTitle>
           <SheetDescription>
-            Point your camera at an EAN barcode, upload a photo of it, or type the number.
+            Point your camera at the barcode — hold it ~10 cm away and let it sharpen — or upload a
+            photo of it, or type the number.
           </SheetDescription>
         </SheetHeader>
 
