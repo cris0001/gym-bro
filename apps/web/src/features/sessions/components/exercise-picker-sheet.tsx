@@ -84,7 +84,7 @@ export function ExercisePickerSheet({ mode, onClose }: ExercisePickerSheetProps)
 
   return (
     <Sheet open={mode !== null} onOpenChange={(next) => !next && handleClose()}>
-      <SheetContent side="bottom" className="gap-0">
+      <SheetContent side="bottom" className="gap-0 sm:h-[70dvh]">
         <SheetHeader>
           <SheetTitle>{isSwap ? 'Swap exercise' : 'Add exercise'}</SheetTitle>
           <SheetDescription>
@@ -92,7 +92,7 @@ export function ExercisePickerSheet({ mode, onClose }: ExercisePickerSheetProps)
           </SheetDescription>
         </SheetHeader>
 
-        <div className="flex max-h-[60vh] flex-col gap-3 p-4">
+        <div className="flex min-h-0 flex-1 flex-col gap-3 p-4">
           {hasTemplate && (
             <div className="bg-muted flex gap-1 rounded-md p-1 text-sm">
               {(['template', 'all'] as const).map((option) => (
@@ -121,7 +121,7 @@ export function ExercisePickerSheet({ mode, onClose }: ExercisePickerSheetProps)
           {filtered.length === 0 ? (
             <p className="text-muted-foreground text-sm">No matching exercises.</p>
           ) : (
-            <ul className="flex flex-col gap-2 overflow-y-auto">
+            <ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
               {filtered.map((exercise) => (
                 <li key={exercise.id}>
                   <button
