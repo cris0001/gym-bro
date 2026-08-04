@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { Dumbbell } from 'lucide-react';
+import { BicepsFlexed } from 'lucide-react';
 
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LogoutButton } from '@/features/auth';
@@ -23,7 +23,7 @@ export function SidebarNav() {
     <aside className="bg-background sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r lg:flex">
       <div className="flex h-14 items-center gap-2 border-b px-4">
         <span className="bg-primary text-primary-foreground flex size-7 items-center justify-center rounded-md">
-          <Dumbbell className="size-4" />
+          <BicepsFlexed className="size-4" />
         </span>
         <span className="text-lg font-bold">Gym Bro</span>
       </div>

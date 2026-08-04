@@ -35,7 +35,7 @@ export default defineConfig({
         name: 'Gym Bro',
         short_name: 'Gym Bro',
         description: 'Personal fitness tracker — training, nutrition, and body metrics.',
-        theme_color: '#ea580c',
+        theme_color: '#0284c7',
         background_color: '#ffffff',
         display: 'standalone',
         start_url: '/',
