@@ -1,6 +1,6 @@
 import { and, asc, count, desc, eq, ilike, inArray, max, sql } from 'drizzle-orm';
 
-import type { CreateRecipeInput, FoodLogUnit, MealType } from '@gym-bro/shared';
+import type { CreateRecipeInput, FoodLogSource, FoodLogUnit, MealType } from '@gym-bro/shared';
 
 import { db } from '../../db/client';
 import { foodLog } from '../../db/schema/food-log';
@@ -452,7 +452,8 @@ function mapFoodLogRow(row: typeof foodLog.$inferSelect) {
 export type FoodLogEntryRow = ReturnType<typeof mapFoodLogRow>;
 
 // The service computes the snapshot (itemName + macros) before calling; the
-// repository just persists the row. Exactly one of foodId / recipeId is set.
+// repository just persists the row. At most one of foodId / recipeId is set (both
+// null = a custom entry). `source` marks AI photo estimates.
 interface FoodLogInsert {
   userId: string;
   loggedDate: string;
@@ -466,6 +467,7 @@ interface FoodLogInsert {
   proteinG: number;
   carbsG: number;
   fatG: number;
+  source: FoodLogSource;
 }
 
 export async function createFoodLogEntry(data: FoodLogInsert): Promise<FoodLogEntryRow> {
@@ -484,6 +486,7 @@ export async function createFoodLogEntry(data: FoodLogInsert): Promise<FoodLogEn
       proteinG: data.proteinG.toString(),
       carbsG: data.carbsG.toString(),
       fatG: data.fatG.toString(),
+      source: data.source,
     })
     .returning();
   if (!row) {

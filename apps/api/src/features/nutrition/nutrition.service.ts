@@ -2,7 +2,9 @@ import type {
   CreateFoodInput,
   CreateFoodLogInput,
   CreateRecipeInput,
+  EstimateMacrosInput,
   FoodLogUnit,
+  MacroEstimate,
   MealType,
   OffDraft,
   SetNutritionTargetInput,
@@ -13,7 +15,13 @@ import type {
 
 import { divideMacros, multiplyMacros, scaleMacros, sumMacros } from '@gym-bro/shared';
 
-import { ConflictError, NotFoundError, ValidationError } from '../../lib/errors';
+import {
+  ConflictError,
+  NotFoundError,
+  ServiceUnavailableError,
+  ValidationError,
+} from '../../lib/errors';
+import { AiUnavailableError, estimateMacrosFromPhoto } from './gemini-client';
 import * as nutritionRepository from './nutrition.repository';
 import { fetchOffProduct, type OffProductData } from './off-client';
 
@@ -358,8 +366,29 @@ async function computeLogSnapshot(
 }
 
 // Create an entry, snapshotting the macros from the referenced source at the logged
-// unit+quantity (itemName + unit are snapshotted too).
+// unit+quantity (itemName + unit are snapshotted too). A 'custom' entry has no source
+// to snapshot — it carries its own name + macro totals (typed or AI-estimated) and is
+// logged as-is at quantity 1 / unit 'servings', so editing its quantity later rescales
+// the whole estimate.
 export async function createFoodLogEntry(userId: string, input: CreateFoodLogInput) {
+  if (input.type === 'custom') {
+    return nutritionRepository.createFoodLogEntry({
+      userId,
+      loggedDate: input.loggedDate,
+      meal: input.meal,
+      foodId: null,
+      recipeId: null,
+      itemName: input.name,
+      unit: 'servings',
+      quantity: 1,
+      kcal: input.kcal,
+      proteinG: input.proteinG,
+      carbsG: input.carbsG,
+      fatG: input.fatG,
+      source: input.source,
+    });
+  }
+
   const foodId = input.type === 'food' ? input.foodId : null;
   const recipeId = input.type === 'recipe' ? input.recipeId : null;
   const snapshot = await computeLogSnapshot(userId, {
@@ -381,7 +410,22 @@ export async function createFoodLogEntry(userId: string, input: CreateFoodLogInp
     proteinG: snapshot.proteinG,
     carbsG: snapshot.carbsG,
     fatG: snapshot.fatG,
+    source: 'manual',
   });
+}
+
+// Estimate macros from a food photo (+ optional user note) via the AI provider.
+// Stateless — the caller reviews the estimate and saves it as a 'custom' entry. The
+// provider's failure modes are folded into a single 503 so the route stays thin.
+export async function estimateFoodPhoto(input: EstimateMacrosInput): Promise<MacroEstimate> {
+  try {
+    return await estimateMacrosFromPhoto(input.image, input.description);
+  } catch (error) {
+    if (error instanceof AiUnavailableError) {
+      throw new ServiceUnavailableError(error.message);
+    }
+    throw error;
+  }
 }
 
 // Edit an entry's quantity, unit, and/or day. A same-unit quantity change is a linear

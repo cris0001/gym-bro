@@ -14,6 +14,7 @@ import { AddEntrySheet } from './add-entry-sheet';
 import { DaySummary } from './day-summary';
 import { DiaryBottomBar } from './diary-bottom-bar';
 import { MealSection } from './diary-meal-section';
+import { PhotoEstimateSheet } from './photo-estimate-sheet';
 
 const ISO = 'yyyy-MM-dd';
 
@@ -101,6 +102,7 @@ export function DiaryPage() {
       </div>
 
       <AddEntrySheet loggedDate={date} />
+      <PhotoEstimateSheet loggedDate={date} />
       {data && <DiaryBottomBar totals={data.totals} />}
     </div>
   );

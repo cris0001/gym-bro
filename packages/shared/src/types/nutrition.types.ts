@@ -1,12 +1,18 @@
 import type { z } from 'zod';
 
-import type { FOOD_LOG_UNITS, MEAL_TYPES } from '../constants/nutrition.constants';
+import type {
+  FOOD_LOG_SOURCES,
+  FOOD_LOG_UNITS,
+  MEAL_TYPES,
+} from '../constants/nutrition.constants';
 import type {
   createFoodLogSchema,
   createFoodSchema,
   createRecipeSchema,
   eanParamSchema,
+  estimateMacrosSchema,
   foodLogDateQuerySchema,
+  macroEstimateSchema,
   productSearchQuerySchema,
   recentFoodLogQuerySchema,
   recipeIngredientInputSchema,
@@ -30,12 +36,15 @@ export type FoodLogDateQueryInput = z.infer<typeof foodLogDateQuerySchema>;
 export type RecentFoodLogQueryInput = z.infer<typeof recentFoodLogQuerySchema>;
 export type EanParamInput = z.infer<typeof eanParamSchema>;
 export type ProductSearchQueryInput = z.infer<typeof productSearchQuerySchema>;
+export type EstimateMacrosInput = z.infer<typeof estimateMacrosSchema>;
+export type MacroEstimate = z.infer<typeof macroEstimateSchema>;
 
 // --- Wire entity shapes (numeric columns coerced to numbers by the service;
 // date columns are 'YYYY-MM-DD' strings; timestamps are ISO strings) ---
 
 export type MealType = (typeof MEAL_TYPES)[number];
 export type FoodLogUnit = (typeof FOOD_LOG_UNITS)[number];
+export type FoodLogSource = (typeof FOOD_LOG_SOURCES)[number];
 
 // The reusable four-number macro shape: per-100g for a food, a daily goal for a
 // target, or a snapshotted total for a log entry.
@@ -113,7 +122,8 @@ export interface NutritionTarget extends MacroTotals {
 }
 
 // A diary entry. macros (from MacroTotals) are the snapshotted totals for this
-// entry. Exactly one of foodId / recipeId is set; itemName is the snapshot label.
+// entry. At most one of foodId / recipeId is set (both null = a custom entry);
+// itemName is the snapshot label. `source` is 'ai' for photo estimates, else 'manual'.
 export interface FoodLogEntry extends MacroTotals {
   id: string;
   userId: string;
@@ -124,6 +134,7 @@ export interface FoodLogEntry extends MacroTotals {
   itemName: string;
   unit: FoodLogUnit;
   quantity: number;
+  source: FoodLogSource;
   createdAt: string;
   updatedAt: string;
 }

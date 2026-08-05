@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { FOOD_LOG_UNITS, MEAL_TYPES } from '../constants/nutrition.constants';
+import { FOOD_LOG_SOURCES, FOOD_LOG_UNITS, MEAL_TYPES } from '../constants/nutrition.constants';
 
 // --- Shared field helpers ---
 
@@ -113,6 +113,20 @@ export const createFoodLogSchema = z.discriminatedUnion('type', [
     meal,
     loggedDate: z.iso.date(),
   }),
+  // A one-off custom entry: no referenced food/recipe, carries its own name + macro
+  // totals (typed by hand, or an AI photo estimate the user reviewed). The server logs
+  // it with quantity 1 / unit 'servings'. `source` marks AI estimates for a diary badge.
+  z.object({
+    type: z.literal('custom'),
+    name: itemName,
+    kcal: macroValue,
+    proteinG: macroValue,
+    carbsG: macroValue,
+    fatG: macroValue,
+    source: z.enum(FOOD_LOG_SOURCES).default('manual'),
+    meal,
+    loggedDate: z.iso.date(),
+  }),
 ]);
 
 // Editing an entry changes its quantity, unit, and/or day; the referenced food or
@@ -137,4 +151,31 @@ export const foodLogDateQuerySchema = z.object({
 // Recently-logged items for one meal, for the quick re-add list.
 export const recentFoodLogQuerySchema = z.object({
   meal,
+});
+
+// --- AI photo estimate ---
+
+// The food photo to analyse: a resized data-URI (JPEG), bounded so the request body
+// stays sane. Bigger than the food preview cap because the vision model needs detail.
+const estimateImage = z.string().trim().min(1).max(2_000_000);
+// Optional free-text hint the user adds after taking the photo (e.g. "large, extra
+// sauce") to help the model judge portion and ingredients.
+const estimateNote = z.string().trim().max(500);
+
+// Request to estimate macros from a photo (+ optional note). Stateless — nothing is
+// persisted; the returned estimate is reviewed and saved as a 'custom' food-log entry.
+export const estimateMacrosSchema = z.object({
+  image: estimateImage,
+  description: estimateNote.optional(),
+});
+
+// The estimate the model returns (also the endpoint's response shape): a suggested
+// name (null if it can't tell) plus the four macro totals for the pictured portion.
+// The same schema validates the model's JSON output server-side.
+export const macroEstimateSchema = z.object({
+  name: z.string().trim().min(1).max(100).nullable(),
+  kcal: macroValue,
+  proteinG: macroValue,
+  carbsG: macroValue,
+  fatG: macroValue,
 });
