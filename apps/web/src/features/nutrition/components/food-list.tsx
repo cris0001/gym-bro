@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { EmptyState } from '@/components/empty-state';
 import { ListSkeleton } from '@/components/list-skeleton';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { useConfirm } from '@/stores/confirm.store';
 
 import type { Food } from '@gym-bro/shared';
@@ -14,12 +15,15 @@ import { useFoodUiStore } from '../stores/food-ui.store';
 
 interface FoodListProps {
   search: string;
+  // The row currently loaded in the desktop detail panel — highlighted. Null/absent on
+  // mobile, where the row opens a sheet instead.
+  selectedId?: string | null;
 }
 
 // The food dictionary list. Fetches the full dictionary once and filters by name
 // client-side (a personal list is small; avoids a request per keystroke). Each
 // row shows the per-100g macros; tapping it opens the edit sheet, delete confirms.
-export function FoodList({ search }: FoodListProps) {
+export function FoodList({ search, selectedId = null }: FoodListProps) {
   const { data: foods = [], isPending } = useFoods('');
   const openEdit = useFoodUiStore((s) => s.openEdit);
   const openCreate = useFoodUiStore((s) => s.openCreate);
@@ -66,7 +70,10 @@ export function FoodList({ search }: FoodListProps) {
       {filtered.map((food) => (
         <li
           key={food.id}
-          className="hover:bg-muted/50 active:bg-muted flex items-center gap-2 px-4 py-3 transition-colors"
+          className={cn(
+            'hover:bg-muted/50 active:bg-muted flex items-center gap-2 px-4 py-3 transition-colors',
+            food.id === selectedId && 'bg-muted',
+          )}
         >
           <button
             type="button"

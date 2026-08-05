@@ -6,8 +6,9 @@ import { usePlanUiStore } from '../stores/plan-ui.store';
 import { PlanList } from './plan-list';
 import { PlanSheet } from './plan-sheet';
 
-// The Plans screen: a header with the Add action, the list, and the create/edit
-// Sheet (which reads its own open state from the UI store).
+// The Plans screen: a header with the Add action, the plan list (the active plan is
+// pinned on top as an expandable row showing its templates and exercises), and the
+// create/edit Sheet.
 export function PlansPage() {
   const openCreate = usePlanUiStore((s) => s.openCreate);
 

@@ -126,7 +126,12 @@ export function DayDetail({ date }: { date: string }) {
             Done
           </h3>
           {workouts.map((workout) => (
-            <DayWorkoutItem key={workout.id} workout={workout} />
+            // A lone finished workout opens expanded, so its sets show without a tap.
+            <DayWorkoutItem
+              key={workout.id}
+              workout={workout}
+              defaultExpanded={workouts.length === 1}
+            />
           ))}
         </section>
       )}

@@ -1,5 +1,3 @@
-import { Activity, Dumbbell } from 'lucide-react';
-
 import { useMediaQuery } from '@/hooks/use-media-query';
 
 import { CalendarGrid } from './calendar-grid';
@@ -19,8 +17,7 @@ export function CalendarPage() {
         <h1 className="text-2xl font-bold">Calendar</h1>
         <div className="text-muted-foreground flex items-center gap-4 text-xs">
           <span className="flex items-center gap-1.5">
-            <Dumbbell className="size-3.5 rotate-45 text-green-600" />
-            <Activity className="size-3.5 text-green-600" />
+            <span className="size-2.5 rounded-full bg-green-500" />
             Finished
           </span>
           <span className="flex items-center gap-1.5">
