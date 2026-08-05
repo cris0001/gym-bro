@@ -29,6 +29,11 @@ export const mealTypeEnum = pgEnum('meal_type', [
 // in shared.
 export const foodLogUnitEnum = pgEnum('food_log_unit', ['grams', 'servings', 'units']);
 
+// How the entry's macros were produced: 'manual' (referenced food/recipe, or a
+// hand-typed custom entry) or 'ai' (a one-off estimate from a food photo). Only used
+// to badge AI estimates in the diary. Mirrored as FOOD_LOG_SOURCES in shared.
+export const foodLogSourceEnum = pgEnum('food_log_source', ['manual', 'ai']);
+
 // A daily diary entry referencing EITHER a food or a recipe (exactly one), with
 // macros SNAPSHOTTED at log time so editing/renaming/soft-deleting the source
 // never rewrites eating history. The unit is stored explicitly (a recipe may be
@@ -43,8 +48,10 @@ export const foodLog = pgTable(
     loggedDate: date('logged_date').notNull(),
     // The meal this entry is grouped under. Default backfills pre-existing rows.
     meal: mealTypeEnum('meal').notNull().default('breakfast'),
-    // Exactly one of foodId / recipeId is set (CHECK below). RESTRICT: foods and
-    // recipes are soft-deleted, never hard-removed while referenced.
+    // At most one of foodId / recipeId is set (CHECK below); both null = a one-off
+    // custom entry (typed or AI-estimated from a photo) carrying its own itemName +
+    // macro snapshot. RESTRICT: foods and recipes are soft-deleted, never hard-removed
+    // while referenced.
     foodId: uuid('food_id').references(() => foods.id, { onDelete: 'restrict' }),
     recipeId: uuid('recipe_id').references(() => recipes.id, { onDelete: 'restrict' }),
     // Snapshot of the source name at log time, so the row reads correctly after a
@@ -61,6 +68,9 @@ export const foodLog = pgTable(
     proteinG: numeric('protein_g', { precision: 7, scale: 2 }).notNull(),
     carbsG: numeric('carbs_g', { precision: 7, scale: 2 }).notNull(),
     fatG: numeric('fat_g', { precision: 7, scale: 2 }).notNull(),
+    // 'manual' for referenced or hand-typed entries; 'ai' for photo estimates. Default
+    // backfills pre-existing rows to 'manual'.
+    source: foodLogSourceEnum('source').notNull().default('manual'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     // Service sets this to now() on every update (no DB trigger).
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
@@ -68,10 +78,10 @@ export const foodLog = pgTable(
   (table) => [
     // The diary scans by user + day (same shape as workout_sessions_user_date_idx).
     index('food_log_user_date_idx').on(table.userId, table.loggedDate),
-    // Polymorphic xor: exactly one of food / recipe is referenced.
+    // At most one of food / recipe is referenced (both null = a custom entry).
     check(
       'food_log_one_reference',
-      sql`(${table.foodId} is not null)::int + (${table.recipeId} is not null)::int = 1`,
+      sql`(${table.foodId} is not null)::int + (${table.recipeId} is not null)::int <= 1`,
     ),
     check('food_log_quantity_positive', sql`${table.quantity} > 0`),
     check('food_log_kcal_non_negative', sql`${table.kcal} >= 0`),

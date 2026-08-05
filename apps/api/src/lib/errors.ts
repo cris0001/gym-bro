@@ -66,3 +66,14 @@ export class InternalError extends AppError {
     super(message);
   }
 }
+
+// 503 — a dependency the request needs is unavailable (not configured, unreachable,
+// or returned garbage), e.g. the AI photo-estimate provider. The client can retry.
+export class ServiceUnavailableError extends AppError {
+  readonly statusCode = 503;
+  readonly code = 'SERVICE_UNAVAILABLE';
+
+  constructor(message = 'Service temporarily unavailable') {
+    super(message);
+  }
+}

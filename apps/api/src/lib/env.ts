@@ -24,6 +24,10 @@ const envSchema = z
     // Sent as the User-Agent when calling OpenFoodFacts (they ask apps to identify
     // themselves). Has a sane default so it's never required.
     OFF_USER_AGENT: z.string().default('gym-bro/1.0 (personal fitness tracker)'),
+    // Google AI Studio key for the photo→macros estimate (Gemini). Optional — the app
+    // boots without it; the /food-log/estimate route returns a clean 503 if hit while
+    // unconfigured.
+    GEMINI_API_KEY: z.string().optional(),
     // Strava integration (optional — the app boots fine without it; the Strava
     // routes fail with a clear error if they're hit while unconfigured). Set all
     // three together (guarded below) once the Strava API app is registered.

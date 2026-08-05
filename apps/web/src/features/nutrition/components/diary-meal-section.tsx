@@ -1,4 +1,4 @@
-import { Plus } from 'lucide-react';
+import { Camera, Plus } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
@@ -18,6 +18,7 @@ interface MealSectionProps {
 // button (presets this meal, opening the add sheet), then its entries.
 export function MealSection({ meal, label, entries }: MealSectionProps) {
   const openAdd = useDiaryUiStore((s) => s.openAdd);
+  const openPhoto = useDiaryUiStore((s) => s.openPhoto);
   const kcal = Math.round(sumMacros(entries).kcal);
 
   return (
@@ -29,16 +30,28 @@ export function MealSection({ meal, label, entries }: MealSectionProps) {
             {kcal} kcal
           </span>
         </div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="text-primary hover:bg-primary/10 size-9"
-          aria-label={`Add to ${label}`}
-          onClick={() => openAdd(meal)}
-        >
-          <Plus className="size-5" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="text-primary hover:bg-primary/10 size-9"
+            aria-label={`Add to ${label} from a photo`}
+            onClick={() => openPhoto(meal)}
+          >
+            <Camera className="size-5" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="text-primary hover:bg-primary/10 size-9"
+            aria-label={`Add to ${label}`}
+            onClick={() => openAdd(meal)}
+          >
+            <Plus className="size-5" />
+          </Button>
+        </div>
       </div>
       {entries.length === 0 ? (
         <p className="text-muted-foreground py-2 text-sm">Nothing logged.</p>

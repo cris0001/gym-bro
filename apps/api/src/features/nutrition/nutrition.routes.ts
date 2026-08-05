@@ -5,6 +5,7 @@ import {
   createFoodSchema,
   createRecipeSchema,
   eanParamSchema,
+  estimateMacrosSchema,
   foodLogDateQuerySchema,
   productSearchQuerySchema,
   recentFoodLogQuerySchema,
@@ -137,6 +138,14 @@ nutritionRoutes.get('/food-log/recent', requireAuth, async (c) => {
   }
   const items = await nutritionService.getRecentDiaryItems(c.get('userId'), parsed.data.meal);
   return c.json({ data: items });
+});
+
+// Estimate macros from a food photo (+ optional note). Stateless: returns an estimate
+// to review, not a saved entry. Static segment before the /:id routes.
+nutritionRoutes.post('/food-log/estimate', requireAuth, async (c) => {
+  const input = await parseJson(c, estimateMacrosSchema);
+  const estimate = await nutritionService.estimateFoodPhoto(input);
+  return c.json({ data: estimate });
 });
 
 nutritionRoutes.post('/food-log', requireAuth, async (c) => {

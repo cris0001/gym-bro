@@ -3,7 +3,9 @@ import { apiFetch } from '@/lib/api-client';
 import type {
   CreateFoodLogInput,
   DailyFoodLog,
+  EstimateMacrosInput,
   FoodLogEntry,
+  MacroEstimate,
   MealType,
   RecentDiaryItem,
   UpdateFoodLogInput,
@@ -22,6 +24,15 @@ export function getRecentDiaryItems(meal: MealType): Promise<RecentDiaryItem[]> 
 // POST /api/food-log — log a food or recipe (server snapshots the macros).
 export function createFoodLogEntry(input: CreateFoodLogInput): Promise<FoodLogEntry> {
   return apiFetch<FoodLogEntry>('/api/food-log', { method: 'POST', body: JSON.stringify(input) });
+}
+
+// POST /api/food-log/estimate — estimate macros from a food photo (+ optional note).
+// Stateless: returns an estimate to review, not a saved entry.
+export function estimateFoodPhoto(input: EstimateMacrosInput): Promise<MacroEstimate> {
+  return apiFetch<MacroEstimate>('/api/food-log/estimate', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
 }
 
 // PATCH /api/food-log/:id — change an entry's quantity and/or day.

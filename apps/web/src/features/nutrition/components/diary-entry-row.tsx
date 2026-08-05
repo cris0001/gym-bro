@@ -61,7 +61,14 @@ export function DiaryEntryRow({
         aria-label={`Edit ${entry.itemName}`}
         onClick={() => (onEdit ? onEdit(entry) : setEditing(true))}
       >
-        <p className="truncate font-medium">{entry.itemName}</p>
+        <p className="flex items-center gap-1.5 truncate font-medium">
+          <span className="truncate">{entry.itemName}</span>
+          {entry.source === 'ai' ? (
+            <span className="bg-primary/10 text-primary shrink-0 rounded px-1 py-0.5 text-[10px] font-semibold tracking-wide uppercase">
+              AI
+            </span>
+          ) : null}
+        </p>
         <p className="text-muted-foreground text-[11px] leading-tight">
           {entry.quantity} {label} · {macros}
         </p>

@@ -12,16 +12,24 @@ import type {
   RecipeIngredientWithFoodRow,
   RecipeWithTotalsRow,
 } from './nutrition.repository';
+import * as geminiClient from './gemini-client';
 import * as nutritionRepository from './nutrition.repository';
 import { fetchOffProduct } from './off-client';
 
 // Mock the Drizzle boundary so tests drive the real Hono app + service over fake
-// rows. Grown per resource, foods first. OFF (the external HTTP boundary) is mocked
-// too so the barcode flow doesn't hit the network.
+// rows. Grown per resource, foods first. OFF and Gemini (the external HTTP
+// boundaries) are mocked too so the barcode/photo flows don't hit the network.
 vi.mock('./nutrition.repository');
 vi.mock('./off-client');
+vi.mock('./gemini-client', async (importOriginal) => {
+  // Keep the real AiUnavailableError class so `instanceof` in the service still works;
+  // only the network call is stubbed.
+  const actual = await importOriginal<typeof geminiClient>();
+  return { ...actual, estimateMacrosFromPhoto: vi.fn() };
+});
 const repo = vi.mocked(nutritionRepository);
 const mockFetchOff = vi.mocked(fetchOffProduct);
+const mockEstimate = vi.mocked(geminiClient.estimateMacrosFromPhoto);
 
 const FOOD_ID = '11111111-1111-4111-8111-111111111111';
 
@@ -383,6 +391,7 @@ function fakeLogEntry(overrides: Partial<FoodLogEntryRow> = {}): FoodLogEntryRow
     proteinG: 62,
     carbsG: 0,
     fatG: 7.2,
+    source: 'manual',
     createdAt: new Date('2026-01-01T00:00:00Z'),
     updatedAt: new Date('2026-01-01T00:00:00Z'),
     ...overrides,
@@ -420,6 +429,7 @@ describe('food-log create route (snapshot)', () => {
       proteinG: 62,
       carbsG: 0,
       fatG: 7.2,
+      source: 'manual',
     });
   });
 
@@ -454,6 +464,7 @@ describe('food-log create route (snapshot)', () => {
       proteinG: 93,
       carbsG: 0,
       fatG: 10.8,
+      source: 'manual',
     });
   });
 
@@ -507,6 +518,7 @@ describe('food-log create route (snapshot)', () => {
       proteinG: 31,
       carbsG: 0,
       fatG: 3.6,
+      source: 'manual',
     });
   });
 
@@ -580,6 +592,7 @@ describe('food-log create route (snapshot)', () => {
       proteinG: 77,
       carbsG: 30,
       fatG: 38.5,
+      source: 'manual',
     });
   });
 
@@ -615,6 +628,49 @@ describe('food-log create route (snapshot)', () => {
       proteinG: 77,
       carbsG: 30,
       fatG: 38.5,
+      source: 'manual',
+    });
+  });
+
+  it('POST /api/food-log for a custom entry logs the given macros as-is (qty 1, no source lookup)', async () => {
+    repo.createFoodLogEntry.mockResolvedValue(
+      fakeLogEntry({ foodId: null, recipeId: null, itemName: 'Kebab', source: 'ai' }),
+    );
+
+    const res = await request('POST', '/api/food-log', {
+      cookie: await authCookie(),
+      body: {
+        type: 'custom',
+        name: 'Kebab',
+        kcal: 780,
+        proteinG: 35,
+        carbsG: 60,
+        fatG: 42,
+        source: 'ai',
+        meal: 'lunch',
+        loggedDate: '2026-06-29',
+      },
+    });
+
+    expect(res.status).toBe(201);
+    // No food/recipe is referenced, so no source is fetched — the macros are stored
+    // verbatim at quantity 1 / unit 'servings'.
+    expect(repo.findFoodById).not.toHaveBeenCalled();
+    expect(repo.findRecipeById).not.toHaveBeenCalled();
+    expect(repo.createFoodLogEntry).toHaveBeenCalledWith({
+      userId: 'user-1',
+      loggedDate: '2026-06-29',
+      meal: 'lunch',
+      foodId: null,
+      recipeId: null,
+      itemName: 'Kebab',
+      unit: 'servings',
+      quantity: 1,
+      kcal: 780,
+      proteinG: 35,
+      carbsG: 60,
+      fatG: 42,
+      source: 'ai',
     });
   });
 
@@ -800,6 +856,56 @@ describe('recent diary items route', () => {
 
     expect(res.status).toBe(400);
     expect(repo.findRecentDiaryRows).not.toHaveBeenCalled();
+  });
+});
+
+describe('AI photo estimate route', () => {
+  const IMAGE = 'data:image/jpeg;base64,AAAA';
+
+  it('POST /api/food-log/estimate returns the model estimate', async () => {
+    mockEstimate.mockResolvedValue({
+      name: 'kebab',
+      kcal: 780,
+      proteinG: 35,
+      carbsG: 60,
+      fatG: 42,
+    });
+
+    const res = await request('POST', '/api/food-log/estimate', {
+      cookie: await authCookie(),
+      body: { image: IMAGE, description: 'large, extra sauce' },
+    });
+    const body = (await res.json()) as { data: { name: string; kcal: number } };
+
+    expect(res.status).toBe(200);
+    expect(body.data.name).toBe('kebab');
+    expect(body.data.kcal).toBe(780);
+    expect(mockEstimate).toHaveBeenCalledWith(IMAGE, 'large, extra sauce');
+  });
+
+  it('POST /api/food-log/estimate maps a provider failure to 503', async () => {
+    mockEstimate.mockRejectedValue(
+      new geminiClient.AiUnavailableError('Photo estimation is not configured'),
+    );
+
+    const res = await request('POST', '/api/food-log/estimate', {
+      cookie: await authCookie(),
+      body: { image: IMAGE },
+    });
+    const body = (await res.json()) as { error: { code: string } };
+
+    expect(res.status).toBe(503);
+    expect(body.error.code).toBe('SERVICE_UNAVAILABLE');
+  });
+
+  it('POST /api/food-log/estimate with no image returns 400', async () => {
+    const res = await request('POST', '/api/food-log/estimate', {
+      cookie: await authCookie(),
+      body: { description: 'no photo' },
+    });
+
+    expect(res.status).toBe(400);
+    expect(mockEstimate).not.toHaveBeenCalled();
   });
 });
 
