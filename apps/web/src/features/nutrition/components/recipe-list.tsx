@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { EmptyState } from '@/components/empty-state';
 import { ListSkeleton } from '@/components/list-skeleton';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { useConfirm } from '@/stores/confirm.store';
 
 import type { RecipeListItem } from '@gym-bro/shared';
@@ -12,9 +13,18 @@ import type { RecipeListItem } from '@gym-bro/shared';
 import { useDeleteRecipe } from '../hooks/use-delete-recipe';
 import { useRecipes } from '../hooks/use-recipes';
 
-// Recipe list. Each row (name over per-serving macros) links to the builder for
-// editing; the delete button is a sibling of the link (not nested) and confirms first.
-export function RecipeList() {
+interface RecipeListProps {
+  // Desktop master-detail: rows select the recipe locally (highlighting selectedId) and
+  // "New recipe" passes the 'new' sentinel to onSelect. Absent on mobile, where rows
+  // link to the builder route.
+  selectedId?: string | null;
+  onSelect?: (recipeId: string) => void;
+}
+
+// Recipe list (name over per-serving macros). Mobile: each row links to the builder
+// route. Desktop: rows call onSelect to load the recipe in the right pane. The delete
+// button is a sibling of the row action (not nested) and confirms first.
+export function RecipeList({ selectedId = null, onSelect }: RecipeListProps) {
   const { data: recipes = [], isPending } = useRecipes();
   const remove = useDeleteRecipe();
   const confirm = useConfirm();
@@ -39,12 +49,19 @@ export function RecipeList() {
         title="No recipes yet"
         description="Combine foods into a recipe to log it in one tap."
         action={
-          <Button asChild className="h-11">
-            <Link to="/recipes/new">
+          onSelect ? (
+            <Button type="button" className="h-11" onClick={() => onSelect('new')}>
               <Plus className="size-4" />
               New recipe
-            </Link>
-          </Button>
+            </Button>
+          ) : (
+            <Button asChild className="h-11">
+              <Link to="/recipes/new">
+                <Plus className="size-4" />
+                New recipe
+              </Link>
+            </Button>
+          )
         }
       />
     );
@@ -52,16 +69,9 @@ export function RecipeList() {
 
   return (
     <ul className="divide-y">
-      {recipes.map((recipe) => (
-        <li
-          key={recipe.id}
-          className="hover:bg-muted/50 active:bg-muted flex items-center gap-2 px-4 py-3 transition-colors"
-        >
-          <Link
-            to="/recipes/$recipeId"
-            params={{ recipeId: recipe.id }}
-            className="flex min-w-0 flex-1 items-center gap-2"
-          >
+      {recipes.map((recipe) => {
+        const inner = (
+          <>
             <div className="min-w-0 flex-1">
               <p className="truncate font-medium">{recipe.name}</p>
               <p className="text-muted-foreground text-sm">
@@ -73,20 +83,47 @@ export function RecipeList() {
               </p>
             </div>
             <ChevronRight className="text-muted-foreground size-5 shrink-0" />
-          </Link>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="text-destructive size-11 shrink-0"
-            aria-label={`Delete ${recipe.name}`}
-            disabled={remove.isPending}
-            onClick={() => void onDelete(recipe)}
+          </>
+        );
+        return (
+          <li
+            key={recipe.id}
+            className={cn(
+              'hover:bg-muted/50 active:bg-muted flex items-center gap-2 px-4 py-3 transition-colors',
+              recipe.id === selectedId && 'bg-muted',
+            )}
           >
-            <Trash2 className="size-4" />
-          </Button>
-        </li>
-      ))}
+            {onSelect ? (
+              <button
+                type="button"
+                onClick={() => onSelect(recipe.id)}
+                className="flex min-w-0 flex-1 items-center gap-2 text-left"
+              >
+                {inner}
+              </button>
+            ) : (
+              <Link
+                to="/recipes/$recipeId"
+                params={{ recipeId: recipe.id }}
+                className="flex min-w-0 flex-1 items-center gap-2"
+              >
+                {inner}
+              </Link>
+            )}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="text-destructive size-11 shrink-0"
+              aria-label={`Delete ${recipe.name}`}
+              disabled={remove.isPending}
+              onClick={() => void onDelete(recipe)}
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          </li>
+        );
+      })}
     </ul>
   );
 }

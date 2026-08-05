@@ -1,11 +1,11 @@
-// Downscale a picked image to a tiny square-ish thumbnail and return it as a WebP
-// data-URI. Done entirely on the client (canvas) so uploads stay light and the server
-// needs no image processing — a ~96px WebP is a couple of KB, small enough to store
-// inline as the food's image_url.
+// Downscale a picked image and return it as a WebP data-URI. Done entirely on the
+// client (canvas) so uploads stay light and the server needs no image processing. A
+// 512px WebP at 0.8 quality is ~20–60 KB — sharp enough to actually recognise the
+// product, and comfortably under the 200 KB image_url cap in the shared schema.
 export async function resizeImageToDataUrl(
   file: File,
-  maxSize = 96,
-  quality = 0.7,
+  maxSize = 512,
+  quality = 0.8,
 ): Promise<string> {
   const bitmap = await createImageBitmap(file);
   try {

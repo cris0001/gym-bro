@@ -48,6 +48,14 @@ const gramSizeField = z
     return Number.isFinite(n) && n > 0 && n <= 99999.99;
   }, 'Enter a number greater than 0');
 
+// Optional barcode typed by hand when adding a product that wasn't scanned. Blank =
+// none; otherwise a valid 8–14 digit code. Scanned/known barcodes are shown locked
+// (read-only under the photo), not through this field.
+const manualEanField = z
+  .string()
+  .trim()
+  .refine((v) => v === '' || /^\d{8,14}$/.test(v), 'Enter a valid 8–14 digit barcode');
+
 const foodFormSchema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(100, 'Name is too long'),
   kcal: macroField,
@@ -56,6 +64,7 @@ const foodFormSchema = z.object({
   fatG: macroField,
   servingGrams: gramSizeField,
   unitGrams: gramSizeField,
+  ean: manualEanField,
 });
 
 type FoodFormValues = z.infer<typeof foodFormSchema>;
@@ -81,10 +90,12 @@ interface FoodFormProps {
 // string inputs and messages. A scan prefill seeds the fields and carries the
 // barcode/brand/image through to submit.
 export function FoodForm({ editing, prefill = null, onCreated, onSuccess }: FoodFormProps) {
-  // Barcode metadata carried from an edited row or a scan — not editable string
-  // fields, so kept aside and merged back in on submit.
-  const ean = editing?.ean ?? prefill?.ean ?? null;
+  // A barcode from a scan or an already-saved food is fixed: shown read-only under the
+  // photo and merged back in on submit. A manual add exposes an editable EAN field
+  // instead (see `showEanField`). Brand is carried through the same way.
+  const lockedEan = editing?.ean ?? prefill?.ean ?? null;
   const brand = editing?.brand ?? prefill?.brand ?? null;
+  const showEanField = !editing && !lockedEan;
 
   // The preview image: an OFF URL (scanned) or a resized data-URI (user photo).
   // Editable — the user can take/replace or remove it.
@@ -113,6 +124,7 @@ export function FoodForm({ editing, prefill = null, onCreated, onSuccess }: Food
           fatG: seed.fatG !== null ? String(seed.fatG) : '',
           servingGrams: seed.servingGrams !== null ? String(seed.servingGrams) : '',
           unitGrams: seed.unitGrams !== null ? String(seed.unitGrams) : '',
+          ean: '',
         }
       : {
           name: '',
@@ -122,8 +134,17 @@ export function FoodForm({ editing, prefill = null, onCreated, onSuccess }: Food
           fatG: '',
           servingGrams: '',
           unitGrams: '',
+          ean: '',
         },
   });
+
+  // When the product will land in the shared global catalog on save (a scan, or a
+  // manually-typed barcode) we prompt the user to make the name clear and verify the
+  // macros. Found-in-catalog products never reach this form, so a locked/typed EAN here
+  // always means "new global product".
+  const typedEan = form.watch('ean');
+  const contributing =
+    !editing && (Boolean(lockedEan) || /^\d{8,14}$/.test((typedEan ?? '').trim()));
 
   const create = useCreateFood();
   const update = useUpdateFood();
@@ -131,6 +152,8 @@ export function FoodForm({ editing, prefill = null, onCreated, onSuccess }: Food
   const error = create.error ?? update.error;
 
   function onSubmit(values: FoodFormValues) {
+    const typed = values.ean.trim();
+    const finalEan = lockedEan ?? (typed !== '' ? typed : null);
     const input: CreateFoodInput = {
       name: values.name,
       kcal: Number(values.kcal),
@@ -139,7 +162,7 @@ export function FoodForm({ editing, prefill = null, onCreated, onSuccess }: Food
       fatG: Number(values.fatG),
       ...(values.servingGrams.trim() !== '' ? { servingGrams: Number(values.servingGrams) } : {}),
       ...(values.unitGrams.trim() !== '' ? { unitGrams: Number(values.unitGrams) } : {}),
-      ...(ean ? { ean } : {}),
+      ...(finalEan ? { ean: finalEan } : {}),
       ...(brand ? { brand } : {}),
       ...(image ? { imageUrl: image } : {}),
     };
@@ -171,23 +194,41 @@ export function FoodForm({ editing, prefill = null, onCreated, onSuccess }: Food
                 <X className="size-4" />
               </button>
             </div>
-          ) : (
-            <Button asChild type="button" variant="outline" className="h-11">
-              <label>
-                <Camera className="size-4" />
-                Add photo
-                <input
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  className="hidden"
-                  onChange={(e) => void onPickImage(e)}
-                />
-              </label>
-            </Button>
-          )}
+          ) : null}
+          {/* One picker for both states: "Add photo" when empty, "Change photo" over an
+              existing image (a scanned OFF photo is often low-quality, so replacing it
+              matters as much as the first upload). */}
+          <Button
+            asChild
+            type="button"
+            variant={image ? 'ghost' : 'outline'}
+            className={image ? 'h-9' : 'h-11'}
+          >
+            <label>
+              <Camera className="size-4" />
+              {image ? 'Change photo' : 'Add photo'}
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => void onPickImage(e)}
+              />
+            </label>
+          </Button>
           {brand ? <p className="text-muted-foreground text-sm">{brand}</p> : null}
+          {lockedEan ? <p className="text-muted-foreground text-xs">Barcode: {lockedEan}</p> : null}
         </div>
+
+        {contributing ? (
+          <div className="border-primary/30 bg-primary/5 rounded-md border p-3 text-sm">
+            <p className="font-medium">Adding to the shared product database</p>
+            <p className="text-muted-foreground mt-1">
+              Give it a clear, specific name and double-check the macros per 100&nbsp;g so other
+              users recognise it.
+            </p>
+          </div>
+        ) : null}
 
         <FormField
           control={form.control}
@@ -202,6 +243,30 @@ export function FoodForm({ editing, prefill = null, onCreated, onSuccess }: Food
             </FormItem>
           )}
         />
+
+        {showEanField ? (
+          <FormField
+            control={form.control}
+            name="ean"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Barcode (optional)</FormLabel>
+                <FormControl>
+                  <Input
+                    inputMode="numeric"
+                    placeholder="e.g. 5900000000000"
+                    className="h-11"
+                    {...field}
+                  />
+                </FormControl>
+                <p className="text-muted-foreground text-xs">
+                  Add an EAN to share this product globally and find it later by scanning.
+                </p>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        ) : null}
 
         <p className="text-muted-foreground text-sm">Macros per 100g.</p>
 

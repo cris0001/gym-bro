@@ -80,14 +80,14 @@ export function CalendarDayCell({
         'hover:bg-accent focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2',
         !inMonth && 'text-muted-foreground/40',
         bgClass,
-        isToday && !isSelected && 'ring-primary/40 ring-1',
+        isToday && !isSelected && 'ring-foreground/30 ring-1',
         isOver && 'ring-primary ring-2',
       )}
     >
       <span
         className={cn(
           'flex size-6 items-center justify-center rounded-full',
-          isToday && 'bg-primary text-primary-foreground font-semibold',
+          isToday && 'bg-foreground text-background font-semibold',
         )}
       >
         {dayNumber}

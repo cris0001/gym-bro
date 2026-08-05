@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 import { divideMacros, multiplyMacros, scaleMacros, sumMacros } from '@gym-bro/shared';
 import type { CreateRecipeInput, Food, MacroTotals, RecipeDetail } from '@gym-bro/shared';
@@ -70,14 +71,24 @@ function fromDetail(recipe: RecipeDetail): IngredientDraft[] {
 
 interface RecipeBuilderProps {
   editing: RecipeDetail | null;
+  // Inline (desktop master-detail) mode: a full-width container and, on save/cancel,
+  // onDone() is called instead of navigating to /recipes.
+  inline?: boolean;
+  onDone?: (() => void) | undefined;
 }
 
-// Full-page recipe builder (create + edit) for a dish composed of foods. Ingredients
-// live in local draft state (raw strings, per the numeric-input pattern); the macro
-// preview is computed live from the shared macro math. (Bought/prepared products are
-// modelled as foods with a serving size, not recipes.)
-export function RecipeBuilder({ editing }: RecipeBuilderProps) {
+// Recipe builder (create + edit) for a dish composed of foods. Ingredients live in
+// local draft state (raw strings, per the numeric-input pattern); the macro preview is
+// computed live from the shared macro math. Rendered full-page on its own route
+// (mobile) or inline in the right pane of the desktop Recipes master-detail. (Bought/
+// prepared products are modelled as foods with a serving size, not recipes.)
+export function RecipeBuilder({ editing, inline = false, onDone }: RecipeBuilderProps) {
   const navigate = useNavigate();
+  // Leaving the builder: hand back to the parent inline, else return to the list route.
+  const finish = () => {
+    if (inline) onDone?.();
+    else void navigate({ to: '/recipes' });
+  };
   const [name, setName] = useState(editing?.name ?? '');
   const [servings, setServings] = useState(editing ? String(editing.servings) : '1');
   const [ingredients, setIngredients] = useState<IngredientDraft[]>(
@@ -90,6 +101,8 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
   const error = create.error ?? update.error;
 
   const [scanning, setScanning] = useState(false);
+  // Scanning needs a camera — a touch device. Hide it on desktop (fine pointer).
+  const canScan = useMediaQuery('(pointer: coarse)');
   // Scanning here adds the product to your foods and drops it straight in as an
   // ingredient row (type the amount); a fresh empty row follows.
   const { handleEan } = useScanFlow((food) => {
@@ -156,13 +169,18 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
       servings: servingsNum,
       ingredients: validRows.map((x) => ({ foodId: x.row.food.id, amountGrams: x.grams })),
     };
-    const onSuccess = () => void navigate({ to: '/recipes' });
-    if (editing) update.mutate({ id: editing.id, input }, { onSuccess });
-    else create.mutate(input, { onSuccess });
+    if (editing) update.mutate({ id: editing.id, input }, { onSuccess: finish });
+    else create.mutate(input, { onSuccess: finish });
   }
 
   return (
-    <div className="mx-auto lg:col-span-3 flex w-full max-w-2xl flex-col gap-4 p-4">
+    <div
+      className={
+        inline
+          ? 'flex w-full flex-col gap-4 p-4'
+          : 'mx-auto lg:col-span-3 flex w-full max-w-2xl flex-col gap-4 p-4'
+      }
+    >
       <h1 className="text-2xl font-bold">{editing ? 'Edit recipe' : 'New recipe'}</h1>
 
       <div className="grid gap-2">
@@ -191,16 +209,18 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
         <div className="flex items-center justify-between">
           <h2 className="font-semibold">Ingredients</h2>
           <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-9"
-              onClick={() => setScanning(true)}
-            >
-              <Barcode className="size-4" />
-              Scan
-            </Button>
+            {canScan ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-9"
+                onClick={() => setScanning(true)}
+              >
+                <Barcode className="size-4" />
+                Scan
+              </Button>
+            ) : null}
             <Button
               type="button"
               variant="outline"
@@ -258,12 +278,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
       ) : null}
 
       <div className="flex gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          className="h-11 flex-1"
-          onClick={() => void navigate({ to: '/recipes' })}
-        >
+        <Button type="button" variant="outline" className="h-11 flex-1" onClick={finish}>
           Cancel
         </Button>
         <Button type="button" className="h-11 flex-1" disabled={!canSave} onClick={save}>
@@ -271,14 +286,16 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
         </Button>
       </div>
 
-      <BarcodeScanner
-        open={scanning}
-        onClose={() => setScanning(false)}
-        onDetected={(ean) => {
-          setScanning(false);
-          void handleEan(ean);
-        }}
-      />
+      {canScan ? (
+        <BarcodeScanner
+          open={scanning}
+          onClose={() => setScanning(false)}
+          onDetected={(ean) => {
+            setScanning(false);
+            void handleEan(ean);
+          }}
+        />
+      ) : null}
       <FoodSheet />
     </div>
   );

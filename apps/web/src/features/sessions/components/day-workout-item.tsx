@@ -17,8 +17,16 @@ import { WorkoutPerformances } from './workout-performances';
 // One finished workout in the day panel: a header (type icon, name, rating,
 // duration, tags) that expands to the logged exercises/sets, with Edit, Open
 // (full page), and Delete. The full detail is fetched only when expanded.
-export function DayWorkoutItem({ workout }: { workout: WorkoutSessionListItem }) {
-  const [expanded, setExpanded] = useState(false);
+// `defaultExpanded` opens it on mount — used when a day has a single finished
+// workout, so it's shown straight away without a tap.
+export function DayWorkoutItem({
+  workout,
+  defaultExpanded = false,
+}: {
+  workout: WorkoutSessionListItem;
+  defaultExpanded?: boolean;
+}) {
+  const [expanded, setExpanded] = useState(defaultExpanded);
   const { data: detail, isLoading } = useWorkoutSession(workout.id, expanded);
   const editWorkout = useEditWorkout();
   const remove = useDeleteWorkoutSession();

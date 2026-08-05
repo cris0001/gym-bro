@@ -9,6 +9,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 import type {
   CreateFoodLogInput,
@@ -45,6 +46,8 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
   // The id of the entry being edited (via the shared form), or null when adding new.
   const [editingId, setEditingId] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
+  // Scanning needs a camera — a touch device. Hide it on desktop (fine pointer).
+  const canScan = useMediaQuery('(pointer: coarse)');
 
   const create = useCreateFoodLogEntry();
   const update = useUpdateFoodLogEntry();
@@ -249,15 +252,17 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
                   }}
                 />
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                className="h-11 shrink-0"
-                aria-label="Scan a barcode"
-                onClick={() => setScanning(true)}
-              >
-                <Barcode className="size-4" />
-              </Button>
+              {canScan ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-11 shrink-0"
+                  aria-label="Scan a barcode"
+                  onClick={() => setScanning(true)}
+                >
+                  <Barcode className="size-4" />
+                </Button>
+              ) : null}
             </div>
 
             {selectedRecipe !== undefined && (
@@ -335,14 +340,16 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
         </SheetContent>
       </Sheet>
 
-      <BarcodeScanner
-        open={scanning}
-        onClose={() => setScanning(false)}
-        onDetected={(ean) => {
-          setScanning(false);
-          void handleEan(ean);
-        }}
-      />
+      {canScan ? (
+        <BarcodeScanner
+          open={scanning}
+          onClose={() => setScanning(false)}
+          onDetected={(ean) => {
+            setScanning(false);
+            void handleEan(ean);
+          }}
+        />
+      ) : null}
       <FoodSheet />
     </>
   );
