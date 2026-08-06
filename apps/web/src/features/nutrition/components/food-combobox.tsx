@@ -56,6 +56,13 @@ export function FoodCombobox({ selectedId, selectedName, onSelect }: FoodCombobo
                   <Check
                     className={cn('size-4', food.id === selectedId ? 'opacity-100' : 'opacity-0')}
                   />
+                  {food.imageUrl ? (
+                    <img
+                      src={food.imageUrl}
+                      alt=""
+                      className="bg-muted size-6 shrink-0 rounded object-cover"
+                    />
+                  ) : null}
                   <span className="truncate">{food.name}</span>
                   <span className="text-muted-foreground ml-auto text-xs">{food.kcal} kcal</span>
                 </CommandItem>

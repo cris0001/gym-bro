@@ -65,6 +65,9 @@ export const recipeIngredientInputSchema = z.object({
 // size, not recipes.)
 export const createRecipeSchema = z.object({
   name: itemName,
+  // Optional recipe photo (data URI or URL). Null clears it; omitted leaves it untouched
+  // only matters on the wire — edit fully replaces, so the client always sends the value.
+  imageUrl: imageUrl.nullable().optional(),
   servings: z.number().int().positive('Servings must be at least 1').max(1000, 'Too many servings'),
   ingredients: z
     .array(recipeIngredientInputSchema)

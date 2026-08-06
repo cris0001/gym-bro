@@ -27,6 +27,11 @@ export function disconnectStrava(): Promise<{ success: boolean }> {
   return apiFetch<{ success: boolean }>('/api/strava/connect', { method: 'DELETE' });
 }
 
+// DELETE /api/strava/sessions/:id — remove one imported activity locally.
+export function deleteStravaSession(id: string): Promise<{ success: boolean }> {
+  return apiFetch<{ success: boolean }>(`/api/strava/sessions/${id}`, { method: 'DELETE' });
+}
+
 // The OAuth connect endpoint. This is a full-page browser navigation (it 302-redirects
 // to Strava), not a fetch — link an <a> to it.
 export const STRAVA_CONNECT_URL = '/api/strava/connect';

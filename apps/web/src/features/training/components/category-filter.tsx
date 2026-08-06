@@ -2,6 +2,8 @@ import { EXERCISE_CATEGORIES, type ExerciseCategory } from '@gym-bro/shared';
 
 import { cn } from '@/lib/utils';
 
+import { CategoryIcon } from '../utils/category-icon';
+
 interface CategoryFilterProps {
   value: ExerciseCategory | null;
   onChange: (value: ExerciseCategory | null) => void;
@@ -9,7 +11,7 @@ interface CategoryFilterProps {
 
 const chipClass = (active: boolean): string =>
   cn(
-    'h-9 shrink-0 rounded-full border px-3 text-sm whitespace-nowrap transition-colors',
+    'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-sm whitespace-nowrap transition-colors',
     active ? 'bg-primary text-primary-foreground border-transparent' : 'text-muted-foreground',
   );
 
@@ -28,6 +30,7 @@ export function CategoryFilter({ value, onChange }: CategoryFilterProps) {
           onClick={() => onChange(category)}
           className={chipClass(value === category)}
         >
+          <CategoryIcon category={category} className="size-4" />
           {category}
         </button>
       ))}

@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 import { format } from 'date-fns';
-import { ChevronDown } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ import { useWorkoutDraftStore } from '../stores/workout-draft.store';
 import { ExercisePerformanceCard } from './exercise-performance-card';
 import { ExercisePickerSheet } from './exercise-picker-sheet';
 import { FinishSessionSheet } from './finish-session-sheet';
-import { TemplateCombobox } from './template-combobox';
+import { StartWorkoutPicker } from './start-workout-picker';
 
 // Add a brand-new exercise, or swap the one at a given performance — both pick
 // from the exercise library, so one picker sheet serves both via this mode.
@@ -74,8 +74,8 @@ export function ActiveSessionPage() {
         <p className="text-muted-foreground text-center text-sm">
           Pick a template, or begin an empty session and add exercises as you go.
         </p>
-        <TemplateCombobox
-          onSelect={(template) => {
+        <StartWorkoutPicker
+          onSelectTemplate={(template) => {
             void startFromTemplate({ templateId: template.id, templateName: template.name });
           }}
         />
@@ -107,30 +107,28 @@ export function ActiveSessionPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-4 pb-28 lg:col-span-3">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-3 md:p-4 pb-28 lg:col-span-3">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="text-muted-foreground -ml-2 w-fit gap-1.5"
+        aria-label="Minimize — your session keeps running in the background"
+        onClick={() => void navigate({ to: '/' })}
+      >
+        <ChevronLeft className="size-4" />
+        Minimize
+      </Button>
       <header className="bg-card flex flex-col gap-2 rounded-xl border p-4">
-        <div className="flex items-center gap-2">
-          {isTemplateBased ? (
-            <h1 className="flex h-11 flex-1 items-center text-lg font-semibold">{draft.name}</h1>
-          ) : (
-            <Input
-              aria-label="Workout name"
-              className="h-11 flex-1 text-lg font-semibold"
-              value={draft.name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          )}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-muted-foreground shrink-0 gap-1.5"
-            aria-label="Minimize — the session keeps running"
-            onClick={() => void navigate({ to: '/' })}
-          >
-            <ChevronDown className="size-4" />
-            Minimize
-          </Button>
-        </div>
+        {isTemplateBased ? (
+          <h1 className="flex h-11 items-center text-lg font-semibold">{draft.name}</h1>
+        ) : (
+          <Input
+            aria-label="Workout name"
+            className="h-11 text-lg font-semibold"
+            value={draft.name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        )}
         <label className="text-muted-foreground flex items-center gap-2 text-sm">
           Date
           <input

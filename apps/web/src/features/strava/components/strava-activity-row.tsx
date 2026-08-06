@@ -1,13 +1,17 @@
 import { format, parseISO } from 'date-fns';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Trash2 } from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useConfirm } from '@/stores/confirm.store';
 
 import type { StravaSessionItem } from '@gym-bro/shared';
 
+import { useDeleteStravaSession } from '../hooks/use-delete-strava-session';
 import { stravaActivityIcon } from '../utils/activity-icon';
 import { formatDistance, formatDuration } from '../utils/format';
 import { activityMetrics } from '../utils/metrics';
+import { RouteMap } from './route-map';
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
@@ -29,6 +33,19 @@ export function StravaActivityRow({
   expanded: boolean;
   onToggle: () => void;
 }) {
+  const remove = useDeleteStravaSession();
+  const confirm = useConfirm();
+
+  async function handleDelete() {
+    const ok = await confirm({
+      title: `Remove "${session.name}"?`,
+      description: 'Removes it from the app only — your Strava activity is untouched.',
+      confirmText: 'Remove',
+      destructive: true,
+    });
+    if (ok) remove.mutate(session.id);
+  }
+
   const Icon = stravaActivityIcon(session.activityType);
   const primary =
     session.distanceM !== null
@@ -67,14 +84,32 @@ export function StravaActivityRow({
               <Metric key={m.label} label={m.label} value={m.value} />
             ))}
           </div>
-          <a
-            href={`https://www.strava.com/activities/${session.stravaActivityId}`}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-3 inline-block text-sm font-medium text-orange-600 hover:underline"
-          >
-            View on Strava ↗
-          </a>
+          {session.summaryPolyline ? (
+            <div className="mt-3">
+              <RouteMap polyline={session.summaryPolyline} className="h-72" />
+            </div>
+          ) : null}
+          <div className="mt-3 flex items-center justify-between">
+            <a
+              href={`https://www.strava.com/activities/${session.stravaActivityId}`}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm font-medium text-orange-600 hover:underline"
+            >
+              View on Strava ↗
+            </a>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="text-destructive gap-1.5"
+              disabled={remove.isPending}
+              onClick={() => void handleDelete()}
+            >
+              <Trash2 className="size-4" />
+              Remove
+            </Button>
+          </div>
         </div>
       )}
     </li>

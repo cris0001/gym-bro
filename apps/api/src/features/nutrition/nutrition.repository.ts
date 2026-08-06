@@ -266,6 +266,8 @@ export interface RecipeWithTotalsRow {
   id: string;
   userId: string;
   name: string;
+  imageUrl: string | null;
+  ingredientNames: string[];
   servings: number;
   isActive: boolean;
   createdAt: Date;
@@ -280,6 +282,11 @@ export async function listRecipesWithTotals(userId: string): Promise<RecipeWithT
       id: recipes.id,
       userId: recipes.userId,
       name: recipes.name,
+      imageUrl: recipes.imageUrl,
+      // Ingredient food names, in recipe order; empty array for an empty recipe.
+      ingredientNames: sql<
+        string[]
+      >`coalesce(json_agg(${foods.name} order by ${recipeIngredients.position}) filter (where ${foods.name} is not null), '[]'::json)`,
       servings: recipes.servings,
       isActive: recipes.isActive,
       createdAt: recipes.createdAt,
@@ -302,6 +309,8 @@ export async function listRecipesWithTotals(userId: string): Promise<RecipeWithT
     id: row.id,
     userId: row.userId,
     name: row.name,
+    imageUrl: row.imageUrl,
+    ingredientNames: row.ingredientNames,
     servings: row.servings,
     isActive: row.isActive,
     createdAt: row.createdAt,
@@ -380,7 +389,12 @@ export async function createRecipe(data: RecipeInput) {
   return db.transaction(async (tx) => {
     const [recipe] = await tx
       .insert(recipes)
-      .values({ userId: data.userId, name: data.name, servings: data.servings })
+      .values({
+        userId: data.userId,
+        name: data.name,
+        imageUrl: data.imageUrl ?? null,
+        servings: data.servings,
+      })
       .returning();
     if (!recipe) {
       throw new Error('Recipe insert returned no row');
@@ -405,7 +419,12 @@ export async function replaceRecipe(id: string, data: RecipeInput) {
   return db.transaction(async (tx) => {
     const [recipe] = await tx
       .update(recipes)
-      .set({ name: data.name, servings: data.servings, updatedAt: new Date() })
+      .set({
+        name: data.name,
+        imageUrl: data.imageUrl ?? null,
+        servings: data.servings,
+        updatedAt: new Date(),
+      })
       .where(and(eq(recipes.id, id), eq(recipes.userId, data.userId), eq(recipes.isActive, true)))
       .returning();
     if (!recipe) {
@@ -437,10 +456,13 @@ export async function softDeleteRecipe(userId: string, id: string) {
 
 // --- Food log ---
 
-// Coerce the snapshot numeric columns to numbers; timestamps stay Date.
-function mapFoodLogRow(row: typeof foodLog.$inferSelect) {
+// Coerce the snapshot numeric columns to numbers; timestamps stay Date. imageUrl is
+// joined in on the daily read (a food's / recipe's photo, or null); the other read
+// paths leave it null — the diary rerenders from the day list after any mutation.
+function mapFoodLogRow(row: typeof foodLog.$inferSelect, imageUrl: string | null = null) {
   return {
     ...row,
+    imageUrl,
     quantity: Number(row.quantity),
     kcal: Number(row.kcal),
     proteinG: Number(row.proteinG),
@@ -498,11 +520,18 @@ export async function createFoodLogEntry(data: FoodLogInsert): Promise<FoodLogEn
 // A day's entries in log order.
 export async function listFoodLogByDate(userId: string, date: string): Promise<FoodLogEntryRow[]> {
   const rows = await db
-    .select()
+    .select({
+      entry: foodLog,
+      // The product's photo: a food entry's food image, else a recipe entry's image
+      // (custom entries have neither). Joined live so it tracks the current photo.
+      imageUrl: sql<string | null>`coalesce(${foods.imageUrl}, ${recipes.imageUrl})`,
+    })
     .from(foodLog)
+    .leftJoin(foods, eq(foods.id, foodLog.foodId))
+    .leftJoin(recipes, eq(recipes.id, foodLog.recipeId))
     .where(and(eq(foodLog.userId, userId), eq(foodLog.loggedDate, date)))
     .orderBy(asc(foodLog.createdAt));
-  return rows.map(mapFoodLogRow);
+  return rows.map((row) => mapFoodLogRow(row.entry, row.imageUrl));
 }
 
 export async function findFoodLogEntryById(

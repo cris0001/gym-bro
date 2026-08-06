@@ -57,7 +57,7 @@ export function StravaPage({ initialActivityId }: { initialActivityId?: string |
   const shown = type ? sessions.filter((s) => s.activityType === type) : sessions;
 
   return (
-    <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-4 p-4">
+    <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-4 p-3 md:p-4">
       <h1 className="text-2xl font-bold">Strava</h1>
 
       {status && !status.connected && <StravaConnectionCard status={status} />}

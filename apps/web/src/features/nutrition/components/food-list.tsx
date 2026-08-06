@@ -85,10 +85,10 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
               <img
                 src={food.imageUrl}
                 alt=""
-                className="bg-muted size-10 shrink-0 rounded-md border object-cover"
+                className="bg-muted size-12 shrink-0 rounded-md border object-cover"
               />
             ) : (
-              <span className="bg-muted text-muted-foreground flex size-10 shrink-0 items-center justify-center rounded-md">
+              <span className="bg-muted text-muted-foreground flex size-12 shrink-0 items-center justify-center rounded-md">
                 <Apple className="size-5" />
               </span>
             )}

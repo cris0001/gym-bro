@@ -2,8 +2,10 @@ import { Link } from '@tanstack/react-router';
 import { addDays, format } from 'date-fns';
 
 import { usePlannedSessions } from '@/features/sessions';
+import { StravaSection } from '@/features/strava';
 import { Button } from '@/components/ui/button';
 
+import { LastWorkoutCard } from './last-workout-card';
 import { LatestWeightCard } from './latest-weight-card';
 import { NextSessionCard } from './next-session-card';
 import { TodayNutritionCard } from './today-nutrition-card';
@@ -30,7 +32,7 @@ export function DashboardPage() {
       .sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate))[0] ?? null;
 
   return (
-    <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-4 p-4">
+    <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-4 p-3 md:p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">Dashboard</h1>
         <Button asChild className="h-11">
@@ -42,7 +44,10 @@ export function DashboardPage() {
         <NextSessionCard session={nextSession} />
         <TodayNutritionCard date={todayIso} />
         <LatestWeightCard />
+        <LastWorkoutCard />
       </div>
+
+      <StravaSection />
     </div>
   );
 }

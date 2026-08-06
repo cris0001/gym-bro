@@ -1,3 +1,7 @@
+import { Link } from '@tanstack/react-router';
+import { Play } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
 import { useMediaQuery } from '@/hooks/use-media-query';
 
 import { CalendarGrid } from './calendar-grid';
@@ -12,9 +16,17 @@ export function CalendarPage() {
   const isDesktop = useMediaQuery('(min-width: 1024px)');
 
   return (
-    <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-4 p-4">
+    <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-4 p-3 md:p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-bold">Calendar</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold">Calendar</h1>
+          <Button asChild size="sm" className="h-9">
+            <Link to="/session">
+              <Play className="size-4" />
+              Start workout
+            </Link>
+          </Button>
+        </div>
         <div className="text-muted-foreground flex items-center gap-4 text-xs">
           <span className="flex items-center gap-1.5">
             <span className="size-2.5 rounded-full bg-green-500" />

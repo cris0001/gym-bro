@@ -3,9 +3,10 @@ import type { MacroEstimate } from '@gym-bro/shared';
 
 import { env } from '../../lib/env';
 
-// Gemini 2.0 Flash over the REST API (native fetch, no SDK). Free-tier friendly and
-// supports vision + JSON-constrained output, which is all this feature needs.
-const GEMINI_MODEL = 'gemini-2.0-flash';
+// Gemini Flash over the REST API (native fetch, no SDK). The "-latest" alias tracks the
+// current free-tier Flash model, so we don't break when a pinned version is retired from
+// the free tier (as gemini-2.0-flash was). Supports vision + JSON-constrained output.
+const GEMINI_MODEL = 'gemini-flash-latest';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 // The JSON shape Gemini is forced to return (OpenAPI-subset responseSchema). It mirrors

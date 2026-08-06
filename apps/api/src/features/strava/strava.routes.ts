@@ -84,6 +84,18 @@ stravaRoutes.post('/strava/import', requireAuth, async (c) => {
   return c.json({ data: result });
 });
 
+// Delete one imported activity locally (e.g. it was removed on Strava). Does not touch
+// Strava. 404 if it isn't the user's.
+const sessionIdParamSchema = z.object({ id: z.uuid() });
+stravaRoutes.delete('/strava/sessions/:id', requireAuth, async (c) => {
+  const parsed = sessionIdParamSchema.safeParse(c.req.param());
+  if (!parsed.success) {
+    throw new ValidationError('Invalid activity id');
+  }
+  await stravaService.deleteSession(c.get('userId'), parsed.data.id);
+  return c.json({ data: { success: true } });
+});
+
 // Disconnect: forget the stored tokens.
 stravaRoutes.delete('/strava/connect', requireAuth, async (c) => {
   await stravaService.disconnect(c.get('userId'));

@@ -34,6 +34,11 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
 
   const isSwapped = performance.actualExerciseId !== performance.originalExerciseId;
   const setCount = performance.sets.length;
+  // Only count sets the user has actually started (weight or reps entered), so a
+  // freshly-seeded empty set doesn't read as "1 set" in the collapsed header.
+  const loggedSetCount = performance.sets.filter(
+    (entry) => entry.reps !== null || entry.weight !== null,
+  ).length;
 
   // Copies the most recent prior session's sets into this exercise and expands it.
   // Fetched on demand (shares the limit-1 cache with the history panel) so we
@@ -71,7 +76,9 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
             <span className="text-muted-foreground text-xs">
               {performance.category}
               {isSwapped && ' · swapped'}
-              {!expanded && ` · ${setCount} ${setCount === 1 ? 'set' : 'sets'}`}
+              {!expanded &&
+                loggedSetCount > 0 &&
+                ` · ${loggedSetCount} ${loggedSetCount === 1 ? 'set' : 'sets'}`}
             </span>
           </span>
         </button>
@@ -100,7 +107,7 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
       </div>
 
       {expanded && (
-        <div className="flex flex-col gap-3 px-3 pb-3">
+        <div className="bg-muted/30 flex flex-col gap-3 rounded-b-xl border-t px-3 pt-3 pb-3">
           <ExerciseHistoryPanel exerciseId={performance.actualExerciseId} before={performedDate} />
 
           {setCount > 0 && (

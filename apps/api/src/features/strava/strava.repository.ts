@@ -181,12 +181,15 @@ const rawExtrasSchema = z
     suffer_score: z.number().nullable(),
     kudos_count: z.number().nullable(),
     achievement_count: z.number().nullable(),
+    // Strava's summary GPS track (encoded polyline) — absent/empty for indoor activities.
+    map: z.object({ summary_polyline: z.string().nullable() }).nullable(),
   })
   .partial();
 
 function extrasFromRaw(raw: unknown) {
   const parsed = rawExtrasSchema.safeParse(raw);
   const d = parsed.success ? parsed.data : {};
+  const polyline = d.map?.summary_polyline ?? null;
   return {
     averageCadence: d.average_cadence ?? null,
     averageWatts: d.average_watts ?? null,
@@ -194,6 +197,7 @@ function extrasFromRaw(raw: unknown) {
     sufferScore: d.suffer_score ?? null,
     kudosCount: d.kudos_count ?? null,
     achievementCount: d.achievement_count ?? null,
+    summaryPolyline: polyline && polyline.length > 0 ? polyline : null,
   };
 }
 
@@ -285,4 +289,17 @@ export async function listStravaSessions(
     )
     .orderBy(desc(stravaSessions.startedAt));
   return rows.map(mapSessionRow);
+}
+
+// Delete one imported activity (only the owner's). Returns the deleted id, or undefined
+// when it isn't the user's / doesn't exist. Removing it locally doesn't affect Strava.
+export async function deleteStravaSession(
+  userId: string,
+  id: string,
+): Promise<{ id: string } | undefined> {
+  const [row] = await db
+    .delete(stravaSessions)
+    .where(and(eq(stravaSessions.id, id), eq(stravaSessions.userId, userId)))
+    .returning({ id: stravaSessions.id });
+  return row;
 }

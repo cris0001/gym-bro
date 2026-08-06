@@ -55,6 +55,13 @@ export function DiaryEntryRow({
         highlighted && 'bg-primary/10 -mx-2 rounded-md px-2',
       )}
     >
+      {entry.imageUrl ? (
+        <img
+          src={entry.imageUrl}
+          alt=""
+          className="bg-muted size-9 shrink-0 rounded-md border object-cover"
+        />
+      ) : null}
       <button
         type="button"
         className="min-w-0 flex-1 text-left"

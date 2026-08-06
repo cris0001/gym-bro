@@ -11,6 +11,7 @@ import type { Exercise, ExerciseCategory } from '@gym-bro/shared';
 import { useDeleteExercise } from '../hooks/use-delete-exercise';
 import { useExercises } from '../hooks/use-exercises';
 import { useExerciseUiStore } from '../stores/exercise-ui.store';
+import { CategoryIcon } from '../utils/category-icon';
 
 interface ExerciseListProps {
   // null = all categories.
@@ -82,6 +83,12 @@ export function ExerciseList({ category, search }: ExerciseListProps) {
           key={exercise.id}
           className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/50"
         >
+          {/* Only useful under "All", where rows mix categories. */}
+          {category === null ? (
+            <span className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-full">
+              <CategoryIcon category={exercise.category} className="size-4" />
+            </span>
+          ) : null}
           <div className="min-w-0 flex-1">
             <p className="truncate font-medium">{exercise.name}</p>
             <p className="text-muted-foreground text-sm">{exercise.category}</p>

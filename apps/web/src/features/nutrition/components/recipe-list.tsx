@@ -72,17 +72,32 @@ export function RecipeList({ selectedId = null, onSelect }: RecipeListProps) {
       {recipes.map((recipe) => {
         const inner = (
           <>
+            {recipe.imageUrl ? (
+              <img
+                src={recipe.imageUrl}
+                alt=""
+                className="bg-muted size-14 shrink-0 rounded-lg border object-cover"
+              />
+            ) : (
+              <div className="bg-muted text-muted-foreground flex size-14 shrink-0 items-center justify-center rounded-lg border">
+                <ChefHat className="size-5" />
+              </div>
+            )}
             <div className="min-w-0 flex-1">
               <p className="truncate font-medium">{recipe.name}</p>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground text-xs">
                 {recipe.servings} {recipe.servings === 1 ? 'serving' : 'servings'} ·{' '}
                 {Math.round(recipe.perServing.kcal)} kcal · P{' '}
                 {Math.round(recipe.perServing.proteinG)} · C {Math.round(recipe.perServing.carbsG)}{' '}
-                · F {Math.round(recipe.perServing.fatG)}
-                <span className="text-xs"> / serving</span>
+                · F {Math.round(recipe.perServing.fatG)} / serving
               </p>
+              {recipe.ingredientNames.length > 0 ? (
+                <p className="text-muted-foreground mt-0.5 line-clamp-2 text-sm">
+                  {recipe.ingredientNames.join(', ')}
+                </p>
+              ) : null}
             </div>
-            <ChevronRight className="text-muted-foreground size-5 shrink-0" />
+            <ChevronRight className="text-muted-foreground size-5 shrink-0 self-center" />
           </>
         );
         return (

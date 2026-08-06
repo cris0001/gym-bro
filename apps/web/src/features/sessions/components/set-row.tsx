@@ -58,7 +58,9 @@ export function SetRow({ performanceId, set, index }: SetRowProps) {
         <span
           className={cn(
             'mx-auto flex size-6 items-center justify-center rounded-full text-xs font-semibold',
-            set.isTopSet ? 'bg-primary text-primary-foreground' : 'text-muted-foreground',
+            set.isTopSet
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-background text-muted-foreground border',
           )}
         >
           {index + 1}
