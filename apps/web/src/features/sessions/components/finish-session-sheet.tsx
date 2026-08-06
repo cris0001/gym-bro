@@ -145,7 +145,7 @@ export function FinishSessionSheet({ open, onClose }: FinishSessionSheetProps) {
                     className={cn(
                       'size-8',
                       draft.rating && star <= draft.rating
-                        ? 'fill-yellow-400 text-yellow-400'
+                        ? 'fill-primary text-primary'
                         : 'text-muted-foreground',
                     )}
                   />
@@ -190,8 +190,8 @@ export function FinishSessionSheet({ open, onClose }: FinishSessionSheetProps) {
                         type="button"
                         onClick={() => toggleTag(tag.id)}
                         className={cn(
-                          'min-h-9 rounded-full border px-3 text-sm transition-colors',
-                          selected ? 'border-transparent text-white' : 'text-foreground',
+                          'min-h-9 rounded-full border border-transparent px-3 text-sm transition-colors',
+                          selected ? 'text-white' : 'bg-secondary text-foreground',
                         )}
                         style={selected ? { backgroundColor: tag.color } : undefined}
                       >
@@ -207,7 +207,7 @@ export function FinishSessionSheet({ open, onClose }: FinishSessionSheetProps) {
           {mutationError && <p className="text-destructive text-sm">{mutationError.message}</p>}
 
           <Button
-            className="h-11"
+            className="h-12 rounded-full"
             disabled={validationError !== null || isPending}
             onClick={handleFinish}
           >

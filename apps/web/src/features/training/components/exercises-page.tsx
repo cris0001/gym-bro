@@ -22,8 +22,8 @@ export function ExercisesPage() {
   return (
     <div className="mx-auto lg:col-span-3 flex w-full max-w-4xl flex-col gap-3 p-3 md:p-4">
       <div className="flex items-center justify-between gap-2">
-        <h1 className="text-2xl font-bold">Exercises</h1>
-        <Button type="button" className="h-11" onClick={openCreate}>
+        <h1 className="font-heading text-[28px] leading-none font-medium">Exercises</h1>
+        <Button type="button" className="h-11 rounded-full px-5" onClick={openCreate}>
           <Plus className="size-4" />
           Add
         </Button>
@@ -36,7 +36,7 @@ export function ExercisesPage() {
         onChange={(e) => setSearch(e.target.value)}
       />
       <CategoryFilter value={category} onChange={setCategory} />
-      <div className="bg-card overflow-hidden rounded-xl border">
+      <div className="bg-card overflow-hidden rounded-2xl border">
         <ExerciseList category={category} search={search} />
       </div>
       <ExerciseSheet />

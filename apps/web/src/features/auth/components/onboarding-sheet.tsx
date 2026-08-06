@@ -128,13 +128,13 @@ export function OnboardingSheet() {
             ) : null}
 
             <div className="grid gap-2 pt-2">
-              <Button type="submit" className="h-11" disabled={isPending}>
+              <Button type="submit" className="h-11 rounded-full" disabled={isPending}>
                 {isPending ? 'Saving…' : 'Save'}
               </Button>
               <Button
                 type="button"
                 variant="ghost"
-                className="h-11"
+                className="text-muted-foreground h-11 rounded-full"
                 disabled={isPending}
                 onClick={() => mutate({})}
               >

@@ -17,6 +17,8 @@ export default tseslint.config(
       '**/node_modules/**',
       '**/.vite/**',
       '**/*.tsbuildinfo',
+      // Local design handoff (gitignored reference files) — not project source.
+      'apps/web/design/**',
       // shadcn primitives are vendored copy-paste code — do not lint or edit.
       'apps/web/src/components/ui/**',
     ],

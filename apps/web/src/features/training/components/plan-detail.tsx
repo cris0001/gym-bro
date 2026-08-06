@@ -80,25 +80,19 @@ export function PlanDetail({ planId }: PlanDetailProps) {
 
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="text-2xl font-bold break-words">{plan.name}</h1>
+            <h1 className="font-heading text-[28px] font-medium break-words">{plan.name}</h1>
             {plan.description ? (
               <p className="text-muted-foreground mt-1 text-sm">{plan.description}</p>
             ) : null}
           </div>
-          <div className="flex shrink-0 gap-2">
-            <Button type="button" variant="outline" className="h-11" onClick={() => openEdit(plan)}>
-              Edit
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="text-destructive h-11"
-              disabled={remove.isPending}
-              onClick={() => void onDelete(plan)}
-            >
-              Delete
-            </Button>
-          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            className="bg-accent text-primary hover:bg-accent/70 h-11 shrink-0 rounded-full px-5"
+            onClick={() => openEdit(plan)}
+          >
+            Edit
+          </Button>
         </div>
 
         <div className="mt-3">
@@ -112,7 +106,7 @@ export function PlanDetail({ planId }: PlanDetailProps) {
               type="button"
               variant="outline"
               size="sm"
-              className="h-9"
+              className="h-9 rounded-full"
               disabled={setActive.isPending}
               onClick={() => setActive.mutate(plan.id)}
             >
@@ -144,6 +138,17 @@ export function PlanDetail({ planId }: PlanDetailProps) {
       ) : (
         <TemplateList planId={plan.id} templates={plan.templates} />
       )}
+
+      <div className="flex justify-center p-4">
+        <button
+          type="button"
+          className="text-sm font-medium text-[#b04e2f] disabled:opacity-50"
+          disabled={remove.isPending}
+          onClick={() => void onDelete(plan)}
+        >
+          Delete plan
+        </button>
+      </div>
 
       <PlanSheet />
       <TemplateSheet />

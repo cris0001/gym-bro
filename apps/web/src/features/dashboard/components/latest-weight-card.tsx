@@ -1,10 +1,10 @@
 import { Link } from '@tanstack/react-router';
-import { Scale } from 'lucide-react';
 
 import { useBodyMeasurements } from '@/features/body';
+import { cn } from '@/lib/utils';
 
 // Latest logged weight and its change since the previous measurement, or a prompt
-// to log one.
+// to log one. Text-forward stat card — micro-label over a big serif value.
 export function LatestWeightCard() {
   const { data: entries = [] } = useBodyMeasurements();
 
@@ -16,24 +16,31 @@ export function LatestWeightCard() {
   const delta = latest !== null && previous !== null ? latest - previous : null;
 
   return (
-    <div className="bg-card flex flex-col gap-2 rounded-xl border p-4 transition-shadow hover:shadow-md">
-      <div className="flex items-center gap-2 text-sm font-medium">
-        <span className="flex size-8 items-center justify-center rounded-lg bg-violet-500/10 text-violet-500">
-          <Scale className="size-4" />
-        </span>
-        <span className="text-muted-foreground">Weight</span>
-      </div>
+    <div className="bg-card flex flex-col gap-1 rounded-2xl border p-5">
+      <p className="text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase">
+        Weight
+      </p>
       {latest !== null ? (
         <>
-          <span className="text-3xl font-bold">
+          <p className="font-heading text-[26px] leading-tight font-semibold">
             {latest}
             <span className="text-muted-foreground text-base font-normal"> kg</span>
-          </span>
-          <span className="text-muted-foreground text-xs">
-            {delta !== null
-              ? `${delta > 0 ? '+' : ''}${delta.toFixed(1)} kg since last`
-              : 'First entry'}
-          </span>
+          </p>
+          <p className="text-muted-foreground text-xs">
+            {delta !== null ? (
+              <>
+                <span
+                  className={cn('font-medium', delta <= 0 ? 'text-[#5a7a52]' : 'text-foreground')}
+                >
+                  {delta > 0 ? '+' : ''}
+                  {delta.toFixed(1)} kg
+                </span>{' '}
+                since last
+              </>
+            ) : (
+              'First entry'
+            )}
+          </p>
         </>
       ) : (
         <Link to="/body" className="text-primary text-sm underline">

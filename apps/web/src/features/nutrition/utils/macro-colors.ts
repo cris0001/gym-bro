@@ -2,16 +2,17 @@
 // bar, and any macro progress UI so the same nutrient always reads the same hue.
 export type MacroKey = 'kcal' | 'protein' | 'carbs' | 'fat';
 
+// Warm Editorial palette: kcal + protein terracotta, carbs gold, fat green.
 export const MACRO_BAR: Record<MacroKey, string> = {
-  kcal: 'bg-sky-500',
-  protein: 'bg-rose-500',
-  carbs: 'bg-amber-500',
-  fat: 'bg-violet-500',
+  kcal: 'bg-[#c25a3a]',
+  protein: 'bg-[#c25a3a]',
+  carbs: 'bg-[#d9a441]',
+  fat: 'bg-[#5a7a52]',
 };
 
 export const MACRO_TRACK: Record<MacroKey, string> = {
-  kcal: 'bg-sky-500/15',
-  protein: 'bg-rose-500/15',
-  carbs: 'bg-amber-500/15',
-  fat: 'bg-violet-500/15',
+  kcal: 'bg-[#c25a3a]/15',
+  protein: 'bg-[#c25a3a]/15',
+  carbs: 'bg-[#d9a441]/15',
+  fat: 'bg-[#5a7a52]/15',
 };

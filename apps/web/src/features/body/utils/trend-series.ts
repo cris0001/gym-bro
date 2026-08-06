@@ -19,9 +19,9 @@ export const MEASURE_SERIES: SeriesDef[] = [
   { key: 'bodyFatPct', label: 'Body fat', unit: '%', axis: 'left', color: 'var(--chart-3)' },
   { key: 'bicepsCm', label: 'Biceps', unit: 'cm', axis: 'left', color: 'var(--chart-4)' },
   { key: 'chestCm', label: 'Chest', unit: 'cm', axis: 'left', color: 'var(--chart-5)' },
-  { key: 'waistCm', label: 'Waist', unit: 'cm', axis: 'left', color: '#ec4899' },
-  { key: 'hipCm', label: 'Hip', unit: 'cm', axis: 'left', color: '#14b8a6' },
-  { key: 'thighCm', label: 'Thigh', unit: 'cm', axis: 'left', color: '#f59e0b' },
+  { key: 'waistCm', label: 'Waist', unit: 'cm', axis: 'left', color: '#b04e2f' },
+  { key: 'hipCm', label: 'Hip', unit: 'cm', axis: 'left', color: '#8a5a3b' },
+  { key: 'thighCm', label: 'Thigh', unit: 'cm', axis: 'left', color: '#c8963f' },
 ];
 
 // Calories is secondary to weight, so it's a muted gray (and drawn thinner /
@@ -32,7 +32,7 @@ export const CALORIES_SERIES: SeriesDef = {
   label: 'Calories',
   unit: 'kcal',
   axis: 'right',
-  color: '#94a3b8',
+  color: '#d9a441',
   isCalories: true,
 };
 

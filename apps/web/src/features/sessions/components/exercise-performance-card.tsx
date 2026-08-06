@@ -39,6 +39,8 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
   const loggedSetCount = performance.sets.filter(
     (entry) => entry.reps !== null || entry.weight !== null,
   ).length;
+  // The set you're on: the first without reps yet (−1 when all are logged).
+  const currentSetIndex = performance.sets.findIndex((entry) => entry.reps === null);
 
   // Copies the most recent prior session's sets into this exercise and expands it.
   // Fetched on demand (shares the limit-1 cache with the history panel) so we
@@ -122,7 +124,13 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
               </div>
               <div className="flex flex-col gap-2">
                 {performance.sets.map((set, index) => (
-                  <SetRow key={set.id} performanceId={performance.id} set={set} index={index} />
+                  <SetRow
+                    key={set.id}
+                    performanceId={performance.id}
+                    set={set}
+                    index={index}
+                    isCurrent={index === currentSetIndex}
+                  />
                 ))}
               </div>
             </>
@@ -130,18 +138,18 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
 
           <div className="flex gap-2">
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className="h-10 flex-1"
+              className="bg-accent text-primary hover:bg-accent/70 h-10 flex-1 rounded-full"
               onClick={() => addEmptySet(performance.id)}
             >
               Add set
             </Button>
             {setCount > 0 && (
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="h-10 flex-1"
+                className="bg-accent text-primary hover:bg-accent/70 h-10 flex-1 rounded-full"
                 onClick={() => copyLastSet(performance.id)}
               >
                 Copy last

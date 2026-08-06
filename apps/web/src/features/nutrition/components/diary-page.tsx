@@ -2,7 +2,6 @@ import { addDays, format, parseISO } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -26,6 +25,9 @@ const MEAL_LABELS: Record<MealType, string> = {
   dinner: 'Dinner',
 };
 
+const switchBtn =
+  'text-muted-foreground hover:bg-accent flex size-9 items-center justify-center rounded-full transition-colors';
+
 // The daily food diary: a day picker (today by default; you can move to past or
 // future days to plan/back-fill), the day's summary vs target, and the five meal
 // sections (each with its own add action).
@@ -39,14 +41,39 @@ export function DiaryPage() {
   const entries = data?.entries ?? [];
 
   return (
-    <div className="lg:col-start-2 flex w-full max-w-5xl flex-col gap-4 p-3 md:p-4 pb-36 lg:pb-4">
-      <h1 className="text-2xl font-bold">Diary</h1>
+    <div className="lg:col-start-2 flex w-full max-w-5xl flex-col gap-4 p-3 pb-36 md:p-4 lg:pb-4">
+      <header className="flex items-center justify-between gap-2">
+        <h1 className="font-heading text-[28px] leading-none font-medium">Diary</h1>
+        <div className="bg-card flex items-center rounded-full border p-1">
+          <button
+            type="button"
+            aria-label="Previous day"
+            className={switchBtn}
+            onClick={() => shift(-1)}
+          >
+            <ChevronLeft className="size-4" />
+          </button>
+          <button
+            type="button"
+            className="min-w-[6rem] px-2 text-center text-sm font-medium"
+            onClick={() => setDate(today)}
+          >
+            {isToday ? 'Today' : format(parseISO(date), 'EEE, MMM d')}
+          </button>
+          <button
+            type="button"
+            aria-label="Next day"
+            className={switchBtn}
+            onClick={() => shift(1)}
+          >
+            <ChevronRight className="size-4" />
+          </button>
+        </div>
+      </header>
 
       <div className="lg:grid lg:grid-cols-[1fr_24rem] lg:items-start lg:gap-6">
-        {/* Desktop sidebar summary; on mobile the slim bottom bar takes over. The
-            top margin drops it past the day switcher so it lines up with the first
-            meal. */}
-        <Card className="hidden lg:order-2 lg:mt-[3.75rem] lg:sticky lg:top-4 lg:block">
+        {/* Desktop sidebar summary; on mobile the inverted bottom bar takes over. */}
+        <Card className="hidden rounded-2xl lg:sticky lg:top-4 lg:order-2 lg:block">
           <CardContent>
             {data ? (
               <DaySummary totals={data.totals} />
@@ -63,33 +90,7 @@ export function DiaryPage() {
           </CardContent>
         </Card>
 
-        <div className="flex flex-col gap-4 lg:order-1">
-          <div className="flex items-center justify-between">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="size-11"
-              aria-label="Previous day"
-              onClick={() => shift(-1)}
-            >
-              <ChevronLeft className="size-5" />
-            </Button>
-            <button type="button" className="text-sm font-medium" onClick={() => setDate(today)}>
-              {isToday ? 'Today' : format(parseISO(date), 'EEE, PP')}
-            </button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="size-11"
-              aria-label="Next day"
-              onClick={() => shift(1)}
-            >
-              <ChevronRight className="size-5" />
-            </Button>
-          </div>
-
+        <div className="flex flex-col gap-3 lg:order-1">
           {MEAL_TYPES.map((meal) => (
             <MealSection
               key={meal}

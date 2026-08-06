@@ -31,7 +31,7 @@ export function RatingTrendChart() {
     <div className="h-64 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={points} margin={{ top: 8, right: 12, bottom: 0, left: -16 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="#f0e7d9" vertical={false} />
           <XAxis
             dataKey="date"
             tickFormatter={(value: string) => format(parseISO(value), 'MMM d')}
@@ -59,9 +59,9 @@ export function RatingTrendChart() {
           <Line
             type="monotone"
             dataKey="rating"
-            stroke="var(--primary)"
+            stroke="#5a7a52"
             strokeWidth={2}
-            dot={{ r: 3 }}
+            dot={{ r: 3, fill: '#5a7a52' }}
             activeDot={{ r: 5 }}
           />
         </LineChart>

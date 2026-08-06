@@ -19,17 +19,17 @@ export function CalendarPage() {
     <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-4 p-3 md:p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold">Calendar</h1>
-          <Button asChild size="sm" className="h-9">
+          <h1 className="font-heading text-[28px] leading-none font-medium">Calendar</h1>
+          <Button asChild className="h-9 rounded-full px-4">
             <Link to="/session">
               <Play className="size-4" />
-              Start workout
+              Start
             </Link>
           </Button>
         </div>
         <div className="text-muted-foreground flex items-center gap-4 text-xs">
           <span className="flex items-center gap-1.5">
-            <span className="size-2.5 rounded-full bg-green-500" />
+            <span className="size-2.5 rounded-full bg-[#5a7a52]" />
             Finished
           </span>
           <span className="flex items-center gap-1.5">
@@ -37,14 +37,14 @@ export function CalendarPage() {
             Planned
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="size-2.5 rounded-full bg-orange-500" />
+            <span className="size-2.5 rounded-full bg-[#d15b28]" />
             Strava
           </span>
         </div>
       </div>
 
       <div className="lg:grid lg:grid-cols-[1fr_26rem] lg:items-start lg:gap-6">
-        <div className="bg-card rounded-xl border p-3 sm:p-4">
+        <div className="bg-card rounded-2xl border p-3 sm:p-4">
           <CalendarGrid />
         </div>
         {isDesktop && <DayDetailPanel />}

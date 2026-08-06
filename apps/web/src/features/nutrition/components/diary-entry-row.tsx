@@ -16,11 +16,9 @@ function unitLabel(unit: FoodLogEntry['unit']): string {
   return 'g';
 }
 
-// One diary entry: the item name over a single very-compact line combining the
-// portion with the macros ("1 serv · 930-10/22/33"). Tapping the item edits it — by
-// default via the inline full portion editor; when `onEdit` is given (e.g. in the add
-// sheet, which already has a form) the tap is delegated there instead. Delete is
-// low-stakes and easily re-added, so no confirm.
+// One diary entry: name over its portion on the left, serif kcal on the right. Tapping
+// the item edits it — by default via the inline portion editor; when `onEdit` is given
+// (e.g. in the add sheet) the tap is delegated there. Delete is low-stakes, no confirm.
 export function DiaryEntryRow({
   entry,
   onEdit,
@@ -37,29 +35,24 @@ export function DiaryEntryRow({
   if (editing) {
     return (
       <li className="py-2">
-        <p className="truncate font-medium">{entry.itemName}</p>
+        <p className="truncate font-semibold">{entry.itemName}</p>
         <EntryEditForm entry={entry} onDone={() => setEditing(false)} />
       </li>
     );
   }
 
-  const label = unitLabel(entry.unit);
-  const macros = `${Math.round(entry.kcal)}kcal ${Math.round(entry.proteinG)}/${Math.round(
-    entry.carbsG,
-  )}/${Math.round(entry.fatG)}`;
-
   return (
     <li
       className={cn(
-        'flex items-center gap-2 py-2',
-        highlighted && 'bg-primary/10 -mx-2 rounded-md px-2',
+        'flex items-center gap-3 py-2.5',
+        highlighted && 'bg-accent -mx-2 rounded-lg px-2',
       )}
     >
       {entry.imageUrl ? (
         <img
           src={entry.imageUrl}
           alt=""
-          className="bg-muted size-9 shrink-0 rounded-md border object-cover"
+          className="bg-muted size-9 shrink-0 rounded-lg border object-cover"
         />
       ) : null}
       <button
@@ -68,7 +61,7 @@ export function DiaryEntryRow({
         aria-label={`Edit ${entry.itemName}`}
         onClick={() => (onEdit ? onEdit(entry) : setEditing(true))}
       >
-        <p className="flex items-center gap-1.5 truncate font-medium">
+        <p className="flex items-center gap-1.5 truncate font-semibold">
           <span className="truncate">{entry.itemName}</span>
           {entry.source === 'ai' ? (
             <span className="bg-primary/10 text-primary shrink-0 rounded px-1 py-0.5 text-[10px] font-semibold tracking-wide uppercase">
@@ -77,9 +70,13 @@ export function DiaryEntryRow({
           ) : null}
         </p>
         <p className="text-muted-foreground text-[11px] leading-tight">
-          {entry.quantity} {label} · {macros}
+          {entry.quantity} {unitLabel(entry.unit)}
         </p>
       </button>
+      <span className="font-heading shrink-0 text-base font-semibold">
+        {Math.round(entry.kcal)}
+        <span className="text-muted-foreground ml-0.5 text-[11px] font-normal">kcal</span>
+      </span>
       <Button
         type="button"
         variant="ghost"

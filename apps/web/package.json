@@ -17,6 +17,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@fontsource-variable/geist": "^5.2.9",
+    "@fontsource-variable/newsreader": "^5.3.0",
     "@gym-bro/shared": "workspace:*",
     "@hookform/resolvers": "^5.4.0",
     "@iconify-icons/game-icons": "^1.2.1",

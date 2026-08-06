@@ -1,5 +1,5 @@
 import { format, parseISO } from 'date-fns';
-import { RotateCw } from 'lucide-react';
+import { RotateCw, Zap } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -28,15 +28,24 @@ export function StravaConnectionCard({
   if (!status.connected) {
     return (
       <div
-        className={cn('bg-card flex flex-col items-start gap-3 rounded-xl border p-4', className)}
+        className={cn(
+          'bg-card flex flex-col items-center gap-3 rounded-2xl border p-6 text-center',
+          className,
+        )}
       >
+        <span className="flex size-14 items-center justify-center rounded-full bg-[#fbe3d4] text-[#d15b28]">
+          <Zap className="size-7" />
+        </span>
         <div>
-          <p className="font-medium">Connect Strava</p>
+          <p className="font-heading text-lg font-semibold">Connect Strava</p>
           <p className="text-muted-foreground text-sm">
             Link your Strava account to import your runs, rides, and other activities.
           </p>
         </div>
-        <Button asChild className="h-11 bg-orange-600 text-white hover:bg-orange-600/90">
+        <Button
+          asChild
+          className="h-11 rounded-full bg-[#d15b28] px-5 text-white hover:bg-[#d15b28]/90"
+        >
           <a href={STRAVA_CONNECT_URL}>Connect Strava</a>
         </Button>
       </div>
@@ -54,10 +63,13 @@ export function StravaConnectionCard({
   }
 
   return (
-    <div className={cn('bg-card flex flex-col gap-3 rounded-xl border p-4', className)}>
-      <div className="flex items-center justify-between gap-2">
+    <div className={cn('bg-card flex flex-col gap-3 rounded-2xl border p-4', className)}>
+      <div className="flex items-center gap-2">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#fbe3d4] text-[#d15b28]">
+          <Zap className="size-4" />
+        </span>
         <div>
-          <p className="font-medium text-orange-600">Strava connected</p>
+          <p className="font-medium text-[#d15b28]">Strava connected</p>
           <p className="text-muted-foreground text-xs">
             {status.lastSyncAt
               ? `Last synced ${format(parseISO(status.lastSyncAt), 'PP p')}`
@@ -68,7 +80,7 @@ export function StravaConnectionCard({
       <div className="flex gap-2">
         <Button
           type="button"
-          className="h-11 flex-1 bg-orange-600 text-white hover:bg-orange-600/90"
+          className="h-11 flex-1 rounded-full bg-[#d15b28] text-white hover:bg-[#d15b28]/90"
           disabled={importActivities.isPending}
           onClick={() => importActivities.mutate()}
         >
@@ -77,8 +89,8 @@ export function StravaConnectionCard({
         </Button>
         <Button
           type="button"
-          variant="outline"
-          className="text-destructive h-11"
+          variant="ghost"
+          className="text-muted-foreground h-11 rounded-full px-4"
           disabled={disconnect.isPending}
           onClick={() => void onDisconnect()}
         >

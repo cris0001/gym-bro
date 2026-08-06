@@ -170,3 +170,6 @@ test-results/
 
 # Claude Code local files (do not commit session context)
 .claude/
+
+# Design handoff — local reference only, never commit
+apps/web/design/

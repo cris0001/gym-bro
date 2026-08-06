@@ -17,12 +17,14 @@ export function TargetsPage() {
 
   return (
     <div className="mx-auto lg:col-span-3 flex w-full max-w-5xl flex-col gap-4 p-3 md:p-4">
-      <h1 className="text-2xl font-bold">Targets</h1>
+      <h1 className="font-heading text-[28px] leading-none font-medium">Targets</h1>
 
       <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
-        <Card>
+        <Card className="rounded-2xl">
           <CardHeader>
-            <CardTitle>{editing ? 'Edit target' : 'Daily target'}</CardTitle>
+            <CardTitle className="font-heading text-lg">
+              {editing ? 'Edit target' : 'Daily target'}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {isPending ? (
@@ -38,9 +40,9 @@ export function TargetsPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-2xl">
           <CardHeader>
-            <CardTitle>History</CardTitle>
+            <CardTitle className="font-heading text-lg">History</CardTitle>
           </CardHeader>
           <CardContent>
             <TargetsHistory onEdit={setEditing} />

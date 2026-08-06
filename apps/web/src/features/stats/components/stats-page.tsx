@@ -20,13 +20,15 @@ export function StatsPage() {
 
   return (
     <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-4 p-3 md:p-4">
-      <h1 className="text-2xl font-bold">Stats</h1>
+      <h1 className="font-heading text-[28px] leading-none font-medium">Stats</h1>
 
       <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
-        <Card>
+        <Card className="rounded-2xl">
           <CardHeader>
-            <CardTitle>Exercise progress</CardTitle>
-            <CardDescription>Top-set vs normal-set weight and reps.</CardDescription>
+            <CardTitle className="font-heading text-lg">Exercise progress</CardTitle>
+            <CardDescription className="font-heading text-[13px] italic">
+              Top-set vs normal-set weight and reps.
+            </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <ExerciseStatPicker value={exercise} onSelect={setExercise} />
@@ -35,10 +37,12 @@ export function StatsPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-2xl">
           <CardHeader>
-            <CardTitle>Workout ratings</CardTitle>
-            <CardDescription>How you rated your sessions over time.</CardDescription>
+            <CardTitle className="font-heading text-lg">Workout ratings</CardTitle>
+            <CardDescription className="font-heading text-[13px] italic">
+              How you rated your sessions over time.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <RatingTrendChart />

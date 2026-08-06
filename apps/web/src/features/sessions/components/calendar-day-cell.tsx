@@ -49,18 +49,21 @@ export function CalendarDayCell({
   const { setNodeRef, isOver } = useDroppable({ id: iso });
 
   const finished = strengthCount + activityCount;
-  // Tint the cell by its content for an at-a-glance read: green when a workout was
-  // done, orange when only a Strava activity, accent when only planned. Selection
-  // wins over the tint.
+  // Today reads as an inverted (dark) cell; selection wins with a terracotta ring +
+  // tint. Otherwise the cell is tinted by its content — green (done), orange (Strava),
+  // terracotta (planned) — for an at-a-glance read.
+  const inverted = isToday && !isSelected;
   const bgClass = isSelected
-    ? 'bg-accent'
-    : finished > 0
-      ? 'bg-green-500/10'
-      : stravaTypes.length > 0
-        ? 'bg-orange-500/10'
-        : planned.length > 0
-          ? 'bg-primary/10'
-          : '';
+    ? 'bg-accent ring-primary ring-inset ring-2'
+    : inverted
+      ? 'bg-[#2c241d] text-[#fff7f0]'
+      : finished > 0
+        ? 'bg-[#e8efe4]'
+        : stravaTypes.length > 0
+          ? 'bg-[#fbe3d4]'
+          : planned.length > 0
+            ? 'bg-primary/10'
+            : '';
 
   return (
     <div
@@ -75,22 +78,24 @@ export function CalendarDayCell({
         }
       }}
       className={cn(
-        'flex min-h-11 cursor-pointer flex-col items-center justify-start gap-1 rounded-md p-1 text-sm transition-colors',
+        'flex min-h-11 cursor-pointer flex-col items-center justify-start gap-1 rounded-lg p-1 text-sm transition-colors',
         tall ? 'min-h-24' : 'aspect-square',
-        'hover:bg-accent focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2',
-        !inMonth && 'text-muted-foreground/40',
+        'focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2',
+        !inverted && 'hover:bg-accent',
+        !inMonth && 'text-[#cfc2ae]',
         bgClass,
-        isToday && !isSelected && 'ring-foreground/30 ring-1',
         isOver && 'ring-primary ring-2',
       )}
     >
-      <span
-        className={cn(
-          'flex size-6 items-center justify-center rounded-full',
-          isToday && 'bg-foreground text-background font-semibold',
+      <span className="flex flex-col items-center leading-none">
+        <span
+          className={cn('flex size-6 items-center justify-center', inverted && 'font-semibold')}
+        >
+          {dayNumber}
+        </span>
+        {inverted && (
+          <span className="text-[9px] font-semibold tracking-wide uppercase lg:hidden">Today</span>
         )}
-      >
-        {dayNumber}
       </span>
 
       {(planned.length > 0 || stravaTypes.length > 0) && (
@@ -125,14 +130,21 @@ export function CalendarDayCell({
       )}
 
       {finished > 0 && (
-        <span className="mt-auto flex w-full min-w-0 flex-col items-center gap-0.5 text-[10px] leading-tight font-medium text-green-700">
+        <span
+          className={cn(
+            'mt-auto flex w-full min-w-0 flex-col items-center gap-0.5 text-[10px] leading-tight font-medium',
+            inverted ? 'text-[#bfe0b3]' : 'text-[#48653f]',
+          )}
+        >
           {workoutNames.slice(0, 3).map((name, index) => (
             <span key={index} className="max-w-full truncate">
               {name}
             </span>
           ))}
           {workoutNames.length > 3 && (
-            <span className="text-muted-foreground">+{workoutNames.length - 3}</span>
+            <span className={inverted ? 'text-[#fff7f0]/60' : 'text-muted-foreground'}>
+              +{workoutNames.length - 3}
+            </span>
           )}
         </span>
       )}

@@ -62,12 +62,12 @@ export function WorkoutDetail({ sessionId }: WorkoutDetailProps) {
       </Link>
 
       <header className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold">{session.name}</h1>
-        <div className="text-muted-foreground flex flex-wrap items-center gap-x-2 text-sm">
+        <h1 className="font-heading text-[28px] font-medium">{session.name}</h1>
+        <div className="text-muted-foreground font-heading flex flex-wrap items-center gap-x-2 text-sm italic">
           <span>{format(parseISO(session.performedDate), 'EEEE, MMM d, yyyy')}</span>
           {session.durationMinutes !== null && <span>· {session.durationMinutes} min</span>}
           {session.rating !== null && (
-            <span className="text-yellow-500">{'★'.repeat(session.rating)}</span>
+            <span className="text-primary not-italic">{'★'.repeat(session.rating)}</span>
           )}
         </div>
         {session.tags.length > 0 && (
@@ -97,13 +97,17 @@ export function WorkoutDetail({ sessionId }: WorkoutDetailProps) {
 
       <div className="flex gap-2">
         {session.sessionType === 'strength' && (
-          <Button className="h-11 flex-1" onClick={() => void editWorkout(session)}>
+          <Button
+            variant="ghost"
+            className="bg-accent text-primary hover:bg-accent/70 h-11 flex-1 rounded-full"
+            onClick={() => void editWorkout(session)}
+          >
             Edit
           </Button>
         )}
         <Button
-          variant="outline"
-          className="text-destructive h-11 flex-1"
+          variant="ghost"
+          className="text-destructive h-11 flex-1 rounded-full"
           onClick={() => void handleDelete()}
           disabled={deleteMutation.isPending}
         >

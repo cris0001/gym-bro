@@ -31,20 +31,20 @@ export function FoodsPage() {
   return (
     <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-4 p-3 md:p-4">
       <div className="flex items-center justify-between gap-2">
-        <h1 className="text-2xl font-bold">Foods</h1>
+        <h1 className="font-heading text-[28px] leading-none font-medium">Foods</h1>
         <div className="flex gap-2">
           {canScan ? (
             <Button
               type="button"
-              variant="outline"
-              className="h-11"
+              variant="ghost"
+              className="bg-accent text-primary hover:bg-accent/70 h-11 rounded-full px-4"
               onClick={() => setScanning(true)}
             >
               <Barcode className="size-4" />
               Scan
             </Button>
           ) : null}
-          <Button type="button" className="h-11" onClick={openCreate}>
+          <Button type="button" className="h-11 rounded-full px-5" onClick={openCreate}>
             <Plus className="size-4" />
             {/* On desktop this just clears the panel back to a blank "New food". */}
             {isDesktop ? 'New' : 'Add'}
@@ -60,7 +60,10 @@ export function FoodsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          <div className="bg-card overflow-hidden rounded-xl border">
+          <p className="font-heading text-muted-foreground -mt-2 px-1 text-xs italic">
+            Macros per 100 g
+          </p>
+          <div className="bg-card overflow-hidden rounded-2xl border">
             <FoodList search={search} selectedId={isDesktop ? (editing?.id ?? null) : null} />
           </div>
         </div>

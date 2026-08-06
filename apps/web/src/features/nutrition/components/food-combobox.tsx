@@ -21,12 +21,19 @@ interface FoodComboboxProps {
   selectedId: string | null;
   selectedName: string | null;
   onSelect: (food: Food) => void;
+  // Trigger text when nothing is selected (e.g. an "add ingredient" search).
+  placeholder?: string;
 }
 
 // Searchable food picker for a recipe ingredient. Lists the active food
 // dictionary; selectedName is shown on the trigger so a soft-deleted-but-still-
 // referenced food still reads correctly.
-export function FoodCombobox({ selectedId, selectedName, onSelect }: FoodComboboxProps) {
+export function FoodCombobox({
+  selectedId,
+  selectedName,
+  onSelect,
+  placeholder = 'Select a food',
+}: FoodComboboxProps) {
   const [open, setOpen] = useState(false);
   const { data: foods = [] } = useFoods('');
 
@@ -40,7 +47,7 @@ export function FoodCombobox({ selectedId, selectedName, onSelect }: FoodCombobo
       <PopoverTrigger asChild>
         <Button variant="outline" className="h-11 w-full justify-between font-normal">
           <span className={cn('truncate', !selectedName && 'text-muted-foreground')}>
-            {selectedName ?? 'Select a food'}
+            {selectedName ?? placeholder}
           </span>
           <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
         </Button>

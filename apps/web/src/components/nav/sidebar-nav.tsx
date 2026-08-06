@@ -1,31 +1,29 @@
 import { Link } from '@tanstack/react-router';
-import { BicepsFlexed } from 'lucide-react';
 
+import { BrandMark } from '@/components/brand-mark';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LogoutButton } from '@/features/auth';
 import { cn } from '@/lib/utils';
 
 import { NAV_SECTIONS } from './nav-items';
 
-const sectionClass = 'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium';
-const childClass = 'flex items-center gap-2.5 rounded-md px-3 py-1.5 text-sm';
-const activeClass = 'bg-primary/10 text-primary';
+const sectionClass = 'flex items-center gap-3 rounded-[10px] px-3 py-2 text-sm font-medium';
+const childClass = 'flex items-center gap-2.5 rounded-[10px] px-3 py-1.5 text-sm';
+const activeClass = 'bg-sidebar-accent text-primary';
 const inactiveClass = 'text-muted-foreground hover:bg-accent hover:text-foreground';
-// Strava-branded section: orange like the Strava button, filled when active.
-const stravaActiveClass = 'bg-orange-600 text-white hover:bg-orange-600/90';
-const stravaInactiveClass = 'text-orange-600 hover:bg-orange-500/10';
+// Strava-branded section: warm terracotta-orange, filled only when active.
+const stravaActiveClass = 'bg-[#d15b28] text-white hover:bg-[#d15b28]/90';
+const stravaInactiveClass = 'text-[#d15b28] hover:bg-[#fbe3d4]';
 
 // Desktop navigation: a fixed, branded left sidebar with the four sections — each
 // lands on its main view, with its submenu nested beneath a guide rail. Hidden
 // under lg, where the bottom tab bar + sub-tab strip take over.
 export function SidebarNav() {
   return (
-    <aside className="bg-background sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r lg:flex">
-      <div className="flex h-14 items-center gap-2 border-b px-4">
-        <span className="bg-primary text-primary-foreground flex size-7 items-center justify-center rounded-md">
-          <BicepsFlexed className="size-4" />
-        </span>
-        <span className="text-lg font-bold">Gym Bro</span>
+    <aside className="bg-sidebar sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r lg:flex">
+      <div className="flex h-14 items-center gap-2.5 border-b px-4">
+        <BrandMark className="size-8" />
+        <span className="font-heading text-xl font-semibold">Gym Bro</span>
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
@@ -51,7 +49,7 @@ export function SidebarNav() {
                 {section.label}
               </Link>
               {children.length > 0 && (
-                <div className="border-border/60 my-0.5 ml-[1.15rem] flex flex-col gap-0.5 border-l pl-2.5">
+                <div className="border-border my-0.5 ml-[1.15rem] flex flex-col gap-0.5 border-l pl-2.5">
                   {children.map((child) => {
                     const ChildIcon = child.icon;
                     return (

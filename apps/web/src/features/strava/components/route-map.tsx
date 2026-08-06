@@ -24,7 +24,7 @@ export function RouteMap({ polyline, className }: { polyline: string; className?
       maxZoom: 19,
     }).addTo(map);
 
-    const line = L.polyline(points, { color: '#ea580c', weight: 4 }).addTo(map);
+    const line = L.polyline(points, { color: '#d15b28', weight: 4 }).addTo(map);
     map.fitBounds(line.getBounds(), { padding: [16, 16] });
     const start = points[0];
     const end = points[points.length - 1];

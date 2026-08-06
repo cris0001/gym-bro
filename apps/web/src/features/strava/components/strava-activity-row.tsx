@@ -53,18 +53,18 @@ export function StravaActivityRow({
       : formatDuration(session.movingTimeS);
 
   return (
-    <li id={`strava-activity-${session.id}`} className="bg-card overflow-hidden rounded-xl border">
+    <li id={`strava-activity-${session.id}`} className="bg-card overflow-hidden rounded-2xl border">
       <button
         type="button"
         onClick={onToggle}
         className="hover:bg-muted/50 active:bg-muted flex w-full items-center gap-3 p-3 text-left transition-colors"
         aria-expanded={expanded}
       >
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-orange-500/10 text-orange-600">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#fbe3d4] text-[#d15b28]">
           <Icon className="size-5" />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate font-medium">{session.name}</span>
+          <span className="block truncate font-semibold">{session.name}</span>
           <span className="text-muted-foreground text-xs">
             {session.activityType} · {format(parseISO(session.localDate), 'EEE, MMM d')} · {primary}
           </span>
@@ -94,7 +94,7 @@ export function StravaActivityRow({
               href={`https://www.strava.com/activities/${session.stravaActivityId}`}
               target="_blank"
               rel="noreferrer"
-              className="text-sm font-medium text-orange-600 hover:underline"
+              className="text-sm font-medium text-[#d15b28] hover:underline"
             >
               View on Strava ↗
             </a>

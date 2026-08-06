@@ -68,36 +68,38 @@ export function BodyPage() {
 
   return (
     <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-4 p-3 md:p-4">
-      <h1 className="text-2xl font-bold">Body</h1>
+      <h1 className="font-heading text-[28px] leading-none font-medium">Body</h1>
 
       <div className="grid gap-4 lg:grid-cols-[22rem_1fr] lg:items-start">
-        <Card>
+        <Card className="rounded-2xl">
           <CardHeader>
-            <CardTitle>{editing ? 'Edit measurement' : 'Add measurement'}</CardTitle>
+            <CardTitle className="font-heading text-lg">
+              {editing ? 'Edit measurement' : 'Add measurement'}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <BodyMeasurementForm />
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-2xl">
           <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-            <CardTitle>Trends</CardTitle>
-            <div className="bg-muted flex gap-0.5 rounded-md p-0.5">
+            <CardTitle className="font-heading text-lg">Trends</CardTitle>
+            <div className="bg-secondary flex rounded-full p-0.5">
               {PERIODS.map((p) => (
-                <Button
+                <button
                   key={p.key}
                   type="button"
-                  size="sm"
-                  variant={!customRange && period === p.key ? 'default' : 'ghost'}
-                  className={cn(
-                    'h-7 px-2',
-                    (customRange || period !== p.key) && 'text-muted-foreground',
-                  )}
                   onClick={() => selectPeriod(p.key)}
+                  className={cn(
+                    'h-7 rounded-full px-2.5 text-sm font-medium transition-colors',
+                    !customRange && period === p.key
+                      ? 'bg-card text-foreground border'
+                      : 'text-muted-foreground',
+                  )}
                 >
                   {p.label}
-                </Button>
+                </button>
               ))}
             </div>
           </CardHeader>
@@ -144,8 +146,8 @@ export function BodyPage() {
       </div>
 
       <section className="flex flex-col gap-2">
-        <h2 className="font-semibold">History</h2>
-        <div className="bg-card rounded-xl border px-4">
+        <h2 className="font-heading text-lg font-semibold">History</h2>
+        <div className="bg-card rounded-2xl border px-4">
           <MeasurementList entries={filtered} targets={targets ?? []} />
         </div>
       </section>

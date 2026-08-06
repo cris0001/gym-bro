@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { ChevronRight, ClipboardList, Plus } from 'lucide-react';
+import { ClipboardList, Plus } from 'lucide-react';
 
 import { EmptyState } from '@/components/empty-state';
 import { ErrorState } from '@/components/error-state';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 
 import { useActivePlan } from '../hooks/use-active-plan';
 import { usePlans } from '../hooks/use-plans';
+import { useSetActivePlan } from '../hooks/use-set-active-plan';
 import { usePlanUiStore } from '../stores/plan-ui.store';
 import { ActivePlanRow } from './active-plan-row';
 
@@ -17,6 +18,7 @@ import { ActivePlanRow } from './active-plan-row';
 export function PlanList() {
   const { data: plans, isPending, isError, error, refetch } = usePlans();
   const { data: activePlan } = useActivePlan();
+  const setActive = useSetActivePlan();
   const openCreate = usePlanUiStore((s) => s.openCreate);
 
   if (isPending) {
@@ -34,7 +36,7 @@ export function PlanList() {
         title="No plans yet"
         description="Create a plan (e.g. PPL, Upper/Lower) to organize your workout templates."
         action={
-          <Button type="button" className="h-11" onClick={openCreate}>
+          <Button type="button" className="h-11 rounded-full px-5" onClick={openCreate}>
             <Plus className="size-4" />
             New plan
           </Button>
@@ -43,37 +45,43 @@ export function PlanList() {
     );
   }
 
-  // Pin the active plan first (rendered as the expandable row); keep the rest in order.
+  // The active plan is its own expandable card; the rest sit in a second card below.
   const activeItem = plans.find((plan) => plan.id === activePlan?.id);
   const others = plans.filter((plan) => plan.id !== activePlan?.id);
-  const ordered = activeItem ? [activeItem, ...others] : plans;
 
   return (
-    <ul className="divide-y">
-      {ordered.map((plan) =>
-        plan.id === activePlan?.id ? (
-          <ActivePlanRow key={plan.id} planId={plan.id} name={plan.name} />
-        ) : (
-          <li key={plan.id}>
-            <Link
-              to="/plans/$planId"
-              params={{ planId: plan.id }}
-              className="hover:bg-accent flex items-center gap-3 px-4 py-3 transition-colors"
+    <div className="flex flex-col gap-4">
+      {activeItem ? <ActivePlanRow planId={activeItem.id} name={activeItem.name} /> : null}
+      {others.length > 0 ? (
+        <ul className="bg-card divide-y divide-dashed divide-[#e5d9c6] overflow-hidden rounded-2xl border">
+          {others.map((plan) => (
+            <li
+              key={plan.id}
+              className="hover:bg-accent flex items-center gap-2 px-4 py-3 transition-colors"
             >
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-medium">{plan.name}</p>
+              <Link to="/plans/$planId" params={{ planId: plan.id }} className="min-w-0 flex-1">
+                <p className="truncate font-semibold">{plan.name}</p>
                 {plan.description ? (
                   <p className="text-muted-foreground truncate text-sm">{plan.description}</p>
                 ) : null}
                 <p className="text-muted-foreground text-xs">
                   {plan.templateCount} {plan.templateCount === 1 ? 'template' : 'templates'}
                 </p>
-              </div>
-              <ChevronRight className="text-muted-foreground size-5 shrink-0" />
-            </Link>
-          </li>
-        ),
-      )}
-    </ul>
+              </Link>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-primary h-8 shrink-0"
+                disabled={setActive.isPending}
+                onClick={() => setActive.mutate(plan.id)}
+              >
+                Set active
+              </Button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
   );
 }

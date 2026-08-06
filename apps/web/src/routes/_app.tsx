@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
-import { BicepsFlexed } from 'lucide-react';
 
+import { BrandMark } from '@/components/brand-mark';
 import { BottomNav } from '@/components/nav/bottom-nav';
 import { SectionTabs } from '@/components/nav/section-tabs';
 import { SidebarNav } from '@/components/nav/sidebar-nav';
@@ -29,10 +29,8 @@ function AppLayout() {
       <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
         {/* Mobile-only top bar; on lg the sidebar carries the logo + logout. */}
         <header className="bg-background/80 sticky top-0 z-10 flex h-14 items-center justify-between border-b px-4 backdrop-blur lg:hidden">
-          <span className="flex items-center gap-2 text-lg font-bold">
-            <span className="bg-primary text-primary-foreground flex size-7 items-center justify-center rounded-md">
-              <BicepsFlexed className="size-4" />
-            </span>
+          <span className="font-heading flex items-center gap-2 text-lg font-semibold">
+            <BrandMark className="size-7" />
             Gym Bro
           </span>
           <div className="flex items-center gap-1">

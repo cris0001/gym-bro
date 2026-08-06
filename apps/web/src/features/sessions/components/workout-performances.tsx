@@ -28,7 +28,7 @@ export function WorkoutPerformances({
       {performances.map((performance) => {
         const swapped = performance.exercise.id !== performance.originalExercise.id;
         return (
-          <div key={performance.id} className="bg-card flex flex-col gap-2 rounded-lg border p-3">
+          <div key={performance.id} className="bg-card flex flex-col gap-2 rounded-2xl border p-3">
             <div className="flex flex-col">
               <span className="font-semibold">{performance.exercise.name}</span>
               <span className="text-muted-foreground text-xs">
@@ -53,15 +53,15 @@ export function WorkoutPerformances({
                 <span
                   className={cn(
                     'mx-auto flex size-6 items-center justify-center rounded-full text-xs font-semibold',
-                    set.isTopSet ? 'bg-primary text-primary-foreground' : 'text-muted-foreground',
+                    set.isTopSet ? 'bg-[#d9a441] text-white' : 'text-muted-foreground',
                   )}
                 >
                   {index + 1}
                 </span>
                 {/* A null weight on a finished set means it was bodyweight. */}
-                <span>{set.weight ?? 'BW'}</span>
-                <span>{cell(set.reps)}</span>
-                <span>{cell(set.rir)}</span>
+                <span className="font-heading font-semibold">{set.weight ?? 'BW'}</span>
+                <span className="font-heading font-semibold">{cell(set.reps)}</span>
+                <span className="font-heading">{cell(set.rir)}</span>
               </div>
             ))}
             {showPrevious && (

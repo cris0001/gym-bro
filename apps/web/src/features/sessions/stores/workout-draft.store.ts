@@ -40,6 +40,9 @@ export interface WorkoutDraft {
   editingSessionId: string | null;
   name: string;
   performedDate: string;
+  // When this session began (ISO); drives the live elapsed-time chip. Persisted so the
+  // timer survives a refresh. May be absent on drafts started before this field existed.
+  startedAt?: string;
   plannedSessionId: string | null;
   workoutTemplateId: string | null;
   performances: DraftPerformance[];
@@ -132,6 +135,7 @@ export const useWorkoutDraftStore = create<WorkoutDraftState>()(
             editingSessionId: null,
             name: input.name,
             performedDate: input.performedDate,
+            startedAt: new Date().toISOString(),
             plannedSessionId: input.plannedSessionId ?? null,
             workoutTemplateId: input.workoutTemplateId ?? null,
             durationMinutes: null,

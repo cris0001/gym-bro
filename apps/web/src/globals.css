@@ -2,6 +2,7 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 @import '@fontsource-variable/geist';
+@import '@fontsource-variable/newsreader';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -9,7 +10,8 @@
    layer here. Kept minimal for now so the Tailwind pipeline is wired up. */
 
 @theme inline {
-  --font-heading: var(--font-sans);
+  /* Newsreader (variable serif) for display/editorial type; Geist stays the UI face. */
+  --font-heading: 'Newsreader Variable', serif;
 
   --font-sans: 'Geist Variable', sans-serif;
 
@@ -91,71 +93,70 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
+  /* Warm Editorial — terracotta accent on warm cream, border-based (no shadows). */
+  --background: #faf5ee;
 
-  --foreground: oklch(0.145 0 0);
+  --foreground: #2c241d;
 
-  --card: oklch(1 0 0);
+  --card: #fffcf7;
 
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: #2c241d;
 
-  --popover: oklch(1 0 0);
+  --popover: #fffcf7;
 
-  --popover-foreground: oklch(0.145 0 0);
+  --popover-foreground: #2c241d;
 
-  /* Brand color — Tailwind "sky". Swap these (and the .dark block below) to
-     blue/cyan oklch values to retheme the whole app. */
-  --primary: oklch(0.588 0.158 241.966); /* sky-600 */
+  --primary: #c25a3a; /* terracotta */
 
-  --primary-foreground: oklch(0.985 0 0);
+  --primary-foreground: #fff7f0;
 
-  --secondary: oklch(0.97 0 0);
+  --secondary: #f3ead9;
 
-  --secondary-foreground: oklch(0.205 0 0);
+  --secondary-foreground: #2c241d;
 
-  --muted: oklch(0.97 0 0);
+  --muted: #f0e7d9;
 
-  --muted-foreground: oklch(0.556 0 0);
+  --muted-foreground: #8d8072;
 
-  --accent: oklch(0.97 0 0);
+  --accent: #fdf1e8;
 
-  --accent-foreground: oklch(0.205 0 0);
+  --accent-foreground: #b04e2f;
 
   --destructive: oklch(0.577 0.245 27.325);
 
-  --border: oklch(0.922 0 0);
+  --border: #eadfd0;
 
-  --input: oklch(0.922 0 0);
+  --input: #eadfd0;
 
-  --ring: oklch(0.685 0.169 237.323); /* sky-500 */
+  --ring: #c25a3a;
 
-  --chart-1: oklch(0.87 0 0);
+  --chart-1: #c25a3a;
 
-  --chart-2: oklch(0.556 0 0);
+  --chart-2: #d9a441;
 
-  --chart-3: oklch(0.439 0 0);
+  --chart-3: #5a7a52;
 
-  --chart-4: oklch(0.371 0 0);
+  --chart-4: #8a5a3b;
 
-  --chart-5: oklch(0.269 0 0);
+  --chart-5: #a3937f;
 
-  --radius: 0.625rem;
+  --radius: 0.875rem;
 
-  --sidebar: oklch(0.985 0 0);
+  --sidebar: #fffcf7;
 
-  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-foreground: #2c241d;
 
-  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary: #c25a3a;
 
-  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-primary-foreground: #fff7f0;
 
-  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent: #fdf1e8;
 
-  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-accent-foreground: #b04e2f;
 
-  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-border: #eadfd0;
 
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-ring: #c25a3a;
 }
 
 .dark {

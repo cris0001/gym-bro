@@ -11,9 +11,9 @@ export function FoodDetailPanel() {
   const close = useFoodUiStore((s) => s.close);
 
   return (
-    <div className="bg-card sticky top-4 overflow-hidden rounded-xl border">
+    <div className="bg-card sticky top-4 overflow-hidden rounded-2xl border">
       <div className="border-b p-4">
-        <h2 className="font-semibold">{editing ? 'Edit food' : 'New food'}</h2>
+        <h2 className="font-heading text-lg font-semibold">{editing ? 'Edit food' : 'New food'}</h2>
         <p className="text-muted-foreground text-sm">
           {editing
             ? 'Update the name or macros.'

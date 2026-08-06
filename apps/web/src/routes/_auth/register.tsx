@@ -12,7 +12,7 @@ function RegisterPage() {
   return (
     <div className="grid gap-6">
       <div className="grid gap-1 text-center">
-        <h1 className="text-2xl font-bold">Create your account</h1>
+        <h1 className="font-heading text-2xl font-medium">Create your account</h1>
         <p className="text-muted-foreground text-sm">Start tracking your training</p>
       </div>
 
