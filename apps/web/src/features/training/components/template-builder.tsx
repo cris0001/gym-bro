@@ -43,32 +43,36 @@ export function TemplateBuilder({ templateId }: TemplateBuilderProps) {
           Plan
         </Link>
 
-        <h1 className="text-2xl font-bold break-words">{template.name}</h1>
+        <h1 className="font-heading text-[28px] font-medium break-words">{template.name}</h1>
         {template.description ? (
           <p className="text-muted-foreground mt-1 text-sm">{template.description}</p>
         ) : null}
       </div>
 
-      <div className="flex items-center justify-between px-4">
-        <h2 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-          Exercises
-        </h2>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-9"
-          onClick={() => openCreate(template.id)}
-        >
-          <Plus className="size-4" />
-          Add
-        </Button>
-      </div>
+      <h2 className="text-muted-foreground px-4 text-xs font-semibold tracking-[0.08em] uppercase">
+        Exercises
+      </h2>
 
       {template.exercises.length === 0 ? (
         <p className="text-muted-foreground px-4 py-3 text-sm">No exercises yet.</p>
       ) : (
         <TemplateExerciseList templateId={template.id} templateExercises={template.exercises} />
+      )}
+
+      <Button
+        type="button"
+        variant="outline"
+        className="mx-4 mt-3 mb-4 h-11 rounded-2xl border-dashed"
+        onClick={() => openCreate(template.id)}
+      >
+        <Plus className="size-4" />
+        Add exercise from library
+      </Button>
+
+      {template.exercises.length > 1 && (
+        <p className="font-heading text-muted-foreground px-4 pb-4 text-center text-xs italic">
+          drag rows to reorder — order is used during the workout
+        </p>
       )}
 
       <TemplateExerciseSheet />

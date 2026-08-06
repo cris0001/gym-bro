@@ -1,24 +1,33 @@
-import { useNavigate } from '@tanstack/react-router';
-import { Barcode, Camera, Image as ImageIcon, Plus, X } from 'lucide-react';
+import { Link, useNavigate } from '@tanstack/react-router';
+import {
+  Barcode,
+  Camera,
+  ChevronLeft,
+  Image as ImageIcon,
+  Minus,
+  Pencil,
+  Plus,
+  Trash2,
+  X,
+} from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { cn } from '@/lib/utils';
 
 import { divideMacros, multiplyMacros, scaleMacros, sumMacros } from '@gym-bro/shared';
-import type { CreateRecipeInput, Food, MacroTotals, RecipeDetail } from '@gym-bro/shared';
+import type { CreateRecipeInput, MacroTotals, RecipeDetail } from '@gym-bro/shared';
 
 import { useCreateRecipe } from '../hooks/use-create-recipe';
 import { useScanFlow } from '../hooks/use-scan-flow';
 import { useUpdateRecipe } from '../hooks/use-update-recipe';
 import { BarcodeScanner } from './barcode-scanner';
+import { FoodCombobox } from './food-combobox';
 import { FoodSheet } from './food-sheet';
-import { IngredientRow } from './ingredient-row';
-import { MacrosSummary } from './macros-summary';
 import { resizeImageToDataUrl } from '../utils/resize-image';
 
 type IngredientUnit = 'grams' | 'servings' | 'units';
@@ -38,8 +47,40 @@ interface IngredientDraft {
   unit: IngredientUnit;
 }
 
-function newRow(): IngredientDraft {
-  return { key: crypto.randomUUID(), food: null, amount: '', unit: 'grams' };
+const UNIT_SHORT: Record<IngredientUnit, string> = { grams: 'g', servings: 'serv', units: 'u' };
+
+// Grams / servings / units toggle for an ingredient's amount — only the units the food
+// supports (grams always).
+function UnitToggle({
+  food,
+  unit,
+  onChange,
+}: {
+  food: IngredientFood | null;
+  unit: IngredientUnit;
+  onChange: (unit: IngredientUnit) => void;
+}) {
+  const options: IngredientUnit[] = ['grams'];
+  if (food?.servingGrams != null) options.push('servings');
+  if (food?.unitGrams != null) options.push('units');
+  if (options.length === 1) return <span className="text-muted-foreground text-sm">g</span>;
+  return (
+    <div className="flex h-10 shrink-0 overflow-hidden rounded-md border text-sm">
+      {options.map((option) => (
+        <button
+          key={option}
+          type="button"
+          onClick={() => onChange(option)}
+          className={cn(
+            'px-2.5 font-medium transition-colors',
+            unit === option ? 'bg-primary text-primary-foreground' : 'text-muted-foreground',
+          )}
+        >
+          {UNIT_SHORT[option]}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 // Grams an ingredient contributes: servings/units resolve via the food's serving/unit
@@ -85,8 +126,9 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
   const [name, setName] = useState(editing?.name ?? '');
   const [servings, setServings] = useState(editing ? String(editing.servings) : '1');
   const [ingredients, setIngredients] = useState<IngredientDraft[]>(
-    editing ? fromDetail(editing) : [newRow()],
+    editing ? fromDetail(editing) : [],
   );
+  const [editingKey, setEditingKey] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(editing?.imageUrl ?? null);
 
   async function onPickImage(e: React.ChangeEvent<HTMLInputElement>) {
@@ -108,51 +150,55 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
   const [scanning, setScanning] = useState(false);
   // Scanning needs a camera — a touch device. Hide it on desktop (fine pointer).
   const canScan = useMediaQuery('(pointer: coarse)');
-  // Scanning here adds the product to your foods and drops it straight in as an
-  // ingredient row (type the amount); a fresh empty row follows.
-  const { handleEan } = useScanFlow((food) => {
-    const picked: IngredientFood = {
-      id: food.id,
-      name: food.name,
-      per100g: { kcal: food.kcal, proteinG: food.proteinG, carbsG: food.carbsG, fatG: food.fatG },
-      servingGrams: food.servingGrams,
-      unitGrams: food.unitGrams,
-    };
-    setIngredients((rows) => {
-      const last = rows[rows.length - 1];
-      const trimmed = last && !last.food && last.amount.trim() === '' ? rows.slice(0, -1) : rows;
-      return [
-        ...trimmed,
-        { key: crypto.randomUUID(), food: picked, amount: '', unit: 'grams' },
-        newRow(),
-      ];
-    });
-  });
+  // Scanning adds the product to your foods, then drops it straight in as a 100 g
+  // ingredient (edit the amount/unit via its pencil).
+  const { handleEan } = useScanFlow((food) => addIngredient(food));
 
-  function selectFood(key: string, food: Food) {
-    const picked: IngredientFood = {
-      id: food.id,
-      name: food.name,
-      per100g: { kcal: food.kcal, proteinG: food.proteinG, carbsG: food.carbsG, fatG: food.fatG },
-      servingGrams: food.servingGrams,
-      unitGrams: food.unitGrams,
-    };
-    setIngredients((rows) => {
-      const mapped = rows.map((r) => {
-        if (r.key !== key) return r;
-        // Keep the current unit only if the newly-picked food supports it; else grams.
-        const keepUnit =
-          r.unit === 'grams' ||
-          (r.unit === 'servings' && food.servingGrams !== null) ||
-          (r.unit === 'units' && food.unitGrams !== null);
-        return { ...r, food: picked, unit: keepUnit ? r.unit : 'grams' };
-      });
-      // Auto-grow: picking a food in the last row reveals a fresh empty one, so you
-      // just keep adding without hunting for the "Add" button.
-      const isLast = rows[rows.length - 1]?.key === key;
-      return isLast ? [...mapped, newRow()] : mapped;
-    });
+  // Append a picked food as a new ingredient (default 100 g). Hoisted so the scan flow
+  // above can call it. Structural param so both a Food (picker) and a ResolvedFood
+  // (scan) satisfy it.
+  function addIngredient(food: {
+    id: string;
+    name: string;
+    kcal: number;
+    proteinG: number;
+    carbsG: number;
+    fatG: number;
+    servingGrams: number | null;
+    unitGrams: number | null;
+  }) {
+    const key = crypto.randomUUID();
+    setIngredients((rows) => [
+      ...rows,
+      {
+        key,
+        food: {
+          id: food.id,
+          name: food.name,
+          per100g: {
+            kcal: food.kcal,
+            proteinG: food.proteinG,
+            carbsG: food.carbsG,
+            fatG: food.fatG,
+          },
+          servingGrams: food.servingGrams,
+          unitGrams: food.unitGrams,
+        },
+        amount: '100',
+        unit: 'grams',
+      },
+    ]);
+    // Open the new row's editor straight away so you can set the amount immediately.
+    setEditingKey(key);
   }
+
+  const updateRow = (key: string, patch: Partial<IngredientDraft>) =>
+    setIngredients((rows) => rows.map((r) => (r.key === key ? { ...r, ...patch } : r)));
+
+  const removeRow = (key: string) => {
+    setIngredients((rows) => rows.filter((r) => r.key !== key));
+    setEditingKey((k) => (k === key ? null : k));
+  };
 
   const validRows = ingredients
     .map((r) => ({ row: r, grams: rowGrams(r) }))
@@ -181,7 +227,37 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
 
   return (
     <div className="mx-auto lg:col-span-3 flex w-full max-w-5xl flex-col gap-4 p-3 md:p-4">
-      <h1 className="text-2xl font-bold">{editing ? 'Edit recipe' : 'New recipe'}</h1>
+      <Link
+        to="/recipes"
+        className="text-muted-foreground hover:text-foreground -mb-1 inline-flex w-fit items-center gap-1 text-sm"
+      >
+        <ChevronLeft className="size-4" />
+        Recipes
+      </Link>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="font-heading truncate text-[28px] font-medium">
+          {name.trim() || (editing ? 'Edit recipe' : 'New recipe')}
+        </h1>
+        <div className="flex h-11 shrink-0 items-center rounded-full border">
+          <button
+            type="button"
+            aria-label="Fewer servings"
+            className="text-muted-foreground flex size-11 items-center justify-center"
+            onClick={() => setServings((s) => String(Math.max(1, (Number(s) || 1) - 1)))}
+          >
+            <Minus className="size-4" />
+          </button>
+          <span className="font-heading w-8 text-center text-lg font-semibold">{servings}</span>
+          <button
+            type="button"
+            aria-label="More servings"
+            className="text-primary flex size-11 items-center justify-center"
+            onClick={() => setServings((s) => String((Number(s) || 0) + 1))}
+          >
+            <Plus className="size-4" />
+          </button>
+        </div>
+      </div>
 
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         {/* Left: an optional recipe photo, medium-sized. */}
@@ -236,84 +312,133 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
             />
           </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="recipe-servings">Servings</Label>
-            <Input
-              id="recipe-servings"
-              inputMode="numeric"
-              className="h-11 w-24"
-              value={servings}
-              onChange={(e) => setServings(e.target.value)}
-            />
-          </div>
-
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <h2 className="font-semibold">Ingredients</h2>
-              <div className="flex gap-2">
+          <div className="flex flex-col gap-4">
+            <div className="bg-card overflow-hidden rounded-2xl border">
+              <div className="flex items-center justify-between px-4 pt-4 pb-2">
+                <h2 className="text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase">
+                  Ingredients
+                </h2>
                 {canScan ? (
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
-                    className="h-9"
+                    className="text-primary h-8"
                     onClick={() => setScanning(true)}
                   >
                     <Barcode className="size-4" />
                     Scan
                   </Button>
                 ) : null}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-9"
-                  onClick={() => setIngredients((rows) => [...rows, newRow()])}
-                >
-                  <Plus className="size-4" />
-                  Add
-                </Button>
               </div>
+              {ingredients.length === 0 ? (
+                <p className="text-muted-foreground px-4 pb-4 text-sm">
+                  No ingredients yet — search below to add one.
+                </p>
+              ) : (
+                <ul className="divide-y divide-dashed divide-[#e5d9c6] border-t border-dashed border-[#e5d9c6]">
+                  {ingredients.map((row) => {
+                    const grams = rowGrams(row);
+                    const macros =
+                      row.food && grams > 0 ? scaleMacros(row.food.per100g, grams) : null;
+                    const isRowEditing = editingKey === row.key;
+                    return (
+                      <li key={row.key} className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate font-semibold">{row.food?.name}</p>
+                            <p className="text-muted-foreground text-xs">
+                              {row.amount || '—'} {UNIT_SHORT[row.unit]}
+                            </p>
+                          </div>
+                          <span className="font-heading shrink-0 text-base font-semibold">
+                            {macros ? Math.round(macros.kcal) : 0}
+                          </span>
+                          <button
+                            type="button"
+                            aria-label={`Edit ${row.food?.name ?? 'ingredient'}`}
+                            className="shrink-0 text-[#c9bda9]"
+                            onClick={() => setEditingKey(isRowEditing ? null : row.key)}
+                          >
+                            <Pencil className="size-4" />
+                          </button>
+                        </div>
+                        {isRowEditing ? (
+                          <div className="mt-2 flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <Input
+                                inputMode="decimal"
+                                aria-label="Amount"
+                                className="h-10 w-20 text-center"
+                                value={row.amount}
+                                onChange={(e) => updateRow(row.key, { amount: e.target.value })}
+                              />
+                              <UnitToggle
+                                food={row.food}
+                                unit={row.unit}
+                                onChange={(unit) => updateRow(row.key, { unit })}
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="text-destructive ml-auto size-9"
+                                aria-label="Remove ingredient"
+                                onClick={() => removeRow(row.key)}
+                              >
+                                <Trash2 className="size-4" />
+                              </Button>
+                            </div>
+                            <p className="text-muted-foreground text-xs">
+                              = {macros ? Math.round(macros.kcal) : 0} kcal
+                            </p>
+                          </div>
+                        ) : null}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </div>
-            {ingredients.map((row) => {
-              const grams = rowGrams(row);
-              const macros = row.food && grams > 0 ? scaleMacros(row.food.per100g, grams) : null;
-              return (
-                <IngredientRow
-                  key={row.key}
-                  selectedId={row.food?.id ?? null}
-                  selectedName={row.food?.name ?? null}
-                  amount={row.amount}
-                  unit={row.unit}
-                  hasServings={row.food?.servingGrams != null}
-                  hasUnits={row.food?.unitGrams != null}
-                  gramsPerServing={row.food?.servingGrams ?? null}
-                  gramsPerUnit={row.food?.unitGrams ?? null}
-                  macros={macros}
-                  onSelectFood={(food) => selectFood(row.key, food)}
-                  onAmountChange={(v) =>
-                    setIngredients((rows) =>
-                      rows.map((r) => (r.key === row.key ? { ...r, amount: v } : r)),
-                    )
-                  }
-                  onUnitChange={(unit) =>
-                    setIngredients((rows) =>
-                      rows.map((r) => (r.key === row.key ? { ...r, unit } : r)),
-                    )
-                  }
-                  onRemove={() => setIngredients((rows) => rows.filter((r) => r.key !== row.key))}
-                  canRemove={ingredients.length > 1}
-                />
-              );
-            })}
+
+            <FoodCombobox
+              selectedId={null}
+              selectedName={null}
+              placeholder="Search foods to add…"
+              onSelect={addIngredient}
+            />
           </div>
 
-          <Card>
-            <CardContent className="flex items-center justify-between gap-4">
-              <MacrosSummary macros={total} label="Whole recipe" />
-              <MacrosSummary macros={perServing} label="Per serving" />
-            </CardContent>
-          </Card>
+          <div className="rounded-2xl border bg-[#fdfaf4] p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="font-heading text-xl font-semibold">Per serving</p>
+                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                  <span className="flex items-center gap-1.5">
+                    <span className="size-2 rounded-full bg-[#c25a3a]" />P{' '}
+                    {Math.round(perServing.proteinG)} g
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="size-2 rounded-full bg-[#d9a441]" />C{' '}
+                    {Math.round(perServing.carbsG)} g
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="size-2 rounded-full bg-[#5a7a52]" />F{' '}
+                    {Math.round(perServing.fatG)} g
+                  </span>
+                </div>
+              </div>
+              <p className="font-heading shrink-0 text-2xl font-semibold">
+                {Math.round(perServing.kcal)}
+                <span className="text-muted-foreground ml-1 text-sm font-normal">kcal</span>
+              </p>
+            </div>
+            <p className="font-heading text-muted-foreground mt-2 text-xs italic">
+              whole recipe: {Math.round(total.kcal).toLocaleString('en-US')} kcal · P{' '}
+              {Math.round(total.proteinG)} · C {Math.round(total.carbsG)} · F{' '}
+              {Math.round(total.fatG)}
+            </p>
+          </div>
 
           {error ? (
             <p role="alert" className="text-destructive text-sm">

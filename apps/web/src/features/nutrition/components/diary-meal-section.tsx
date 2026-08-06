@@ -14,54 +14,65 @@ interface MealSectionProps {
   entries: FoodLogEntry[];
 }
 
-// One meal's section of the diary: a header with the meal's kcal subtotal and an add
-// button (presets this meal, opening the add sheet), then its entries.
+// One meal's section of the diary: a header with the meal's kcal subtotal and add
+// actions (camera → photo estimate, plus → add sheet), then its entries separated by
+// dashed rules. An empty meal reads as a dashed-outline "nothing yet" card.
 export function MealSection({ meal, label, entries }: MealSectionProps) {
   const openAdd = useDiaryUiStore((s) => s.openAdd);
   const openPhoto = useDiaryUiStore((s) => s.openPhoto);
   const kcal = Math.round(sumMacros(entries).kcal);
 
-  return (
-    <div className="bg-card flex flex-col rounded-xl border p-4">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <h2 className="font-semibold">{label}</h2>
-          <span className="rounded-full bg-sky-500/10 px-2 py-0.5 text-xs font-medium text-sky-600">
-            {kcal} kcal
-          </span>
+  const actions = (
+    <div className="flex items-center gap-1">
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="text-primary hover:bg-accent size-9"
+        aria-label={`Add to ${label} from a photo`}
+        onClick={() => openPhoto(meal)}
+      >
+        <Camera className="size-5" />
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="text-primary hover:bg-accent size-9"
+        aria-label={`Add to ${label}`}
+        onClick={() => openAdd(meal)}
+      >
+        <Plus className="size-5" />
+      </Button>
+    </div>
+  );
+
+  if (entries.length === 0) {
+    return (
+      <div className="flex items-center justify-between gap-2 rounded-2xl border border-dashed border-[#d9c9b2] p-4">
+        <div className="flex items-baseline gap-2">
+          <h2 className="font-heading text-lg font-semibold">{label}</h2>
+          <span className="text-muted-foreground font-heading text-sm italic">nothing yet</span>
         </div>
-        <div className="flex items-center gap-1">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="text-primary hover:bg-primary/10 size-9"
-            aria-label={`Add to ${label} from a photo`}
-            onClick={() => openPhoto(meal)}
-          >
-            <Camera className="size-5" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="text-primary hover:bg-primary/10 size-9"
-            aria-label={`Add to ${label}`}
-            onClick={() => openAdd(meal)}
-          >
-            <Plus className="size-5" />
-          </Button>
-        </div>
+        {actions}
       </div>
-      {entries.length === 0 ? (
-        <p className="text-muted-foreground py-2 text-sm">Nothing logged.</p>
-      ) : (
-        <ul className="divide-y">
-          {entries.map((entry) => (
-            <DiaryEntryRow key={entry.id} entry={entry} />
-          ))}
-        </ul>
-      )}
+    );
+  }
+
+  return (
+    <div className="bg-card flex flex-col rounded-2xl border p-4">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-baseline gap-2">
+          <h2 className="font-heading text-lg font-semibold">{label}</h2>
+          <span className="text-primary text-sm font-medium">{kcal} kcal</span>
+        </div>
+        {actions}
+      </div>
+      <ul className="mt-1 flex flex-col divide-y divide-dashed divide-[#e5d9c6]">
+        {entries.map((entry) => (
+          <DiaryEntryRow key={entry.id} entry={entry} />
+        ))}
+      </ul>
     </div>
   );
 }

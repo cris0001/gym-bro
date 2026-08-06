@@ -56,7 +56,7 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
         title="No foods yet"
         description="Add your first food to start building recipes and logging meals."
         action={
-          <Button type="button" className="h-11" onClick={openCreate}>
+          <Button type="button" className="h-11 rounded-full px-5" onClick={openCreate}>
             <Plus className="size-4" />
             Add food
           </Button>
@@ -66,13 +66,13 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
   }
 
   return (
-    <ul className="divide-y">
+    <ul className="divide-y divide-dashed divide-[#e5d9c6]">
       {filtered.map((food) => (
         <li
           key={food.id}
           className={cn(
-            'hover:bg-muted/50 active:bg-muted flex items-center gap-2 px-4 py-3 transition-colors',
-            food.id === selectedId && 'bg-muted',
+            'hover:bg-muted/50 flex items-center gap-2 px-4 py-3 transition-colors',
+            food.id === selectedId && 'bg-accent',
           )}
         >
           <button
@@ -85,21 +85,23 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
               <img
                 src={food.imageUrl}
                 alt=""
-                className="bg-muted size-12 shrink-0 rounded-md border object-cover"
+                className="bg-muted size-14 shrink-0 rounded-lg border object-cover"
               />
             ) : (
-              <span className="bg-muted text-muted-foreground flex size-12 shrink-0 items-center justify-center rounded-md">
+              <span className="bg-muted text-muted-foreground flex size-14 shrink-0 items-center justify-center rounded-lg">
                 <Apple className="size-5" />
               </span>
             )}
             <div className="min-w-0 flex-1">
-              <p className="truncate font-medium">{food.name}</p>
-              <p className="text-muted-foreground text-sm">
+              <p className="font-heading truncate text-[17px] leading-tight font-medium">
+                {food.name}
+              </p>
+              <p className="text-muted-foreground text-xs">
                 {food.kcal} kcal · P {food.proteinG} · C {food.carbsG} · F {food.fatG}
-                <span className="text-xs"> / 100g</span>
+                <span> / 100g</span>
               </p>
             </div>
-            <ChevronRight className="text-muted-foreground size-5 shrink-0" />
+            <ChevronRight className="size-5 shrink-0 text-[#c9bda9]" />
           </button>
           <Button
             type="button"

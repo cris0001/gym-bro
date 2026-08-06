@@ -14,28 +14,35 @@ export function BottomNav() {
   const activeSection = findActiveSection(pathname);
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-20 flex h-12 bg-sky-500 text-white lg:hidden ">
+    <nav className="bg-card fixed inset-x-0 bottom-0 z-20 flex h-14 border-t lg:hidden">
       {NAV_SECTIONS.map((section) => {
         const Icon = section.icon;
         const isActive = section.label === activeSection.label;
-        // Strava reads as its own orange button within the bar.
+        // Strava reads as its own orange tab within the bar.
         const isStrava = section.brand === 'strava';
+        const color = isStrava
+          ? 'text-[#d15b28]'
+          : isActive
+            ? 'text-primary'
+            : 'text-muted-foreground';
         return (
           <Link
             key={section.label}
             to={section.to}
             className={cn(
-              'flex flex-1 flex-col items-center justify-center gap-0.5 text-[11px] font-medium transition-colors',
-              isStrava
-                ? isActive
-                  ? 'bg-orange-600 font-semibold text-white'
-                  : 'bg-orange-500 text-white'
-                : isActive
-                  ? 'bg-white/15 font-semibold text-white'
-                  : 'text-white/85',
+              'flex flex-1 flex-col items-center justify-center gap-1 text-[11px] font-medium',
+              color,
             )}
           >
-            <Icon className="size-5" />
+            {/* A tint pill sits behind the icon when the tab is active. */}
+            <span
+              className={cn(
+                'flex h-[26px] w-11 items-center justify-center rounded-[13px] transition-colors',
+                isActive && (isStrava ? 'bg-[#fbe3d4]' : 'bg-accent'),
+              )}
+            >
+              <Icon className="size-5" />
+            </span>
             {section.label}
           </Link>
         );

@@ -36,7 +36,7 @@ export function TagList() {
         title="No tags yet"
         description="Add tags to label and color-code your workouts on the calendar."
         action={
-          <Button type="button" className="h-11" onClick={openCreate}>
+          <Button type="button" className="h-11 rounded-full px-5" onClick={openCreate}>
             <Plus className="size-4" />
             Add tag
           </Button>
@@ -56,7 +56,7 @@ export function TagList() {
   }
 
   return (
-    <ul className="divide-y">
+    <ul className="divide-y divide-dashed divide-[#e5d9c6]">
       {tags.map((tag) => (
         <li
           key={tag.id}
@@ -67,7 +67,7 @@ export function TagList() {
             style={{ backgroundColor: tag.color }}
             aria-hidden
           />
-          <p className="min-w-0 flex-1 truncate font-medium">{tag.name}</p>
+          <p className="min-w-0 flex-1 truncate font-semibold">{tag.name}</p>
           <Button
             type="button"
             variant="ghost"

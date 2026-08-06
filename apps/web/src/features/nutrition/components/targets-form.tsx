@@ -76,6 +76,22 @@ export function TargetsForm({ current, editing, onDone }: TargetsFormProps) {
 
   const setTarget = useSetTarget();
 
+  // Live share of calories from each macro (protein/carbs 4 kcal/g, fat 9), for the
+  // editorial hint under the inputs.
+  const watched = form.watch();
+  const macroCals =
+    (Number(watched.proteinG) || 0) * 4 +
+    (Number(watched.carbsG) || 0) * 4 +
+    (Number(watched.fatG) || 0) * 9;
+  const split =
+    macroCals > 0
+      ? {
+          p: Math.round(((Number(watched.proteinG) || 0) * 4 * 100) / macroCals),
+          c: Math.round(((Number(watched.carbsG) || 0) * 4 * 100) / macroCals),
+          f: Math.round(((Number(watched.fatG) || 0) * 9 * 100) / macroCals),
+        }
+      : null;
+
   function onSubmit(values: TargetFormValues) {
     const input: SetNutritionTargetInput = {
       effectiveDate: values.effectiveDate,
@@ -131,6 +147,12 @@ export function TargetsForm({ current, editing, onDone }: TargetsFormProps) {
           ))}
         </div>
 
+        {split ? (
+          <p className="font-heading text-muted-foreground text-sm italic">
+            = {split.p}% protein · {split.c}% carbs · {split.f}% fat
+          </p>
+        ) : null}
+
         {setTarget.error ? (
           <p role="alert" className="text-destructive text-sm">
             {setTarget.error.message}
@@ -139,11 +161,16 @@ export function TargetsForm({ current, editing, onDone }: TargetsFormProps) {
         {setTarget.isSuccess ? <p className="text-muted-foreground text-sm">Saved.</p> : null}
 
         <div className="flex gap-2">
-          <Button type="submit" className="h-11 flex-1" disabled={setTarget.isPending}>
+          <Button type="submit" className="h-11 flex-1 rounded-full" disabled={setTarget.isPending}>
             {setTarget.isPending ? 'Saving…' : editing ? 'Save changes' : 'Save target'}
           </Button>
           {editing ? (
-            <Button type="button" variant="outline" className="h-11" onClick={() => onDone?.()}>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-11 rounded-full px-5"
+              onClick={() => onDone?.()}
+            >
               Cancel
             </Button>
           ) : null}

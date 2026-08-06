@@ -30,7 +30,7 @@ export function ConfirmDialog() {
     >
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{request?.title}</AlertDialogTitle>
+          <AlertDialogTitle className="font-heading text-lg">{request?.title}</AlertDialogTitle>
           {request?.description ? (
             <AlertDialogDescription>{request.description}</AlertDialogDescription>
           ) : null}

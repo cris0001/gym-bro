@@ -1,3 +1,5 @@
+import { cn } from '@/lib/utils';
+
 import type { BodyMeasurement } from '@gym-bro/shared';
 
 // Weight summary derived from the entries (newest first). Null when no weight has
@@ -16,11 +18,19 @@ function weightStats(entries: BodyMeasurement[]) {
   };
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({
+  label,
+  value,
+  valueClassName,
+}: {
+  label: string;
+  value: string;
+  valueClassName?: string | undefined;
+}) {
   return (
     <div className="flex flex-col">
       <span className="text-muted-foreground text-xs">{label}</span>
-      <span className="text-lg font-semibold">{value}</span>
+      <span className={cn('font-heading text-lg font-semibold', valueClassName)}>{value}</span>
     </div>
   );
 }
@@ -35,11 +45,14 @@ export function BodyStatsPanel({ entries }: { entries: BodyMeasurement[] }) {
     stats.sinceLast === null
       ? '—'
       : `${stats.sinceLast > 0 ? '+' : ''}${stats.sinceLast.toFixed(1)} kg`;
+  // Loss (or level) reads as success green; a gain as terracotta.
+  const sinceColor =
+    stats.sinceLast === null ? undefined : stats.sinceLast <= 0 ? 'text-[#5a7a52]' : 'text-primary';
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-      <Stat label="Latest" value={`${stats.latest} kg`} />
-      <Stat label="Since last" value={sinceLast} />
+      <Stat label="Current" value={`${stats.latest} kg`} />
+      <Stat label="Change" value={sinceLast} valueClassName={sinceColor} />
       <Stat label="Lowest" value={`${stats.min} kg`} />
       <Stat label="Highest" value={`${stats.max} kg`} />
     </div>

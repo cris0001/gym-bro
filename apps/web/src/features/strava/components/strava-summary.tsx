@@ -3,7 +3,6 @@ import { useState } from 'react';
 
 import type { StravaSessionItem } from '@gym-bro/shared';
 
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 import { stravaActivityIcon } from '../utils/activity-icon';
@@ -33,9 +32,9 @@ function distinctTypes(sessions: StravaSessionItem[]): string[] {
 
 function Tile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-muted/50 rounded-lg p-3 text-center">
-      <p className="text-lg font-bold">{value}</p>
-      <p className="text-muted-foreground text-xs">{label}</p>
+    <div className="bg-secondary/60 rounded-xl p-3 text-center">
+      <p className="font-heading text-lg font-semibold">{value}</p>
+      <p className="text-muted-foreground text-[11px] tracking-[0.08em] uppercase">{label}</p>
     </div>
   );
 }
@@ -76,7 +75,7 @@ export function StravaSummary({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="bg-card flex flex-col gap-3 rounded-xl border p-4">
+      <div className="bg-card flex flex-col gap-3 rounded-2xl border p-4">
         {/* Sport filter — tap an icon to scope the dashboard to that activity type. */}
         {types.length > 1 && (
           <div className="flex flex-wrap items-center gap-1.5">
@@ -84,10 +83,10 @@ export function StravaSummary({
               type="button"
               onClick={() => onTypeChange(null)}
               className={cn(
-                'h-8 rounded-full border px-3 text-sm font-medium',
+                'h-10 rounded-full px-3.5 text-sm font-medium transition-colors',
                 type === null
-                  ? 'border-orange-600 bg-orange-600 text-white'
-                  : 'text-muted-foreground hover:bg-muted',
+                  ? 'bg-[#fbe3d4] text-[#c14e1d]'
+                  : 'bg-secondary text-muted-foreground',
               )}
             >
               All
@@ -104,10 +103,8 @@ export function StravaSummary({
                   aria-pressed={active}
                   onClick={() => onTypeChange(active ? null : t)}
                   className={cn(
-                    'flex size-8 items-center justify-center rounded-full border',
-                    active
-                      ? 'border-orange-600 bg-orange-600 text-white'
-                      : 'border-orange-500/30 text-orange-600 hover:bg-orange-500/10',
+                    'flex size-10 items-center justify-center rounded-full transition-colors',
+                    active ? 'bg-[#fbe3d4] text-[#c14e1d]' : 'bg-secondary text-muted-foreground',
                   )}
                 >
                   <Icon className="size-4" />
@@ -117,23 +114,19 @@ export function StravaSummary({
           </div>
         )}
 
-        <div className="bg-muted flex w-fit gap-0.5 self-center rounded-md p-0.5">
+        <div className="bg-secondary flex w-fit self-center rounded-full p-0.5">
           {PERIODS.map((p) => (
-            <Button
+            <button
               key={p.key}
               type="button"
-              size="sm"
-              variant="ghost"
               className={cn(
-                'h-7 px-3',
-                period === p.key
-                  ? 'bg-orange-600 text-white hover:bg-orange-600/90'
-                  : 'text-muted-foreground',
+                'h-7 rounded-full px-3 text-sm font-medium transition-colors',
+                period === p.key ? 'bg-card text-foreground border' : 'text-muted-foreground',
               )}
               onClick={() => setPeriod(p.key)}
             >
               {p.label}
-            </Button>
+            </button>
           ))}
         </div>
 
@@ -145,7 +138,7 @@ export function StravaSummary({
         </div>
       </div>
 
-      <div className="bg-card flex flex-col gap-2 rounded-xl border p-4">
+      <div className="bg-card flex flex-col gap-2 rounded-2xl border p-4">
         <p className="text-muted-foreground text-xs font-semibold uppercase">
           {type ? `${type} · ` : ''}weekly {hasDistance ? 'distance' : 'time'} · last 12 weeks
         </p>
@@ -153,7 +146,7 @@ export function StravaSummary({
           {weeks.map((w) => (
             <div
               key={w.weekStart}
-              className="flex-1 rounded-t bg-orange-500/70"
+              className="flex-1 rounded-t bg-[#d15b28]/70"
               style={{ height: `${Math.max((w.value / maxWeek) * 100, 2)}%` }}
               title={`Week of ${w.label}: ${barTitle(w.value)}`}
             />

@@ -29,6 +29,7 @@ import type {
 
 import { Button } from '@/components/ui/button';
 import { useStravaSessions } from '@/features/strava';
+import { cn } from '@/lib/utils';
 
 import { usePlannedSessions } from '../hooks/use-planned-sessions';
 import { useUpdatePlannedSession } from '../hooks/use-update-planned-session';
@@ -184,34 +185,53 @@ export function CalendarGrid() {
     >
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-lg font-semibold">{label}</h2>
+          <h2 className="font-heading text-xl font-semibold">{label}</h2>
           <div className="flex items-center gap-2">
-            <div className="bg-muted flex gap-0.5 rounded-md p-0.5">
+            <div className="bg-secondary flex rounded-full p-0.5">
               {(['month', 'week'] as const).map((mode) => (
-                <Button
+                <button
                   key={mode}
-                  variant={viewMode === mode ? 'default' : 'ghost'}
-                  size="sm"
-                  className="h-7 px-2.5 capitalize"
+                  type="button"
                   onClick={() => setViewMode(mode)}
+                  className={cn(
+                    'h-7 rounded-full px-3 text-sm font-medium capitalize transition-colors',
+                    viewMode === mode ? 'bg-card text-foreground border' : 'text-muted-foreground',
+                  )}
                 >
                   {mode}
-                </Button>
+                </button>
               ))}
             </div>
-            <Button variant="ghost" size="sm" onClick={goToToday}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 rounded-full px-3"
+              onClick={goToToday}
+            >
               Today
             </Button>
-            <Button variant="ghost" size="icon" onClick={goPrev} aria-label="Previous">
+            <Button
+              variant="outline"
+              size="icon"
+              className="size-8"
+              onClick={goPrev}
+              aria-label="Previous"
+            >
               <ChevronLeft className="size-4" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={goNext} aria-label="Next">
+            <Button
+              variant="outline"
+              size="icon"
+              className="size-8"
+              onClick={goNext}
+              aria-label="Next"
+            >
               <ChevronRight className="size-4" />
             </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-7 text-center text-xs font-medium text-muted-foreground">
+        <div className="font-heading grid grid-cols-7 text-center text-sm italic text-[#a89a88]">
           {WEEKDAYS.map((day) => (
             <span key={day} className="py-1">
               {day}

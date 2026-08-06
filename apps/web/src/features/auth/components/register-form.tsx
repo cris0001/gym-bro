@@ -78,7 +78,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           </p>
         ) : null}
 
-        <Button type="submit" className="h-11 w-full" disabled={isPending}>
+        <Button type="submit" className="h-11 w-full rounded-full" disabled={isPending}>
           {isPending ? 'Creating account…' : 'Create account'}
         </Button>
       </form>

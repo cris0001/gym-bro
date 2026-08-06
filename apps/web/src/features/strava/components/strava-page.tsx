@@ -58,7 +58,7 @@ export function StravaPage({ initialActivityId }: { initialActivityId?: string |
 
   return (
     <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-4 p-3 md:p-4">
-      <h1 className="text-2xl font-bold">Strava</h1>
+      <h1 className="font-heading text-[28px] leading-none font-medium">Strava</h1>
 
       {status && !status.connected && <StravaConnectionCard status={status} />}
 
@@ -88,7 +88,7 @@ export function StravaPage({ initialActivityId }: { initialActivityId?: string |
 
                 {groupByMonth(shown).map((group) => (
                   <section key={group.key} className="flex flex-col gap-2">
-                    <h2 className="text-muted-foreground bg-background/95 sticky top-14 z-[1] py-1 text-xs font-semibold uppercase backdrop-blur lg:top-0">
+                    <h2 className="font-heading bg-background/95 sticky top-14 z-[1] py-1 text-[13px] italic text-[#a89a88] backdrop-blur lg:top-0">
                       {group.label}
                     </h2>
                     <ul className="flex flex-col gap-2">

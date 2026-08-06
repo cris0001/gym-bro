@@ -43,11 +43,15 @@ export function ExerciseStatPicker({ value, onSelect }: ExerciseStatPickerProps)
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="h-11 w-full justify-between font-normal">
-          <span className={cn('truncate', !value && 'text-muted-foreground')}>
-            {value ? value.name : 'Select an exercise'}
-          </span>
-          <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
+        <Button
+          variant="ghost"
+          className={cn(
+            'h-11 w-full justify-between rounded-full font-medium',
+            value ? 'bg-accent text-primary' : 'bg-secondary text-muted-foreground',
+          )}
+        >
+          <span className="truncate">{value ? value.name : 'Select an exercise'}</span>
+          <ChevronsUpDown className="size-4 shrink-0 opacity-60" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">

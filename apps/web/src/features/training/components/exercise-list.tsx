@@ -77,7 +77,7 @@ export function ExerciseList({ category, search }: ExerciseListProps) {
   }
 
   return (
-    <ul className="divide-y">
+    <ul className="divide-y divide-dashed divide-[#e5d9c6]">
       {filtered.map((exercise) => (
         <li
           key={exercise.id}
@@ -90,8 +90,8 @@ export function ExerciseList({ category, search }: ExerciseListProps) {
             </span>
           ) : null}
           <div className="min-w-0 flex-1">
-            <p className="truncate font-medium">{exercise.name}</p>
-            <p className="text-muted-foreground text-sm">{exercise.category}</p>
+            <p className="truncate font-semibold">{exercise.name}</p>
+            <p className="text-muted-foreground text-xs">{exercise.category}</p>
           </div>
           <Button
             type="button"

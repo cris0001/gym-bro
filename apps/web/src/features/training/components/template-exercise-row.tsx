@@ -73,7 +73,7 @@ export function TemplateExerciseRow({ templateExercise }: TemplateExerciseRowPro
       </button>
 
       <div className={cn('min-w-0 flex-1', !exercise.isActive && 'opacity-50')}>
-        <p className="truncate font-medium">
+        <p className="truncate font-semibold">
           {exercise.name}
           {!exercise.isActive ? (
             <span className="text-muted-foreground font-normal"> (deleted)</span>

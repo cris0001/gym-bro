@@ -11,15 +11,15 @@ interface CategoryFilterProps {
 
 const chipClass = (active: boolean): string =>
   cn(
-    'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-sm whitespace-nowrap transition-colors',
-    active ? 'bg-primary text-primary-foreground border-transparent' : 'text-muted-foreground',
+    'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm whitespace-nowrap transition-colors',
+    active ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground',
   );
 
 // Horizontal, scrollable category chips for the exercise library. Leading "All"
 // clears the filter (the default = show everything).
 export function CategoryFilter({ value, onChange }: CategoryFilterProps) {
   return (
-    <div className="flex gap-2 overflow-x-auto px-4 pb-2">
+    <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 pb-2">
       <button type="button" onClick={() => onChange(null)} className={chipClass(value === null)}>
         All
       </button>

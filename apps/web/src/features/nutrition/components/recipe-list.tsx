@@ -68,7 +68,7 @@ export function RecipeList({ selectedId = null, onSelect }: RecipeListProps) {
   }
 
   return (
-    <ul className="divide-y">
+    <ul className="divide-y divide-dashed divide-[#e5d9c6]">
       {recipes.map((recipe) => {
         const inner = (
           <>
@@ -84,7 +84,9 @@ export function RecipeList({ selectedId = null, onSelect }: RecipeListProps) {
               </div>
             )}
             <div className="min-w-0 flex-1">
-              <p className="truncate font-medium">{recipe.name}</p>
+              <p className="font-heading truncate text-[17px] leading-tight font-medium">
+                {recipe.name}
+              </p>
               <p className="text-muted-foreground text-xs">
                 {recipe.servings} {recipe.servings === 1 ? 'serving' : 'servings'} ·{' '}
                 {Math.round(recipe.perServing.kcal)} kcal · P{' '}
@@ -97,7 +99,7 @@ export function RecipeList({ selectedId = null, onSelect }: RecipeListProps) {
                 </p>
               ) : null}
             </div>
-            <ChevronRight className="text-muted-foreground size-5 shrink-0 self-center" />
+            <ChevronRight className="size-5 shrink-0 self-center text-[#c9bda9]" />
           </>
         );
         return (

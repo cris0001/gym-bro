@@ -1,4 +1,4 @@
-import { ChevronDown, X } from 'lucide-react';
+import { Check, ChevronDown, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,8 @@ interface SetRowProps {
   performanceId: string;
   set: DraftSet;
   index: number;
+  // The first not-yet-logged set of its exercise — highlighted as the one you're on.
+  isCurrent?: boolean;
 }
 
 // Parses a numeric input back to a number or null (empty = not recorded). Range
@@ -31,7 +33,10 @@ const toValue = (n: number | null): string => (n === null ? '' : String(n));
 // badge, a bodyweight set shows "BW" instead of a weight input. Weight uses a
 // decimal keyboard (e.g. 10.2). Inputs keep their own strings so a partial "2."
 // survives while typing; header labels live in the parent card.
-export function SetRow({ performanceId, set, index }: SetRowProps) {
+export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowProps) {
+  // A set counts as logged once it has reps.
+  const done = set.reps !== null;
+  const inputHighlight = isCurrent ? 'border-primary ring-primary ring-1' : '';
   const updateSet = useWorkoutDraftStore((s) => s.updateSet);
   const removeSet = useWorkoutDraftStore((s) => s.removeSet);
   const toggleTopSet = useWorkoutDraftStore((s) => s.toggleTopSet);
@@ -55,16 +60,24 @@ export function SetRow({ performanceId, set, index }: SetRowProps) {
   return (
     <div className="flex flex-col gap-1">
       <div className="grid grid-cols-[1.5rem_1fr_1fr_1fr_2rem_2rem] items-center gap-2">
-        <span
-          className={cn(
-            'mx-auto flex size-6 items-center justify-center rounded-full text-xs font-semibold',
-            set.isTopSet
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-background text-muted-foreground border',
-          )}
-        >
-          {index + 1}
-        </span>
+        {done && !set.isTopSet ? (
+          <span className="mx-auto flex size-6 items-center justify-center rounded-full bg-[#e8efe4] text-[#5a7a52]">
+            <Check className="size-3.5" />
+          </span>
+        ) : (
+          <span
+            className={cn(
+              'mx-auto flex size-6 items-center justify-center rounded-full text-xs font-semibold',
+              set.isTopSet
+                ? 'bg-primary text-primary-foreground'
+                : isCurrent
+                  ? 'text-primary ring-primary bg-background ring-2'
+                  : 'bg-background text-muted-foreground border',
+            )}
+          >
+            {index + 1}
+          </span>
+        )}
 
         {set.isBodyweight ? (
           <div
@@ -78,7 +91,7 @@ export function SetRow({ performanceId, set, index }: SetRowProps) {
             inputMode="decimal"
             aria-label={`Set ${index + 1} weight`}
             placeholder="—"
-            className="h-11 text-center"
+            className={cn('h-11 text-center', inputHighlight)}
             value={weight}
             onChange={(e) => {
               setWeight(e.target.value);
@@ -90,7 +103,7 @@ export function SetRow({ performanceId, set, index }: SetRowProps) {
           inputMode="numeric"
           aria-label={`Set ${index + 1} reps`}
           placeholder="—"
-          className="h-11 text-center"
+          className={cn('h-11 text-center', inputHighlight)}
           value={reps}
           onChange={(e) => {
             setReps(e.target.value);

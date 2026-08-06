@@ -10,7 +10,6 @@ import {
   YAxis,
 } from 'recharts';
 
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 import type { StatsRange } from '../api/stats';
@@ -73,6 +72,8 @@ export function ExerciseProgressChart({ exerciseId, range }: ExerciseProgressCha
   );
   const hasData = data.some((d) => d.weight !== null);
   const dimensionLabel = DIMENSIONS.find((d) => d.key === dimension)?.label.toLowerCase();
+  // Top set reads as the terracotta accent; the normal (back-off) set as gold.
+  const lineColor = dimension === 'top' ? 'var(--primary)' : '#d9a441';
 
   // The Top/Normal switch stays mounted even with no data for the chosen tier, so
   // you can always switch back (e.g. from an empty Top set to Normal).
@@ -86,7 +87,7 @@ export function ExerciseProgressChart({ exerciseId, range }: ExerciseProgressCha
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: -8 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0e7d9" vertical={false} />
               <XAxis
                 dataKey="date"
                 tickFormatter={(value: string) => format(parseISO(value), 'MMM d')}
@@ -118,9 +119,9 @@ export function ExerciseProgressChart({ exerciseId, range }: ExerciseProgressCha
               <Line
                 type="monotone"
                 dataKey="weight"
-                stroke="var(--primary)"
+                stroke={lineColor}
                 strokeWidth={2}
-                dot={{ r: 3 }}
+                dot={{ r: 3, fill: lineColor }}
                 activeDot={{ r: 5 }}
                 connectNulls={false}
               />
@@ -143,18 +144,19 @@ function ToggleGroup<T extends string>({
   onChange: (next: T) => void;
 }) {
   return (
-    <div className="bg-muted flex w-fit gap-1 rounded-md p-1">
+    <div className="bg-secondary flex w-fit rounded-full p-0.5">
       {options.map((option) => (
-        <Button
+        <button
           key={option.key}
           type="button"
-          size="sm"
-          variant={value === option.key ? 'default' : 'ghost'}
-          className={cn('h-8', value !== option.key && 'text-muted-foreground')}
           onClick={() => onChange(option.key)}
+          className={cn(
+            'h-8 rounded-full px-3 text-sm font-medium transition-colors',
+            value === option.key ? 'bg-card text-foreground border' : 'text-muted-foreground',
+          )}
         >
           {option.label}
-        </Button>
+        </button>
       ))}
     </div>
   );

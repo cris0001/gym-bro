@@ -17,12 +17,12 @@ export function EmptyState({
   return (
     <div className="flex flex-col items-center gap-3 px-4 py-10 text-center">
       {icon ? (
-        <div className="bg-muted text-muted-foreground flex size-12 items-center justify-center rounded-full">
+        <div className="bg-secondary text-muted-foreground flex size-14 items-center justify-center rounded-full">
           {icon}
         </div>
       ) : null}
       <div className="space-y-1">
-        <p className="font-medium">{title}</p>
+        <p className="font-heading text-lg font-semibold">{title}</p>
         {description ? (
           <p className="text-muted-foreground mx-auto max-w-xs text-sm">{description}</p>
         ) : null}
