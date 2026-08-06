@@ -184,7 +184,7 @@ export function FoodForm({ editing, prefill = null, onCreated, onSuccess }: Food
         <div className="flex flex-col items-center gap-2">
           {image ? (
             <div className="relative">
-              <img src={image} alt="" className="bg-muted size-24 rounded-lg border object-cover" />
+              <img src={image} alt="" className="bg-muted size-34 rounded-lg border object-cover" />
               <button
                 type="button"
                 onClick={() => setImage(null)}

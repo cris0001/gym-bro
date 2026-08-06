@@ -134,6 +134,9 @@ export interface FoodLogEntry extends MacroTotals {
   itemName: string;
   unit: FoodLogUnit;
   quantity: number;
+  // The source product's photo (food or recipe image), or null. Joined on the daily
+  // read; a custom (AI) entry has none.
+  imageUrl: string | null;
   source: FoodLogSource;
   createdAt: string;
   updatedAt: string;
@@ -163,14 +166,20 @@ export interface RecipeIngredientWithFood {
 // Full recipe with its ingredients and computed macro totals (whole recipe and
 // per serving). Totals are derived from the ingredients on read — no stored cache.
 export interface RecipeDetail extends Recipe {
+  // Optional recipe photo (data URI or URL); null when none. Only on the detail shape —
+  // the list stays light and omits it.
+  imageUrl: string | null;
   ingredients: RecipeIngredientWithFood[];
   totalGrams: number;
   total: MacroTotals;
   perServing: MacroTotals;
 }
 
-// Lightweight recipe for lists — per-serving macros without the ingredient lines.
+// Lightweight recipe for lists — per-serving macros plus a photo and its ingredient
+// names (ordered), enough for a richer list row without the full ingredient lines.
 export interface RecipeListItem extends Recipe {
+  imageUrl: string | null;
+  ingredientNames: string[];
   totalGrams: number;
   perServing: MacroTotals;
 }

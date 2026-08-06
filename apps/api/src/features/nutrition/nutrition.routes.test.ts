@@ -195,6 +195,7 @@ function fakeRecipe(overrides: Partial<Recipe> = {}): Recipe {
     id: RECIPE_ID,
     userId: 'user-1',
     name: 'Chili',
+    imageUrl: null,
     servings: 4,
     isActive: true,
     createdAt: new Date('2026-01-01T00:00:00Z'),
@@ -329,6 +330,7 @@ describe('recipe read/update/delete routes', () => {
   it('GET /api/recipes lists recipes with per-serving macros', async () => {
     const row: RecipeWithTotalsRow = {
       ...fakeRecipe(),
+      ingredientNames: ['Beef', 'Beans'],
       total: { kcal: 1610, proteinG: 154, carbsG: 60, fatG: 77 },
       totalGrams: 900,
     };
@@ -391,6 +393,7 @@ function fakeLogEntry(overrides: Partial<FoodLogEntryRow> = {}): FoodLogEntryRow
     proteinG: 62,
     carbsG: 0,
     fatG: 7.2,
+    imageUrl: null,
     source: 'manual',
     createdAt: new Date('2026-01-01T00:00:00Z'),
     updatedAt: new Date('2026-01-01T00:00:00Z'),

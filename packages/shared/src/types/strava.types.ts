@@ -42,4 +42,7 @@ export interface StravaSessionItem {
   sufferScore: number | null;
   kudosCount: number | null;
   achievementCount: number | null;
+  // Strava's summary GPS track as an encoded polyline (decoded client-side into a route
+  // sketch). Null for activities without GPS (indoor, manual).
+  summaryPolyline: string | null;
 }

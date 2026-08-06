@@ -4,7 +4,7 @@ import { z } from 'zod';
 import type { StravaConnectionStatus } from '@gym-bro/shared';
 
 import { env } from '../../lib/env';
-import { InternalError, UnauthorizedError, ValidationError } from '../../lib/errors';
+import { InternalError, NotFoundError, UnauthorizedError, ValidationError } from '../../lib/errors';
 import * as stravaRepository from './strava.repository';
 
 // Business logic for the Strava OAuth connection. No Drizzle here. Talks to Strava's
@@ -167,6 +167,15 @@ export async function listSessions(userId: string, from?: string, to?: string) {
   return stravaRepository.listStravaSessions(userId, from, to);
 }
 
+// Remove one imported activity locally (e.g. it was deleted on Strava). Does not touch
+// Strava. Throws if it isn't the user's / doesn't exist.
+export async function deleteSession(userId: string, id: string): Promise<void> {
+  const deleted = await stravaRepository.deleteStravaSession(userId, id);
+  if (!deleted) {
+    throw new NotFoundError('Activity not found');
+  }
+}
+
 // --- Access token for API calls (used by the import slice) ---
 
 // A minute of slack so a token about to expire mid-request is refreshed first.
@@ -281,7 +290,16 @@ async function fetchActivityCalories(
 // don't already have them stored — so re-imports don't re-spend the rate budget.
 export async function importRecentActivities(userId: string): Promise<{ imported: number }> {
   const accessToken = await getFreshAccessToken(userId);
-  const url = `${ACTIVITIES_URL}?per_page=${IMPORT_PER_PAGE}`;
+  const connection = await stravaRepository.findConnectionByUserId(userId);
+  const params = new URLSearchParams({ per_page: String(IMPORT_PER_PAGE) });
+  // Incremental: pull only activities that started after the last successful sync, so a
+  // re-import isn't re-processing (and re-reporting) the whole recent page. The first
+  // sync has no high-water mark and pulls the recent page. (An activity edited on Strava
+  // after we synced won't be re-fetched — acceptable for this personal tracker.)
+  if (connection?.lastSyncAt) {
+    params.set('after', String(Math.floor(connection.lastSyncAt.getTime() / 1000)));
+  }
+  const url = `${ACTIVITIES_URL}?${params.toString()}`;
   let response: Response;
   try {
     response = await fetch(url, { headers: { authorization: `Bearer ${accessToken}` } });

@@ -202,6 +202,7 @@ async function buildRecipeDetail(recipe: {
   id: string;
   userId: string;
   name: string;
+  imageUrl: string | null;
   servings: number;
   isActive: boolean;
   createdAt: Date;
@@ -233,6 +234,8 @@ export async function listRecipes(userId: string) {
     id: row.id,
     userId: row.userId,
     name: row.name,
+    imageUrl: row.imageUrl,
+    ingredientNames: row.ingredientNames,
     servings: row.servings,
     isActive: row.isActive,
     createdAt: row.createdAt,

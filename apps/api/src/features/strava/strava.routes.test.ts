@@ -291,3 +291,31 @@ describe('strava status + disconnect routes', () => {
     expect(repo.deleteConnection).toHaveBeenCalledWith('user-1');
   });
 });
+
+describe('strava delete-session route', () => {
+  const SESSION_ID = '99999999-9999-4999-8999-999999999999';
+
+  it('DELETE /api/strava/sessions/:id removes the activity and returns success', async () => {
+    repo.deleteStravaSession.mockResolvedValue({ id: SESSION_ID });
+
+    const res = await request('DELETE', `/api/strava/sessions/${SESSION_ID}`, await authCookie());
+    const body = (await res.json()) as { data: { success: boolean } };
+
+    expect(res.status).toBe(200);
+    expect(body.data.success).toBe(true);
+    expect(repo.deleteStravaSession).toHaveBeenCalledWith('user-1', SESSION_ID);
+  });
+
+  it("DELETE /api/strava/sessions/:id returns 404 when it isn't the user's", async () => {
+    repo.deleteStravaSession.mockResolvedValue(undefined);
+
+    const res = await request('DELETE', `/api/strava/sessions/${SESSION_ID}`, await authCookie());
+
+    expect(res.status).toBe(404);
+  });
+
+  it('DELETE /api/strava/sessions/:id without auth returns 401', async () => {
+    const res = await request('DELETE', `/api/strava/sessions/${SESSION_ID}`);
+    expect(res.status).toBe(401);
+  });
+});

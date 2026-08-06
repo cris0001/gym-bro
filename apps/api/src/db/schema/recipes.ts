@@ -26,6 +26,10 @@ export const recipes = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     name: text('name').notNull(),
+    // Optional recipe photo as a data URI (base64) — like foods.image_url, but taken by
+    // the user rather than from OpenFoodFacts. Excluded from the recipe LIST query to keep
+    // it light; loaded only on detail/edit.
+    imageUrl: text('image_url'),
     // How many servings the recipe yields; per-serving macros = total / servings.
     servings: integer('servings').notNull().default(1),
     isActive: boolean('is_active').notNull().default(true),
