@@ -36,7 +36,6 @@ const toValue = (n: number | null): string => (n === null ? '' : String(n));
 export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowProps) {
   // A set counts as logged once it has reps.
   const done = set.reps !== null;
-  const inputHighlight = isCurrent ? 'border-primary ring-primary ring-1' : '';
   const updateSet = useWorkoutDraftStore((s) => s.updateSet);
   const removeSet = useWorkoutDraftStore((s) => s.removeSet);
   const toggleTopSet = useWorkoutDraftStore((s) => s.toggleTopSet);
@@ -71,7 +70,7 @@ export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowP
               set.isTopSet
                 ? 'bg-primary text-primary-foreground'
                 : isCurrent
-                  ? 'text-primary ring-primary bg-background ring-2'
+                  ? 'text-primary bg-background border'
                   : 'bg-background text-muted-foreground border',
             )}
           >
@@ -81,7 +80,7 @@ export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowP
 
         {set.isBodyweight ? (
           <div
-            className="border-input text-muted-foreground flex h-11 items-center justify-center rounded-md border text-sm font-medium"
+            className="bg-secondary text-muted-foreground flex h-9 items-center justify-center rounded-md text-sm font-medium"
             aria-label={`Set ${index + 1} bodyweight`}
           >
             BW
@@ -91,7 +90,7 @@ export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowP
             inputMode="decimal"
             aria-label={`Set ${index + 1} weight`}
             placeholder="—"
-            className={cn('h-11 text-center', inputHighlight)}
+            className="bg-secondary h-9 border-transparent text-center font-semibold"
             value={weight}
             onChange={(e) => {
               setWeight(e.target.value);
@@ -103,7 +102,7 @@ export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowP
           inputMode="numeric"
           aria-label={`Set ${index + 1} reps`}
           placeholder="—"
-          className={cn('h-11 text-center', inputHighlight)}
+          className="bg-secondary h-9 border-transparent text-center font-semibold"
           value={reps}
           onChange={(e) => {
             setReps(e.target.value);
@@ -114,7 +113,7 @@ export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowP
           inputMode="numeric"
           aria-label={`Set ${index + 1} RIR`}
           placeholder="—"
-          className="h-11 text-center"
+          className="bg-secondary h-9 border-transparent text-center"
           value={rir}
           onChange={(e) => {
             setRir(e.target.value);

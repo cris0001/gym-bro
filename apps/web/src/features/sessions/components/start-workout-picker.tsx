@@ -1,9 +1,14 @@
-import { useQuery } from '@tanstack/react-query';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useQueries, useQuery } from '@tanstack/react-query';
+import { CalendarDays, ChevronLeft, ChevronRight, ClipboardList, Play } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { activePlanQueryOptions, planQueryOptions, usePlans } from '@/features/training';
+import {
+  activePlanQueryOptions,
+  planQueryOptions,
+  templateQueryOptions,
+  usePlans,
+} from '@/features/training';
 
 interface StartWorkoutPickerProps {
   onSelectTemplate: (template: { id: string; name: string }) => void;
@@ -54,18 +59,26 @@ export function StartWorkoutPicker({ onSelectTemplate }: StartWorkoutPickerProps
   return (
     <div className="flex flex-col gap-2">
       {ordered.map((plan) => (
-        <Button
+        <button
           key={plan.id}
-          variant="outline"
-          className="h-11 justify-between"
+          type="button"
+          className="bg-card hover:bg-muted/50 flex items-center gap-3 rounded-2xl border p-4 text-left transition-colors"
           onClick={() => setSelectedPlanId(plan.id)}
         >
-          <span className="truncate">
-            {plan.name}
-            {plan.id === activePlan?.id && ' · active'}
+          <span className="bg-accent text-primary flex size-10 shrink-0 items-center justify-center rounded-xl">
+            <ClipboardList className="size-5" />
           </span>
-          <ChevronRight className="size-4 shrink-0 opacity-50" />
-        </Button>
+          <span className="min-w-0 flex-1">
+            <span className="font-heading block truncate text-[17px] font-semibold">
+              {plan.name}
+            </span>
+            <span className="text-muted-foreground block text-xs">
+              {plan.templateCount} {plan.templateCount === 1 ? 'template' : 'templates'}
+              {plan.id === activePlan?.id && ' · active'}
+            </span>
+          </span>
+          <ChevronRight className="size-5 shrink-0 text-[#c9bda9]" />
+        </button>
       ))}
     </div>
   );
@@ -78,10 +91,15 @@ interface TemplatePickerProps {
   onSelectTemplate: (template: { id: string; name: string }) => void;
 }
 
-// The chosen plan's templates. Loaded on demand (shares the plan-detail cache).
+// The chosen plan's templates as start-cards (icon, name, exercise count, start arrow).
+// Loaded on demand (shares the plan-detail cache); one detail query per template
+// resolves its exercise count (cached, so starting reuses it).
 function TemplatePicker({ planId, showBack, onBack, onSelectTemplate }: TemplatePickerProps) {
   const { data: plan, isPending } = useQuery(planQueryOptions(planId));
   const templates = plan?.templates ?? [];
+  const templateQueries = useQueries({
+    queries: templates.map((t) => templateQueryOptions(t.id)),
+  });
 
   return (
     <div className="flex flex-col gap-2">
@@ -96,16 +114,30 @@ function TemplatePicker({ planId, showBack, onBack, onSelectTemplate }: Template
       ) : templates.length === 0 ? (
         <p className="text-muted-foreground text-center text-sm">No templates in this plan.</p>
       ) : (
-        templates.map((template) => (
-          <Button
-            key={template.id}
-            variant="outline"
-            className="h-11 justify-start"
-            onClick={() => onSelectTemplate({ id: template.id, name: template.name })}
-          >
-            {template.name}
-          </Button>
-        ))
+        templates.map((template, i) => {
+          const count = templateQueries[i]?.data?.exercises.length;
+          return (
+            <button
+              key={template.id}
+              type="button"
+              className="bg-card hover:bg-muted/50 flex items-center gap-3 rounded-2xl border p-4 text-left transition-colors"
+              onClick={() => onSelectTemplate({ id: template.id, name: template.name })}
+            >
+              <span className="bg-accent text-primary flex size-10 shrink-0 items-center justify-center rounded-xl">
+                <CalendarDays className="size-5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="font-heading block truncate text-[17px] font-semibold">
+                  {template.name}
+                </span>
+                <span className="text-muted-foreground block text-xs">
+                  {count === undefined ? '…' : `${count} ${count === 1 ? 'exercise' : 'exercises'}`}
+                </span>
+              </span>
+              <Play className="size-4 shrink-0 fill-current text-[#c25a3a]" />
+            </button>
+          );
+        })
       )}
     </div>
   );

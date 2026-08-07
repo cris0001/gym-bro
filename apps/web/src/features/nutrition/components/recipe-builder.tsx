@@ -234,30 +234,9 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
         <ChevronLeft className="size-4" />
         Recipes
       </Link>
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="font-heading truncate text-[28px] font-medium">
-          {name.trim() || (editing ? 'Edit recipe' : 'New recipe')}
-        </h1>
-        <div className="flex h-11 shrink-0 items-center rounded-full border">
-          <button
-            type="button"
-            aria-label="Fewer servings"
-            className="text-muted-foreground flex size-11 items-center justify-center"
-            onClick={() => setServings((s) => String(Math.max(1, (Number(s) || 1) - 1)))}
-          >
-            <Minus className="size-4" />
-          </button>
-          <span className="font-heading w-8 text-center text-lg font-semibold">{servings}</span>
-          <button
-            type="button"
-            aria-label="More servings"
-            className="text-primary flex size-11 items-center justify-center"
-            onClick={() => setServings((s) => String((Number(s) || 0) + 1))}
-          >
-            <Plus className="size-4" />
-          </button>
-        </div>
-      </div>
+      <h1 className="font-heading text-[28px] font-medium break-words">
+        {name.trim() || (editing ? 'Edit recipe' : 'New recipe')}
+      </h1>
 
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         {/* Left: an optional recipe photo, medium-sized. */}
@@ -345,12 +324,22 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
                     return (
                       <li key={row.key} className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate font-semibold">{row.food?.name}</p>
+                          <button
+                            type="button"
+                            aria-label={`Edit ${row.food?.name ?? 'ingredient'}`}
+                            className="min-w-0 flex-1 text-left"
+                            onClick={() => setEditingKey(isRowEditing ? null : row.key)}
+                          >
+                            <p className="font-semibold">{row.food?.name}</p>
                             <p className="text-muted-foreground text-xs">
                               {row.amount || '—'} {UNIT_SHORT[row.unit]}
+                              {macros
+                                ? ` · P ${Math.round(macros.proteinG)} · C ${Math.round(
+                                    macros.carbsG,
+                                  )} · F ${Math.round(macros.fatG)}`
+                                : ''}
                             </p>
-                          </div>
+                          </button>
                           <span className="font-heading shrink-0 text-base font-semibold">
                             {macros ? Math.round(macros.kcal) : 0}
                           </span>
@@ -376,7 +365,16 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
                               <UnitToggle
                                 food={row.food}
                                 unit={row.unit}
-                                onChange={(unit) => updateRow(row.key, { unit })}
+                                onChange={(unit) =>
+                                  updateRow(row.key, {
+                                    unit,
+                                    // Servings/units read as counts — start at 1 rather than
+                                    // carrying over a grams amount like 100.
+                                    ...(unit === 'servings' || unit === 'units'
+                                      ? { amount: '1' }
+                                      : {}),
+                                  })
+                                }
                               />
                               <Button
                                 type="button"
@@ -407,6 +405,34 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
               placeholder="Search foods to add…"
               onSelect={addIngredient}
             />
+          </div>
+
+          <div className="bg-card flex items-center justify-between gap-4 rounded-2xl border p-4">
+            <div className="min-w-0">
+              <p className="text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase">
+                Servings
+              </p>
+              <p className="text-muted-foreground text-xs">how many portions this recipe makes</p>
+            </div>
+            <div className="flex h-11 shrink-0 items-center rounded-full border">
+              <button
+                type="button"
+                aria-label="Fewer servings"
+                className="text-muted-foreground flex size-11 items-center justify-center"
+                onClick={() => setServings((s) => String(Math.max(1, (Number(s) || 1) - 1)))}
+              >
+                <Minus className="size-4" />
+              </button>
+              <span className="font-heading w-8 text-center text-lg font-semibold">{servings}</span>
+              <button
+                type="button"
+                aria-label="More servings"
+                className="text-primary flex size-11 items-center justify-center"
+                onClick={() => setServings((s) => String((Number(s) || 0) + 1))}
+              >
+                <Plus className="size-4" />
+              </button>
+            </div>
           </div>
 
           <div className="rounded-2xl border bg-[#fdfaf4] p-5">

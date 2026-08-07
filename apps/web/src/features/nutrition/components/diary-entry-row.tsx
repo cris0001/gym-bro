@@ -23,11 +23,15 @@ export function DiaryEntryRow({
   entry,
   onEdit,
   highlighted = false,
+  showImage = false,
 }: {
   entry: FoodLogEntry;
   onEdit?: (entry: FoodLogEntry) => void;
   // Tints the row when it's the one currently loaded into an external edit form.
   highlighted?: boolean;
+  // Always reserve a thumbnail slot (placeholder when the item has no photo). Used in
+  // the add sheet, where rows read as cards; the main diary list leaves it off.
+  showImage?: boolean;
 }) {
   const remove = useDeleteFoodLogEntry();
   const [editing, setEditing] = useState(false);
@@ -48,7 +52,13 @@ export function DiaryEntryRow({
         highlighted && 'bg-accent -mx-2 rounded-lg px-2',
       )}
     >
-      {entry.imageUrl ? (
+      {showImage ? (
+        <span className="bg-muted flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-lg border">
+          {entry.imageUrl ? (
+            <img src={entry.imageUrl} alt="" className="size-full object-cover" />
+          ) : null}
+        </span>
+      ) : entry.imageUrl ? (
         <img
           src={entry.imageUrl}
           alt=""
@@ -70,7 +80,8 @@ export function DiaryEntryRow({
           ) : null}
         </p>
         <p className="text-muted-foreground text-[11px] leading-tight">
-          {entry.quantity} {unitLabel(entry.unit)}
+          {entry.quantity} {unitLabel(entry.unit)} · P {Math.round(entry.proteinG)} · C{' '}
+          {Math.round(entry.carbsG)} · F {Math.round(entry.fatG)}
         </p>
       </button>
       <span className="font-heading shrink-0 text-base font-semibold">

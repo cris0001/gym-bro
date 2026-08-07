@@ -1,8 +1,9 @@
 import { useNavigate } from '@tanstack/react-router';
 import { format, parseISO } from 'date-fns';
-import { ChevronLeft } from 'lucide-react';
+import { CalendarDays, ChevronLeft, Play } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { BrandMark } from '@/components/brand-mark';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useConfirm } from '@/stores/confirm.store';
@@ -56,17 +57,25 @@ export function ActiveSessionPage() {
 
   if (!draft) {
     return (
-      <div className="mx-auto flex w-full max-w-sm flex-col gap-4 p-8 lg:col-span-3">
-        <h1 className="font-heading text-center text-[28px] font-medium">Start a workout</h1>
+      <div className="mx-auto flex w-full max-w-sm flex-col gap-4 p-6 pt-10 lg:col-span-3">
+        <div className="flex flex-col items-center gap-2 text-center">
+          <BrandMark className="size-14 rounded-2xl" />
+          <h1 className="font-heading text-[28px] leading-none font-medium">Start a workout</h1>
+          <p className="font-heading text-muted-foreground text-sm italic">
+            {format(new Date(), 'EEEE, MMMM d')}
+          </p>
+        </div>
 
         {todaysPlanned.length > 0 && (
           <div className="flex flex-col gap-2">
-            <p className="text-muted-foreground text-sm">Planned for today</p>
+            <p className="text-muted-foreground px-1 text-[11px] font-medium tracking-[0.08em] uppercase">
+              Planned for today
+            </p>
             {todaysPlanned.map((session) => (
-              <Button
+              <button
                 key={session.id}
-                variant="outline"
-                className="h-11 justify-start"
+                type="button"
+                className="bg-card hover:bg-muted/50 flex items-center gap-3 rounded-2xl border p-4 text-left transition-colors"
                 onClick={() =>
                   void startFromTemplate({
                     templateId: session.template.id,
@@ -76,31 +85,36 @@ export function ActiveSessionPage() {
                   })
                 }
               >
-                {session.template.name}
-              </Button>
+                <span className="bg-accent text-primary flex size-10 shrink-0 items-center justify-center rounded-xl">
+                  <CalendarDays className="size-5" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="font-heading block truncate text-[17px] font-semibold">
+                    {session.template.name}
+                  </span>
+                  <span className="text-muted-foreground block text-xs">planned for today</span>
+                </span>
+                <Play className="size-4 shrink-0 fill-current text-[#c25a3a]" />
+              </button>
             ))}
-            <div className="text-muted-foreground flex items-center gap-3 text-xs">
+            <div className="text-muted-foreground font-heading flex items-center gap-3 text-xs italic">
               <span className="bg-border h-px flex-1" />
-              or pick another
+              or pick a template
               <span className="bg-border h-px flex-1" />
             </div>
           </div>
         )}
 
-        <p className="text-muted-foreground text-center text-sm">
-          Pick a template, or begin an empty session and add exercises as you go.
-        </p>
         <StartWorkoutPicker
           onSelectTemplate={(template) => {
             void startFromTemplate({ templateId: template.id, templateName: template.name });
           }}
         />
-        <div className="text-muted-foreground flex items-center gap-3 text-xs">
-          <span className="bg-border h-px flex-1" />
-          or
-          <span className="bg-border h-px flex-1" />
-        </div>
-        <Button variant="ghost" className="h-11" onClick={() => void startEmpty()}>
+        <Button
+          variant="ghost"
+          className="text-muted-foreground h-11"
+          onClick={() => void startEmpty()}
+        >
           Start empty workout
         </Button>
       </div>
