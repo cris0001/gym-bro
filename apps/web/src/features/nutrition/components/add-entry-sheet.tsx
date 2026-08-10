@@ -1,59 +1,76 @@
-import { Barcode } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { format, parseISO } from 'date-fns';
+import { Barcode, ChevronLeft, Plus, Search } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
-import { Button } from '@/components/ui/button';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
 import { useMediaQuery } from '@/hooks/use-media-query';
 
-import type {
-  CreateFoodLogInput,
-  FoodLogEntry,
-  FoodLogUnit,
-  RecentDiaryItem,
-} from '@gym-bro/shared';
+import { sumMacros } from '@gym-bro/shared';
+import type { CreateFoodLogInput } from '@gym-bro/shared';
 
 import { useCreateFoodLogEntry } from '../hooks/use-create-food-log-entry';
-import { useScanFlow } from '../hooks/use-scan-flow';
 import { useDailyFoodLog } from '../hooks/use-daily-food-log';
 import { useFoods } from '../hooks/use-foods';
+import { useRecentDiaryItems } from '../hooks/use-recent-diary-items';
 import { useRecipes } from '../hooks/use-recipes';
-import { useUpdateFoodLogEntry } from '../hooks/use-update-food-log-entry';
+import { useScanFlow } from '../hooks/use-scan-flow';
 import { useDiaryUiStore } from '../stores/diary-ui.store';
+import { useFoodUiStore } from '../stores/food-ui.store';
+import {
+  type AddEntryRow,
+  buildAddEntryList,
+  defaultPortion,
+  type Portion,
+} from '../utils/add-entry-list';
+import { AddEntryResultRow } from './add-entry-result-row';
+import { AddPortionSheet } from './add-portion-sheet';
 import { BarcodeScanner } from './barcode-scanner';
 import { DiaryEntryRow } from './diary-entry-row';
-import { DiaryItemCombobox, type DiaryItem } from './diary-item-combobox';
 import { FoodSheet } from './food-sheet';
-import { PortionPicker, type PortionChoice } from './portion-picker';
-import { RecentItemsRow } from './recent-items-row';
 
-// Log products or recipes to the meal preset on the store, Fitatu-style: one search
-// over both, then a portion (1 serving / 100 g / custom) with live calories per
-// option. The sheet stays open after each add so several things can be logged in one
-// go; "Done" closes it.
+// Fullscreen "Add to {meal}" view: one inline list of your foods + recipes under a
+// search box (recently-used first, badged), each logged with one tap on "+" or a chosen
+// portion by tapping the row. Added items and the running meal total show below; "Done"
+// returns to the diary. Replaces the old combobox sheet; keeps every mutation/scan hook.
 export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
   const addMeal = useDiaryUiStore((s) => s.addMeal);
   const closeAdd = useDiaryUiStore((s) => s.closeAdd);
-  const open = addMeal !== null;
+  const openScanned = useFoodUiStore((s) => s.openScanned);
 
-  const [selected, setSelected] = useState<DiaryItem | null>(null);
-  const [choice, setChoice] = useState<PortionChoice | null>(null);
-  // The id of the entry being edited (via the shared form), or null when adding new.
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
+  const [portionRow, setPortionRow] = useState<AddEntryRow | null>(null);
   const [scanning, setScanning] = useState(false);
   // Scanning needs a camera — a touch device. Hide it on desktop (fine pointer).
   const canScan = useMediaQuery('(pointer: coarse)');
 
   const create = useCreateFoodLogEntry();
-  const update = useUpdateFoodLogEntry();
-  // Scanning here logs the product straight to the meal you scanned from (added to your
-  // foods/pantry first if new). Default portion: 1 serving when it has a serving size,
-  // else 100 g — edit the amount from the meal list afterward.
+  const { data: foods = [] } = useFoods('');
+  const { data: recipes = [] } = useRecipes();
+  const { data: recent = [] } = useRecentDiaryItems(addMeal);
+  const { data: dayLog } = useDailyFoodLog(loggedDate);
+  // Newest first: the day read is oldest→newest, so reverse for the "Added" list so a
+  // just-logged item shows at the top. Order doesn't affect the total.
+  const mealEntries = (dayLog?.entries.filter((entry) => entry.meal === addMeal) ?? [])
+    .slice()
+    .reverse();
+  const mealTotal = Math.round(sumMacros(mealEntries).kcal);
+
+  const rows = useMemo(
+    () => buildAddEntryList(foods, recipes, recent, query),
+    [foods, recipes, recent, query],
+  );
+
+  // Log a source at a portion (one-tap default, or the portion editor's choice).
+  function logPortion(row: AddEntryRow, portion: Portion) {
+    if (addMeal === null) return;
+    const base = { quantity: portion.quantity, unit: portion.unit, meal: addMeal, loggedDate };
+    const input: CreateFoodLogInput =
+      row.kind === 'food'
+        ? { type: 'food', foodId: row.id, ...base }
+        : { type: 'recipe', recipeId: row.id, ...base };
+    create.mutate(input);
+  }
+
+  // Scanning logs the product straight to this meal (added to your foods first if new).
   const { handleEan } = useScanFlow((food) => {
     if (addMeal === null) return;
     const hasServing = food.servingGrams !== null;
@@ -66,279 +83,163 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
       loggedDate,
     });
   });
-  const { data: foods = [] } = useFoods('');
-  const { data: recipes = [] } = useRecipes();
-  // The meal's current entries, shown as an editable list at the bottom of the sheet.
-  const { data: dayLog } = useDailyFoodLog(loggedDate);
-  const mealEntries = dayLog?.entries.filter((entry) => entry.meal === addMeal) ?? [];
 
-  useEffect(() => {
-    if (open) {
-      setSelected(null);
-      setChoice(null);
-      setEditingId(null);
-      create.reset();
-      update.reset();
-    }
-  }, [open]);
-
-  // If the entry loaded into the form is deleted (from the list), close the edit.
-  useEffect(() => {
-    if (editingId !== null && dayLog && !dayLog.entries.some((entry) => entry.id === editingId)) {
-      setEditingId(null);
-      setSelected(null);
-      setChoice(null);
-    }
-  }, [editingId, dayLog]);
-
-  const selectedFood =
-    selected?.kind === 'food' ? foods.find((f) => f.id === selected.id) : undefined;
-  const selectedRecipe =
-    selected?.kind === 'recipe' ? recipes.find((r) => r.id === selected.id) : undefined;
-
-  // Recipes always have servings; a product does only when it has a serving size.
-  const hasServings =
-    selected?.kind === 'recipe' ? true : (selectedFood?.servingGrams ?? null) !== null;
-  // Only products can have a unit size; recipes are never logged by unit.
-  const hasUnits = selected?.kind === 'food' && (selectedFood?.unitGrams ?? null) !== null;
-  const gramsPerServing =
-    selected?.kind === 'recipe'
-      ? selectedRecipe && selectedRecipe.servings > 0
-        ? selectedRecipe.totalGrams / selectedRecipe.servings
-        : undefined
-      : (selectedFood?.servingGrams ?? undefined);
-  const gramsPerUnit = selectedFood?.unitGrams ?? undefined;
-
-  // Calories for a portion of the selected item. A product scales its per-100g kcal
-  // by grams, or by (servings × serving weight) / (units × unit weight); a recipe
-  // uses per-serving or per-gram (total ÷ weight).
-  function kcalFor(unit: FoodLogUnit, quantity: number): number | null {
-    if (selectedFood) {
-      if (unit === 'servings') {
-        return selectedFood.servingGrams !== null
-          ? (selectedFood.kcal * quantity * selectedFood.servingGrams) / 100
-          : null;
-      }
-      if (unit === 'units') {
-        return selectedFood.unitGrams !== null
-          ? (selectedFood.kcal * quantity * selectedFood.unitGrams) / 100
-          : null;
-      }
-      return (selectedFood.kcal * quantity) / 100;
-    }
-    if (selectedRecipe) {
-      if (unit === 'servings') return selectedRecipe.perServing.kcal * quantity;
-      const totalKcal = selectedRecipe.perServing.kcal * selectedRecipe.servings;
-      return selectedRecipe.totalGrams > 0
-        ? (totalKcal / selectedRecipe.totalGrams) * quantity
-        : null;
-    }
-    return null;
-  }
-
-  const isEditing = editingId !== null;
-  const editingEntry = isEditing ? mealEntries.find((entry) => entry.id === editingId) : undefined;
-  const editInitial: PortionChoice | undefined = editingEntry
-    ? { unit: editingEntry.unit, quantity: editingEntry.quantity }
-    : undefined;
-  const busy = create.isPending || update.isPending;
-  const canSubmit = selected !== null && choice !== null && !busy;
-  const error = create.error ?? update.error;
-
-  // Load an existing entry into this same form: preselect its product and seed its
-  // portion, switching the primary action to "Save".
-  function startEditEntry(entry: FoodLogEntry) {
-    const sourceId = entry.foodId ?? entry.recipeId;
-    if (sourceId === null) return;
-    setSelected({ kind: entry.foodId ? 'food' : 'recipe', id: sourceId, name: entry.itemName });
-    setEditingId(entry.id);
-  }
-
-  function cancelEdit() {
-    setEditingId(null);
-    setSelected(null);
-  }
-
-  function saveEdit() {
-    if (editingId === null || choice === null) return;
-    update.mutate(
-      { id: editingId, input: { quantity: choice.quantity, unit: choice.unit } },
+  // "Create a new food": open the food form seeded with the typed name; on save, log the
+  // new product to this meal at its default portion.
+  function createNewFood() {
+    openScanned(
       {
-        onSuccess: () => {
-          setEditingId(null);
-          setSelected(null);
-        },
+        ean: '',
+        name: query.trim(),
+        brand: null,
+        kcal: null,
+        proteinG: null,
+        carbsG: null,
+        fatG: null,
+        servingGrams: null,
+        unitGrams: null,
+        imageUrl: null,
+      },
+      (food) => {
+        if (addMeal === null) return;
+        const hasServing = food.servingGrams !== null;
+        create.mutate({
+          type: 'food',
+          foodId: food.id,
+          quantity: hasServing ? 1 : 100,
+          unit: hasServing ? 'servings' : 'grams',
+          meal: addMeal,
+          loggedDate,
+        });
       },
     );
   }
 
-  // One-tap re-add of a recent item with the portion it was last logged at.
-  function addRecent(item: RecentDiaryItem) {
-    if (addMeal === null) return;
-    const input: CreateFoodLogInput =
-      item.type === 'food'
-        ? {
-            type: 'food',
-            foodId: item.id,
-            quantity: item.quantity,
-            unit: item.unit,
-            meal: addMeal,
-            loggedDate,
-          }
-        : {
-            type: 'recipe',
-            recipeId: item.id,
-            quantity: item.quantity,
-            unit: item.unit,
-            meal: addMeal,
-            loggedDate,
-          };
-    create.mutate(input);
-  }
-
-  function add() {
-    if (!canSubmit || addMeal === null || selected === null || choice === null) return;
-    const input: CreateFoodLogInput =
-      selected.kind === 'food'
-        ? {
-            type: 'food',
-            foodId: selected.id,
-            quantity: choice.quantity,
-            unit: choice.unit,
-            meal: addMeal,
-            loggedDate,
-          }
-        : {
-            type: 'recipe',
-            recipeId: selected.id,
-            quantity: choice.quantity,
-            unit: choice.unit,
-            meal: addMeal,
-            loggedDate,
-          };
-    create.mutate(input, {
-      onSuccess: () => {
-        setSelected(null);
-      },
-    });
-  }
+  if (addMeal === null) return null;
+  const mealLabel = addMeal.replace('_', ' ');
 
   return (
     <>
-      <Sheet open={open} onOpenChange={(next) => !next && closeAdd()}>
-        <SheetContent side="bottom" className="gap-0">
-          <SheetHeader>
-            <SheetTitle className="capitalize">
-              Add to {addMeal?.replace('_', ' ') ?? 'diary'}
-            </SheetTitle>
-            <SheetDescription>
-              Add several items; the sheet stays open until you’re done.
-            </SheetDescription>
-          </SheetHeader>
+      <div className="fixed inset-0 z-50 flex flex-col bg-[#faf5ee]">
+        <div className="flex-1 overflow-y-auto">
+          <div className="mx-auto flex w-full max-w-md flex-col gap-4 p-4">
+            <div className="flex items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={closeAdd}
+                className="-ml-1 flex items-center text-[13px] font-semibold text-[#8d8072]"
+              >
+                <ChevronLeft className="size-4" />
+                Diary
+              </button>
+              <span className="font-heading text-sm text-[#8d8072] italic">
+                {format(parseISO(loggedDate), 'EEEE, MMMM d')}
+              </span>
+            </div>
 
-          <div className="grid gap-4 p-4">
-            {addMeal !== null && (
-              <RecentItemsRow meal={addMeal} onPick={addRecent} disabled={create.isPending} />
-            )}
+            <h1 className="font-heading text-[26px] font-semibold">
+              Add to <span className="capitalize">{mealLabel}</span>
+            </h1>
 
             <div className="flex gap-2">
-              <div className="min-w-0 flex-1">
-                <DiaryItemCombobox
-                  selected={selected}
-                  onSelect={(item) => {
-                    // A manual pick is always a new add, never a continuation of an edit.
-                    setSelected(item);
-                    setEditingId(null);
-                  }}
+              <div className="relative min-w-0 flex-1">
+                <Search className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#8d8072]" />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search a product or recipe…"
+                  className="h-[46px] w-full rounded-xl border border-[#eadfd0] bg-[#fffcf7] pr-3 pl-10 text-sm placeholder:text-[#8d8072] focus:outline-none"
                 />
               </div>
               {canScan ? (
-                <Button
+                <button
                   type="button"
-                  variant="outline"
-                  className="h-11 shrink-0"
                   aria-label="Scan a barcode"
                   onClick={() => setScanning(true)}
+                  className="flex size-[46px] shrink-0 items-center justify-center rounded-xl border border-[#eadfd0] bg-[#fffcf7] text-[#c25a3a]"
                 >
-                  <Barcode className="size-4" />
-                </Button>
+                  <Barcode className="size-5" />
+                </button>
               ) : null}
             </div>
 
-            {selectedRecipe !== undefined && (
-              <p className="text-muted-foreground text-xs">
-                Makes {selectedRecipe.servings}{' '}
-                {selectedRecipe.servings === 1 ? 'serving' : 'servings'} ·{' '}
-                {Math.round(selectedRecipe.totalGrams)} g total (1 serving ≈{' '}
-                {Math.round(selectedRecipe.totalGrams / selectedRecipe.servings)} g).
-              </p>
-            )}
-            {(selectedFood?.servingGrams != null || selectedFood?.unitGrams != null) && (
-              <p className="text-muted-foreground text-xs">
-                {selectedFood.servingGrams != null &&
-                  `1 serving = ${Math.round(selectedFood.servingGrams)} g.`}
-                {selectedFood.servingGrams != null && selectedFood.unitGrams != null && ' '}
-                {selectedFood.unitGrams != null &&
-                  `1 unit = ${Math.round(selectedFood.unitGrams)} g.`}
-              </p>
-            )}
-
-            {selected !== null && (
-              <PortionPicker
-                key={editingId ?? selected.id}
-                hasServings={hasServings}
-                hasUnits={hasUnits}
-                gramsPerServing={gramsPerServing}
-                gramsPerUnit={gramsPerUnit}
-                kcalFor={kcalFor}
-                initial={editInitial}
-                onChange={setChoice}
-              />
-            )}
-
-            {error ? (
-              <p role="alert" className="text-destructive text-sm">
-                {error.message}
-              </p>
-            ) : null}
-
-            <div className="flex gap-2">
-              <Button
+            <div className="overflow-hidden rounded-[18px] border border-[#eadfd0] bg-[#fffcf7]">
+              {/* Capped height with its own scroll so the "Added" list and the total bar
+                  stay in view without scrolling past the whole dictionary. */}
+              <div className="max-h-[42vh] overflow-y-auto">
+                {rows.map((row, i) => (
+                  <div
+                    key={`${row.kind}-${row.id}`}
+                    className={i > 0 ? 'border-t border-dashed border-[#e5d9c6]' : ''}
+                  >
+                    <AddEntryResultRow
+                      row={row}
+                      disabled={create.isPending}
+                      onAdd={() => logPortion(row, defaultPortion(row))}
+                      onEditPortion={() => setPortionRow(row)}
+                    />
+                  </div>
+                ))}
+              </div>
+              <button
                 type="button"
-                className="h-11 flex-1"
-                disabled={!canSubmit}
-                onClick={isEditing ? saveEdit : add}
+                onClick={createNewFood}
+                className="flex w-full items-center justify-center gap-1.5 border-t border-dashed border-[#e5d9c6] py-3.5 text-[12.5px] font-bold text-[#c25a3a]"
               >
-                {busy ? 'Saving…' : isEditing ? 'Save' : 'Add'}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="h-11"
-                onClick={isEditing ? cancelEdit : closeAdd}
-              >
-                {isEditing ? 'Cancel' : 'Done'}
-              </Button>
+                <Plus className="size-4" />
+                Create a new food
+              </button>
             </div>
 
-            {mealEntries.length > 0 && (
-              <div className="border-t pt-2">
-                <p className="text-muted-foreground mb-1 text-xs">In this meal</p>
-                <ul className="divide-y">
+            {mealEntries.length > 0 ? (
+              <div className="flex flex-col gap-2">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-[11px] font-semibold tracking-wide text-[#8d8072] uppercase">
+                    Added to {mealLabel}
+                  </span>
+                  <span className="font-heading text-lg font-semibold">
+                    {mealTotal.toLocaleString('en-US')}
+                    <span className="ml-0.5 text-[11px] font-normal text-[#8d8072]">kcal</span>
+                  </span>
+                </div>
+                <ul className="flex flex-col divide-y divide-dashed divide-[#e5d9c6] rounded-[18px] border border-[#eadfd0] bg-[#fffcf7] px-4">
                   {mealEntries.map((entry) => (
-                    <DiaryEntryRow
-                      key={entry.id}
-                      entry={entry}
-                      onEdit={startEditEntry}
-                      highlighted={entry.id === editingId}
-                    />
+                    <DiaryEntryRow key={entry.id} entry={entry} showImage mutedDelete />
                   ))}
                 </ul>
               </div>
-            )}
+            ) : null}
           </div>
-        </SheetContent>
-      </Sheet>
+        </div>
+
+        <div className="sticky bottom-0 flex items-center gap-3 border-t border-[#eadfd0] bg-[rgba(250,245,238,0.95)] px-4 py-3 backdrop-blur">
+          <div className="flex flex-col">
+            <span className="text-[11px] font-semibold tracking-wide text-[#8d8072] uppercase">
+              {mealLabel} total
+            </span>
+            <span className="font-heading text-[17px] font-semibold">
+              {mealTotal.toLocaleString('en-US')}
+              <span className="ml-0.5 text-[11px] font-normal text-[#8d8072]">kcal</span>
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={closeAdd}
+            className="h-[46px] flex-1 rounded-full bg-[#c25a3a] text-sm font-semibold text-white"
+          >
+            Done
+          </button>
+        </div>
+      </div>
+
+      <AddPortionSheet
+        row={portionRow}
+        onClose={() => setPortionRow(null)}
+        onAdd={(portion) => {
+          if (portionRow) logPortion(portionRow, portion);
+          setPortionRow(null);
+        }}
+      />
 
       {canScan ? (
         <BarcodeScanner
