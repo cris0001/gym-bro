@@ -24,6 +24,7 @@ export function DiaryEntryRow({
   onEdit,
   highlighted = false,
   showImage = false,
+  mutedDelete = false,
 }: {
   entry: FoodLogEntry;
   onEdit?: (entry: FoodLogEntry) => void;
@@ -32,6 +33,9 @@ export function DiaryEntryRow({
   // Always reserve a thumbnail slot (placeholder when the item has no photo). Used in
   // the add sheet, where rows read as cards; the main diary list leaves it off.
   showImage?: boolean;
+  // Muted (parchment) trash icon instead of the default destructive red — matches the
+  // "Added to meal" card in the add view.
+  mutedDelete?: boolean;
 }) {
   const remove = useDeleteFoodLogEntry();
   const [editing, setEditing] = useState(false);
@@ -92,7 +96,7 @@ export function DiaryEntryRow({
         type="button"
         variant="ghost"
         size="icon"
-        className="text-destructive size-9 shrink-0"
+        className={cn('size-9 shrink-0', mutedDelete ? 'text-[#c9bda9]' : 'text-destructive')}
         aria-label={`Remove ${entry.itemName}`}
         disabled={remove.isPending}
         onClick={() => remove.mutate(entry.id)}
