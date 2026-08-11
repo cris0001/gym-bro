@@ -1,0 +1,1 @@
+ALTER TABLE "strava_connections" ADD COLUMN "athlete_name" text;
