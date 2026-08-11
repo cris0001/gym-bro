@@ -60,7 +60,7 @@ export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowP
     <div className="flex flex-col gap-1">
       <div className="grid grid-cols-[1.5rem_1fr_1fr_1fr_2rem_2rem] items-center gap-2">
         {done && !set.isTopSet ? (
-          <span className="mx-auto flex size-6 items-center justify-center rounded-full bg-[#e8efe4] text-[#5a7a52]">
+          <span className="mx-auto flex size-6 items-center justify-center rounded-full bg-[#e8efe4] text-[#5a7a52] dark:bg-[#2f3a2b] dark:text-[#8fae85]">
             <Check className="size-3.5" />
           </span>
         ) : (

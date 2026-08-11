@@ -2,7 +2,9 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { format, parseISO } from 'date-fns';
 import { toast } from 'sonner';
 
+import { SkeletonList } from '@/components/skeletons';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useConfirm } from '@/stores/confirm.store';
 
 import { useDeleteWorkoutSession } from '../hooks/use-delete-workout-session';
@@ -42,7 +44,15 @@ export function WorkoutDetail({ sessionId }: WorkoutDetailProps) {
   }
 
   if (isLoading) {
-    return <p className="text-muted-foreground p-4 text-sm">Loading…</p>;
+    return (
+      <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-4">
+        <Skeleton className="h-7 w-2/3" />
+        <Skeleton className="h-4 w-1/2" />
+        <div className="bg-card rounded-2xl border">
+          <SkeletonList rows={4} />
+        </div>
+      </div>
+    );
   }
   if (isError || !session) {
     return (

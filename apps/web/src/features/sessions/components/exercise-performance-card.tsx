@@ -140,7 +140,7 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
             <Button
               variant="ghost"
               size="sm"
-              className="bg-accent text-primary hover:bg-accent/70 h-10 flex-1 rounded-full"
+              className="bg-accent text-primary hover:bg-accent/70 border-primary/25 h-10 flex-1 rounded-full border"
               onClick={() => addEmptySet(performance.id)}
             >
               Add set
@@ -149,7 +149,7 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
               <Button
                 variant="ghost"
                 size="sm"
-                className="bg-accent text-primary hover:bg-accent/70 h-10 flex-1 rounded-full"
+                className="bg-accent text-primary hover:bg-accent/70 border-primary/25 h-10 flex-1 rounded-full border"
                 onClick={() => copyLastSet(performance.id)}
               >
                 Copy last

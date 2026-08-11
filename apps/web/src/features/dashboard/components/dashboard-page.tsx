@@ -56,7 +56,7 @@ export function DashboardPage() {
               Start workout
             </Link>
           </Button>
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#efe5d6] text-[#8a5a3b]">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#efe5d6] text-[#8a5a3b] dark:bg-[#3a2f22] dark:text-[#c99f74]">
             <User className="size-5" />
           </span>
         </div>

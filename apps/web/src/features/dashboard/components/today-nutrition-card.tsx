@@ -2,12 +2,13 @@ import { Link } from '@tanstack/react-router';
 
 import { useCurrentTarget, useDailyFoodLog } from '@/features/nutrition';
 import { MACRO_BAR, type MacroKey } from '@/features/nutrition/utils/macro-colors';
+import { SkeletonHero } from '@/components/skeletons';
 import { cn } from '@/lib/utils';
 
 // The dashboard's nutrition hero: a calorie ring against today's target plus the three
 // macro bars, replacing the old plain calorie card. Read-only summary of the diary.
 export function TodayNutritionCard({ date }: { date: string }) {
-  const { data: day } = useDailyFoodLog(date);
+  const { data: day, isPending } = useDailyFoodLog(date);
   const { data: target } = useCurrentTarget();
 
   const kcal = Math.round(day?.totals.kcal ?? 0);
@@ -20,7 +21,9 @@ export function TodayNutritionCard({ date }: { date: string }) {
         Today&apos;s plate
       </p>
 
-      {targetKcal === null ? (
+      {isPending ? (
+        <SkeletonHero />
+      ) : targetKcal === null ? (
         <div className="flex flex-col gap-2">
           <p className="font-heading text-2xl font-semibold">{kcal} kcal</p>
           <Link to="/targets" className="text-primary text-sm underline">

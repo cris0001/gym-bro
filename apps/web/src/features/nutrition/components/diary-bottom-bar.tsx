@@ -3,25 +3,48 @@ import type { MacroTotals } from '@gym-bro/shared';
 import { useCurrentTarget } from '../hooks/use-current-target';
 
 const fmt = (n: number): string => Math.round(n).toLocaleString('en-US');
+const r = (n: number): number => Math.round(n);
 
-// Compact running total pinned above the mobile tab bar, like Fitatu's: an inverted
-// bar with calories, the P/C/F line, and percent of target. Desktop uses the sidebar
-// summary instead, so this is hidden there. Nothing until a target is set.
+// One macro on the mobile bar: a colored dot, the eaten amount (bold, white), then
+// "/{target}g {letter}" in a muted tone. No percentages.
+function MacroPair({
+  dot,
+  eaten,
+  target,
+  letter,
+}: {
+  dot: string;
+  eaten: number;
+  target: number;
+  letter: string;
+}) {
+  return (
+    <span className="flex items-center gap-1">
+      <span className="size-[7px] shrink-0 rounded-full" style={{ backgroundColor: dot }} />
+      <span className="whitespace-nowrap">
+        <span className="text-xs font-bold text-[#fff7f0] dark:text-[#221b13]">{r(eaten)}</span>
+        <span className="text-[10px] text-[#c9bda9] dark:text-[#8d8072]">
+          /{r(target)}g {letter}
+        </span>
+      </span>
+    </span>
+  );
+}
+
+// Compact running total pinned above the mobile tab bar, like Fitatu's: an inverted bar
+// with calories and one dotted "eaten/target" pair per macro (P/C/F). Desktop uses the
+// sidebar summary instead, so this is hidden there. Nothing until a target is set.
 export function DiaryBottomBar({ totals }: { totals: MacroTotals }) {
   const { data: target } = useCurrentTarget();
   if (!target) return null;
 
-  const pct = target.kcal > 0 ? Math.round((totals.kcal / target.kcal) * 100) : 0;
-
   return (
     <div className="fixed inset-x-0 bottom-[3.75rem] z-20 px-3 lg:hidden">
-      <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 rounded-2xl bg-[#2c241d] px-4 py-2.5 text-[#fff7f0]">
-        <span className="font-heading text-lg font-semibold">{fmt(totals.kcal)} kcal</span>
-        <span className="text-[11px] text-[#fff7f0]/75">
-          P {Math.round(totals.proteinG)} · C {Math.round(totals.carbsG)} · F{' '}
-          {Math.round(totals.fatG)}
-        </span>
-        <span className="text-xs font-medium text-[#e8a188]">{pct}% of target</span>
+      <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 rounded-2xl bg-[#2c241d] px-4 py-2.5 dark:bg-[#f2e9dc] text-[#fff7f0] dark:text-[#221b13]">
+        <span className="text-[13px] font-bold">{fmt(totals.kcal)} kcal</span>
+        <MacroPair dot="#e8a188" eaten={totals.proteinG} target={target.proteinG} letter="P" />
+        <MacroPair dot="#d9a441" eaten={totals.carbsG} target={target.carbsG} letter="C" />
+        <MacroPair dot="#8fae85" eaten={totals.fatG} target={target.fatG} letter="F" />
       </div>
     </div>
   );

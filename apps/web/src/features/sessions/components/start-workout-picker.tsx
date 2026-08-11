@@ -77,7 +77,7 @@ export function StartWorkoutPicker({ onSelectTemplate }: StartWorkoutPickerProps
               {plan.id === activePlan?.id && ' · active'}
             </span>
           </span>
-          <ChevronRight className="size-5 shrink-0 text-[#c9bda9]" />
+          <ChevronRight className="size-5 shrink-0 text-[#c9bda9] dark:text-[#5b4e3e]" />
         </button>
       ))}
     </div>
@@ -134,7 +134,7 @@ function TemplatePicker({ planId, showBack, onBack, onSelectTemplate }: Template
                   {count === undefined ? '…' : `${count} ${count === 1 ? 'exercise' : 'exercises'}`}
                 </span>
               </span>
-              <Play className="size-4 shrink-0 fill-current text-[#c25a3a]" />
+              <Play className="text-primary size-4 shrink-0 fill-current" />
             </button>
           );
         })

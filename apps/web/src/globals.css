@@ -160,67 +160,71 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  /* Warm Editorial — dark. Warm browns instead of grey/black, a brightened terracotta
+     primary; same rules (bordered cards, no shadows). The page sits a couple of shades
+     below the card, and the border is stronger than the spec's, so bordered cards read
+     clearly against the background without shadows. */
+  --background: #17110a;
 
-  --foreground: oklch(0.985 0 0);
+  --foreground: #f2e9dc;
 
-  --card: oklch(0.205 0 0);
+  --card: #29211a;
 
-  --card-foreground: oklch(0.985 0 0);
+  --card-foreground: #f2e9dc;
 
-  --popover: oklch(0.205 0 0);
+  --popover: #29211a;
 
-  --popover-foreground: oklch(0.985 0 0);
+  --popover-foreground: #f2e9dc;
 
-  --primary: oklch(0.685 0.169 237.323); /* sky-500 (brand) */
+  --primary: #d06c46; /* brightened terracotta */
 
-  --primary-foreground: oklch(0.985 0 0);
+  --primary-foreground: #fff7f0;
 
-  --secondary: oklch(0.269 0 0);
+  --secondary: #362c21;
 
-  --secondary-foreground: oklch(0.985 0 0);
+  --secondary-foreground: #f2e9dc;
 
-  --muted: oklch(0.269 0 0);
+  --muted: #3b3125;
 
-  --muted-foreground: oklch(0.708 0 0);
+  --muted-foreground: #a3937f;
 
-  --accent: oklch(0.269 0 0);
+  --accent: #402b1f;
 
-  --accent-foreground: oklch(0.985 0 0);
+  --accent-foreground: #d8a273;
 
   --destructive: oklch(0.704 0.191 22.216);
 
-  --border: oklch(1 0 0 / 10%);
+  --border: #473a2b;
 
-  --input: oklch(1 0 0 / 15%);
+  --input: #473a2b;
 
-  --ring: oklch(0.685 0.169 237.323); /* sky-500 */
+  --ring: #d06c46;
 
-  --chart-1: oklch(0.87 0 0);
+  --chart-1: #d06c46;
 
-  --chart-2: oklch(0.556 0 0);
+  --chart-2: #d9a441;
 
-  --chart-3: oklch(0.439 0 0);
+  --chart-3: #8fae85;
 
-  --chart-4: oklch(0.371 0 0);
+  --chart-4: #d8a273;
 
-  --chart-5: oklch(0.269 0 0);
+  --chart-5: #a3937f;
 
-  --sidebar: oklch(0.205 0 0);
+  --sidebar: #29211a;
 
-  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-foreground: #f2e9dc;
 
-  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary: #d06c46;
 
-  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-primary-foreground: #fff7f0;
 
-  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent: #402b1f;
 
-  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-accent-foreground: #d8a273;
 
-  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-border: #473a2b;
 
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: #d06c46;
 }
 
 /* Keep an element scrollable but hide its scrollbar (mobile submenus, in-sheet
@@ -231,6 +235,22 @@
   &::-webkit-scrollbar {
     display: none;
   }
+}
+
+/* Loading skeletons breathe between full and 55% opacity — calmer and a touch faster
+   than Tailwind's default animate-pulse, and no shimmer/gradient (Warm Editorial). */
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@utility skeleton-pulse {
+  animation: skeleton-pulse 1.6s ease-in-out infinite;
 }
 
 @layer base {

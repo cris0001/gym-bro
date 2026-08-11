@@ -92,7 +92,7 @@ export function DayWorkoutItem({
         aria-expanded={expanded}
       >
         <div className="min-w-0 flex-1">
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#e8efe4] px-2 py-0.5 text-[10px] font-bold tracking-[0.06em] text-[#5a7a52] uppercase">
+          <span className="inline-flex items-center gap-1 rounded-full bg-[#e8efe4] px-2 py-0.5 text-[10px] font-bold tracking-[0.06em] text-[#5a7a52] uppercase dark:bg-[#2f3a2b] dark:text-[#8fae85]">
             <Check className="size-3" />
             Finished
           </span>
@@ -130,13 +130,13 @@ export function DayWorkoutItem({
       </button>
 
       {expanded && (
-        <div className="flex flex-col gap-3 border-t border-[#eadfd0] p-3">
+        <div className="flex flex-col gap-3 border-t border-border p-3">
           {isLoading || !detail ? (
             <p className="text-muted-foreground text-sm">Loading…</p>
           ) : (
             <>
               {detail.notes !== null && (
-                <p className="font-heading rounded-xl border border-[#f0e7d9] bg-[#fdfaf4] p-3 text-[13px] text-[#5c5044] italic">
+                <p className="font-heading rounded-xl border border-[#f0e7d9] bg-[#fdfaf4] p-3 text-[13px] text-[#5c5044] italic dark:border-[#41362a] dark:bg-[#211a12] dark:text-[#c9bcab]">
                   “{detail.notes}”
                 </p>
               )}
@@ -162,8 +162,8 @@ export function DayWorkoutItem({
                           className={cn(
                             'rounded-lg px-[9px] py-1 text-[11px] font-bold',
                             set.isTopSet
-                              ? 'bg-[#fdf1e8] text-[#b04e2f]'
-                              : 'bg-[#f3ead9] text-[#5c5044]',
+                              ? 'bg-accent text-accent-foreground'
+                              : 'bg-secondary text-[#5c5044] dark:text-[#c9bcab]',
                           )}
                         >
                           {set.weight ?? 'BW'} × {set.reps ?? '—'}
@@ -185,7 +185,7 @@ export function DayWorkoutItem({
                 </button>
               )}
 
-              <div className="flex flex-wrap items-center gap-2 border-t border-[#eadfd0] pt-3">
+              <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
                 {detail.sessionType === 'strength' && (
                   <Button
                     size="sm"

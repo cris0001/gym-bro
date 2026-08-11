@@ -4,7 +4,6 @@ import { Link } from '@tanstack/react-router';
 import { GripVertical, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useConfirm } from '@/stores/confirm.store';
 import type { WorkoutTemplate } from '@gym-bro/shared';
@@ -40,16 +39,19 @@ export function TemplateRow({ template }: TemplateRowProps) {
     <li
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={cn('bg-background flex items-center gap-2 px-4 py-3', isDragging && 'opacity-50')}
+      className={cn(
+        'flex items-center gap-2.5 border-t border-dashed border-[#e5d9c6] bg-card py-[11px] dark:border-[#41362a]',
+        isDragging && 'opacity-50',
+      )}
     >
       <button
         type="button"
-        className="text-muted-foreground size-11 shrink-0 cursor-grab touch-none active:cursor-grabbing"
+        className="shrink-0 cursor-grab touch-none p-1 text-[#c9bda9] active:cursor-grabbing dark:text-[#5b4e3e]"
         aria-label={`Reorder ${template.name}`}
         {...attributes}
         {...listeners}
       >
-        <GripVertical className="mx-auto size-4" />
+        <GripVertical className="size-[15px]" />
       </button>
 
       <Link
@@ -57,33 +59,29 @@ export function TemplateRow({ template }: TemplateRowProps) {
         params={{ templateId: template.id }}
         className="min-w-0 flex-1"
       >
-        <p className="truncate font-medium">{template.name}</p>
+        <p className="truncate text-[13.5px] font-semibold">{template.name}</p>
         {template.description ? (
-          <p className="text-muted-foreground truncate text-sm">{template.description}</p>
+          <p className="text-muted-foreground truncate text-[11.5px]">{template.description}</p>
         ) : null}
       </Link>
 
-      <Button
+      <button
         type="button"
-        variant="ghost"
-        size="icon"
-        className="size-11 shrink-0"
+        className="shrink-0 p-1.5 text-[#c9bda9] dark:text-[#5b4e3e]"
         aria-label={`Edit ${template.name}`}
         onClick={() => openEdit(template)}
       >
-        <Pencil className="size-4" />
-      </Button>
-      <Button
+        <Pencil className="size-[14px]" />
+      </button>
+      <button
         type="button"
-        variant="ghost"
-        size="icon"
-        className="text-destructive size-11 shrink-0"
+        className="shrink-0 p-1.5 text-[#c9bda9] disabled:opacity-50 dark:text-[#5b4e3e]"
         aria-label={`Delete ${template.name}`}
         disabled={remove.isPending}
         onClick={() => void onDelete()}
       >
-        <Trash2 className="size-4" />
-      </Button>
+        <Trash2 className="size-[14px]" />
+      </button>
     </li>
   );
 }

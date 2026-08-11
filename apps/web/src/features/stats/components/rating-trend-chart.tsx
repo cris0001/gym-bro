@@ -9,6 +9,8 @@ import {
   YAxis,
 } from 'recharts';
 
+import { SkeletonChart } from '@/components/skeletons';
+
 import { useRatingTrend } from '../hooks/use-stats';
 
 import { ChartPlaceholder } from './chart-placeholder';
@@ -21,7 +23,7 @@ export function RatingTrendChart() {
   const { data: points = [], isPending } = useRatingTrend();
 
   if (isPending) {
-    return <ChartPlaceholder>Loading…</ChartPlaceholder>;
+    return <SkeletonChart />;
   }
   if (points.length === 0) {
     return <ChartPlaceholder>No rated workouts yet.</ChartPlaceholder>;
@@ -31,7 +33,7 @@ export function RatingTrendChart() {
     <div className="h-64 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={points} margin={{ top: 8, right: 12, bottom: 0, left: -16 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0e7d9" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--muted)" vertical={false} />
           <XAxis
             dataKey="date"
             tickFormatter={(value: string) => format(parseISO(value), 'MMM d')}
@@ -59,9 +61,9 @@ export function RatingTrendChart() {
           <Line
             type="monotone"
             dataKey="rating"
-            stroke="#5a7a52"
+            stroke="var(--chart-3)"
             strokeWidth={2}
-            dot={{ r: 3, fill: '#5a7a52' }}
+            dot={{ r: 3, fill: 'var(--chart-3)' }}
             activeDot={{ r: 5 }}
           />
         </LineChart>

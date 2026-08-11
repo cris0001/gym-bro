@@ -2,7 +2,7 @@ import { Apple, ChevronRight, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { EmptyState } from '@/components/empty-state';
-import { ListSkeleton } from '@/components/list-skeleton';
+import { SkeletonList } from '@/components/skeletons';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useConfirm } from '@/stores/confirm.store';
@@ -44,7 +44,7 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
   }
 
   if (isPending) {
-    return <ListSkeleton />;
+    return <SkeletonList avatar />;
   }
   if (filtered.length === 0) {
     if (query) {
@@ -66,7 +66,7 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
   }
 
   return (
-    <ul className="divide-y divide-dashed divide-[#e5d9c6]">
+    <ul className="divide-y divide-dashed divide-[#d9c9b2] dark:divide-[#41362a]">
       {filtered.map((food) => (
         <li
           key={food.id}
@@ -101,7 +101,7 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
                 <span> / 100g</span>
               </p>
             </div>
-            <ChevronRight className="size-5 shrink-0 text-[#c9bda9]" />
+            <ChevronRight className="size-5 shrink-0 text-[#c9bda9] dark:text-[#5b4e3e]" />
           </button>
           <Button
             type="button"

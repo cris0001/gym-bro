@@ -60,7 +60,7 @@ export function StravaActivityRow({
         className="hover:bg-muted/50 active:bg-muted flex w-full items-center gap-3 p-3 text-left transition-colors"
         aria-expanded={expanded}
       >
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#fbe3d4] text-[#d15b28]">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#fbe3d4] text-[#d15b28] dark:bg-[#45291b] dark:text-[#ff7a3d]">
           <Icon className="size-5" />
         </span>
         <span className="min-w-0 flex-1">
@@ -94,7 +94,7 @@ export function StravaActivityRow({
               href={`https://www.strava.com/activities/${session.stravaActivityId}`}
               target="_blank"
               rel="noreferrer"
-              className="text-sm font-medium text-[#d15b28] hover:underline"
+              className="text-sm font-medium text-[#d15b28] hover:underline dark:text-[#ff7a3d]"
             >
               View on Strava ↗
             </a>

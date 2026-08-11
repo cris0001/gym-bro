@@ -66,7 +66,7 @@ export function DiaryEntryRow({
         <img
           src={entry.imageUrl}
           alt=""
-          className="bg-muted size-9 shrink-0 rounded-lg border object-cover"
+          className="bg-muted size-11 shrink-0 rounded-lg border object-cover"
         />
       ) : null}
       <button
@@ -96,7 +96,10 @@ export function DiaryEntryRow({
         type="button"
         variant="ghost"
         size="icon"
-        className={cn('size-9 shrink-0', mutedDelete ? 'text-[#c9bda9]' : 'text-destructive')}
+        className={cn(
+          'size-9 shrink-0',
+          mutedDelete ? 'text-[#c9bda9] dark:text-[#5b4e3e]' : 'text-destructive',
+        )}
         aria-label={`Remove ${entry.itemName}`}
         disabled={remove.isPending}
         onClick={() => remove.mutate(entry.id)}

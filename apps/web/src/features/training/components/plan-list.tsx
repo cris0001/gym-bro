@@ -3,7 +3,7 @@ import { ClipboardList, Plus } from 'lucide-react';
 
 import { EmptyState } from '@/components/empty-state';
 import { ErrorState } from '@/components/error-state';
-import { ListSkeleton } from '@/components/list-skeleton';
+import { SkeletonList } from '@/components/skeletons';
 import { Button } from '@/components/ui/button';
 
 import { useActivePlan } from '../hooks/use-active-plan';
@@ -22,7 +22,7 @@ export function PlanList() {
   const openCreate = usePlanUiStore((s) => s.openCreate);
 
   if (isPending) {
-    return <ListSkeleton />;
+    return <SkeletonList />;
   }
 
   if (isError) {
@@ -53,7 +53,7 @@ export function PlanList() {
     <div className="flex flex-col gap-4">
       {activeItem ? <ActivePlanRow planId={activeItem.id} name={activeItem.name} /> : null}
       {others.length > 0 ? (
-        <ul className="bg-card divide-y divide-dashed divide-[#e5d9c6] overflow-hidden rounded-2xl border">
+        <ul className="bg-card divide-y divide-dashed divide-[#e5d9c6] dark:divide-[#41362a] overflow-hidden rounded-2xl border">
           {others.map((plan) => (
             <li
               key={plan.id}

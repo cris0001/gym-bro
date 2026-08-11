@@ -25,7 +25,7 @@ export function RecipesPage() {
 
       <Link
         to="/recipes/new"
-        className="flex flex-col items-center gap-1 rounded-2xl border border-dashed border-[#d9c9b2] p-4 text-center"
+        className="flex flex-col items-center gap-1 rounded-2xl border border-dashed border-[#d9c9b2] p-4 text-center dark:border-[#4d4132]"
       >
         <span className="font-heading text-muted-foreground text-sm italic">
           Build a recipe from your foods

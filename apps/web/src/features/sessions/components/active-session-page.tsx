@@ -94,7 +94,7 @@ export function ActiveSessionPage() {
                   </span>
                   <span className="text-muted-foreground block text-xs">planned for today</span>
                 </span>
-                <Play className="size-4 shrink-0 fill-current text-[#c25a3a]" />
+                <Play className="text-primary size-4 shrink-0 fill-current" />
               </button>
             ))}
             <div className="text-muted-foreground font-heading flex items-center gap-3 text-xs italic">

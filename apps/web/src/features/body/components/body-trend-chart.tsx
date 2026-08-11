@@ -120,7 +120,7 @@ export function BodyTrendChart({
       <div className="h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={rows} margin={{ top: 8, right: 12, bottom: 0, left: -8 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0e7d9" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--muted)" vertical={false} />
             <XAxis
               dataKey="date"
               tickFormatter={(value: string) => format(parseISO(value), 'MMM d')}
