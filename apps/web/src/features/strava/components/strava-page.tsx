@@ -65,7 +65,10 @@ export function StravaPage({ initialActivityId }: { initialActivityId?: string |
       {status?.connected && (
         <div className="lg:grid lg:grid-cols-[1fr_18rem] lg:items-start lg:gap-6">
           {/* Right column on desktop; stacked on top on mobile so import is reachable. */}
-          <StravaConnectionCard status={status} className="lg:order-2 lg:sticky lg:top-4" />
+          <StravaConnectionCard
+            status={status}
+            className="mb-4 lg:order-2 lg:mb-0 lg:sticky lg:top-4"
+          />
 
           <div className="lg:order-1 flex flex-col gap-4">
             {isPending ? (
