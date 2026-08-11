@@ -54,7 +54,7 @@ export function StravaSection() {
         {/* Card 1 — the latest imported activity, tall enough to carry its route map. */}
         <div className="bg-card flex flex-col gap-3 rounded-2xl border p-4 sm:min-h-[17rem]">
           <div className="flex items-center gap-2 text-sm font-medium">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-[#fbe3d4] text-[#d15b28]">
+            <span className="flex size-8 items-center justify-center rounded-lg bg-[#fbe3d4] text-[#d15b28] dark:bg-[#45291b] dark:text-[#ff7a3d]">
               <Activity className="size-4" />
             </span>
             <span className="text-muted-foreground">Last activity</span>
@@ -91,7 +91,7 @@ export function StravaSection() {
         {/* Card 2 — a compact current-month summary. */}
         <div className="bg-card flex flex-col gap-3 rounded-2xl border p-4">
           <div className="flex items-center gap-2 text-sm font-medium">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-[#fbe3d4] text-[#d15b28]">
+            <span className="flex size-8 items-center justify-center rounded-lg bg-[#fbe3d4] text-[#d15b28] dark:bg-[#45291b] dark:text-[#ff7a3d]">
               <CalendarRange className="size-4" />
             </span>
             <span className="text-muted-foreground">This month</span>

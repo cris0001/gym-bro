@@ -315,7 +315,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
                   No ingredients yet — search below to add one.
                 </p>
               ) : (
-                <ul className="divide-y divide-dashed divide-[#e5d9c6] border-t border-dashed border-[#e5d9c6]">
+                <ul className="divide-y divide-dashed divide-[#d9c9b2] border-t border-dashed border-[#d9c9b2] dark:divide-[#41362a] dark:border-[#41362a]">
                   {ingredients.map((row) => {
                     const grams = rowGrams(row);
                     const macros =
@@ -346,7 +346,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
                           <button
                             type="button"
                             aria-label={`Edit ${row.food?.name ?? 'ingredient'}`}
-                            className="shrink-0 text-[#c9bda9]"
+                            className="shrink-0 text-[#c9bda9] dark:text-[#5b4e3e]"
                             onClick={() => setEditingKey(isRowEditing ? null : row.key)}
                           >
                             <Pencil className="size-4" />
@@ -435,13 +435,13 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
             </div>
           </div>
 
-          <div className="rounded-2xl border bg-[#fdfaf4] p-5">
+          <div className="rounded-2xl border bg-[#fdfaf4] p-5 dark:bg-[#211a12]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="font-heading text-xl font-semibold">Per serving</p>
                 <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
                   <span className="flex items-center gap-1.5">
-                    <span className="size-2 rounded-full bg-[#c25a3a]" />P{' '}
+                    <span className="bg-primary size-2 rounded-full" />P{' '}
                     {Math.round(perServing.proteinG)} g
                   </span>
                   <span className="flex items-center gap-1.5">
@@ -449,7 +449,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
                     {Math.round(perServing.carbsG)} g
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <span className="size-2 rounded-full bg-[#5a7a52]" />F{' '}
+                    <span className="size-2 rounded-full bg-[#5a7a52] dark:bg-[#8fae85]" />F{' '}
                     {Math.round(perServing.fatG)} g
                   </span>
                 </div>

@@ -29,7 +29,7 @@ export function CalendarPage() {
         </div>
         <div className="text-muted-foreground flex items-center gap-4 text-xs">
           <span className="flex items-center gap-1.5">
-            <span className="size-2.5 rounded-full bg-[#5a7a52]" />
+            <span className="size-2.5 rounded-full bg-[#5a7a52] dark:bg-[#8fae85]" />
             Finished
           </span>
           <span className="flex items-center gap-1.5">
@@ -37,7 +37,7 @@ export function CalendarPage() {
             Planned
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="size-2.5 rounded-full bg-[#d15b28]" />
+            <span className="size-2.5 rounded-full bg-[#d15b28] dark:bg-[#ff7a3d]" />
             Strava
           </span>
         </div>

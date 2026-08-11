@@ -46,7 +46,7 @@ export function TemplateList({ planId, templates }: TemplateListProps) {
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
       <SortableContext items={templates.map((t) => t.id)} strategy={verticalListSortingStrategy}>
-        <ul className="divide-y border-t">
+        <ul className="flex flex-col">
           {templates.map((template) => (
             <TemplateRow key={template.id} template={template} />
           ))}

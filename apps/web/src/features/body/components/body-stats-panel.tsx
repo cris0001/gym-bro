@@ -47,7 +47,11 @@ export function BodyStatsPanel({ entries }: { entries: BodyMeasurement[] }) {
       : `${stats.sinceLast > 0 ? '+' : ''}${stats.sinceLast.toFixed(1)} kg`;
   // Loss (or level) reads as success green; a gain as terracotta.
   const sinceColor =
-    stats.sinceLast === null ? undefined : stats.sinceLast <= 0 ? 'text-[#5a7a52]' : 'text-primary';
+    stats.sinceLast === null
+      ? undefined
+      : stats.sinceLast <= 0
+        ? 'text-[#5a7a52] dark:text-[#8fae85]'
+        : 'text-primary';
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

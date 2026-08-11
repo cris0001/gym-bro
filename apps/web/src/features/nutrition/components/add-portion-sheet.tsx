@@ -71,7 +71,7 @@ export function AddPortionSheet({
             />
             <Button
               type="button"
-              className="h-11 w-full rounded-full bg-[#c25a3a] text-white hover:bg-[#c25a3a]/90"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 h-11 w-full rounded-full"
               disabled={choice === null}
               onClick={() => choice && onAdd(choice)}
             >

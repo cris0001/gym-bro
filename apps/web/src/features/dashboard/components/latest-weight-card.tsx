@@ -1,12 +1,13 @@
 import { Link } from '@tanstack/react-router';
 
 import { useBodyMeasurements } from '@/features/body';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 // Latest logged weight and its change since the previous measurement, or a prompt
 // to log one. Text-forward stat card — micro-label over a big serif value.
 export function LatestWeightCard() {
-  const { data: entries = [] } = useBodyMeasurements();
+  const { data: entries = [], isPending } = useBodyMeasurements();
 
   const weights = entries
     .filter((entry) => entry.weightKg !== null)
@@ -20,7 +21,12 @@ export function LatestWeightCard() {
       <p className="text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase">
         Weight
       </p>
-      {latest !== null ? (
+      {isPending ? (
+        <>
+          <Skeleton className="h-6 w-24" />
+          <Skeleton className="h-3 w-32" />
+        </>
+      ) : latest !== null ? (
         <>
           <p className="font-heading text-[26px] leading-tight font-semibold">
             {latest}
@@ -30,7 +36,10 @@ export function LatestWeightCard() {
             {delta !== null ? (
               <>
                 <span
-                  className={cn('font-medium', delta <= 0 ? 'text-[#5a7a52]' : 'text-foreground')}
+                  className={cn(
+                    'font-medium',
+                    delta <= 0 ? 'text-[#5a7a52] dark:text-[#8fae85]' : 'text-foreground',
+                  )}
                 >
                   {delta > 0 ? '+' : ''}
                   {delta.toFixed(1)} kg

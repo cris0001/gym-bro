@@ -1,10 +1,9 @@
 import { Link, useNavigate } from '@tanstack/react-router';
-import { ChevronLeft, Plus, Star } from 'lucide-react';
+import { ChevronLeft, Star } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { ErrorState } from '@/components/error-state';
-import { ListSkeleton } from '@/components/list-skeleton';
-import { Button } from '@/components/ui/button';
+import { SkeletonList } from '@/components/skeletons';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useConfirm } from '@/stores/confirm.store';
 
@@ -41,7 +40,7 @@ export function PlanDetail({ planId }: PlanDetailProps) {
       <div className="mx-auto lg:col-span-3 flex w-full max-w-2xl flex-col gap-4 p-3 md:p-4">
         <Skeleton className="h-8 w-1/2" />
         <Skeleton className="h-4 w-2/3" />
-        <ListSkeleton rows={3} />
+        <SkeletonList rows={3} />
       </div>
     );
   }
@@ -68,87 +67,95 @@ export function PlanDetail({ planId }: PlanDetailProps) {
   }
 
   return (
-    <div className="mx-auto lg:col-span-3 flex w-full max-w-2xl flex-col">
-      <div className="px-4 py-4">
-        <Link
-          to="/plans"
-          className="text-muted-foreground hover:text-foreground mb-3 inline-flex items-center gap-1 text-sm"
-        >
-          <ChevronLeft className="size-4" />
-          Plans
-        </Link>
+    <div className="mx-auto lg:col-span-3 flex w-full max-w-2xl flex-col gap-[14px] px-5 py-5 text-foreground">
+      <Link
+        to="/plans"
+        className="text-muted-foreground inline-flex items-center gap-1 self-start text-[13px] font-semibold"
+      >
+        <ChevronLeft className="size-[15px]" />
+        Plans
+      </Link>
 
+      <header className="flex flex-col gap-2.5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="font-heading text-[28px] font-medium break-words">{plan.name}</h1>
+            <h1 className="font-heading text-[26px] font-semibold break-words">{plan.name}</h1>
             {plan.description ? (
-              <p className="text-muted-foreground mt-1 text-sm">{plan.description}</p>
+              <p className="font-heading text-muted-foreground text-[13px] italic">
+                {plan.description}
+              </p>
             ) : null}
           </div>
-          <Button
+          <button
             type="button"
-            variant="ghost"
-            className="bg-accent text-primary hover:bg-accent/70 h-11 shrink-0 rounded-full px-5"
+            className="border-border bg-card text-primary h-9 shrink-0 rounded-full border px-4 text-[13px] font-semibold"
             onClick={() => openEdit(plan)}
           >
             Edit
-          </Button>
+          </button>
         </div>
 
-        <div className="mt-3">
-          {activePlan?.id === plan.id ? (
-            <span className="text-primary inline-flex items-center gap-1.5 text-sm font-medium">
-              <Star className="size-4 fill-current" />
-              Active plan
-            </span>
-          ) : (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-9 rounded-full"
-              disabled={setActive.isPending}
-              onClick={() => setActive.mutate(plan.id)}
-            >
-              <Star className="size-4" />
-              Set as active plan
-            </Button>
-          )}
+        {activePlan?.id === plan.id ? (
+          <span className="text-primary inline-flex items-center gap-1.5 self-start text-[13px] font-semibold">
+            <Star className="size-4 fill-current" />
+            Active plan
+          </span>
+        ) : (
+          <button
+            type="button"
+            className="border-border bg-card text-muted-foreground inline-flex h-9 items-center gap-1.5 self-start rounded-full border px-3.5 text-[13px] font-semibold disabled:opacity-50"
+            disabled={setActive.isPending}
+            onClick={() => setActive.mutate(plan.id)}
+          >
+            <Star className="size-4" />
+            Set as active plan
+          </button>
+        )}
+      </header>
+
+      <section className="border-border bg-card rounded-[20px] border px-[18px] py-4">
+        <div className="flex items-center justify-between">
+          <span className="text-muted-foreground text-[11px] font-bold tracking-[0.08em] uppercase">
+            Templates
+          </span>
+          <button
+            type="button"
+            onClick={() => openCreateTemplate(plan.id)}
+            className="text-primary text-[12.5px] font-bold"
+          >
+            + Add
+          </button>
         </div>
-      </div>
 
-      <div className="flex items-center justify-between px-4">
-        <h2 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-          Templates
-        </h2>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-9"
-          onClick={() => openCreateTemplate(plan.id)}
-        >
-          <Plus className="size-4" />
-          Add
-        </Button>
-      </div>
+        {plan.templates.length === 0 ? (
+          <p className="text-muted-foreground mt-2 text-[13px]">No templates yet.</p>
+        ) : (
+          <TemplateList planId={plan.id} templates={plan.templates} />
+        )}
+      </section>
 
-      {plan.templates.length === 0 ? (
-        <p className="text-muted-foreground px-4 py-3 text-sm">No templates yet.</p>
-      ) : (
-        <TemplateList planId={plan.id} templates={plan.templates} />
-      )}
+      <button
+        type="button"
+        onClick={() => openCreateTemplate(plan.id)}
+        className="text-primary rounded-[18px] border border-dashed border-[#d9c9b2] p-[13px] text-center text-[13px] font-bold dark:border-[#4d4132]"
+      >
+        + Add template
+      </button>
 
-      <div className="flex justify-center p-4">
-        <button
-          type="button"
-          className="text-sm font-medium text-[#b04e2f] disabled:opacity-50"
-          disabled={remove.isPending}
-          onClick={() => void onDelete(plan)}
-        >
-          Delete plan
-        </button>
-      </div>
+      {plan.templates.length > 1 ? (
+        <p className="font-heading text-muted-foreground text-center text-[12.5px] italic">
+          drag rows to reorder
+        </p>
+      ) : null}
+
+      <button
+        type="button"
+        className="self-center text-[13px] font-semibold text-[#b04e2f] disabled:opacity-50 dark:text-[#e08a5f]"
+        disabled={remove.isPending}
+        onClick={() => void onDelete(plan)}
+      >
+        Delete plan
+      </button>
 
       <PlanSheet />
       <TemplateSheet />

@@ -73,7 +73,7 @@ function PlannedTodoCard({ session }: { session: PlannedSessionWithTemplate }) {
       </div>
 
       {exercises.length > 0 && (
-        <ul className="flex flex-col gap-1 text-[12.5px] text-[#5c5044]">
+        <ul className="flex flex-col gap-1 text-[12.5px] text-[#5c5044] dark:text-[#c9bcab]">
           {exercises.map((item) => {
             const target = targetLabel(item.targetSets, item.targetRepsMin, item.targetRepsMax);
             return (
@@ -162,7 +162,7 @@ export function DayDetail({ date }: { date: string }) {
       {workouts.length > 0 && (
         <section className="flex flex-col gap-2">
           <h3 className={sectionHeading}>
-            <span className="size-2 rounded-full bg-[#5a7a52]" />
+            <span className="size-2 rounded-full bg-[#5a7a52] dark:bg-[#8fae85]" />
             Done
           </h3>
           {workouts.map((workout) => (
@@ -178,7 +178,7 @@ export function DayDetail({ date }: { date: string }) {
       {stravaSessions.length > 0 && (
         <section className="flex flex-col gap-2">
           <h3 className={sectionHeading}>
-            <span className="size-2 rounded-full bg-[#d15b28]" />
+            <span className="size-2 rounded-full bg-[#d15b28] dark:bg-[#ff7a3d]" />
             Strava
           </h3>
           {stravaSessions.map((session) => (

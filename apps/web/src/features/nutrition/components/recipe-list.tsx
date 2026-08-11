@@ -3,7 +3,7 @@ import { ChefHat, ChevronRight, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { EmptyState } from '@/components/empty-state';
-import { ListSkeleton } from '@/components/list-skeleton';
+import { SkeletonList } from '@/components/skeletons';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useConfirm } from '@/stores/confirm.store';
@@ -40,7 +40,7 @@ export function RecipeList({ selectedId = null, onSelect }: RecipeListProps) {
   }
 
   if (isPending) {
-    return <ListSkeleton />;
+    return <SkeletonList avatar />;
   }
   if (recipes.length === 0) {
     return (
@@ -68,7 +68,7 @@ export function RecipeList({ selectedId = null, onSelect }: RecipeListProps) {
   }
 
   return (
-    <ul className="divide-y divide-dashed divide-[#e5d9c6]">
+    <ul className="divide-y divide-dashed divide-[#d9c9b2] dark:divide-[#41362a]">
       {recipes.map((recipe) => {
         const inner = (
           <>
@@ -99,7 +99,7 @@ export function RecipeList({ selectedId = null, onSelect }: RecipeListProps) {
                 </p>
               ) : null}
             </div>
-            <ChevronRight className="size-5 shrink-0 self-center text-[#c9bda9]" />
+            <ChevronRight className="size-5 shrink-0 self-center text-[#c9bda9] dark:text-[#5b4e3e]" />
           </>
         );
         return (

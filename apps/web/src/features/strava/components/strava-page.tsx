@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 
 import type { StravaSessionItem } from '@gym-bro/shared';
 
+import { SkeletonChart, SkeletonList } from '@/components/skeletons';
 import { EmptyState } from '@/components/empty-state';
 import { ErrorState } from '@/components/error-state';
-import { Skeleton } from '@/components/ui/skeleton';
 
 import { useStravaSessions } from '../hooks/use-strava-sessions';
 import { useStravaStatus } from '../hooks/use-strava-status';
@@ -69,10 +69,9 @@ export function StravaPage({ initialActivityId }: { initialActivityId?: string |
 
           <div className="lg:order-1 flex flex-col gap-4">
             {isPending ? (
-              <div className="flex flex-col gap-2">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <Skeleton key={i} className="h-16 rounded-xl" />
-                ))}
+              <div className="flex flex-col gap-4">
+                <SkeletonChart />
+                <SkeletonList avatar rows={5} />
               </div>
             ) : isError ? (
               <ErrorState message="Couldn't load your activities." onRetry={() => void refetch()} />
@@ -88,7 +87,7 @@ export function StravaPage({ initialActivityId }: { initialActivityId?: string |
 
                 {groupByMonth(shown).map((group) => (
                   <section key={group.key} className="flex flex-col gap-2">
-                    <h2 className="font-heading bg-background/95 sticky top-14 z-[1] py-1 text-[13px] italic text-[#a89a88] backdrop-blur lg:top-0">
+                    <h2 className="font-heading py-1 text-[13px] italic text-[#a89a88] dark:text-[#8a7c69]">
                       {group.label}
                     </h2>
                     <ul className="flex flex-col gap-2">

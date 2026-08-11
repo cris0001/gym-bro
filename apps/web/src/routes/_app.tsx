@@ -30,7 +30,7 @@ function AppLayout() {
         {/* Mobile-only top bar; on lg the sidebar carries the logo + logout. */}
         <header className="bg-background/80 sticky top-0 z-10 flex h-14 items-center justify-between border-b px-4 backdrop-blur lg:hidden">
           <span className="font-heading flex items-center gap-2 text-lg font-semibold">
-            <BrandMark className="size-7" />
+            <BrandMark className="size-8" />
           </span>
           <div className="flex items-center gap-1">
             <ThemeToggle />

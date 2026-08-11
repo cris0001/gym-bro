@@ -10,6 +10,7 @@ import {
   YAxis,
 } from 'recharts';
 
+import { SkeletonChart } from '@/components/skeletons';
 import { cn } from '@/lib/utils';
 
 import type { StatsRange } from '../api/stats';
@@ -57,7 +58,7 @@ export function ExerciseProgressChart({ exerciseId, range }: ExerciseProgressCha
     return <ChartPlaceholder>Select an exercise to see its progress.</ChartPlaceholder>;
   }
   if (isPending) {
-    return <ChartPlaceholder>Loading…</ChartPlaceholder>;
+    return <SkeletonChart />;
   }
 
   const data = points.map((point) => ({
@@ -73,7 +74,7 @@ export function ExerciseProgressChart({ exerciseId, range }: ExerciseProgressCha
   const hasData = data.some((d) => d.weight !== null);
   const dimensionLabel = DIMENSIONS.find((d) => d.key === dimension)?.label.toLowerCase();
   // Top set reads as the terracotta accent; the normal (back-off) set as gold.
-  const lineColor = dimension === 'top' ? 'var(--primary)' : '#d9a441';
+  const lineColor = dimension === 'top' ? 'var(--primary)' : 'var(--chart-2)';
 
   // The Top/Normal switch stays mounted even with no data for the chosen tier, so
   // you can always switch back (e.g. from an empty Top set to Normal).
@@ -87,7 +88,7 @@ export function ExerciseProgressChart({ exerciseId, range }: ExerciseProgressCha
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: -8 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0e7d9" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--muted)" vertical={false} />
               <XAxis
                 dataKey="date"
                 tickFormatter={(value: string) => format(parseISO(value), 'MMM d')}

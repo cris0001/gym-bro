@@ -3,6 +3,7 @@ import { format, parseISO } from 'date-fns';
 import { ChevronRight, Star } from 'lucide-react';
 
 import { useWorkoutSession, useWorkoutSessions } from '@/features/sessions';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // A small window of recent sessions to find the latest strength one within (ad-hoc
 // activities are skipped) — enough for the dashboard without paging.
@@ -14,12 +15,22 @@ const microLabel = 'text-muted-foreground text-[11px] font-medium tracking-[0.08
 // micro-label over the serif name + a muted meta line. Ad-hoc activity sessions are
 // ignored (they belong to the Strava/activity view).
 export function LastWorkoutCard() {
-  const { data } = useWorkoutSessions(RECENT_WINDOW, 0);
+  const { data, isPending } = useWorkoutSessions(RECENT_WINDOW, 0);
   const last = data?.items.find((session) => session.sessionType === 'strength') ?? null;
   // Pull the exercise names performed (list items don't carry them); deferred until
   // there's a session to show.
   const { data: detail } = useWorkoutSession(last?.id ?? '', Boolean(last));
   const exercises = detail?.performances.map((performance) => performance.exercise.name) ?? [];
+
+  if (isPending) {
+    return (
+      <div className="bg-card flex flex-col gap-2 rounded-2xl border p-5">
+        <p className={microLabel}>Last workout</p>
+        <Skeleton className="h-5 w-2/3" />
+        <Skeleton className="h-3 w-1/2" />
+      </div>
+    );
+  }
 
   if (!last) {
     return (

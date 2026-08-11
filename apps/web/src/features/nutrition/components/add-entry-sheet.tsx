@@ -120,19 +120,19 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex flex-col bg-[#faf5ee]">
+      <div className="bg-background fixed inset-0 z-50 flex flex-col">
         <div className="flex-1 overflow-y-auto">
           <div className="mx-auto flex w-full max-w-md flex-col gap-4 p-4">
             <div className="flex items-center justify-between gap-2">
               <button
                 type="button"
                 onClick={closeAdd}
-                className="-ml-1 flex items-center text-[13px] font-semibold text-[#8d8072]"
+                className="-ml-1 flex items-center text-[13px] font-semibold text-muted-foreground"
               >
                 <ChevronLeft className="size-4" />
                 Diary
               </button>
-              <span className="font-heading text-sm text-[#8d8072] italic">
+              <span className="font-heading text-sm text-muted-foreground italic">
                 {format(parseISO(loggedDate), 'EEEE, MMMM d')}
               </span>
             </div>
@@ -143,12 +143,12 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
 
             <div className="flex gap-2">
               <div className="relative min-w-0 flex-1">
-                <Search className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#8d8072]" />
+                <Search className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" />
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search a product or recipe…"
-                  className="h-[46px] w-full rounded-xl border border-[#eadfd0] bg-[#fffcf7] pr-3 pl-10 text-sm placeholder:text-[#8d8072] focus:outline-none"
+                  className="h-[46px] w-full rounded-xl border border-border bg-card pr-3 pl-10 text-sm placeholder:text-muted-foreground focus:outline-none"
                 />
               </div>
               {canScan ? (
@@ -156,21 +156,23 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
                   type="button"
                   aria-label="Scan a barcode"
                   onClick={() => setScanning(true)}
-                  className="flex size-[46px] shrink-0 items-center justify-center rounded-xl border border-[#eadfd0] bg-[#fffcf7] text-[#c25a3a]"
+                  className="flex size-[46px] shrink-0 items-center justify-center rounded-xl border border-border bg-card text-primary"
                 >
                   <Barcode className="size-5" />
                 </button>
               ) : null}
             </div>
 
-            <div className="overflow-hidden rounded-[18px] border border-[#eadfd0] bg-[#fffcf7]">
+            <div className="overflow-hidden rounded-[18px] border border-border bg-card">
               {/* Capped height with its own scroll so the "Added" list and the total bar
                   stay in view without scrolling past the whole dictionary. */}
               <div className="max-h-[42vh] overflow-y-auto">
                 {rows.map((row, i) => (
                   <div
                     key={`${row.kind}-${row.id}`}
-                    className={i > 0 ? 'border-t border-dashed border-[#e5d9c6]' : ''}
+                    className={
+                      i > 0 ? 'border-t border-dashed border-[#e5d9c6] dark:border-[#41362a]' : ''
+                    }
                   >
                     <AddEntryResultRow
                       row={row}
@@ -184,7 +186,7 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
               <button
                 type="button"
                 onClick={createNewFood}
-                className="flex w-full items-center justify-center gap-1.5 border-t border-dashed border-[#e5d9c6] py-3.5 text-[12.5px] font-bold text-[#c25a3a]"
+                className="flex w-full items-center justify-center gap-1.5 border-t border-dashed border-[#e5d9c6] dark:border-[#41362a] py-3.5 text-[12.5px] font-bold text-primary"
               >
                 <Plus className="size-4" />
                 Create a new food
@@ -194,15 +196,17 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
             {mealEntries.length > 0 ? (
               <div className="flex flex-col gap-2">
                 <div className="flex items-baseline justify-between">
-                  <span className="text-[11px] font-semibold tracking-wide text-[#8d8072] uppercase">
+                  <span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
                     Added to {mealLabel}
                   </span>
                   <span className="font-heading text-lg font-semibold">
                     {mealTotal.toLocaleString('en-US')}
-                    <span className="ml-0.5 text-[11px] font-normal text-[#8d8072]">kcal</span>
+                    <span className="ml-0.5 text-[11px] font-normal text-muted-foreground">
+                      kcal
+                    </span>
                   </span>
                 </div>
-                <ul className="flex flex-col divide-y divide-dashed divide-[#e5d9c6] rounded-[18px] border border-[#eadfd0] bg-[#fffcf7] px-4">
+                <ul className="flex flex-col divide-y divide-dashed divide-[#e5d9c6] rounded-[18px] border border-border bg-card px-4">
                   {mealEntries.map((entry) => (
                     <DiaryEntryRow key={entry.id} entry={entry} showImage mutedDelete />
                   ))}
@@ -212,20 +216,20 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
           </div>
         </div>
 
-        <div className="sticky bottom-0 flex items-center gap-3 border-t border-[#eadfd0] bg-[rgba(250,245,238,0.95)] px-4 py-3 backdrop-blur">
+        <div className="bg-background/95 sticky bottom-0 flex items-center gap-3 border-t border-border px-4 py-3 backdrop-blur">
           <div className="flex flex-col">
-            <span className="text-[11px] font-semibold tracking-wide text-[#8d8072] uppercase">
+            <span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
               {mealLabel} total
             </span>
             <span className="font-heading text-[17px] font-semibold">
               {mealTotal.toLocaleString('en-US')}
-              <span className="ml-0.5 text-[11px] font-normal text-[#8d8072]">kcal</span>
+              <span className="ml-0.5 text-[11px] font-normal text-muted-foreground">kcal</span>
             </span>
           </div>
           <button
             type="button"
             onClick={closeAdd}
-            className="h-[46px] flex-1 rounded-full bg-[#c25a3a] text-sm font-semibold text-white"
+            className="bg-primary text-primary-foreground h-[46px] flex-1 rounded-full text-sm font-semibold"
           >
             Done
           </button>

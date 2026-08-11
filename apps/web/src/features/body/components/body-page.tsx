@@ -1,6 +1,7 @@
 import { format, subMonths } from 'date-fns';
 import { useState } from 'react';
 
+import { SkeletonList } from '@/components/skeletons';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -46,7 +47,7 @@ function filterByRange(entries: BodyMeasurement[], from: string, to: string): Bo
 // a period selector that scopes both the chart and the history below it, and the
 // (period-filtered) measurement history. Mobile-first single column.
 export function BodyPage() {
-  const { data } = useBodyMeasurements();
+  const { data, isPending } = useBodyMeasurements();
   // Full target history (unfiltered): the chart step-holds each date's applicable
   // target, so a target set before the visible window still applies within it.
   const { data: targets } = useTargetHistory();
@@ -148,7 +149,11 @@ export function BodyPage() {
       <section className="flex flex-col gap-2">
         <h2 className="font-heading text-lg font-semibold">History</h2>
         <div className="bg-card rounded-2xl border px-4">
-          <MeasurementList entries={filtered} targets={targets ?? []} />
+          {isPending ? (
+            <SkeletonList rows={5} />
+          ) : (
+            <MeasurementList entries={filtered} targets={targets ?? []} />
+          )}
         </div>
       </section>
     </div>

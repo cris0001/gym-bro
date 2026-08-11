@@ -231,7 +231,7 @@ export function CalendarGrid() {
           </div>
         </div>
 
-        <div className="font-heading grid grid-cols-7 text-center text-sm italic text-[#a89a88]">
+        <div className="font-heading grid grid-cols-7 text-center text-sm italic text-[#a89a88] dark:text-[#8a7c69]">
           {WEEKDAYS.map((day) => (
             <span key={day} className="py-1">
               {day}

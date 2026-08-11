@@ -1,6 +1,7 @@
 import { format, parseISO } from 'date-fns';
 import { Pencil } from 'lucide-react';
 
+import { SkeletonList } from '@/components/skeletons';
 import { Button } from '@/components/ui/button';
 
 import type { NutritionTarget } from '@gym-bro/shared';
@@ -15,7 +16,7 @@ export function TargetsHistory({ onEdit }: { onEdit: (target: NutritionTarget) =
   const { data: targets = [], isPending } = useTargets();
 
   if (isPending) {
-    return <p className="text-muted-foreground text-sm">Loading…</p>;
+    return <SkeletonList rows={3} />;
   }
   if (targets.length === 0) {
     return <p className="text-muted-foreground text-sm">No target history yet.</p>;
@@ -24,7 +25,7 @@ export function TargetsHistory({ onEdit }: { onEdit: (target: NutritionTarget) =
   const ordered = [...targets].reverse();
 
   return (
-    <ul className="divide-y divide-dashed divide-[#e5d9c6]">
+    <ul className="divide-y divide-dashed divide-[#d9c9b2] dark:divide-[#41362a]">
       {ordered.map((target, index) => (
         <li key={target.id} className="flex items-start justify-between gap-3 py-3">
           <div className="min-w-0">

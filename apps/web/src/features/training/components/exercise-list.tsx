@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 
 import { EmptyState } from '@/components/empty-state';
 import { ErrorState } from '@/components/error-state';
-import { ListSkeleton } from '@/components/list-skeleton';
+import { SkeletonList } from '@/components/skeletons';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/stores/confirm.store';
 import type { Exercise, ExerciseCategory } from '@gym-bro/shared';
@@ -36,7 +36,7 @@ export function ExerciseList({ category, search }: ExerciseListProps) {
   const confirm = useConfirm();
 
   if (isPending) {
-    return <ListSkeleton />;
+    return <SkeletonList />;
   }
 
   if (isError) {
@@ -77,7 +77,7 @@ export function ExerciseList({ category, search }: ExerciseListProps) {
   }
 
   return (
-    <ul className="divide-y divide-dashed divide-[#e5d9c6]">
+    <ul className="divide-y divide-dashed divide-[#e5d9c6] dark:divide-[#41362a]">
       {filtered.map((exercise) => (
         <li
           key={exercise.id}

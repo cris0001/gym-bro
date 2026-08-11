@@ -85,7 +85,7 @@ export function StravaSummary({
               className={cn(
                 'h-10 rounded-full px-3.5 text-sm font-medium transition-colors',
                 type === null
-                  ? 'bg-[#fbe3d4] text-[#c14e1d]'
+                  ? 'bg-[#fbe3d4] text-[#c14e1d] dark:bg-[#45291b] dark:text-[#ff7a3d]'
                   : 'bg-secondary text-muted-foreground',
               )}
             >
@@ -104,7 +104,9 @@ export function StravaSummary({
                   onClick={() => onTypeChange(active ? null : t)}
                   className={cn(
                     'flex size-10 items-center justify-center rounded-full transition-colors',
-                    active ? 'bg-[#fbe3d4] text-[#c14e1d]' : 'bg-secondary text-muted-foreground',
+                    active
+                      ? 'bg-[#fbe3d4] text-[#c14e1d] dark:bg-[#45291b] dark:text-[#ff7a3d]'
+                      : 'bg-secondary text-muted-foreground',
                   )}
                 >
                   <Icon className="size-4" />
@@ -146,7 +148,7 @@ export function StravaSummary({
           {weeks.map((w) => (
             <div
               key={w.weekStart}
-              className="flex-1 rounded-t bg-[#d15b28]/70"
+              className="flex-1 rounded-t bg-[#d15b28]/70 dark:bg-[#ff7a3d]/70"
               style={{ height: `${Math.max((w.value / maxWeek) * 100, 2)}%` }}
               title={`Week of ${w.label}: ${barTitle(w.value)}`}
             />

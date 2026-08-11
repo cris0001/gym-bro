@@ -27,27 +27,29 @@ export function AddEntryResultRow({
           <img
             src={row.imageUrl}
             alt=""
-            className="size-[38px] shrink-0 rounded-[10px] border border-[#eadfd0] object-cover"
+            className="border-border size-[38px] shrink-0 rounded-[10px] border object-cover"
           />
         ) : (
-          <span className="size-[38px] shrink-0 rounded-[10px] bg-gradient-to-br from-[#e7d9c2] to-[#cdb88f]" />
+          <span className="size-[38px] shrink-0 rounded-[10px] bg-gradient-to-br from-[#e7d9c2] to-[#cdb88f] dark:from-[#3a2f22] dark:to-[#4a3d2d]" />
         )}
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-1.5">
             <span className="truncate text-[13.5px] leading-tight font-semibold">{row.name}</span>
             {row.isRecent ? (
-              <span className="shrink-0 rounded-[5px] bg-[#fdf1e8] px-[5px] py-0.5 text-[9px] font-extrabold tracking-wide text-[#b04e2f] uppercase">
+              <span className="bg-primary text-primary-foreground shrink-0 rounded-[5px] px-[5px] py-0.5 text-[9px] font-extrabold tracking-wide uppercase">
                 Recent
               </span>
             ) : null}
           </span>
-          <span className="mt-0.5 block truncate text-[11.5px] text-[#8d8072]">{row.meta}</span>
+          <span className="text-muted-foreground mt-0.5 block truncate text-[11.5px]">
+            {row.meta}
+          </span>
         </span>
       </button>
       <button
         type="button"
         aria-label={`Add ${row.name}`}
-        className="flex size-[34px] shrink-0 items-center justify-center rounded-full bg-[#fdf1e8] text-[#c25a3a] transition-colors hover:bg-[#f8e4d3] disabled:opacity-50"
+        className="bg-accent text-primary hover:bg-accent/70 flex size-[34px] shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-50"
         disabled={disabled}
         onClick={onAdd}
       >
