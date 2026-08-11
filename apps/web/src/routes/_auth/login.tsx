@@ -11,11 +11,6 @@ function LoginPage() {
 
   return (
     <div className="grid gap-6">
-      <div className="grid gap-1 text-center">
-        <h1 className="font-heading text-2xl font-medium">Welcome back</h1>
-        <p className="text-muted-foreground text-sm">Sign in to your account</p>
-      </div>
-
       <LoginForm onSuccess={() => void navigate({ to: '/' })} />
 
       <p className="text-muted-foreground text-center text-sm">

@@ -20,12 +20,9 @@ export const Route = createFileRoute('/_auth')({
 function AuthLayout() {
   return (
     <main className="bg-background flex min-h-dvh flex-col justify-center p-6">
-      <div className="mx-auto flex w-full max-w-sm flex-col gap-6">
-        <div className="flex flex-col items-center gap-2">
-          <BrandMark className="size-12" />
-          <span className="font-heading text-xl font-semibold">Gym Bro</span>
-        </div>
-        <div className="bg-card rounded-2xl border p-6">
+      <div className="mx-auto w-full max-w-sm">
+        <div className="bg-card flex flex-col gap-6 rounded-2xl border p-6">
+          <BrandMark className="mx-auto size-12" />
           <Outlet />
         </div>
       </div>
