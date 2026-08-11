@@ -6,16 +6,20 @@ import type { WorkoutSessionDetail } from '@gym-bro/shared';
 import { useWorkoutDraftStore } from '../stores/workout-draft.store';
 
 // Loads a finished strength workout into the draft editor and routes to the
-// active-session view. If another workout is already in progress, it blocks and
-// bounces to that session — only one workout at a time.
+// active-session view. Only a *live* workout in progress blocks — an existing
+// edit draft is disposable (it's re-derived from the server) so it's just
+// replaced. This keeps Edit working even if a stale edit draft is left in
+// localStorage; otherwise the guard would silently swallow the tap on mobile.
 export function useEditWorkout() {
   const navigate = useNavigate();
   const loadForEdit = useWorkoutDraftStore((s) => s.loadForEdit);
-  const hasDraft = useWorkoutDraftStore((s) => s.draft !== null);
+  const liveWorkout = useWorkoutDraftStore(
+    (s) => s.draft !== null && s.draft.editingSessionId === null,
+  );
 
   return function editWorkout(detail: WorkoutSessionDetail) {
-    if (hasDraft) {
-      toast.error('You already have an active workout — finish or discard it first.');
+    if (liveWorkout) {
+      toast.error('You have a workout in progress — finish or discard it first.');
       void navigate({ to: '/session' });
       return;
     }
