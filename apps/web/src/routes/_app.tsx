@@ -42,7 +42,7 @@ function AppLayout() {
             page choose its desktop placement: wide pages sit in the left-of-center
             band (lg:col-start-2 → 1fr left, 2fr right); narrow pages span the full
             width and center themselves (lg:col-span-3 mx-auto). */}
-        <main className="bg-muted/40 flex-1 pb-16 lg:grid lg:grid-cols-[1fr_minmax(0,72rem)_2fr] lg:pb-0">
+        <main className="bg-muted/40 flex-1 pb-16 lg:grid lg:grid-cols-[1fr_minmax(0,72rem)_2fr] lg:pb-0 dark:bg-background">
           <Outlet />
         </main>
       </div>

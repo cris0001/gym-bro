@@ -12,8 +12,9 @@ const childClass = 'flex items-center gap-2.5 rounded-[10px] px-3 py-1.5 text-sm
 const activeClass = 'bg-sidebar-accent text-primary';
 const inactiveClass = 'text-muted-foreground hover:bg-accent hover:text-foreground';
 // Strava-branded section: warm terracotta-orange, filled only when active.
-const stravaActiveClass = 'bg-[#d15b28] text-white hover:bg-[#d15b28]/90';
-const stravaInactiveClass = 'text-[#d15b28] hover:bg-[#fbe3d4]';
+const stravaActiveClass = 'bg-[#d15b28] text-white hover:bg-[#d15b28]/90 dark:bg-[#ff7a3d]';
+const stravaInactiveClass =
+  'text-[#d15b28] hover:bg-[#fbe3d4] dark:text-[#ff7a3d] dark:hover:bg-[#45291b]';
 
 // Desktop navigation: a fixed, branded left sidebar with the four sections — each
 // lands on its main view, with its submenu nested beneath a guide rail. Hidden

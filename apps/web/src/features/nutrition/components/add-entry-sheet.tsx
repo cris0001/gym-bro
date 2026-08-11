@@ -171,7 +171,7 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
                   <div
                     key={`${row.kind}-${row.id}`}
                     className={
-                      i > 0 ? 'border-t border-dashed border-[#e5d9c6] dark:border-[#41362a]' : ''
+                      i > 0 ? 'border-t border-dashed border-[#d9c9b2] dark:border-[#41362a]' : ''
                     }
                   >
                     <AddEntryResultRow
@@ -186,7 +186,7 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
               <button
                 type="button"
                 onClick={createNewFood}
-                className="flex w-full items-center justify-center gap-1.5 border-t border-dashed border-[#e5d9c6] dark:border-[#41362a] py-3.5 text-[12.5px] font-bold text-primary"
+                className="flex w-full items-center justify-center gap-1.5 border-t border-dashed border-[#d9c9b2] dark:border-[#41362a] py-3.5 text-[12.5px] font-bold text-primary"
               >
                 <Plus className="size-4" />
                 Create a new food
@@ -206,7 +206,7 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
                     </span>
                   </span>
                 </div>
-                <ul className="flex flex-col divide-y divide-dashed divide-[#e5d9c6] rounded-[18px] border border-border bg-card px-4">
+                <ul className="flex flex-col divide-y divide-dashed divide-[#d9c9b2] rounded-[18px] border border-border bg-card px-4 dark:divide-[#41362a]">
                   {mealEntries.map((entry) => (
                     <DiaryEntryRow key={entry.id} entry={entry} showImage mutedDelete />
                   ))}

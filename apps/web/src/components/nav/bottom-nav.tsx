@@ -14,14 +14,14 @@ export function BottomNav() {
   const activeSection = findActiveSection(pathname);
 
   return (
-    <nav className="bg-card fixed inset-x-0 bottom-0 z-20 flex h-14 border-t lg:hidden">
+    <nav className="bg-card dark:bg-background fixed inset-x-0 bottom-0 z-20 flex h-14 border-t lg:hidden">
       {NAV_SECTIONS.map((section) => {
         const Icon = section.icon;
         const isActive = section.label === activeSection.label;
         // Strava reads as its own orange tab within the bar.
         const isStrava = section.brand === 'strava';
         const color = isStrava
-          ? 'text-[#d15b28]'
+          ? 'text-[#d15b28] dark:text-[#ff7a3d]'
           : isActive
             ? 'text-primary'
             : 'text-muted-foreground';
@@ -38,7 +38,7 @@ export function BottomNav() {
             <span
               className={cn(
                 'flex h-[26px] w-11 items-center justify-center rounded-[13px] transition-colors',
-                isActive && (isStrava ? 'bg-[#fbe3d4]' : 'bg-accent'),
+                isActive && (isStrava ? 'bg-[#fbe3d4] dark:bg-[#45291b]' : 'bg-accent'),
               )}
             >
               <Icon className="size-5" />
