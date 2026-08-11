@@ -33,7 +33,7 @@ export function StravaConnectionCard({
           className,
         )}
       >
-        <span className="flex size-14 items-center justify-center rounded-full bg-[#fbe3d4] text-[#d15b28]">
+        <span className="flex size-14 items-center justify-center rounded-full bg-[#fbe3d4] text-[#d15b28] dark:bg-[#45291b] dark:text-[#ff7a3d]">
           <Zap className="size-7" />
         </span>
         <div>
@@ -44,7 +44,7 @@ export function StravaConnectionCard({
         </div>
         <Button
           asChild
-          className="h-11 rounded-full bg-[#d15b28] px-5 text-white hover:bg-[#d15b28]/90"
+          className="h-11 rounded-full bg-[#d15b28] px-5 text-white hover:bg-[#d15b28]/90 dark:bg-[#ff7a3d]"
         >
           <a href={STRAVA_CONNECT_URL}>Connect Strava</a>
         </Button>
@@ -65,11 +65,24 @@ export function StravaConnectionCard({
   return (
     <div className={cn('bg-card flex flex-col gap-3 rounded-2xl border p-4', className)}>
       <div className="flex items-center gap-2">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#fbe3d4] text-[#d15b28]">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#fbe3d4] text-[#d15b28] dark:bg-[#45291b] dark:text-[#ff7a3d]">
           <Zap className="size-4" />
         </span>
         <div>
-          <p className="font-medium text-[#d15b28]">Strava connected</p>
+          <p className="font-medium text-[#d15b28] dark:text-[#ff7a3d]">Strava connected</p>
+          {status.athleteId ? (
+            <p className="text-muted-foreground text-xs">
+              Connected as{' '}
+              <a
+                href={`https://www.strava.com/athletes/${status.athleteId}`}
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium text-[#d15b28] underline underline-offset-2 dark:text-[#ff7a3d]"
+              >
+                {status.athleteName ?? `athlete #${status.athleteId}`}
+              </a>
+            </p>
+          ) : null}
           <p className="text-muted-foreground text-xs">
             {status.lastSyncAt
               ? `Last synced ${format(parseISO(status.lastSyncAt), 'PP p')}`
@@ -80,7 +93,7 @@ export function StravaConnectionCard({
       <div className="flex gap-2">
         <Button
           type="button"
-          className="h-11 flex-1 rounded-full bg-[#d15b28] text-white hover:bg-[#d15b28]/90"
+          className="h-11 flex-1 rounded-full bg-[#d15b28] text-white hover:bg-[#d15b28]/90 dark:bg-[#ff7a3d]"
           disabled={importActivities.isPending}
           onClick={() => importActivities.mutate()}
         >

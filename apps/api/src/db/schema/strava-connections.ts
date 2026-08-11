@@ -16,6 +16,11 @@ export const stravaConnections = pgTable(
       .references(() => users.id, { onDelete: 'cascade' }),
     // Strava athlete id from the token response.
     athleteId: text('athlete_id').notNull(),
+    // Athlete display name (first + last, or username) captured at connect for the
+    // "Connected as …" label. Nullable: rows from before this column, and cases where
+    // Strava returns no name. The token refresh response omits `athlete`, so this is
+    // only ever set on (re)connect — never cleared by a refresh.
+    athleteName: text('athlete_name'),
     // Short-lived (Strava access tokens expire ~6h); refreshed via refresh_token.
     accessToken: text('access_token').notNull(),
     refreshToken: text('refresh_token').notNull(),

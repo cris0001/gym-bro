@@ -18,6 +18,7 @@ function fakeConnection(overrides: Partial<StravaConnectionRow> = {}): StravaCon
     id: 'conn-1',
     userId: 'user-1',
     athleteId: '12345',
+    athleteName: 'Jan Kowalski',
     accessToken: 'access-x',
     refreshToken: 'refresh-x',
     expiresAt: new Date('2099-01-01T00:00:00Z'),
@@ -86,7 +87,7 @@ describe('strava callback route', () => {
           access_token: 'new-access',
           refresh_token: 'new-refresh',
           expires_at: 4102444800,
-          athlete: { id: 12345 },
+          athlete: { id: 12345, firstname: 'Jan', lastname: 'Kowalski' },
         }),
         { status: 200, headers: { 'content-type': 'application/json' } },
       ),
@@ -103,6 +104,7 @@ describe('strava callback route', () => {
       expect.objectContaining({
         userId: 'user-1',
         athleteId: '12345',
+        athleteName: 'Jan Kowalski',
         accessToken: 'new-access',
         refreshToken: 'new-refresh',
         scope: 'activity:read_all',
@@ -253,13 +255,19 @@ describe('strava status + disconnect routes', () => {
 
     const res = await request('GET', '/api/strava/status', await authCookie());
     const body = (await res.json()) as {
-      data: { connected: boolean; athleteId: string | null; lastSyncAt: string | null };
+      data: {
+        connected: boolean;
+        athleteId: string | null;
+        athleteName: string | null;
+        lastSyncAt: string | null;
+      };
     };
 
     expect(res.status).toBe(200);
     expect(body.data).toEqual({
       connected: true,
       athleteId: '12345',
+      athleteName: 'Jan Kowalski',
       scope: 'activity:read_all',
       lastSyncAt: '2026-07-01T00:00:00.000Z',
     });

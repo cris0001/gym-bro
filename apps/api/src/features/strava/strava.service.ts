@@ -83,12 +83,20 @@ export async function getAuthorizeUrl(userId: string): Promise<string> {
 // --- Callback / token exchange ---
 
 // Only the fields we use from Strava's token response. `athlete` is present on the
-// initial code exchange, absent on a refresh.
+// initial code exchange, absent on a refresh. firstname/lastname/username feed the
+// "Connected as …" label; all optional since Strava may omit them.
 const tokenResponseSchema = z.object({
   access_token: z.string(),
   refresh_token: z.string(),
   expires_at: z.number(), // unix seconds
-  athlete: z.object({ id: z.number() }).optional(),
+  athlete: z
+    .object({
+      id: z.number(),
+      firstname: z.string().nullish(),
+      lastname: z.string().nullish(),
+      username: z.string().nullish(),
+    })
+    .optional(),
 });
 type TokenResponse = z.infer<typeof tokenResponseSchema>;
 
@@ -132,9 +140,15 @@ export async function completeConnection(input: {
   if (!token.athlete) {
     throw new InternalError('Strava did not return an athlete');
   }
+  // Display name: "First Last", falling back to the username, then null. A plain `||`
+  // chain would be cleaner but the lint rule pushes nullish coalescing, which wouldn't
+  // fall through on an empty join — so pick the full name explicitly when it's non-empty.
+  const fullName = [token.athlete.firstname, token.athlete.lastname].filter(Boolean).join(' ');
+  const athleteName = fullName !== '' ? fullName : (token.athlete.username ?? null);
   await stravaRepository.upsertConnection({
     userId,
     athleteId: String(token.athlete.id),
+    athleteName,
     accessToken: token.access_token,
     refreshToken: token.refresh_token,
     expiresAt: new Date(token.expires_at * 1000),
@@ -148,11 +162,12 @@ export async function completeConnection(input: {
 export async function getStatus(userId: string): Promise<StravaConnectionStatus> {
   const connection = await stravaRepository.findConnectionByUserId(userId);
   if (!connection) {
-    return { connected: false, athleteId: null, scope: null, lastSyncAt: null };
+    return { connected: false, athleteId: null, athleteName: null, scope: null, lastSyncAt: null };
   }
   return {
     connected: true,
     athleteId: connection.athleteId,
+    athleteName: connection.athleteName,
     scope: connection.scope,
     lastSyncAt: connection.lastSyncAt ? connection.lastSyncAt.toISOString() : null,
   };

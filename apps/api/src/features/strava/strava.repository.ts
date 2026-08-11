@@ -16,6 +16,7 @@ export type StravaConnectionRow = typeof stravaConnections.$inferSelect;
 export interface StravaConnectionUpsert {
   userId: string;
   athleteId: string;
+  athleteName: string | null;
   accessToken: string;
   refreshToken: string;
   expiresAt: Date;
@@ -40,6 +41,7 @@ export async function upsertConnection(data: StravaConnectionUpsert): Promise<St
     .values({
       userId: data.userId,
       athleteId: data.athleteId,
+      athleteName: data.athleteName,
       accessToken: data.accessToken,
       refreshToken: data.refreshToken,
       expiresAt: data.expiresAt,
@@ -49,6 +51,7 @@ export async function upsertConnection(data: StravaConnectionUpsert): Promise<St
       target: stravaConnections.userId,
       set: {
         athleteId: data.athleteId,
+        athleteName: data.athleteName,
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
         expiresAt: data.expiresAt,
