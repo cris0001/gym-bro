@@ -1,11 +1,11 @@
 import { format, parseISO } from 'date-fns';
 import { Barcode, ChevronLeft, Plus, Search } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { useMediaQuery } from '@/hooks/use-media-query';
 
 import { sumMacros } from '@gym-bro/shared';
-import type { CreateFoodLogInput } from '@gym-bro/shared';
+import type { CreateFoodLogInput, MealType, RecentDiaryItem } from '@gym-bro/shared';
 
 import { useCreateFoodLogEntry } from '../hooks/use-create-food-log-entry';
 import { useDailyFoodLog } from '../hooks/use-daily-food-log';
@@ -45,8 +45,35 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
   const create = useCreateFoodLogEntry();
   const { data: foods = [] } = useFoods('');
   const { data: recipes = [] } = useRecipes();
-  const { data: recent = [] } = useRecentDiaryItems(addMeal);
+  const recentQuery = useRecentDiaryItems(addMeal);
   const { data: dayLog } = useDailyFoodLog(loggedDate);
+
+  // Freeze the recency ORDER for the lifetime of this meal's add view. Two bugs this
+  // fixes: (1) logging an item invalidates the recent query, which re-sorted it to the
+  // top and shifted the list under your finger — a second quick tap then re-added the
+  // same item; (2) reopening a meal briefly showed a stale cached order before the
+  // refetch settled. We snapshot only FRESH (non-stale) recent data, once per meal open,
+  // and render from that snapshot, so adds and background refetches no longer reorder.
+  // A fresh cache freezes instantly (no flash); a stale one renders the plain dictionary
+  // until the refetch lands, so old data never shows. Reopening recomputes with the
+  // just-used item now at the top.
+  const [frozenRecent, setFrozenRecent] = useState<{
+    meal: MealType;
+    items: RecentDiaryItem[];
+  } | null>(null);
+
+  useEffect(() => {
+    if (addMeal === null) {
+      if (frozenRecent !== null) setFrozenRecent(null);
+      return;
+    }
+    if (frozenRecent?.meal === addMeal) return;
+    if (recentQuery.data !== undefined && !recentQuery.isStale) {
+      setFrozenRecent({ meal: addMeal, items: recentQuery.data });
+    }
+  }, [addMeal, frozenRecent, recentQuery.data, recentQuery.isStale]);
+
+  const recent = frozenRecent?.meal === addMeal ? frozenRecent.items : [];
   // Newest first: the day read is oldest→newest, so reverse for the "Added" list so a
   // just-logged item shows at the top. Order doesn't affect the total.
   const mealEntries = (dayLog?.entries.filter((entry) => entry.meal === addMeal) ?? [])
@@ -171,7 +198,7 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
                   <div
                     key={`${row.kind}-${row.id}`}
                     className={
-                      i > 0 ? 'border-t border-dashed border-[#d9c9b2] dark:border-[#41362a]' : ''
+                      i > 0 ? 'border-t border-dashed border-[#d6c8bd] dark:border-[#40353c]' : ''
                     }
                   >
                     <AddEntryResultRow
@@ -186,7 +213,7 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
               <button
                 type="button"
                 onClick={createNewFood}
-                className="flex w-full items-center justify-center gap-1.5 border-t border-dashed border-[#d9c9b2] dark:border-[#41362a] py-3.5 text-[12.5px] font-bold text-primary"
+                className="flex w-full items-center justify-center gap-1.5 border-t border-dashed border-[#d6c8bd] dark:border-[#40353c] py-3.5 text-[12.5px] font-bold text-primary"
               >
                 <Plus className="size-4" />
                 Create a new food
@@ -206,7 +233,7 @@ export function AddEntrySheet({ loggedDate }: { loggedDate: string }) {
                     </span>
                   </span>
                 </div>
-                <ul className="flex flex-col divide-y divide-dashed divide-[#d9c9b2] rounded-[18px] border border-border bg-card px-4 dark:divide-[#41362a]">
+                <ul className="flex flex-col divide-y divide-dashed divide-[#d6c8bd] rounded-[18px] border border-border bg-card px-4 dark:divide-[#40353c]">
                   {mealEntries.map((entry) => (
                     <DiaryEntryRow key={entry.id} entry={entry} showImage mutedDelete />
                   ))}
