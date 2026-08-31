@@ -60,11 +60,11 @@ export function ActivePlanRow({ planId, name }: ActivePlanRowProps) {
 
       {expanded &&
         (templates.length === 0 ? (
-          <p className="text-muted-foreground border-t border-dashed border-[#e5d9c6] px-4 py-3 text-sm dark:border-[#41362a]">
+          <p className="text-muted-foreground border-t border-dashed border-[#e4dad2] px-4 py-3 text-sm dark:border-[#40353c]">
             This plan has no templates yet.
           </p>
         ) : (
-          <ul className="divide-y divide-dashed divide-[#e5d9c6] border-t border-dashed border-[#e5d9c6] dark:divide-[#41362a] dark:border-[#41362a]">
+          <ul className="divide-y divide-dashed divide-[#e4dad2] border-t border-dashed border-[#e4dad2] dark:divide-[#40353c] dark:border-[#40353c]">
             {templates.map((template, i) => {
               const count = templateQueries[i]?.data?.exercises.length ?? 0;
               return (
@@ -72,7 +72,7 @@ export function ActivePlanRow({ planId, name }: ActivePlanRowProps) {
                   key={template.id}
                   className="hover:bg-accent flex items-center gap-2 px-4 py-2.5 transition-colors"
                 >
-                  <GripVertical className="size-4 shrink-0 text-[#c9bda9] dark:text-[#5b4e3e]" />
+                  <GripVertical className="size-4 shrink-0 text-[#c9bcb2] dark:text-[#5a4d55]" />
                   <Link
                     to="/templates/$templateId"
                     params={{ templateId: template.id }}
@@ -83,7 +83,7 @@ export function ActivePlanRow({ planId, name }: ActivePlanRowProps) {
                       {count} {count === 1 ? 'exercise' : 'exercises'}
                     </p>
                   </Link>
-                  <ChevronRight className="size-4 shrink-0 text-[#c9bda9] dark:text-[#5b4e3e]" />
+                  <ChevronRight className="size-4 shrink-0 text-[#c9bcb2] dark:text-[#5a4d55]" />
                 </li>
               );
             })}

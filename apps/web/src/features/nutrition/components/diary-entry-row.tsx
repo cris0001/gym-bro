@@ -98,7 +98,7 @@ export function DiaryEntryRow({
         size="icon"
         className={cn(
           'size-9 shrink-0',
-          mutedDelete ? 'text-[#c9bda9] dark:text-[#5b4e3e]' : 'text-destructive',
+          mutedDelete ? 'text-[#c9bcb2] dark:text-[#5a4d55]' : 'text-destructive',
         )}
         aria-label={`Remove ${entry.itemName}`}
         disabled={remove.isPending}

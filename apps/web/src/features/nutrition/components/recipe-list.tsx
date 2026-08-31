@@ -68,7 +68,7 @@ export function RecipeList({ selectedId = null, onSelect }: RecipeListProps) {
   }
 
   return (
-    <ul className="divide-y divide-dashed divide-[#d9c9b2] dark:divide-[#41362a]">
+    <ul className="divide-y divide-dashed divide-[#d6c8bd] dark:divide-[#40353c]">
       {recipes.map((recipe) => {
         const inner = (
           <>
@@ -99,7 +99,7 @@ export function RecipeList({ selectedId = null, onSelect }: RecipeListProps) {
                 </p>
               ) : null}
             </div>
-            <ChevronRight className="size-5 shrink-0 self-center text-[#c9bda9] dark:text-[#5b4e3e]" />
+            <ChevronRight className="size-5 shrink-0 self-center text-[#c9bcb2] dark:text-[#5a4d55]" />
           </>
         );
         return (

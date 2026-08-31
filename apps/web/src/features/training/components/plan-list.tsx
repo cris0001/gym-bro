@@ -53,7 +53,7 @@ export function PlanList() {
     <div className="flex flex-col gap-4">
       {activeItem ? <ActivePlanRow planId={activeItem.id} name={activeItem.name} /> : null}
       {others.length > 0 ? (
-        <ul className="bg-card divide-y divide-dashed divide-[#e5d9c6] dark:divide-[#41362a] overflow-hidden rounded-2xl border">
+        <ul className="bg-card divide-y divide-dashed divide-[#e4dad2] dark:divide-[#40353c] overflow-hidden rounded-2xl border">
           {others.map((plan) => (
             <li
               key={plan.id}

@@ -24,8 +24,8 @@ function Stars({ rating }: { rating: number }) {
           key={i}
           className="size-3"
           style={{
-            fill: i <= rating ? '#d9a441' : '#e5d9c6',
-            color: i <= rating ? '#d9a441' : '#e5d9c6',
+            fill: i <= rating ? '#d9a441' : '#e4dad2',
+            color: i <= rating ? '#d9a441' : '#e4dad2',
           }}
         />
       ))}
@@ -136,7 +136,7 @@ export function DayWorkoutItem({
           ) : (
             <>
               {detail.notes !== null && (
-                <p className="font-heading rounded-xl border border-[#f0e7d9] bg-[#fdfaf4] p-3 text-[13px] text-[#5c5044] italic dark:border-[#41362a] dark:bg-[#211a12] dark:text-[#c9bcab]">
+                <p className="font-heading rounded-xl border border-[#efe8e2] bg-[#fdfbf9] p-3 text-[13px] text-[#574c52] italic dark:border-[#40353c] dark:bg-[#221a20] dark:text-[#c6b8bd]">
                   “{detail.notes}”
                 </p>
               )}
@@ -163,7 +163,7 @@ export function DayWorkoutItem({
                             'rounded-lg px-[9px] py-1 text-[11px] font-bold',
                             set.isTopSet
                               ? 'bg-accent text-accent-foreground'
-                              : 'bg-secondary text-[#5c5044] dark:text-[#c9bcab]',
+                              : 'bg-secondary text-[#574c52] dark:text-[#c6b8bd]',
                           )}
                         >
                           {set.weight ?? 'BW'} × {set.reps ?? '—'}

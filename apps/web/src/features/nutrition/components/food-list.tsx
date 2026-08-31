@@ -66,7 +66,7 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
   }
 
   return (
-    <ul className="divide-y divide-dashed divide-[#d9c9b2] dark:divide-[#41362a]">
+    <ul className="divide-y divide-dashed divide-[#d6c8bd] dark:divide-[#40353c]">
       {filtered.map((food) => (
         <li
           key={food.id}
@@ -101,7 +101,7 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
                 <span> / 100g</span>
               </p>
             </div>
-            <ChevronRight className="size-5 shrink-0 text-[#c9bda9] dark:text-[#5b4e3e]" />
+            <ChevronRight className="size-5 shrink-0 text-[#c9bcb2] dark:text-[#5a4d55]" />
           </button>
           <Button
             type="button"

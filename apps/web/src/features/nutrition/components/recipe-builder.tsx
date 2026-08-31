@@ -315,7 +315,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
                   No ingredients yet — search below to add one.
                 </p>
               ) : (
-                <ul className="divide-y divide-dashed divide-[#d9c9b2] border-t border-dashed border-[#d9c9b2] dark:divide-[#41362a] dark:border-[#41362a]">
+                <ul className="divide-y divide-dashed divide-[#d6c8bd] border-t border-dashed border-[#d6c8bd] dark:divide-[#40353c] dark:border-[#40353c]">
                   {ingredients.map((row) => {
                     const grams = rowGrams(row);
                     const macros =
@@ -346,7 +346,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
                           <button
                             type="button"
                             aria-label={`Edit ${row.food?.name ?? 'ingredient'}`}
-                            className="shrink-0 text-[#c9bda9] dark:text-[#5b4e3e]"
+                            className="shrink-0 text-[#c9bcb2] dark:text-[#5a4d55]"
                             onClick={() => setEditingKey(isRowEditing ? null : row.key)}
                           >
                             <Pencil className="size-4" />
@@ -435,7 +435,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
             </div>
           </div>
 
-          <div className="rounded-2xl border bg-[#fdfaf4] p-5 dark:bg-[#211a12]">
+          <div className="rounded-2xl border bg-[#fdfbf9] p-5 dark:bg-[#221a20]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="font-heading text-xl font-semibold">Per serving</p>

@@ -5,7 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 // the same dashed rules as the real lists. Rows are static, so an index key is fine.
 export function SkeletonList({ rows = 5, avatar = true }: { rows?: number; avatar?: boolean }) {
   return (
-    <ul className="divide-y divide-dashed divide-[#d9c9b2] dark:divide-[#41362a]">
+    <ul className="divide-y divide-dashed divide-[#d6c8bd] dark:divide-[#40353c]">
       {Array.from({ length: rows }).map((_, i) => (
         <li key={i} className="flex items-center gap-3 px-4 py-3">
           {avatar ? <Skeleton className="size-[38px] shrink-0 rounded-[10px]" /> : null}

@@ -77,7 +77,7 @@ export function StartWorkoutPicker({ onSelectTemplate }: StartWorkoutPickerProps
               {plan.id === activePlan?.id && ' · active'}
             </span>
           </span>
-          <ChevronRight className="size-5 shrink-0 text-[#c9bda9] dark:text-[#5b4e3e]" />
+          <ChevronRight className="size-5 shrink-0 text-[#c9bcb2] dark:text-[#5a4d55]" />
         </button>
       ))}
     </div>
