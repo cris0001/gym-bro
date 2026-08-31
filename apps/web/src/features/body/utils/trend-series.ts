@@ -19,8 +19,8 @@ export const MEASURE_SERIES: SeriesDef[] = [
   { key: 'bodyFatPct', label: 'Body fat', unit: '%', axis: 'left', color: 'var(--chart-3)' },
   { key: 'bicepsCm', label: 'Biceps', unit: 'cm', axis: 'left', color: 'var(--chart-4)' },
   { key: 'chestCm', label: 'Chest', unit: 'cm', axis: 'left', color: 'var(--chart-5)' },
-  { key: 'waistCm', label: 'Waist', unit: 'cm', axis: 'left', color: '#b04e2f' },
-  { key: 'hipCm', label: 'Hip', unit: 'cm', axis: 'left', color: '#8a5a3b' },
+  { key: 'waistCm', label: 'Waist', unit: 'cm', axis: 'left', color: '#b06a7e' },
+  { key: 'hipCm', label: 'Hip', unit: 'cm', axis: 'left', color: '#75394c' },
   { key: 'thighCm', label: 'Thigh', unit: 'cm', axis: 'left', color: '#c8963f' },
 ];
 

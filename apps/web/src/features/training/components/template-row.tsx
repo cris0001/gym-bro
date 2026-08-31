@@ -40,13 +40,13 @@ export function TemplateRow({ template }: TemplateRowProps) {
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(
-        'flex items-center gap-2.5 border-t border-dashed border-[#e5d9c6] bg-card py-[11px] dark:border-[#41362a]',
+        'flex items-center gap-2.5 border-t border-dashed border-[#e4dad2] bg-card py-[11px] dark:border-[#40353c]',
         isDragging && 'opacity-50',
       )}
     >
       <button
         type="button"
-        className="shrink-0 cursor-grab touch-none p-1 text-[#c9bda9] active:cursor-grabbing dark:text-[#5b4e3e]"
+        className="shrink-0 cursor-grab touch-none p-1 text-[#c9bcb2] active:cursor-grabbing dark:text-[#5a4d55]"
         aria-label={`Reorder ${template.name}`}
         {...attributes}
         {...listeners}
@@ -67,7 +67,7 @@ export function TemplateRow({ template }: TemplateRowProps) {
 
       <button
         type="button"
-        className="shrink-0 p-1.5 text-[#c9bda9] dark:text-[#5b4e3e]"
+        className="shrink-0 p-1.5 text-[#c9bcb2] dark:text-[#5a4d55]"
         aria-label={`Edit ${template.name}`}
         onClick={() => openEdit(template)}
       >
@@ -75,7 +75,7 @@ export function TemplateRow({ template }: TemplateRowProps) {
       </button>
       <button
         type="button"
-        className="shrink-0 p-1.5 text-[#c9bda9] disabled:opacity-50 dark:text-[#5b4e3e]"
+        className="shrink-0 p-1.5 text-[#c9bcb2] disabled:opacity-50 dark:text-[#5a4d55]"
         aria-label={`Delete ${template.name}`}
         disabled={remove.isPending}
         onClick={() => void onDelete()}

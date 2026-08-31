@@ -268,11 +268,11 @@ export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProp
             type="button"
             onClick={() => void refocus()}
             aria-label="Tap to focus"
-            className="relative block aspect-video w-full overflow-hidden rounded-2xl bg-[#2c241d]"
+            className="relative block aspect-video w-full overflow-hidden rounded-2xl bg-[#2b2126]"
           >
             <video ref={videoRef} className="size-full object-cover" muted playsInline />
-            <span className="pointer-events-none absolute inset-6 rounded-2xl border-2 border-[#fff7f0]/80" />
-            <span className="absolute bottom-1 left-1/2 -translate-x-1/2 rounded px-2 py-0.5 text-xs text-[#fff7f0]/80">
+            <span className="pointer-events-none absolute inset-6 rounded-2xl border-2 border-[#fdf6f5]/80" />
+            <span className="absolute bottom-1 left-1/2 -translate-x-1/2 rounded px-2 py-0.5 text-xs text-[#fdf6f5]/80">
               Tap to focus
             </span>
           </button>

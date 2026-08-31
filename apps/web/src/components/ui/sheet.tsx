@@ -90,7 +90,7 @@ function SheetContent({
         {side === 'bottom' ? (
           <div
             aria-hidden
-            className="mx-auto mt-2.5 h-1 w-9 shrink-0 rounded-full bg-[#e5d9c6] sm:hidden dark:bg-[#473a2b]"
+            className="mx-auto mt-2.5 h-1 w-9 shrink-0 rounded-full bg-[#e4dad2] sm:hidden dark:bg-[#453840]"
           />
         ) : null}
         {children}

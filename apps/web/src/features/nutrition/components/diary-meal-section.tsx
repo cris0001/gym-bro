@@ -49,7 +49,7 @@ export function MealSection({ meal, label, entries }: MealSectionProps) {
 
   if (entries.length === 0) {
     return (
-      <div className="bg-card flex items-center justify-between gap-2 rounded-2xl border border-dashed border-[#d9c9b2] p-4 dark:border-[#4d4132]">
+      <div className="bg-card flex items-center justify-between gap-2 rounded-2xl border border-dashed border-[#d6c8bd] p-4 dark:border-[#4b3f47]">
         <div className="flex items-baseline gap-2">
           <h2 className="font-heading text-lg font-semibold">{label}</h2>
           <span className="text-muted-foreground font-heading text-sm italic">nothing yet</span>
@@ -68,7 +68,7 @@ export function MealSection({ meal, label, entries }: MealSectionProps) {
         </div>
         {actions}
       </div>
-      <ul className="mt-1 flex flex-col divide-y divide-dashed divide-[#d9c9b2] dark:divide-[#41362a]">
+      <ul className="mt-1 flex flex-col divide-y divide-dashed divide-[#d6c8bd] dark:divide-[#40353c]">
         {entries.map((entry) => (
           <DiaryEntryRow key={entry.id} entry={entry} />
         ))}

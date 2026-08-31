@@ -61,13 +61,13 @@ export function TemplateExerciseRow({ templateExercise }: TemplateExerciseRowPro
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(
-        'flex items-center gap-2.5 border-t border-dashed border-[#e5d9c6] bg-card py-[11px] dark:border-[#41362a]',
+        'flex items-center gap-2.5 border-t border-dashed border-[#e4dad2] bg-card py-[11px] dark:border-[#40353c]',
         isDragging && 'opacity-50',
       )}
     >
       <button
         type="button"
-        className="shrink-0 cursor-grab touch-none p-1 text-[#c9bda9] active:cursor-grabbing dark:text-[#5b4e3e]"
+        className="shrink-0 cursor-grab touch-none p-1 text-[#c9bcb2] active:cursor-grabbing dark:text-[#5a4d55]"
         aria-label={`Reorder ${exercise.name}`}
         {...attributes}
         {...listeners}
@@ -92,7 +92,7 @@ export function TemplateExerciseRow({ templateExercise }: TemplateExerciseRowPro
 
       <button
         type="button"
-        className="shrink-0 p-1.5 text-[#c9bda9] dark:text-[#5b4e3e]"
+        className="shrink-0 p-1.5 text-[#c9bcb2] dark:text-[#5a4d55]"
         aria-label={`Edit ${exercise.name}`}
         onClick={() => openEdit(templateExercise)}
       >
@@ -100,7 +100,7 @@ export function TemplateExerciseRow({ templateExercise }: TemplateExerciseRowPro
       </button>
       <button
         type="button"
-        className="shrink-0 p-1.5 text-[#c9bda9] disabled:opacity-50 dark:text-[#5b4e3e]"
+        className="shrink-0 p-1.5 text-[#c9bcb2] disabled:opacity-50 dark:text-[#5a4d55]"
         aria-label={`Remove ${exercise.name}`}
         disabled={remove.isPending}
         onClick={() => void onDelete()}

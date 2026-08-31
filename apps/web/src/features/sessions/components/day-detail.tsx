@@ -73,7 +73,7 @@ function PlannedTodoCard({ session }: { session: PlannedSessionWithTemplate }) {
       </div>
 
       {exercises.length > 0 && (
-        <ul className="flex flex-col gap-1 text-[12.5px] text-[#5c5044] dark:text-[#c9bcab]">
+        <ul className="flex flex-col gap-1 text-[12.5px] text-[#574c52] dark:text-[#c6b8bd]">
           {exercises.map((item) => {
             const target = targetLabel(item.targetSets, item.targetRepsMin, item.targetRepsMax);
             return (

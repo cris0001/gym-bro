@@ -6,21 +6,21 @@ import { defineConfig, minimal2023Preset } from '@vite-pwa/assets-generator/conf
 //
 // The source logo is already a full cream tile. The default maskable/apple padding left
 // a transparent margin that the OS composites over WHITE, so the PWA splash showed a
-// white ring around the glyph after masking. Fill that canvas with the brand cream
-// (#faf5ee, same as manifest background_color) and trim the padding so the mask only
-// ever reveals cream — no white edge.
+// white ring around the glyph after masking. Fill that canvas with the brand parchment
+// (#f6f3f0, same as manifest background_color) and trim the padding so the mask only
+// ever reveals parchment — no white edge.
 export default defineConfig({
   preset: {
     ...minimal2023Preset,
     maskable: {
       sizes: [512],
       padding: 0.1,
-      resizeOptions: { background: '#faf5ee' },
+      resizeOptions: { background: '#f6f3f0' },
     },
     apple: {
       sizes: [180],
       padding: 0.1,
-      resizeOptions: { background: '#faf5ee' },
+      resizeOptions: { background: '#f6f3f0' },
     },
   },
   images: ['public/logo.svg'],

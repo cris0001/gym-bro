@@ -137,7 +137,7 @@ export function PlanDetail({ planId }: PlanDetailProps) {
       <button
         type="button"
         onClick={() => openCreateTemplate(plan.id)}
-        className="text-primary rounded-[18px] border border-dashed border-[#d9c9b2] p-[13px] text-center text-[13px] font-bold dark:border-[#4d4132]"
+        className="text-primary rounded-[18px] border border-dashed border-[#d6c8bd] p-[13px] text-center text-[13px] font-bold dark:border-[#4b3f47]"
       >
         + Add template
       </button>
@@ -150,7 +150,7 @@ export function PlanDetail({ planId }: PlanDetailProps) {
 
       <button
         type="button"
-        className="self-center text-[13px] font-semibold text-[#b04e2f] disabled:opacity-50 dark:text-[#e08a5f]"
+        className="self-center text-[13px] font-semibold text-[#75394c] disabled:opacity-50 dark:text-[#d9a4b3]"
         disabled={remove.isPending}
         onClick={() => void onDelete(plan)}
       >

@@ -25,7 +25,7 @@ export function TargetsHistory({ onEdit }: { onEdit: (target: NutritionTarget) =
   const ordered = [...targets].reverse();
 
   return (
-    <ul className="divide-y divide-dashed divide-[#d9c9b2] dark:divide-[#41362a]">
+    <ul className="divide-y divide-dashed divide-[#d6c8bd] dark:divide-[#40353c]">
       {ordered.map((target, index) => (
         <li key={target.id} className="flex items-start justify-between gap-3 py-3">
           <div className="min-w-0">
