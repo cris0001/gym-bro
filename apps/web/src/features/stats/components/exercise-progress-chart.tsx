@@ -28,7 +28,8 @@ const DIMENSIONS: { key: Dimension; label: string }[] = [
 ];
 
 // Expand an axis a fixed amount beyond its data so the lines don't touch the top /
-// bottom edges. Null values (bodyweight, or a tier not logged) are ignored.
+// bottom edges. Null values (a tier not logged this session) are ignored; a logged
+// bodyweight set is 0, so it counts and pins the floor to 0.
 function paddedDomain(values: (number | null)[], pad: number): [number, number] | undefined {
   const nums = values.filter((v): v is number => v !== null);
   if (nums.length === 0) return undefined;
@@ -61,12 +62,24 @@ export function ExerciseProgressChart({ exerciseId, range }: ExerciseProgressCha
     return <SkeletonChart />;
   }
 
-  const data = points.map((point) => ({
-    date: point.date,
-    weight: dimension === 'top' ? point.topWeight : point.normalWeight,
-    // Kept off the chart (a second line read weird) but surfaced in the tooltip.
-    reps: dimension === 'top' ? point.topReps : point.normalReps,
-  }));
+  const data = points.map((point) => {
+    const rawWeight = dimension === 'top' ? point.topWeight : point.normalWeight;
+    const reps = dimension === 'top' ? point.topReps : point.normalReps;
+    // A tier that was logged shows on the line; one that wasn't stays a real gap.
+    // Reps are the presence signal — a logged bodyweight set has null weight but
+    // real reps, so it must plot (at 0), while a session with no top/normal set at
+    // all has null reps and stays null (connectNulls={false} breaks the line).
+    const logged = rawWeight !== null || reps !== null;
+    const isBodyweight = logged && rawWeight === null;
+    return {
+      date: point.date,
+      // Bodyweight sets sit at 0 on the kg axis so added load reads as 0 -> +Xkg.
+      weight: logged ? (rawWeight ?? 0) : null,
+      isBodyweight,
+      // Kept off the chart (a second line read weird) but surfaced in the tooltip.
+      reps,
+    };
+  });
   const weightDomain = paddedDomain(
     data.map((d) => d.weight),
     3,
@@ -104,8 +117,12 @@ export function ExerciseProgressChart({ exerciseId, range }: ExerciseProgressCha
               <Tooltip
                 content={({ active, payload, label }) => {
                   if (!active || !payload || payload.length === 0) return null;
-                  const row = payload[0]!.payload as { weight: number | null; reps: number | null };
-                  const weight = row.weight === null ? 'BW' : `${row.weight} kg`;
+                  const row = payload[0]!.payload as {
+                    weight: number | null;
+                    isBodyweight: boolean;
+                    reps: number | null;
+                  };
+                  const weight = row.isBodyweight ? 'BW' : `${row.weight} kg`;
                   return (
                     <div className="bg-card text-card-foreground rounded-lg border px-3 py-2 text-sm shadow-sm">
                       <p className="mb-0.5 font-medium">{format(parseISO(String(label)), 'PP')}</p>
