@@ -91,7 +91,7 @@ export function DiaryPage() {
         <Card className="hidden rounded-2xl lg:sticky lg:top-4 lg:order-2 lg:block">
           <CardContent>
             {data ? (
-              <DaySummary totals={data.totals} />
+              <DaySummary totals={data.totals} date={date} />
             ) : (
               <div className="grid gap-3">
                 {Array.from({ length: 4 }).map((_, i) => (
@@ -119,7 +119,7 @@ export function DiaryPage() {
 
       <AddEntrySheet loggedDate={date} />
       <PhotoEstimateSheet loggedDate={date} />
-      {data && <DiaryBottomBar totals={data.totals} />}
+      {data && <DiaryBottomBar totals={data.totals} date={date} />}
     </div>
   );
 }

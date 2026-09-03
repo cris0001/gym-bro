@@ -1,6 +1,6 @@
 import type { MacroTotals } from '@gym-bro/shared';
 
-import { useCurrentTarget } from '../hooks/use-current-target';
+import { useTargetForDate } from '../hooks/use-target-for-date';
 
 const fmt = (n: number): string => Math.round(n).toLocaleString('en-US');
 const r = (n: number): number => Math.round(n);
@@ -34,8 +34,8 @@ function MacroPair({
 // Compact running total pinned above the mobile tab bar, like Fitatu's: an inverted bar
 // with calories and one dotted "eaten/target" pair per macro (P/C/F). Desktop uses the
 // sidebar summary instead, so this is hidden there. Nothing until a target is set.
-export function DiaryBottomBar({ totals }: { totals: MacroTotals }) {
-  const { data: target } = useCurrentTarget();
+export function DiaryBottomBar({ totals, date }: { totals: MacroTotals; date: string }) {
+  const target = useTargetForDate(date);
   if (!target) return null;
 
   return (
