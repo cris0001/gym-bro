@@ -1,5 +1,24 @@
 import { useEffect, useRef } from 'react';
 
+// True while a file/camera picker launched from inside a sheet is open. On Android,
+// returning from the camera (capture="image/*") can emit a spurious popstate — which
+// would otherwise pop our throwaway entry and close the sheet mid-flow. Callers wrap
+// their file-input trigger with markFilePickActive() so the sheet ignores that one.
+let filePickActive = false;
+
+export function markFilePickActive() {
+  filePickActive = true;
+  // Clear once the page regains focus (we're back from the picker), plus a grace
+  // window since the popstate can land just after the focus event, not before it.
+  const clear = () => {
+    window.removeEventListener('focus', clear);
+    setTimeout(() => {
+      filePickActive = false;
+    }, 1000);
+  };
+  window.addEventListener('focus', clear);
+}
+
 // Makes the phone/browser Back button (and the Android back gesture) CLOSE an open
 // sheet instead of navigating to another URL.
 //
@@ -38,6 +57,13 @@ export function useSheetBackClose(
     pushedRef.current = true;
 
     const onPopState = () => {
+      // A camera/file-picker return can emit a spurious popstate (Android). Don't treat
+      // it as Back — keep the sheet open and restore the throwaway entry so a real Back
+      // still works afterwards.
+      if (filePickActive) {
+        window.history.pushState(window.history.state, '');
+        return;
+      }
       pushedRef.current = false; // our entry was consumed by Back
       onOpenChangeRef.current?.(false);
     };
