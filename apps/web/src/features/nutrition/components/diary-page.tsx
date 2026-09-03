@@ -4,11 +4,14 @@ import { useState } from 'react';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 import { MEAL_TYPES } from '@gym-bro/shared';
 import type { MealType } from '@gym-bro/shared';
 
 import { useDailyFoodLog } from '../hooks/use-daily-food-log';
+import { useDiaryUiStore } from '../stores/diary-ui.store';
+import { AddEntryDesktop } from './add-entry-desktop';
 import { AddEntrySheet } from './add-entry-sheet';
 import { DaySummary } from './day-summary';
 import { DiaryBottomBar } from './diary-bottom-bar';
@@ -35,10 +38,22 @@ export function DiaryPage() {
   const today = format(new Date(), ISO);
   const [date, setDate] = useState(today);
   const { data } = useDailyFoodLog(date);
+  const addMeal = useDiaryUiStore((s) => s.addMeal);
+  const isDesktop = useMediaQuery('(min-width: 768px)');
 
   const isToday = date === today;
   const shift = (days: number) => setDate(format(addDays(parseISO(date), days), ISO));
   const entries = data?.entries ?? [];
+
+  // Desktop takes over the content column with the two-pane add view (sidebar stays);
+  // mobile keeps the fullscreen overlay rendered below the diary.
+  if (isDesktop && addMeal !== null) {
+    return (
+      <div className="lg:col-start-2 w-full">
+        <AddEntryDesktop loggedDate={date} meal={addMeal} />
+      </div>
+    );
+  }
 
   return (
     <div className="lg:col-start-2 flex w-full max-w-5xl flex-col gap-4 p-3 pb-36 md:p-4 lg:pb-4">
