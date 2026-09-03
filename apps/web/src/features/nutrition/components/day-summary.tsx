@@ -2,20 +2,21 @@ import { Link } from '@tanstack/react-router';
 
 import type { MacroTotals } from '@gym-bro/shared';
 
-import { useCurrentTarget } from '../hooks/use-current-target';
+import { useTargetForDate } from '../hooks/use-target-for-date';
 import { MacroProgress } from './macro-progress';
 import { MacrosSummary } from './macros-summary';
 
 interface DaySummaryProps {
   totals: MacroTotals;
+  date: string;
 }
 
 const fmt = (n: number): string => Math.round(n).toLocaleString('en-US');
 
-// The day's totals against the current target: a calorie ring + "N left" and the three
-// macro bars. With no target set, shows the raw totals and a nudge to set one.
-export function DaySummary({ totals }: DaySummaryProps) {
-  const { data: target } = useCurrentTarget();
+// The day's totals against the target that applied on that day: a calorie ring + "N left"
+// and the three macro bars. With no target set, shows the raw totals and a nudge to set one.
+export function DaySummary({ totals, date }: DaySummaryProps) {
+  const target = useTargetForDate(date);
 
   if (!target) {
     return (

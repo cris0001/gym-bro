@@ -16,12 +16,12 @@ import { useFoodUiStore } from '../stores/food-ui.store';
 import { useDiaryUiStore } from '../stores/diary-ui.store';
 import { type AddEntryRow, buildAddEntryList, type Portion } from '../utils/add-entry-list';
 import { useCreateFoodLogEntry } from './use-create-food-log-entry';
-import { useCurrentTarget } from './use-current-target';
 import { useDailyFoodLog } from './use-daily-food-log';
 import { useFoods } from './use-foods';
 import { useRecentDiaryItems } from './use-recent-diary-items';
 import { useRecipes } from './use-recipes';
 import { useScanFlow } from './use-scan-flow';
+import { useTargetForDate } from './use-target-for-date';
 
 // Shared state + behaviour behind the diary "Add to meal" view, consumed by both the
 // mobile fullscreen layout and the desktop two-pane layout. Keeps every mutation/scan
@@ -62,7 +62,7 @@ export function useAddEntry(loggedDate: string): UseAddEntry {
   const { data: recipes = [] } = useRecipes();
   const recentQuery = useRecentDiaryItems(addMeal);
   const { data: dayLog } = useDailyFoodLog(loggedDate);
-  const { data: target = null } = useCurrentTarget();
+  const target = useTargetForDate(loggedDate);
 
   // Freeze the recency ORDER for the lifetime of this meal's add view. Two bugs this
   // fixes: (1) logging an item invalidates the recent query, which re-sorted it to the
