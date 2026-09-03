@@ -1,5 +1,7 @@
 import { Plus } from 'lucide-react';
 
+import { cn } from '@/lib/utils';
+
 import type { AddEntryRow } from '../utils/add-entry-list';
 
 // One row of the results list: photo, name (+ RECENT badge), meta line, and a round
@@ -10,11 +12,14 @@ export function AddEntryResultRow({
   onAdd,
   onEditPortion,
   disabled = false,
+  badgeTint = false,
 }: {
   row: AddEntryRow;
   onAdd: () => void;
   onEditPortion: () => void;
   disabled?: boolean;
+  // RECENT badge on the accent tint (desktop) instead of solid primary (mobile default).
+  badgeTint?: boolean;
 }) {
   return (
     <div className="flex items-center gap-3 px-3.5 py-3">
@@ -36,7 +41,14 @@ export function AddEntryResultRow({
           <span className="flex items-center gap-1.5">
             <span className="truncate text-[13.5px] leading-tight font-semibold">{row.name}</span>
             {row.isRecent ? (
-              <span className="bg-primary text-primary-foreground shrink-0 rounded-[5px] px-[5px] py-0.5 text-[9px] font-extrabold tracking-wide uppercase">
+              <span
+                className={cn(
+                  'shrink-0 rounded-[5px] px-[5px] py-0.5 text-[9px] font-extrabold tracking-wide uppercase',
+                  badgeTint
+                    ? 'bg-accent text-accent-foreground'
+                    : 'bg-primary text-primary-foreground',
+                )}
+              >
                 Recent
               </span>
             ) : null}
