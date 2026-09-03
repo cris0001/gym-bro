@@ -15,6 +15,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { markFilePickActive } from '@/hooks/use-sheet-back-close';
 
 import type { CreateFoodInput, Food } from '@gym-bro/shared';
 
@@ -212,6 +213,9 @@ export function FoodForm({ editing, prefill = null, onCreated, onSuccess }: Food
                 accept="image/*"
                 capture="environment"
                 className="hidden"
+                // The camera return can emit a spurious popstate on Android; flag the
+                // pick so the enclosing sheet ignores it instead of closing mid-flow.
+                onClick={() => markFilePickActive()}
                 onChange={(e) => void onPickImage(e)}
               />
             </label>
