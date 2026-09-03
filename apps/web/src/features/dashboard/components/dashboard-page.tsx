@@ -62,7 +62,7 @@ export function DashboardPage() {
         </div>
       </header>
 
-      <Button asChild className="h-14 w-full rounded-full text-base lg:hidden">
+      <Button asChild className="h-12 w-full rounded-full text-base lg:hidden">
         <Link to="/session">
           <Play className="size-5" />
           Start workout
