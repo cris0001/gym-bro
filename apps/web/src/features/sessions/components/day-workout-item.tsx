@@ -166,6 +166,7 @@ export function DayWorkoutItem({
                               : 'bg-secondary text-[#574c52] dark:text-[#c6b8bd]',
                           )}
                         >
+                          {set.isTopSet ? '★ ' : ''}
                           {set.weight ?? 'BW'} × {set.reps ?? '—'}
                         </span>
                       ))}

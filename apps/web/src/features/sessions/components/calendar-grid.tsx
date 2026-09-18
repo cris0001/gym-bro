@@ -266,7 +266,7 @@ export function CalendarGrid() {
 
       <DragOverlay>
         {dragging ? (
-          <div className="bg-primary text-primary-foreground rounded px-2 py-1 text-xs shadow">
+          <div className="bg-primary text-primary-foreground rounded-full px-3 py-1 text-xs font-medium shadow">
             {dragging.template.name}
           </div>
         ) : null}
