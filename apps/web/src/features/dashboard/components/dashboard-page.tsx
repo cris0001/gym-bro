@@ -2,14 +2,20 @@ import { Link } from '@tanstack/react-router';
 import { addDays, format } from 'date-fns';
 import { Play, User } from 'lucide-react';
 
-import { usePlannedSessions } from '@/features/sessions';
+import { useBodyMeasurements } from '@/features/body';
+import { useCurrentTarget, useDailyFoodLog } from '@/features/nutrition';
+import { usePlannedSessions, useWorkoutSessions } from '@/features/sessions';
 import { StravaSection } from '@/features/strava';
 import { Button } from '@/components/ui/button';
 
+import { DashboardSkeleton } from './dashboard-skeleton';
 import { LastWorkoutCard } from './last-workout-card';
 import { LatestWeightCard } from './latest-weight-card';
 import { NextSessionCard } from './next-session-card';
 import { TodayNutritionCard } from './today-nutrition-card';
+
+// Recent-sessions window shared with LastWorkoutCard so both hit one cached query.
+const RECENT_WINDOW = 10;
 
 const ISO = 'yyyy-MM-dd';
 // Window for finding the next planned session.
@@ -28,15 +34,29 @@ export function DashboardPage() {
   const today = new Date();
   const todayIso = format(today, ISO);
 
-  const { data: planned = [] } = usePlannedSessions(
-    todayIso,
-    format(addDays(today, LOOKAHEAD_DAYS), ISO),
-  );
+  const planned = usePlannedSessions(todayIso, format(addDays(today, LOOKAHEAD_DAYS), ISO));
+  // The dashboard's other cards fetch these too; calling them here shares one cached
+  // query each and lets the page show a single full-page skeleton on the first load.
+  const nutrition = useDailyFoodLog(todayIso);
+  const target = useCurrentTarget();
+  const weight = useBodyMeasurements();
+  const workouts = useWorkoutSessions(RECENT_WINDOW, 0);
+
+  // Only the very first load (no cached data yet) shows the skeleton; a background
+  // refetch keeps the current content on screen.
+  const initialLoading =
+    planned.isPending ||
+    nutrition.isPending ||
+    target.isPending ||
+    weight.isPending ||
+    workouts.isPending;
 
   const nextSession =
-    planned
+    (planned.data ?? [])
       .filter((entry) => entry.status === 'planned' && entry.scheduledDate >= todayIso)
       .sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate))[0] ?? null;
+
+  if (initialLoading) return <DashboardSkeleton />;
 
   return (
     <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-5 p-3 md:p-4">

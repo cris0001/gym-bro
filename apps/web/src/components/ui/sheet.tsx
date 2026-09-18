@@ -74,14 +74,14 @@ function SheetContent({
             'data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left inset-y-0 left-0 h-full w-3/4 border-r sm:max-w-sm',
           side === 'top' &&
             'data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top inset-x-0 top-0 h-auto border-b',
-          // Mobile: full-screen, slides up from the bottom edge, scrollable (so tall
-          // content / open selects never overflow a short bottom sheet). sm+: a centered
-          // modal card — positioned like a dialog (left/top-1/2 + -translate-1/2 so its
-          // height is content-driven, not stretched to the viewport), width-capped and
-          // only as tall as its content up to 85dvh (then it scrolls), zoom+fade in. A
-          // bottom sheet on phones, a modal on desktop, from one component.
+          // Mobile: a bottom sheet anchored to the bottom edge, height driven by its
+          // content (rounded top, slides up), capped at 90dvh then scrolls — never a
+          // full-screen 100vh bar for small content. sm+: a centered modal card —
+          // positioned like a dialog (left/top-1/2 + -translate-1/2 so its height is
+          // content-driven), width-capped and only as tall as its content up to 85dvh
+          // (then it scrolls), zoom+fade in. A bottom sheet on phones, a modal on desktop.
           side === 'bottom' &&
-            'max-sm:data-[state=closed]:slide-out-to-bottom max-sm:data-[state=open]:slide-in-from-bottom inset-x-0 top-0 bottom-0 h-dvh overflow-y-auto border-t sm:left-1/2 sm:right-auto sm:top-[45%] sm:bottom-auto sm:-translate-x-1/2 sm:-translate-y-1/2 sm:h-auto sm:max-h-[85dvh] sm:w-[calc(100%-2rem)] sm:max-w-2xl lg:max-w-3xl sm:rounded-2xl sm:border sm:data-[state=open]:zoom-in-95 sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:fade-out-0',
+            'max-sm:data-[state=closed]:slide-out-to-bottom max-sm:data-[state=open]:slide-in-from-bottom inset-x-0 bottom-0 max-h-[90dvh] overflow-y-auto rounded-t-2xl border-t sm:left-1/2 sm:right-auto sm:top-[45%] sm:bottom-auto sm:-translate-x-1/2 sm:-translate-y-1/2 sm:max-h-[85dvh] sm:w-[calc(100%-2rem)] sm:max-w-2xl lg:max-w-3xl sm:rounded-2xl sm:border sm:data-[state=open]:zoom-in-95 sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:fade-out-0',
           className,
         )}
         {...props}

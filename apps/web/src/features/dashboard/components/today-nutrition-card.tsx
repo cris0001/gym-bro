@@ -26,7 +26,10 @@ export function TodayNutritionCard({ date }: { date: string }) {
       ) : targetKcal === null ? (
         <div className="flex flex-col gap-2">
           <p className="font-heading text-2xl font-semibold">{kcal} kcal</p>
-          <Link to="/targets" className="text-primary text-sm underline">
+          <Link
+            to="/targets"
+            className="bg-accent text-primary hover:bg-accent/70 mt-1 inline-flex h-9 w-fit items-center rounded-full px-3.5 text-[12.5px] font-semibold"
+          >
             Set a target
           </Link>
         </div>
