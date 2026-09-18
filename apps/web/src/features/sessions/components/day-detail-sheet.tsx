@@ -20,7 +20,7 @@ export function DayDetailSheet() {
 
   return (
     <Sheet open={selectedDate !== null} onOpenChange={(next) => !next && closeDay()}>
-      <SheetContent side="bottom" className="gap-0">
+      <SheetContent side="bottom" className="bg-background gap-0">
         <SheetHeader>
           <SheetTitle>
             {selectedDate ? format(parseISO(selectedDate), 'EEEE, MMM d') : ''}

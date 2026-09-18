@@ -6,8 +6,9 @@ import { useState } from 'react';
 import type { PlannedSessionWithTemplate } from '@gym-bro/shared';
 
 import { Button } from '@/components/ui/button';
-import { useStravaSessions } from '@/features/strava';
+import { RouteMap, useStravaSessions } from '@/features/strava';
 import { useTemplate } from '@/features/training';
+import { cn } from '@/lib/utils';
 
 import { useDeletePlannedSession } from '../hooks/use-delete-planned-session';
 import { plannedSessionsQueryOptions } from '../hooks/use-planned-sessions';
@@ -17,9 +18,6 @@ import { workoutsInRangeQueryOptions } from '../hooks/use-workouts-in-range';
 import { AssignTemplateForm } from './assign-template-form';
 import { DayWorkoutItem } from './day-workout-item';
 
-const sectionHeading =
-  'text-muted-foreground flex items-center gap-1.5 text-xs font-medium uppercase tracking-[0.08em]';
-
 // A target rep count for one template exercise: a range, a single number, or AMRAP
 // when a set count is given but no reps.
 function repRange(min: number | null, max: number | null): string {
@@ -28,13 +26,15 @@ function repRange(min: number | null, max: number | null): string {
   return `${min}–${max}`;
 }
 
-// The "sets × reps" suffix, or null when the template exercise has neither a set count
-// nor a rep target (so nothing is shown rather than an empty "— × …").
+// The uppercase "N SETS × M REPS" target for a planned exercise row, or null when the
+// template exercise has neither a set count nor a rep target.
 function targetLabel(sets: number | null, min: number | null, max: number | null): string | null {
   const hasReps = min !== null || max !== null;
   if (sets === null && !hasReps) return null;
   const reps = repRange(min, max);
-  return sets === null ? reps : `${sets} × ${reps}`;
+  if (sets === null) return `${reps} REPS`;
+  if (!hasReps) return `${sets} SETS`;
+  return `${sets} SETS × ${reps} REPS`;
 }
 
 // One planned to-do: the template with a tint icon, its exercises (name · sets × reps),
@@ -73,13 +73,28 @@ function PlannedTodoCard({ session }: { session: PlannedSessionWithTemplate }) {
       </div>
 
       {exercises.length > 0 && (
-        <ul className="flex flex-col gap-1 text-[12.5px] text-[#574c52] dark:text-[#c6b8bd]">
-          {exercises.map((item) => {
+        <ul className="flex flex-col">
+          {exercises.map((item, index) => {
             const target = targetLabel(item.targetSets, item.targetRepsMin, item.targetRepsMax);
             return (
-              <li key={item.id} className="truncate">
-                {item.exercise.name}
-                {target ? <span className="text-muted-foreground"> · {target}</span> : null}
+              <li
+                key={item.id}
+                className={cn(
+                  'flex items-baseline gap-3 py-2',
+                  index > 0 && 'border-t border-dashed border-[#e4dad2] dark:border-[#40353c]',
+                )}
+              >
+                <span className="font-heading w-4 shrink-0 text-center text-sm text-[#c9bcb2] italic">
+                  {index + 1}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[13px] font-semibold">{item.exercise.name}</p>
+                  {target ? (
+                    <p className="text-muted-foreground text-[10.5px] font-medium tracking-wide uppercase">
+                      {target}
+                    </p>
+                  ) : null}
+                </div>
               </li>
             );
           })}
@@ -159,44 +174,43 @@ export function DayDetail({ date }: { date: string }) {
         <PlannedTodoCard key={session.id} session={session} />
       ))}
 
-      {workouts.length > 0 && (
-        <section className="flex flex-col gap-2">
-          <h3 className={sectionHeading}>
-            <span className="size-2 rounded-full bg-[#5a7a52] dark:bg-[#8fae85]" />
-            Done
-          </h3>
-          {workouts.map((workout) => (
-            <DayWorkoutItem
-              key={workout.id}
-              workout={workout}
-              defaultExpanded={workouts.length === 1}
-            />
-          ))}
-        </section>
-      )}
+      {workouts.map((workout) => (
+        <DayWorkoutItem
+          key={workout.id}
+          workout={workout}
+          defaultExpanded={workouts.length === 1}
+        />
+      ))}
 
-      {stravaSessions.length > 0 && (
-        <section className="flex flex-col gap-2">
-          <h3 className={sectionHeading}>
-            <span className="size-2 rounded-full bg-[#d15b28] dark:bg-[#ff7a3d]" />
-            Strava
-          </h3>
-          {stravaSessions.map((session) => (
+      {stravaSessions.map((session) => (
+        <div key={session.id} className="bg-card flex flex-col gap-2 rounded-2xl border p-3">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#fbe3d4] px-2 py-0.5 text-[10px] font-bold tracking-[0.06em] text-[#d15b28] uppercase dark:bg-[#45291b] dark:text-[#ff7a3d]">
+              Strava
+            </span>
             <button
-              key={session.id}
               type="button"
-              className="hover:bg-muted/50 active:bg-muted flex items-center gap-2 rounded-xl border px-3 py-2 text-left transition-colors"
+              className="flex min-w-0 flex-1 items-center gap-2 text-left"
               onClick={() => void navigate({ to: '/strava', search: { activity: session.id } })}
             >
-              <span className="min-w-0 flex-1">
-                <span className="block truncate font-medium">{session.name}</span>
-                <span className="text-muted-foreground text-xs">{session.activityType}</span>
-              </span>
+              <span className="min-w-0 flex-1 truncate font-medium">{session.name}</span>
               <ChevronRight className="text-muted-foreground size-4 shrink-0" />
             </button>
-          ))}
-        </section>
-      )}
+          </div>
+          <div className="text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 text-xs">
+            {session.distanceM !== null && session.distanceM > 0 ? (
+              <span>{(session.distanceM / 1000).toFixed(1)} km</span>
+            ) : null}
+            {session.movingTimeS !== null && session.movingTimeS > 0 ? (
+              <span>{Math.round(session.movingTimeS / 60)} min</span>
+            ) : null}
+            <span className="capitalize">{session.activityType}</span>
+          </div>
+          {session.summaryPolyline ? (
+            <RouteMap polyline={session.summaryPolyline} className="h-52 rounded-xl" />
+          ) : null}
+        </div>
+      ))}
 
       {todos.length === 0 && nothingElse ? (
         <p className="text-muted-foreground text-sm">Nothing on this day.</p>
@@ -205,8 +219,8 @@ export function DayDetail({ date }: { date: string }) {
       ) : null}
 
       <Button
-        variant="outline"
-        className="h-11 rounded-2xl border-dashed"
+        variant="ghost"
+        className="bg-accent text-accent-foreground hover:bg-accent/70 h-11 rounded-2xl border"
         onClick={() => setAssigning(true)}
       >
         <Plus className="size-4" />

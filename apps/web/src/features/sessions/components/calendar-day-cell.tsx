@@ -93,9 +93,6 @@ export function CalendarDayCell({
         >
           {dayNumber}
         </span>
-        {inverted && (
-          <span className="text-[9px] font-semibold tracking-wide uppercase lg:hidden">Today</span>
-        )}
       </span>
 
       {(planned.length > 0 || stravaTypes.length > 0) && (
@@ -105,9 +102,14 @@ export function CalendarDayCell({
               {/* One marker regardless of how many are planned; a count when >1. The
                   shown marker stays draggable to reschedule; manage the rest in the
                   day detail. */}
-              <PlannedMarker session={planned[0]!} />
+              <PlannedMarker session={planned[0]!} onDark={inverted} />
               {planned.length > 1 && (
-                <span className="text-primary text-[10px] font-semibold leading-none">
+                <span
+                  className={cn(
+                    'text-[10px] font-semibold leading-none',
+                    inverted ? 'text-[#c98fa0]' : 'text-primary',
+                  )}
+                >
                   ×{planned.length}
                 </span>
               )}

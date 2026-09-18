@@ -16,8 +16,10 @@ export function DayDetailPanel() {
   const isToday = date === todayIso;
 
   return (
-    <aside className="bg-card h-fit overflow-hidden rounded-2xl border lg:sticky lg:top-4">
-      <header className="flex items-center justify-between gap-2 border-b p-4">
+    // The panel itself is transparent (sits on the muted canvas); the date is a bare
+    // caption and only the inner session cards carry the light card background.
+    <aside className="h-fit lg:sticky lg:top-4">
+      <header className="flex items-end justify-between gap-2 px-4 pt-1 pb-1">
         <div className="flex flex-col">
           <span className="font-heading text-muted-foreground text-sm italic">
             {format(parseISO(date), 'EEEE')}
