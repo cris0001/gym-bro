@@ -52,7 +52,10 @@ export function LatestWeightCard() {
           </p>
         </>
       ) : (
-        <Link to="/body" className="text-primary text-sm underline">
+        <Link
+          to="/body"
+          className="bg-accent text-primary hover:bg-accent/70 mt-1 inline-flex h-9 w-fit items-center rounded-full px-3.5 text-[12.5px] font-semibold"
+        >
           Log your weight
         </Link>
       )}

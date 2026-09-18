@@ -37,7 +37,10 @@ export function LastWorkoutCard() {
       <div className="bg-card flex flex-col gap-1 rounded-2xl border p-5">
         <p className={microLabel}>Last workout</p>
         <span className="text-muted-foreground text-sm">No workouts logged yet.</span>
-        <Link to="/session" className="text-primary text-sm underline">
+        <Link
+          to="/session"
+          className="bg-accent text-primary hover:bg-accent/70 mt-1 inline-flex h-9 w-fit items-center rounded-full px-3.5 text-[12.5px] font-semibold"
+        >
           Start one
         </Link>
       </div>
