@@ -1,5 +1,6 @@
 import { Link, useRouterState } from '@tanstack/react-router';
 
+import { useTranslation } from '@/lib/i18n/use-translation';
 import { cn } from '@/lib/utils';
 
 import { findActiveSection, NAV_SECTIONS } from './nav-items';
@@ -12,12 +13,13 @@ import { findActiveSection, NAV_SECTIONS } from './nav-items';
 export function BottomNav() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const activeSection = findActiveSection(pathname);
+  const { t } = useTranslation();
 
   return (
     <nav className="bg-card dark:bg-background fixed inset-x-0 bottom-0 z-20 flex h-14 border-t lg:hidden">
       {NAV_SECTIONS.map((section) => {
         const Icon = section.icon;
-        const isActive = section.label === activeSection.label;
+        const isActive = section.to === activeSection.to;
         // Strava reads as its own orange tab within the bar.
         const isStrava = section.brand === 'strava';
         const color = isStrava
@@ -27,7 +29,7 @@ export function BottomNav() {
             : 'text-muted-foreground';
         return (
           <Link
-            key={section.label}
+            key={section.to}
             to={section.to}
             className={cn(
               'flex flex-1 flex-col items-center justify-center gap-1 text-[11px] font-medium',
@@ -43,7 +45,7 @@ export function BottomNav() {
             >
               <Icon className="size-5" />
             </span>
-            {section.label}
+            {t.nav[section.labelKey]}
           </Link>
         );
       })}
