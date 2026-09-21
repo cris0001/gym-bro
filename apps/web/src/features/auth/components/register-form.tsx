@@ -13,6 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 
 import { useRegister } from '../hooks/use-register';
+import { useAuthTranslation } from '../i18n';
 import { registerSchema, type RegisterInput } from '../types';
 
 interface RegisterFormProps {
@@ -27,6 +28,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
     defaultValues: { email: '', password: '' },
   });
   const { mutate, isPending, error } = useRegister();
+  const t = useAuthTranslation();
 
   function onSubmit(values: RegisterInput) {
     mutate(values, { onSuccess: () => onSuccess?.() });
@@ -40,7 +42,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>{t.email}</FormLabel>
               <FormControl>
                 <Input
                   type="email"
@@ -61,7 +63,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>{t.password}</FormLabel>
               <FormControl>
                 <Input type="password" autoComplete="new-password" className="h-11" {...field} />
               </FormControl>
@@ -79,7 +81,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         ) : null}
 
         <Button type="submit" className="h-11 w-full rounded-full" disabled={isPending}>
-          {isPending ? 'Creating account…' : 'Create account'}
+          {isPending ? t.register.creating : t.register.createAccount}
         </Button>
       </form>
     </Form>

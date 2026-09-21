@@ -22,6 +22,7 @@ import {
 
 import { useCompleteOnboarding } from '../hooks/use-complete-onboarding';
 import { useCurrentUser } from '../hooks/use-current-user';
+import { useAuthTranslation } from '../i18n';
 import {
   SEX_OPTIONS,
   onboardingFormSchema,
@@ -32,6 +33,7 @@ import {
 export function OnboardingSheet() {
   const { data: user } = useCurrentUser();
   const { mutate, isPending, error } = useCompleteOnboarding();
+  const t = useAuthTranslation();
   // Closing via the X/overlay dismisses for this session only; the sheet
   // reappears on reload until onboardedAt is stamped (Save or Skip).
   const [dismissed, setDismissed] = useState(false);
@@ -55,10 +57,8 @@ export function OnboardingSheet() {
     <Sheet open={open} onOpenChange={(next) => !next && setDismissed(true)}>
       <SheetContent side="bottom" className="gap-0">
         <SheetHeader>
-          <SheetTitle>Welcome! Set up your profile</SheetTitle>
-          <SheetDescription>
-            All optional — you can change these later in Settings.
-          </SheetDescription>
+          <SheetTitle>{t.onboarding.title}</SheetTitle>
+          <SheetDescription>{t.onboarding.subtitle}</SheetDescription>
         </SheetHeader>
 
         <Form {...form}>
@@ -68,7 +68,7 @@ export function OnboardingSheet() {
               name="birthdate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Birthdate</FormLabel>
+                  <FormLabel>{t.onboarding.birthdate}</FormLabel>
                   <FormControl>
                     <Input type="date" className="h-11" {...field} />
                   </FormControl>
@@ -82,17 +82,17 @@ export function OnboardingSheet() {
               name="sex"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Sex</FormLabel>
+                  <FormLabel>{t.onboarding.sex}</FormLabel>
                   <div className="grid grid-cols-2 gap-2">
                     {SEX_OPTIONS.map((opt) => (
                       <Button
                         key={opt}
                         type="button"
                         variant={field.value === opt ? 'default' : 'outline'}
-                        className="h-11 capitalize"
+                        className="h-11"
                         onClick={() => field.onChange(field.value === opt ? '' : opt)}
                       >
-                        {opt}
+                        {opt === 'male' ? t.onboarding.male : t.onboarding.female}
                       </Button>
                     ))}
                   </div>
@@ -106,12 +106,12 @@ export function OnboardingSheet() {
               name="heightCm"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Height (cm)</FormLabel>
+                  <FormLabel>{t.onboarding.height}</FormLabel>
                   <FormControl>
                     <Input
                       type="text"
                       inputMode="numeric"
-                      placeholder="e.g. 180"
+                      placeholder={t.onboarding.heightPlaceholder}
                       className="h-11"
                       {...field}
                     />
@@ -129,7 +129,7 @@ export function OnboardingSheet() {
 
             <div className="grid gap-2 pt-2">
               <Button type="submit" className="h-11 rounded-full" disabled={isPending}>
-                {isPending ? 'Saving…' : 'Save'}
+                {isPending ? t.onboarding.saving : t.onboarding.save}
               </Button>
               <Button
                 type="button"
@@ -138,7 +138,7 @@ export function OnboardingSheet() {
                 disabled={isPending}
                 onClick={() => mutate({})}
               >
-                Skip for now
+                {t.onboarding.skip}
               </Button>
             </div>
           </form>

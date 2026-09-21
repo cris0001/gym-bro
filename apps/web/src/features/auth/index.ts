@@ -6,6 +6,8 @@ export { RegisterForm } from './components/register-form';
 export { LogoutButton } from './components/logout-button';
 export { OnboardingSheet } from './components/onboarding-sheet';
 
+export { useAuthTranslation } from './i18n';
+
 export { useCurrentUser, meQueryOptions, CURRENT_USER_KEY } from './hooks/use-current-user';
 export { useLogin } from './hooks/use-login';
 export { useRegister } from './hooks/use-register';
