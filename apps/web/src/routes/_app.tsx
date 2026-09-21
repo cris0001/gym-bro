@@ -9,14 +9,14 @@ import { LogoutButton, OnboardingSheet, meQueryOptions } from '@/features/auth';
 import { ActiveSessionBubble } from '@/features/sessions';
 
 // Protected layout. beforeLoad resolves the current user from the shared cache
-// (fetching once if needed); a 401 throws and we redirect to /login before any
-// child renders, so there's no flash of authenticated UI.
+// (fetching once if needed); a 401 throws and we redirect to the public landing
+// before any child renders, so there's no flash of authenticated UI.
 export const Route = createFileRoute('/_app')({
   beforeLoad: async ({ context }) => {
     try {
       await context.queryClient.ensureQueryData(meQueryOptions);
     } catch {
-      throw redirect({ to: '/login' });
+      throw redirect({ to: '/welcome' });
     }
   },
   component: AppLayout,
