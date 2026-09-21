@@ -145,28 +145,32 @@ export function ModuleShowcase() {
                         →
                       </span>
                     </div>
-                    <p
-                      className={cn(
-                        'mt-2 pl-[50px] text-[13px] leading-relaxed',
-                        isActive ? 'text-[#bfb2b7]' : 'text-[#5f5257]',
-                      )}
-                    >
-                      {module.desc}
-                    </p>
-                    <div className="mt-2.5 flex flex-wrap gap-1.5 pl-[50px]">
-                      {module.chips.map((chip) => (
-                        <span
-                          key={chip}
-                          className={cn(
-                            'rounded-full px-2.5 py-1 text-[11px] font-semibold',
-                            isActive
-                              ? 'bg-[#3a2f34] text-[#e8cdd5]'
-                              : 'bg-[#f0e9e3] text-[#5f5257]',
-                          )}
-                        >
-                          {chip}
-                        </span>
-                      ))}
+                    {/* Details collapse on desktop for inactive cards so the whole
+                        pinned block fits one screen; on mobile they always show. */}
+                    <div className={cn('mt-2', !isActive && 'lg:hidden')}>
+                      <p
+                        className={cn(
+                          'pl-[50px] text-[13px] leading-relaxed',
+                          isActive ? 'text-[#bfb2b7]' : 'text-[#5f5257]',
+                        )}
+                      >
+                        {module.desc}
+                      </p>
+                      <div className="mt-2.5 flex flex-wrap gap-1.5 pl-[50px]">
+                        {module.chips.map((chip) => (
+                          <span
+                            key={chip}
+                            className={cn(
+                              'rounded-full px-2.5 py-1 text-[11px] font-semibold',
+                              isActive
+                                ? 'bg-[#3a2f34] text-[#e8cdd5]'
+                                : 'bg-[#f0e9e3] text-[#5f5257]',
+                            )}
+                          >
+                            {chip}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </button>
                 );
