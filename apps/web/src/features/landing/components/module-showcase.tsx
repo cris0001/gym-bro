@@ -178,6 +178,19 @@ export function ModuleShowcase() {
                             </span>
                           ))}
                         </div>
+                        {isActive && (
+                          <ul className="mt-3 flex flex-col gap-1.5 pl-[50px]">
+                            {module.details.map((detail) => (
+                              <li
+                                key={detail}
+                                className="flex gap-2 text-[12.5px] leading-snug text-[#bfb2b7]"
+                              >
+                                <span className="text-[#c98fa0]">›</span>
+                                {detail}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
                       </div>
                     </div>
                   </button>

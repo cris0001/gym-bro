@@ -115,20 +115,23 @@ export function LandingPage() {
         <ModuleShowcase />
       </div>
 
-      {/* Serif strip */}
-      <div className="flex w-full justify-center overflow-hidden border-y border-[#e8e1da] bg-[#f6f3f0]">
-        <div className="font-heading flex max-w-[1060px] items-baseline gap-6 px-6 py-[18px] text-[clamp(18px,2.6vw,26px)] whitespace-nowrap text-[#c9bcb2] italic">
-          <span>train</span>
-          <span className="text-[#8d4a5e]">·</span>
-          <span>eat</span>
-          <span className="text-[#8d4a5e]">·</span>
-          <span>weigh in</span>
-          <span className="text-[#8d4a5e]">·</span>
-          <span>ride</span>
-          <span className="text-[#8d4a5e]">·</span>
-          <span className="font-semibold text-[#2b2126] not-italic">watch the trend</span>
-          <span className="text-[#8d4a5e]">·</span>
-          <span>repeat</span>
+      {/* Serif strip — a seamless, infinitely looping marquee */}
+      <div className="w-full overflow-hidden border-y border-[#e8e1da] bg-[#f6f3f0] py-[18px]">
+        <div className="animate-marquee flex w-max motion-reduce:animate-none">
+          {[0, 1].map((group) => (
+            <div key={group} className="flex shrink-0" aria-hidden={group === 1}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <span
+                  key={i}
+                  className="font-heading flex items-center gap-5 pr-5 text-[clamp(18px,2.6vw,26px)] whitespace-nowrap text-[#c9bcb2] italic"
+                >
+                  Eat. Sleep. <span className="font-semibold text-[#2b2126] not-italic">Lift.</span>{' '}
+                  Repeat.
+                  <span className="text-[#8d4a5e] not-italic">·</span>
+                </span>
+              ))}
+            </div>
+          ))}
         </div>
       </div>
 
