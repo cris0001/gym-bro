@@ -1,196 +1,163 @@
 import { Link } from '@tanstack/react-router';
-import {
-  Activity,
-  ArrowRight,
-  BarChart3,
-  Check,
-  Dumbbell,
-  LayoutDashboard,
-  Scale,
-  Smartphone,
-  Utensils,
-} from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { BicepsFlexed } from 'lucide-react';
+import { useEffect } from 'react';
 
-import { BrandMark } from '@/components/brand-mark';
-import { LanguageToggle } from '@/components/language-toggle';
-import { useTranslation } from '@/lib/i18n/use-translation';
+import { ModuleShowcase } from './module-showcase';
+import { PricingSection } from './pricing-section';
+import { PwaSection } from './pwa-section';
 
-// Icons for the feature cards, zipped by index with the translated copy in messages.ts.
-const FEATURE_ICONS: LucideIcon[] = [
-  Dumbbell,
-  Utensils,
-  Scale,
-  Activity,
-  LayoutDashboard,
-  BarChart3,
-];
+const PAGE_TITLE = 'Gym Bro — training, nutrition & body tracking';
+const PAGE_DESC =
+  'A gym log, a food diary and a body tracker in one free, installable web app — with your Strava rides next to your workouts.';
 
-function FeatureCard({
-  icon: Icon,
-  title,
-  body,
-}: {
-  icon: LucideIcon;
-  title: string;
-  body: string;
-}) {
+function BrandLogo({ size = 34, radius = 10 }: { size?: number; radius?: number }) {
   return (
-    <div className="bg-card flex flex-col gap-2 rounded-2xl border p-5">
-      <span className="bg-accent text-primary flex size-10 items-center justify-center rounded-xl">
-        <Icon className="size-5" />
-      </span>
-      <h3 className="font-heading text-lg font-semibold">{title}</h3>
-      <p className="text-muted-foreground text-sm leading-relaxed">{body}</p>
-    </div>
+    <span
+      className="flex items-center justify-center bg-[#8d4a5e] text-[#fdf6f5]"
+      style={{ width: size, height: size, borderRadius: radius }}
+    >
+      <BicepsFlexed style={{ width: size * 0.53, height: size * 0.53 }} />
+    </span>
   );
 }
 
-// The public marketing page shown before sign-in: what the app is, that it installs
-// as a PWA, and a two-card pricing block (free with no time limit; a struck-through
-// "maybe later" paid tier). Copy is translated via the UI language store.
+// The public marketing home page. Fixed light design (theme-independent) reproduced
+// from the approved mockup: nav, hero, the scroll-driven module showcase, a serif
+// strip, the dark PWA band, pricing + FAQ, and a closing CTA. All CTAs route to auth.
 export function LandingPage() {
-  const { t } = useTranslation();
+  // Page title/description for this route, plus smooth anchor scrolling while the
+  // landing is mounted (restored on leave so the app isn't affected).
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = PAGE_TITLE;
+    let meta = document.querySelector('meta[name="description"]');
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'description');
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute('content', PAGE_DESC);
+
+    const root = document.documentElement;
+    const prevBehavior = root.style.scrollBehavior;
+    root.style.scrollBehavior = 'smooth';
+    return () => {
+      document.title = prevTitle;
+      root.style.scrollBehavior = prevBehavior;
+    };
+  }, []);
 
   return (
-    <div className="bg-background text-foreground min-h-dvh">
-      <header className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 py-4">
-        <span className="flex items-center gap-2">
-          <BrandMark className="size-8" />
-          <span className="font-heading text-lg font-semibold">Gym Bro</span>
+    <div className="flex min-h-dvh flex-col items-center bg-[#f6f3f0] text-[#2b2126]">
+      {/* Nav */}
+      <div className="mx-auto flex w-full max-w-[1060px] items-center justify-between px-6 py-[22px]">
+        <span className="flex items-center gap-2.5">
+          <BrandLogo />
+          <span className="font-heading text-[21px] font-semibold">Gym Bro</span>
         </span>
-        <nav className="flex items-center gap-2">
-          <LanguageToggle className="mr-1" />
+        <div className="flex items-center gap-4 sm:gap-[18px]">
+          <a href="#inside" className="hidden text-[13px] font-semibold text-[#5f5257] sm:inline">
+            What&apos;s inside
+          </a>
+          <a href="#pwa" className="hidden text-[13px] font-semibold text-[#5f5257] sm:inline">
+            Install
+          </a>
+          <a href="#pricing" className="hidden text-[13px] font-semibold text-[#5f5257] sm:inline">
+            Pricing
+          </a>
           <Link
             to="/login"
-            className="text-muted-foreground hover:text-foreground inline-flex h-9 items-center rounded-full px-4 text-sm font-medium"
+            className="flex h-[38px] items-center rounded-full bg-[#8d4a5e] px-[18px] text-[13px] font-semibold whitespace-nowrap text-[#fdf6f5] hover:bg-[#75394c]"
           >
-            {t.nav.login}
+            Sign in
           </Link>
-          <Link
-            to="/register"
-            className="bg-primary text-primary-foreground hover:bg-primary/80 inline-flex h-9 items-center rounded-full px-4 text-sm font-medium"
-          >
-            {t.nav.getStarted}
-          </Link>
-        </nav>
-      </header>
+        </div>
+      </div>
 
       {/* Hero */}
-      <section className="mx-auto flex w-full max-w-5xl flex-col items-center gap-5 px-4 pt-10 pb-14 text-center md:pt-16">
-        <span className="bg-accent text-accent-foreground inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold">
-          <Smartphone className="size-3.5" />
-          {t.hero.badge}
+      <div className="mx-auto flex w-full max-w-[1060px] flex-col items-center gap-5 px-6 pt-13 pb-15 text-center">
+        <span className="rounded-full bg-[#f5e7ea] px-3.5 py-1.5 text-[11.5px] font-bold tracking-[0.16em] text-[#75394c] uppercase">
+          Training · Nutrition · Body — one app
         </span>
-        <h1 className="font-heading max-w-2xl text-4xl leading-tight font-medium md:text-6xl">
-          {t.hero.title}
+        <h1 className="font-heading max-w-[760px] text-[clamp(38px,6vw,58px)] leading-[1.08] font-medium tracking-tight text-balance">
+          Log your lifts. Track your plate. <em className="text-[#8d4a5e]">Watch the trend.</em>
         </h1>
-        <p className="text-muted-foreground max-w-xl text-base md:text-lg">{t.hero.subtitle}</p>
-        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+        <p className="max-w-[560px] text-base leading-relaxed text-[#5f5257]">
+          A gym log, a food diary and a body tracker that live in one place — with your Strava rides
+          next to your workouts. Free, no app store needed.
+        </p>
+        <div className="flex flex-wrap justify-center gap-3">
           <Link
             to="/register"
-            className="bg-primary text-primary-foreground hover:bg-primary/80 inline-flex h-12 items-center gap-2 rounded-full px-6 text-base font-semibold"
+            className="flex h-12 items-center rounded-full bg-[#8d4a5e] px-[26px] text-[14.5px] font-semibold whitespace-nowrap text-[#fdf6f5] hover:bg-[#75394c]"
           >
-            {t.hero.createAccount}
-            <ArrowRight className="size-4" />
+            Get started free
           </Link>
-          <Link
-            to="/login"
-            className="bg-accent text-primary hover:bg-accent/70 inline-flex h-12 items-center rounded-full px-6 text-base font-semibold"
+          <a
+            href="#inside"
+            className="flex h-12 items-center rounded-full border border-[#d6c8bd] bg-[#fdfbf9] px-[22px] text-sm font-semibold whitespace-nowrap text-[#5f5257]"
           >
-            {t.hero.login}
-          </Link>
+            See what&apos;s inside ↓
+          </a>
         </div>
-      </section>
-
-      {/* Features */}
-      <section className="mx-auto w-full max-w-5xl px-4 pb-14">
-        <h2 className="font-heading mb-6 text-center text-2xl font-semibold md:text-3xl">
-          {t.features.heading}
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {t.features.items.map((item, index) => (
-            <FeatureCard
-              key={item.title}
-              icon={FEATURE_ICONS[index] ?? Dumbbell}
-              title={item.title}
-              body={item.body}
-            />
+        <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 pt-2">
+          {['Free forever', 'Works offline', 'Strava import'].map((tick) => (
+            <span key={tick} className="flex items-center gap-1.5 text-[12.5px] text-[#94858b]">
+              <span className="text-[#5a7a52]">✓</span>
+              {tick}
+            </span>
           ))}
         </div>
-      </section>
+      </div>
+
+      {/* What's inside — scroll-driven module showcase */}
+      <div className="w-full">
+        <ModuleShowcase />
+      </div>
+
+      {/* Serif strip */}
+      <div className="flex w-full justify-center overflow-hidden border-y border-[#e8e1da] bg-[#f6f3f0]">
+        <div className="font-heading flex max-w-[1060px] items-baseline gap-6 px-6 py-[18px] text-[clamp(18px,2.6vw,26px)] whitespace-nowrap text-[#c9bcb2] italic">
+          <span>train</span>
+          <span className="text-[#8d4a5e]">·</span>
+          <span>eat</span>
+          <span className="text-[#8d4a5e]">·</span>
+          <span>weigh in</span>
+          <span className="text-[#8d4a5e]">·</span>
+          <span>ride</span>
+          <span className="text-[#8d4a5e]">·</span>
+          <span className="font-semibold text-[#2b2126] not-italic">watch the trend</span>
+          <span className="text-[#8d4a5e]">·</span>
+          <span>repeat</span>
+        </div>
+      </div>
 
       {/* PWA */}
-      <section className="mx-auto w-full max-w-5xl px-4 pb-14">
-        <div className="bg-card flex flex-col items-center gap-4 rounded-2xl border p-8 text-center">
-          <span className="bg-accent text-primary flex size-12 items-center justify-center rounded-2xl">
-            <Smartphone className="size-6" />
+      <div className="w-full">
+        <PwaSection />
+      </div>
+
+      {/* Pricing + FAQ */}
+      <PricingSection />
+
+      {/* Closing CTA */}
+      <div className="mt-6 flex w-full justify-center bg-[#2b2126]">
+        <div className="mx-auto flex w-full max-w-[1060px] flex-col items-center gap-5 px-6 py-11 text-center">
+          <span className="font-heading text-[clamp(24px,3.5vw,32px)] font-medium tracking-tight text-[#f0e7ea]">
+            Your next session is waiting.
           </span>
-          <h2 className="font-heading text-2xl font-semibold md:text-3xl">{t.pwa.title}</h2>
-          <p className="text-muted-foreground max-w-xl text-sm md:text-base">{t.pwa.body}</p>
-        </div>
-      </section>
-
-      {/* Pricing */}
-      <section className="mx-auto w-full max-w-4xl px-4 pb-16">
-        <h2 className="font-heading mb-2 text-center text-2xl font-semibold md:text-3xl">
-          {t.pricing.heading}
-        </h2>
-        <p className="text-muted-foreground mb-6 text-center text-sm">{t.pricing.subtitle}</p>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {/* Free — the live plan */}
-          <div className="bg-card ring-primary/30 flex flex-col gap-4 rounded-2xl border p-6 ring-1">
-            <div className="flex items-center justify-between">
-              <h3 className="font-heading text-xl font-semibold">{t.pricing.free.name}</h3>
-              <span className="bg-accent text-accent-foreground rounded-full px-2.5 py-0.5 text-[11px] font-bold tracking-[0.06em] uppercase">
-                {t.pricing.free.badge}
-              </span>
-            </div>
-            <div className="flex items-baseline gap-1">
-              <span className="font-heading text-4xl font-semibold">{t.pricing.free.price}</span>
-              <span className="text-muted-foreground text-sm">{t.pricing.free.unit}</span>
-            </div>
-            <ul className="flex flex-col gap-2 text-sm">
-              {t.pricing.free.features.map((line) => (
-                <li key={line} className="flex items-center gap-2">
-                  <Check className="text-primary size-4 shrink-0" />
-                  {line}
-                </li>
-              ))}
-            </ul>
-            <Link
-              to="/register"
-              className="bg-primary text-primary-foreground hover:bg-primary/80 mt-2 inline-flex h-11 items-center justify-center gap-2 rounded-full text-sm font-semibold"
-            >
-              {t.pricing.free.cta}
-              <ArrowRight className="size-4" />
-            </Link>
-          </div>
-
-          {/* A possible future paid tier — struck through, no price. */}
-          <div className="border-border/70 flex flex-col gap-4 rounded-2xl border border-dashed bg-transparent p-6">
-            <div className="flex items-center justify-between">
-              <h3 className="font-heading text-muted-foreground text-xl font-semibold line-through">
-                {t.pricing.pro.name}
-              </h3>
-              <span className="text-muted-foreground/70 rounded-full border px-2.5 py-0.5 text-[11px] font-bold tracking-[0.06em] uppercase">
-                {t.pricing.pro.badge}
-              </span>
-            </div>
-            <p className="text-muted-foreground text-sm">{t.pricing.pro.body}</p>
-            <span
-              aria-disabled
-              className="border-border text-muted-foreground/70 mt-auto inline-flex h-11 cursor-not-allowed items-center justify-center rounded-full border text-sm font-semibold"
-            >
-              {t.pricing.pro.cta}
-            </span>
+          <Link
+            to="/register"
+            className="flex h-12 items-center rounded-full bg-[#c98fa0] px-7 text-[14.5px] font-bold whitespace-nowrap text-[#2b2126]"
+          >
+            Get started free
+          </Link>
+          <div className="flex w-full items-center justify-center gap-2.5 border-t border-[#4a3d43] pt-3">
+            <BrandLogo size={24} radius={7} />
+            <span className="text-xs text-[#94858b]">Gym Bro · train, eat, track — 2026</span>
           </div>
         </div>
-      </section>
-
-      <footer className="text-muted-foreground border-t px-4 py-6 text-center text-xs">
-        {t.footer}
-      </footer>
+      </div>
     </div>
   );
 }
