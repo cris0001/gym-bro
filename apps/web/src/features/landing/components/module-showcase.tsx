@@ -35,14 +35,13 @@ function ModuleScreen({ module }: { module: LandingModule }) {
   );
 }
 
-// "What's inside" — a pinned scrollytelling showcase. Desktop: the left column is a
-// stack of tall steps (one module each); the right browser panel is sticky and stays
-// on screen for the whole section, crossfading to the module whose step is crossing
-// the viewport centre. Clicking a card scrolls to its step. Mobile: cards stack
-// normally and the panel is hidden.
+// "What's inside" — a master–detail showcase. Desktop: a compact list of module
+// cards on the left; the right browser panel is sticky (stays on screen while the
+// section is in view) and crossfades to whichever card the scroll passes through its
+// centre, or the one you click. Mobile: cards stack normally and the panel is hidden.
 export function ModuleShowcase() {
   const [active, setActive] = useState(0);
-  const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const cardRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   useEffect(() => {
     // A zero-height band at the vertical centre: the step spanning it is "active".
@@ -56,7 +55,7 @@ export function ModuleShowcase() {
       },
       { rootMargin: '-50% 0px -50% 0px', threshold: 0 },
     );
-    for (const el of stepRefs.current) if (el) observer.observe(el);
+    for (const el of cardRefs.current) if (el) observer.observe(el);
     return () => observer.disconnect();
   }, []);
 
@@ -75,81 +74,68 @@ export function ModuleShowcase() {
         {/* No items-start: the right cell stretches to the tall left column so the
             sticky panel has room to stay pinned for the whole section. */}
         <div className="grid gap-6 lg:grid-cols-[minmax(300px,1fr)_minmax(320px,460px)]">
-          {/* Left — one tall step per module; scrolling drives the active one. */}
-          <div className="flex flex-col gap-2.5 lg:gap-0">
+          {/* Left — a normal compact card list; scroll (or a click) sets the active one. */}
+          <div className="flex flex-col gap-2.5">
             {LANDING_MODULES.map((module, index) => {
               const Icon = module.icon;
               const isActive = index === active;
               return (
-                <div
+                <button
                   key={module.id}
+                  type="button"
                   ref={(el) => {
-                    stepRefs.current[index] = el;
+                    cardRefs.current[index] = el;
                   }}
                   data-index={index}
-                  className="flex flex-col justify-center lg:min-h-[42vh]"
+                  onClick={() => setActive(index)}
+                  className={cn(
+                    'w-full rounded-2xl border p-4 text-left transition-all duration-300 md:p-[18px]',
+                    isActive
+                      ? 'border-transparent bg-[#2b2126] shadow-lg'
+                      : 'border-[#e8e1da] bg-[#fdfbf9] hover:border-[#8d4a5e]/40',
+                  )}
                 >
-                  <button
-                    type="button"
-                    onClick={() =>
-                      stepRefs.current[index]?.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center',
-                      })
-                    }
-                    className={cn(
-                      'w-full rounded-2xl border p-4 text-left transition-all duration-300 md:p-[18px]',
-                      isActive
-                        ? 'border-transparent bg-[#2b2126] shadow-xl lg:scale-[1.02]'
-                        : 'border-[#e8e1da] bg-[#fdfbf9] hover:border-[#8d4a5e]/40 lg:opacity-70',
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span
-                        className="flex size-[38px] shrink-0 items-center justify-center rounded-xl"
-                        style={{ backgroundColor: module.color, color: module.iconFg }}
-                      >
-                        <Icon className="size-[18px]" />
-                      </span>
-                      <span
-                        className={cn(
-                          'font-heading flex-1 text-xl font-semibold',
-                          isActive ? 'text-[#f0e7ea]' : 'text-[#2b2126]',
-                        )}
-                      >
-                        {module.title}
-                      </span>
-                      <span
-                        className={cn('text-lg', isActive ? 'text-[#c98fa0]' : 'text-[#94858b]')}
-                      >
-                        →
-                      </span>
-                    </div>
-                    <p
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="flex size-[38px] shrink-0 items-center justify-center rounded-xl"
+                      style={{ backgroundColor: module.color, color: module.iconFg }}
+                    >
+                      <Icon className="size-[18px]" />
+                    </span>
+                    <span
                       className={cn(
-                        'mt-2 pl-[50px] text-[13px] leading-relaxed',
-                        isActive ? 'text-[#bfb2b7]' : 'text-[#5f5257]',
+                        'font-heading flex-1 text-xl font-semibold',
+                        isActive ? 'text-[#f0e7ea]' : 'text-[#2b2126]',
                       )}
                     >
-                      {module.desc}
-                    </p>
-                    <div className="mt-2.5 flex flex-wrap gap-1.5 pl-[50px]">
-                      {module.chips.map((chip) => (
-                        <span
-                          key={chip}
-                          className={cn(
-                            'rounded-full px-2.5 py-1 text-[11px] font-semibold',
-                            isActive
-                              ? 'bg-[#3a2f34] text-[#e8cdd5]'
-                              : 'bg-[#f0e9e3] text-[#5f5257]',
-                          )}
-                        >
-                          {chip}
-                        </span>
-                      ))}
-                    </div>
-                  </button>
-                </div>
+                      {module.title}
+                    </span>
+                    <span className={cn('text-lg', isActive ? 'text-[#c98fa0]' : 'text-[#94858b]')}>
+                      →
+                    </span>
+                  </div>
+                  <p
+                    className={cn(
+                      'mt-2 pl-[50px] text-[13px] leading-relaxed',
+                      isActive ? 'text-[#bfb2b7]' : 'text-[#5f5257]',
+                    )}
+                  >
+                    {module.desc}
+                  </p>
+                  <div className="mt-2.5 flex flex-wrap gap-1.5 pl-[50px]">
+                    {module.chips.map((chip) => (
+                      <span
+                        key={chip}
+                        className={cn(
+                          'rounded-full px-2.5 py-1 text-[11px] font-semibold',
+                          isActive ? 'bg-[#3a2f34] text-[#e8cdd5]' : 'bg-[#f0e9e3] text-[#5f5257]',
+                        )}
+                      >
+                        {chip}
+                      </span>
+                    ))}
+                  </div>
+                </button>
               );
             })}
           </div>
