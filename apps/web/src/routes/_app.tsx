@@ -4,6 +4,7 @@ import { BrandMark } from '@/components/brand-mark';
 import { BottomNav } from '@/components/nav/bottom-nav';
 import { SectionTabs } from '@/components/nav/section-tabs';
 import { SidebarNav } from '@/components/nav/sidebar-nav';
+import { LanguageToggle } from '@/components/language-toggle';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LogoutButton, OnboardingSheet, meQueryOptions } from '@/features/auth';
 import { ActiveSessionBubble } from '@/features/sessions';
@@ -33,6 +34,7 @@ function AppLayout() {
             <BrandMark className="size-8" />
           </span>
           <div className="flex items-center gap-1">
+            <LanguageToggle />
             <ThemeToggle />
             <LogoutButton />
           </div>
