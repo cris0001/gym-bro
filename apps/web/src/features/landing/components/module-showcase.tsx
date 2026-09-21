@@ -45,6 +45,10 @@ function ModuleScreen({ module }: { module: LandingModule }) {
 export function ModuleShowcase() {
   const [active, setActive] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
+  // While a click-to-jump smooth-scroll is running, ignore scroll→active updates so
+  // the intermediate positions don't cascade every card's animation on the way.
+  const jumpingRef = useRef(false);
+  const jumpTimer = useRef<number | undefined>(undefined);
 
   // Map scroll position within the track to the active module (desktop only).
   useEffect(() => {
@@ -52,7 +56,7 @@ export function ModuleShowcase() {
     const update = () => {
       raf = 0;
       const el = sectionRef.current;
-      if (!el || !window.matchMedia(DESKTOP).matches) return;
+      if (!el || !window.matchMedia(DESKTOP).matches || jumpingRef.current) return;
       const range = el.offsetHeight - window.innerHeight; // pinned scroll distance
       if (range <= 0) return;
       const scrolled = Math.min(Math.max(-el.getBoundingClientRect().top, 0), range);
@@ -73,6 +77,7 @@ export function ModuleShowcase() {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
       if (raf) cancelAnimationFrame(raf);
+      if (jumpTimer.current) window.clearTimeout(jumpTimer.current);
     };
   }, []);
 
@@ -87,7 +92,15 @@ export function ModuleShowcase() {
     const range = el.offsetHeight - window.innerHeight;
     const top = el.getBoundingClientRect().top + window.scrollY;
     const target = top + ((index + 0.5) / LANDING_MODULES.length) * range;
+    // Jump straight to the target module (no cascade), then let the scroll settle
+    // before the scroll→active mapping takes over again.
+    jumpingRef.current = true;
+    setActive(index);
+    window.clearTimeout(jumpTimer.current);
     window.scrollTo({ top: target, behavior: 'smooth' });
+    jumpTimer.current = window.setTimeout(() => {
+      jumpingRef.current = false;
+    }, 800);
   }
 
   const current = LANDING_MODULES[active] ?? LANDING_MODULES[0]!;

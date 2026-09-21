@@ -117,7 +117,7 @@ export function LandingPage() {
                   key={i}
                   className="font-heading flex items-center gap-6 pr-6 text-[clamp(14px,1.6vw,18px)] whitespace-nowrap text-[#c9bcb2] italic"
                 >
-                  Eat. Sleep. Lift. Repeat.
+                  eat sleep lift repeat
                   <span className="text-[#8d4a5e]">·</span>
                 </span>
               ))}
