@@ -16,7 +16,7 @@ export const Route = createFileRoute('/_app')({
     try {
       await context.queryClient.ensureQueryData(meQueryOptions);
     } catch {
-      throw redirect({ to: '/welcome' });
+      throw redirect({ to: '/' });
     }
   },
   component: AppLayout,

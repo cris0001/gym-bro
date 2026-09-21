@@ -11,7 +11,7 @@ function LoginPage() {
 
   return (
     <div className="grid gap-6">
-      <LoginForm onSuccess={() => void navigate({ to: '/' })} />
+      <LoginForm onSuccess={() => void navigate({ to: '/dashboard' })} />
 
       <p className="text-muted-foreground text-center text-sm">
         No account?{' '}

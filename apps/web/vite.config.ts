@@ -38,7 +38,7 @@ export default defineConfig({
         theme_color: '#f6f3f0',
         background_color: '#f6f3f0',
         display: 'standalone',
-        start_url: '/',
+        start_url: '/dashboard',
         scope: '/',
         icons: [
           { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
