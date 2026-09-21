@@ -13,6 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 
 import { useLogin } from '../hooks/use-login';
+import { useAuthTranslation } from '../i18n';
 import { loginSchema, type LoginInput } from '../types';
 
 interface LoginFormProps {
@@ -27,6 +28,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     defaultValues: { email: '', password: '' },
   });
   const { mutate, isPending, error } = useLogin();
+  const t = useAuthTranslation();
 
   function onSubmit(values: LoginInput) {
     mutate(values, { onSuccess: () => onSuccess?.() });
@@ -40,7 +42,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>{t.email}</FormLabel>
               <FormControl>
                 <Input
                   type="email"
@@ -61,7 +63,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>{t.password}</FormLabel>
               <FormControl>
                 <Input
                   type="password"
@@ -84,7 +86,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         ) : null}
 
         <Button type="submit" className="h-11 w-full rounded-full" disabled={isPending}>
-          {isPending ? 'Signing in…' : 'Sign in'}
+          {isPending ? t.login.signingIn : t.login.signIn}
         </Button>
       </form>
     </Form>

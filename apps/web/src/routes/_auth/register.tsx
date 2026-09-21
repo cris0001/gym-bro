@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 
-import { RegisterForm } from '@/features/auth';
+import { RegisterForm, useAuthTranslation } from '@/features/auth';
 
 export const Route = createFileRoute('/_auth/register')({
   component: RegisterPage,
@@ -8,15 +8,16 @@ export const Route = createFileRoute('/_auth/register')({
 
 function RegisterPage() {
   const navigate = useNavigate();
+  const t = useAuthTranslation();
 
   return (
     <div className="grid gap-6">
       <RegisterForm onSuccess={() => void navigate({ to: '/dashboard' })} />
 
       <p className="text-muted-foreground text-center text-sm">
-        Already have an account?{' '}
+        {t.register.haveAccount}{' '}
         <Link to="/login" className="text-primary underline-offset-4 hover:underline">
-          Sign in
+          {t.register.signIn}
         </Link>
       </p>
     </div>
