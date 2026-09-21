@@ -72,7 +72,9 @@ export function ModuleShowcase() {
           </h2>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(300px,1fr)_minmax(320px,460px)] lg:items-start">
+        {/* No items-start: the right cell stretches to the tall left column so the
+            sticky panel has room to stay pinned for the whole section. */}
+        <div className="grid gap-6 lg:grid-cols-[minmax(300px,1fr)_minmax(320px,460px)]">
           {/* Left — one tall step per module; scrolling drives the active one. */}
           <div className="flex flex-col gap-2.5 lg:gap-0">
             {LANDING_MODULES.map((module, index) => {
@@ -85,7 +87,7 @@ export function ModuleShowcase() {
                     stepRefs.current[index] = el;
                   }}
                   data-index={index}
-                  className="flex flex-col justify-center lg:min-h-[55vh]"
+                  className="flex flex-col justify-center lg:min-h-[42vh]"
                 >
                   <button
                     type="button"
