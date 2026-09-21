@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 
 import { BrandMark } from '@/components/brand-mark';
+import { LanguageToggle } from '@/components/language-toggle';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LogoutButton } from '@/features/auth';
 import { cn } from '@/lib/utils';
@@ -72,9 +73,12 @@ export function SidebarNav() {
         })}
       </nav>
 
-      <div className="flex items-center justify-between border-t p-3">
+      <div className="flex items-center justify-between gap-2 border-t p-3">
         <LogoutButton />
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <LanguageToggle />
+          <ThemeToggle />
+        </div>
       </div>
     </aside>
   );
