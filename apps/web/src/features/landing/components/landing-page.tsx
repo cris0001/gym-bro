@@ -75,11 +75,11 @@ export function LandingPage() {
       </div>
 
       {/* Hero */}
-      <div className="mx-auto flex w-full max-w-[1060px] flex-col items-center gap-5 px-6 pt-13 pb-15 text-center">
+      <div className="mx-auto flex w-full max-w-[1060px] flex-col items-center gap-6 px-6 pt-16 pb-16 text-center md:gap-5 md:pt-13 md:pb-15">
         <h1 className="font-heading max-w-[760px] text-[clamp(38px,6vw,58px)] leading-[1.08] font-medium tracking-tight text-balance">
           Log your lifts. Track your plate. <em className="text-[#8d4a5e]">Watch the trend.</em>
         </h1>
-        <p className="max-w-[560px] text-base leading-relaxed text-[#5f5257]">
+        <p className="hidden max-w-[560px] text-base leading-relaxed text-[#5f5257] sm:block">
           A gym log, a food diary and a body tracker that live in one place — with your Strava rides
           next to your workouts. Free, no app store needed.
         </p>
