@@ -252,6 +252,22 @@
   animation: skeleton-pulse 1.6s ease-in-out infinite;
 }
 
+/* Seamless infinite marquee: the track holds two identical halves, so sliding it
+   left by 50% loops without a visible seam. Used by the landing's "Eat. Sleep.
+   Lift. Repeat." strip. */
+@keyframes gb-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@utility animate-marquee {
+  animation: gb-marquee 26s linear infinite;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
