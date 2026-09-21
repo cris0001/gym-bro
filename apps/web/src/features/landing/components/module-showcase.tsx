@@ -151,7 +151,9 @@ export function ModuleShowcase() {
                     <div
                       className={cn(
                         'grid grid-rows-[1fr] opacity-100 transition-[grid-template-rows,opacity] duration-300 ease-out',
-                        !isActive && 'lg:grid-rows-[0fr] lg:opacity-0',
+                        // Collapse inactive cards on every size — mobile has no preview
+                        // panel, so only the active card expands there too.
+                        !isActive && 'grid-rows-[0fr] opacity-0',
                       )}
                     >
                       <div className="overflow-hidden">

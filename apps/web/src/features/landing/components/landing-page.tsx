@@ -76,9 +76,6 @@ export function LandingPage() {
 
       {/* Hero */}
       <div className="mx-auto flex w-full max-w-[1060px] flex-col items-center gap-5 px-6 pt-13 pb-15 text-center">
-        <span className="rounded-full bg-[#f5e7ea] px-3.5 py-1.5 text-[11.5px] font-bold tracking-[0.16em] text-[#75394c] uppercase">
-          Training · Nutrition · Body — one app
-        </span>
         <h1 className="font-heading max-w-[760px] text-[clamp(38px,6vw,58px)] leading-[1.08] font-medium tracking-tight text-balance">
           Log your lifts. Track your plate. <em className="text-[#8d4a5e]">Watch the trend.</em>
         </h1>
@@ -95,7 +92,7 @@ export function LandingPage() {
           </Link>
           <a
             href="#inside"
-            className="flex h-12 items-center rounded-full border border-[#d6c8bd] bg-[#fdfbf9] px-[22px] text-sm font-semibold whitespace-nowrap text-[#5f5257]"
+            className="hidden h-12 items-center rounded-full border border-[#d6c8bd] bg-[#fdfbf9] px-[22px] text-sm font-semibold whitespace-nowrap text-[#5f5257] sm:flex"
           >
             See what&apos;s inside ↓
           </a>
@@ -110,29 +107,28 @@ export function LandingPage() {
         </div>
       </div>
 
-      {/* What's inside — scroll-driven module showcase */}
-      <div className="w-full">
-        <ModuleShowcase />
-      </div>
-
-      {/* Serif strip — a seamless, infinitely looping marquee */}
-      <div className="w-full overflow-hidden border-y border-[#e8e1da] bg-[#f6f3f0] py-[18px]">
+      {/* Serif strip — a seamless, infinitely looping marquee, above the modules */}
+      <div className="w-full overflow-hidden border-y border-[#e8e1da] bg-[#f6f3f0] py-3">
         <div className="animate-marquee flex w-max motion-reduce:animate-none">
           {[0, 1].map((group) => (
             <div key={group} className="flex shrink-0" aria-hidden={group === 1}>
-              {Array.from({ length: 6 }).map((_, i) => (
+              {Array.from({ length: 8 }).map((_, i) => (
                 <span
                   key={i}
-                  className="font-heading flex items-center gap-5 pr-5 text-[clamp(18px,2.6vw,26px)] whitespace-nowrap text-[#c9bcb2] italic"
+                  className="font-heading flex items-center gap-6 pr-6 text-[clamp(14px,1.6vw,18px)] whitespace-nowrap text-[#c9bcb2] italic"
                 >
-                  Eat. Sleep. <span className="font-semibold text-[#2b2126] not-italic">Lift.</span>{' '}
-                  Repeat.
-                  <span className="text-[#8d4a5e] not-italic">·</span>
+                  Eat. Sleep. Lift. Repeat.
+                  <span className="text-[#8d4a5e]">·</span>
                 </span>
               ))}
             </div>
           ))}
         </div>
+      </div>
+
+      {/* What's inside — scroll-driven module showcase */}
+      <div className="w-full">
+        <ModuleShowcase />
       </div>
 
       {/* PWA */}
