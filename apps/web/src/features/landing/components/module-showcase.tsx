@@ -74,8 +74,9 @@ export function ModuleShowcase() {
         {/* No items-start: the right cell stretches to the tall left column so the
             sticky panel has room to stay pinned for the whole section. */}
         <div className="grid gap-6 lg:grid-cols-[minmax(300px,1fr)_minmax(320px,460px)]">
-          {/* Left — a normal compact card list; scroll (or a click) sets the active one. */}
-          <div className="flex flex-col gap-2.5">
+          {/* Left — a normal card list; the desktop gap gives each card more scroll
+              travel before the active one switches (mobile stays tight). */}
+          <div className="flex flex-col gap-2.5 lg:gap-16">
             {LANDING_MODULES.map((module, index) => {
               const Icon = module.icon;
               const isActive = index === active;
