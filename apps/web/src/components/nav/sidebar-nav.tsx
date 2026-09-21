@@ -4,6 +4,7 @@ import { BrandMark } from '@/components/brand-mark';
 import { LanguageToggle } from '@/components/language-toggle';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LogoutButton } from '@/features/auth';
+import { useTranslation } from '@/lib/i18n/use-translation';
 import { cn } from '@/lib/utils';
 
 import { NAV_SECTIONS } from './nav-items';
@@ -21,6 +22,7 @@ const stravaInactiveClass =
 // lands on its main view, with its submenu nested beneath a guide rail. Hidden
 // under lg, where the bottom tab bar + sub-tab strip take over.
 export function SidebarNav() {
+  const { t } = useTranslation();
   return (
     <aside className="bg-sidebar sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r lg:flex">
       <div className="flex h-14 items-center gap-2.5 border-b px-4">
@@ -34,7 +36,7 @@ export function SidebarNav() {
           // nested children to avoid listing it twice.
           const children = section.children.filter((child) => child.to !== section.to);
           return (
-            <div key={section.label} className="flex flex-col">
+            <div key={section.to} className="flex flex-col">
               <Link
                 to={section.to}
                 activeOptions={{ exact: section.exact ?? false }}
@@ -47,7 +49,7 @@ export function SidebarNav() {
                 }}
               >
                 <Icon className="size-4" />
-                {section.label}
+                {t.nav[section.labelKey]}
               </Link>
               {children.length > 0 && (
                 <div className="border-border my-0.5 ml-[1.15rem] flex flex-col gap-0.5 border-l pl-2.5">
@@ -62,7 +64,7 @@ export function SidebarNav() {
                         inactiveProps={{ className: inactiveClass }}
                       >
                         <ChildIcon className="size-4" />
-                        {child.label}
+                        {t.nav[child.labelKey]}
                       </Link>
                     );
                   })}

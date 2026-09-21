@@ -1,5 +1,7 @@
 import { Link, useRouterState } from '@tanstack/react-router';
 
+import { useTranslation } from '@/lib/i18n/use-translation';
+
 import { findActiveSection } from './nav-items';
 
 // Mobile sub-navigation: a horizontal, scrollable strip of the active section's
@@ -9,6 +11,7 @@ import { findActiveSection } from './nav-items';
 export function SectionTabs() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const section = findActiveSection(pathname);
+  const { t } = useTranslation();
 
   if (section.children.length === 0) {
     return null;
@@ -24,7 +27,7 @@ export function SectionTabs() {
             className="text-muted-foreground rounded-full px-3 py-1.5 text-sm font-medium whitespace-nowrap"
             activeProps={{ className: 'bg-accent text-accent-foreground' }}
           >
-            {child.label}
+            {t.nav[child.labelKey]}
           </Link>
         ))}
       </nav>

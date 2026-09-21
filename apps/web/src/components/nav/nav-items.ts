@@ -15,6 +15,8 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 
+import type { NavKey } from '@/lib/i18n/messages';
+
 // Param-free top-level routes, so a single union types the nav config and keeps
 // TanStack Router's <Link to> fully type-checked.
 export type NavPath =
@@ -34,7 +36,8 @@ export type NavPath =
 
 export interface NavLink {
   to: NavPath;
-  label: string;
+  // Key into the i18n `nav` namespace; the label text is resolved at render time.
+  labelKey: NavKey;
   icon: LucideIcon;
 }
 
@@ -54,32 +57,32 @@ export interface NavSection extends NavLink {
 // there); `children` are the rest of that area. (History sits under Training for
 // now; it folds into the Calendar view in a later step.)
 export const NAV_SECTIONS: NavSection[] = [
-  { to: '/dashboard', label: 'Home', icon: LayoutDashboard, exact: true, children: [] },
+  { to: '/dashboard', labelKey: 'home', icon: LayoutDashboard, exact: true, children: [] },
   {
     to: '/calendar',
-    label: 'Training',
+    labelKey: 'training',
     icon: Dumbbell,
     children: [
-      { to: '/calendar', label: 'Calendar', icon: CalendarDays },
-      { to: '/stats', label: 'Stats', icon: TrendingUp },
-      { to: '/plans', label: 'Plans', icon: ClipboardList },
-      { to: '/exercises', label: 'Exercises', icon: ListChecks },
-      { to: '/tags', label: 'Tags', icon: Tag },
+      { to: '/calendar', labelKey: 'calendar', icon: CalendarDays },
+      { to: '/stats', labelKey: 'stats', icon: TrendingUp },
+      { to: '/plans', labelKey: 'plans', icon: ClipboardList },
+      { to: '/exercises', labelKey: 'exercises', icon: ListChecks },
+      { to: '/tags', labelKey: 'tags', icon: Tag },
     ],
   },
   {
     to: '/diary',
-    label: 'Food',
+    labelKey: 'food',
     icon: UtensilsCrossed,
     children: [
-      { to: '/diary', label: 'Diary', icon: UtensilsCrossed },
-      { to: '/foods', label: 'Foods', icon: Apple },
-      { to: '/recipes', label: 'Recipes', icon: ChefHat },
-      { to: '/targets', label: 'Targets', icon: Target },
+      { to: '/diary', labelKey: 'diary', icon: UtensilsCrossed },
+      { to: '/foods', labelKey: 'foods', icon: Apple },
+      { to: '/recipes', labelKey: 'recipes', icon: ChefHat },
+      { to: '/targets', labelKey: 'targets', icon: Target },
     ],
   },
-  { to: '/body', label: 'Body', icon: Scale, children: [] },
-  { to: '/strava', label: 'Strava', icon: Activity, brand: 'strava', children: [] },
+  { to: '/body', labelKey: 'body', icon: Scale, children: [] },
+  { to: '/strava', labelKey: 'strava', icon: Activity, brand: 'strava', children: [] },
 ];
 
 // True when `pathname` is the route itself or a child route under it (e.g.
