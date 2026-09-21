@@ -146,30 +146,38 @@ export function ModuleShowcase() {
                       </span>
                     </div>
                     {/* Details collapse on desktop for inactive cards so the whole
-                        pinned block fits one screen; on mobile they always show. */}
-                    <div className={cn('mt-2', !isActive && 'lg:hidden')}>
-                      <p
-                        className={cn(
-                          'pl-[50px] text-[13px] leading-relaxed',
-                          isActive ? 'text-[#bfb2b7]' : 'text-[#5f5257]',
-                        )}
-                      >
-                        {module.desc}
-                      </p>
-                      <div className="mt-2.5 flex flex-wrap gap-1.5 pl-[50px]">
-                        {module.chips.map((chip) => (
-                          <span
-                            key={chip}
-                            className={cn(
-                              'rounded-full px-2.5 py-1 text-[11px] font-semibold',
-                              isActive
-                                ? 'bg-[#3a2f34] text-[#e8cdd5]'
-                                : 'bg-[#f0e9e3] text-[#5f5257]',
-                            )}
-                          >
-                            {chip}
-                          </span>
-                        ))}
+                        pinned block fits one screen; animated via grid-rows (0fr→1fr)
+                        so the height eases instead of snapping. Mobile always open. */}
+                    <div
+                      className={cn(
+                        'grid grid-rows-[1fr] opacity-100 transition-[grid-template-rows,opacity] duration-300 ease-out',
+                        !isActive && 'lg:grid-rows-[0fr] lg:opacity-0',
+                      )}
+                    >
+                      <div className="overflow-hidden">
+                        <p
+                          className={cn(
+                            'pt-2 pl-[50px] text-[13px] leading-relaxed',
+                            isActive ? 'text-[#bfb2b7]' : 'text-[#5f5257]',
+                          )}
+                        >
+                          {module.desc}
+                        </p>
+                        <div className="mt-2.5 flex flex-wrap gap-1.5 pl-[50px]">
+                          {module.chips.map((chip) => (
+                            <span
+                              key={chip}
+                              className={cn(
+                                'rounded-full px-2.5 py-1 text-[11px] font-semibold',
+                                isActive
+                                  ? 'bg-[#3a2f34] text-[#e8cdd5]'
+                                  : 'bg-[#f0e9e3] text-[#5f5257]',
+                              )}
+                            >
+                              {chip}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </button>
