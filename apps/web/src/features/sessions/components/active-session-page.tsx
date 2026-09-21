@@ -158,7 +158,7 @@ export function ActiveSessionPage() {
           size="sm"
           className="text-muted-foreground -ml-2 gap-1.5"
           aria-label="Minimize — your session keeps running in the background"
-          onClick={() => void navigate({ to: '/' })}
+          onClick={() => void navigate({ to: '/dashboard' })}
         >
           <ChevronLeft className="size-4" />
           Minimize
@@ -177,7 +177,7 @@ export function ActiveSessionPage() {
             size="sm"
             className="text-muted-foreground -ml-2 mb-1 hidden w-fit gap-1.5 md:inline-flex"
             aria-label="Minimize — your session keeps running in the background"
-            onClick={() => void navigate({ to: '/' })}
+            onClick={() => void navigate({ to: '/dashboard' })}
           >
             <ChevronLeft className="size-4" />
             Minimize

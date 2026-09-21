@@ -12,7 +12,7 @@ export const Route = createFileRoute('/_auth')({
     } catch {
       return;
     }
-    throw redirect({ to: '/' });
+    throw redirect({ to: '/dashboard' });
   },
   component: AuthLayout,
 });

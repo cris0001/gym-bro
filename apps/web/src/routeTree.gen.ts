@@ -9,10 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as AppRouteImport } from './routes/_app'
-import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AppTargetsRouteImport } from './routes/_app/targets'
@@ -23,6 +22,7 @@ import { Route as AppSessionRouteImport } from './routes/_app/session'
 import { Route as AppFoodsRouteImport } from './routes/_app/foods'
 import { Route as AppExercisesRouteImport } from './routes/_app/exercises'
 import { Route as AppDiaryRouteImport } from './routes/_app/diary'
+import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppCalendarRouteImport } from './routes/_app/calendar'
 import { Route as AppBodyRouteImport } from './routes/_app/body'
 import { Route as AppRecipesIndexRouteImport } from './routes/_app/recipes/index'
@@ -33,11 +33,6 @@ import { Route as AppRecipesRecipeIdRouteImport } from './routes/_app/recipes/$r
 import { Route as AppPlansPlanIdRouteImport } from './routes/_app/plans/$planId'
 import { Route as AppHistorySessionIdRouteImport } from './routes/_app/history/$sessionId'
 
-const WelcomeRoute = WelcomeRouteImport.update({
-  id: '/welcome',
-  path: '/welcome',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/_auth',
   getParentRoute: () => rootRouteImport,
@@ -46,10 +41,10 @@ const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppIndexRoute = AppIndexRouteImport.update({
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRegisterRoute = AuthRegisterRouteImport.update({
   id: '/register',
@@ -101,6 +96,11 @@ const AppDiaryRoute = AppDiaryRouteImport.update({
   path: '/diary',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCalendarRoute = AppCalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
@@ -148,10 +148,10 @@ const AppHistorySessionIdRoute = AppHistorySessionIdRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AppIndexRoute
-  '/welcome': typeof WelcomeRoute
+  '/': typeof IndexRoute
   '/body': typeof AppBodyRoute
   '/calendar': typeof AppCalendarRoute
+  '/dashboard': typeof AppDashboardRoute
   '/diary': typeof AppDiaryRoute
   '/exercises': typeof AppExercisesRoute
   '/foods': typeof AppFoodsRoute
@@ -171,10 +171,10 @@ export interface FileRoutesByFullPath {
   '/recipes/': typeof AppRecipesIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof AppIndexRoute
-  '/welcome': typeof WelcomeRoute
+  '/': typeof IndexRoute
   '/body': typeof AppBodyRoute
   '/calendar': typeof AppCalendarRoute
+  '/dashboard': typeof AppDashboardRoute
   '/diary': typeof AppDiaryRoute
   '/exercises': typeof AppExercisesRoute
   '/foods': typeof AppFoodsRoute
@@ -195,11 +195,12 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
-  '/welcome': typeof WelcomeRoute
   '/_app/body': typeof AppBodyRoute
   '/_app/calendar': typeof AppCalendarRoute
+  '/_app/dashboard': typeof AppDashboardRoute
   '/_app/diary': typeof AppDiaryRoute
   '/_app/exercises': typeof AppExercisesRoute
   '/_app/foods': typeof AppFoodsRoute
@@ -210,7 +211,6 @@ export interface FileRoutesById {
   '/_app/targets': typeof AppTargetsRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
-  '/_app/': typeof AppIndexRoute
   '/_app/history/$sessionId': typeof AppHistorySessionIdRoute
   '/_app/plans/$planId': typeof AppPlansPlanIdRoute
   '/_app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
@@ -223,9 +223,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/welcome'
     | '/body'
     | '/calendar'
+    | '/dashboard'
     | '/diary'
     | '/exercises'
     | '/foods'
@@ -246,9 +246,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/welcome'
     | '/body'
     | '/calendar'
+    | '/dashboard'
     | '/diary'
     | '/exercises'
     | '/foods'
@@ -268,11 +268,12 @@ export interface FileRouteTypes {
     | '/recipes'
   id:
     | '__root__'
+    | '/'
     | '/_app'
     | '/_auth'
-    | '/welcome'
     | '/_app/body'
     | '/_app/calendar'
+    | '/_app/dashboard'
     | '/_app/diary'
     | '/_app/exercises'
     | '/_app/foods'
@@ -283,7 +284,6 @@ export interface FileRouteTypes {
     | '/_app/targets'
     | '/_auth/login'
     | '/_auth/register'
-    | '/_app/'
     | '/_app/history/$sessionId'
     | '/_app/plans/$planId'
     | '/_app/recipes/$recipeId'
@@ -294,20 +294,13 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
-  WelcomeRoute: typeof WelcomeRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/welcome': {
-      id: '/welcome'
-      path: '/welcome'
-      fullPath: '/welcome'
-      preLoaderRoute: typeof WelcomeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_auth': {
       id: '/_auth'
       path: ''
@@ -322,12 +315,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/': {
-      id: '/_app/'
+    '/': {
+      id: '/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_auth/register': {
       id: '/_auth/register'
@@ -399,6 +392,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDiaryRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/calendar': {
       id: '/_app/calendar'
       path: '/calendar'
@@ -468,6 +468,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppBodyRoute: typeof AppBodyRoute
   AppCalendarRoute: typeof AppCalendarRoute
+  AppDashboardRoute: typeof AppDashboardRoute
   AppDiaryRoute: typeof AppDiaryRoute
   AppExercisesRoute: typeof AppExercisesRoute
   AppFoodsRoute: typeof AppFoodsRoute
@@ -476,7 +477,6 @@ interface AppRouteChildren {
   AppStravaRoute: typeof AppStravaRoute
   AppTagsRoute: typeof AppTagsRoute
   AppTargetsRoute: typeof AppTargetsRoute
-  AppIndexRoute: typeof AppIndexRoute
   AppHistorySessionIdRoute: typeof AppHistorySessionIdRoute
   AppPlansPlanIdRoute: typeof AppPlansPlanIdRoute
   AppRecipesRecipeIdRoute: typeof AppRecipesRecipeIdRoute
@@ -489,6 +489,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppBodyRoute: AppBodyRoute,
   AppCalendarRoute: AppCalendarRoute,
+  AppDashboardRoute: AppDashboardRoute,
   AppDiaryRoute: AppDiaryRoute,
   AppExercisesRoute: AppExercisesRoute,
   AppFoodsRoute: AppFoodsRoute,
@@ -497,7 +498,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppStravaRoute: AppStravaRoute,
   AppTagsRoute: AppTagsRoute,
   AppTargetsRoute: AppTargetsRoute,
-  AppIndexRoute: AppIndexRoute,
   AppHistorySessionIdRoute: AppHistorySessionIdRoute,
   AppPlansPlanIdRoute: AppPlansPlanIdRoute,
   AppRecipesRecipeIdRoute: AppRecipesRecipeIdRoute,
@@ -522,9 +522,9 @@ const AuthRouteChildren: AuthRouteChildren = {
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
-  WelcomeRoute: WelcomeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -18,7 +18,7 @@ import {
 // Param-free top-level routes, so a single union types the nav config and keeps
 // TanStack Router's <Link to> fully type-checked.
 export type NavPath =
-  | '/'
+  | '/dashboard'
   | '/calendar'
   | '/session'
   | '/stats'
@@ -54,7 +54,7 @@ export interface NavSection extends NavLink {
 // there); `children` are the rest of that area. (History sits under Training for
 // now; it folds into the Calendar view in a later step.)
 export const NAV_SECTIONS: NavSection[] = [
-  { to: '/', label: 'Home', icon: LayoutDashboard, exact: true, children: [] },
+  { to: '/dashboard', label: 'Home', icon: LayoutDashboard, exact: true, children: [] },
   {
     to: '/calendar',
     label: 'Training',
@@ -83,9 +83,8 @@ export const NAV_SECTIONS: NavSection[] = [
 ];
 
 // True when `pathname` is the route itself or a child route under it (e.g.
-// '/plans/123' is under '/plans'). '/' matches only itself.
+// '/plans/123' is under '/plans').
 function matchesRoute(pathname: string, route: NavPath): boolean {
-  if (route === '/') return pathname === '/';
   return pathname === route || pathname.startsWith(`${route}/`);
 }
 
