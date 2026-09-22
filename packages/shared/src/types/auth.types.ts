@@ -26,6 +26,9 @@ export interface PublicUser {
   // null until the user finishes or skips onboarding.
   onboardedAt: string | null;
   heightCm: number | null;
+  // Access licence expiry (ISO). null = perpetual/unlimited; a past timestamp
+  // means the licence has lapsed and the app locks to the dashboard + paywall.
+  licenseExpiresAt: string | null;
   createdAt: string;
   updatedAt: string;
 }

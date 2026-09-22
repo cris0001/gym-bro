@@ -36,6 +36,11 @@ export const users = pgTable(
     // NULL until the user finishes or skips onboarding; the timestamp also
     // records when, hence timestamptz rather than a boolean.
     onboardedAt: timestamp('onboarded_at', { withTimezone: true }),
+    // Access licence expiry. NULL = perpetual/unlimited (the default for everyone
+    // today); a timestamp in the past means the licence has lapsed and the app
+    // locks to the dashboard + paywall until renewed. Set manually for now, later
+    // by the billing webhook.
+    licenseExpiresAt: timestamp('license_expires_at', { withTimezone: true }),
     // The plan surfaced by default in the UI. Nullable; ON DELETE SET NULL so
     // deleting the active plan just clears the pointer. Circular FK with
     // training_plans, resolved via a lazy AnyPgColumn thunk.

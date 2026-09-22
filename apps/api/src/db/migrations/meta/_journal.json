@@ -127,6 +127,13 @@
       "when": 1786436003863,
       "tag": "0017_add_strava_athlete_name",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1790065074823,
+      "tag": "0018_dapper_sugar_man",
+      "breakpoints": true
     }
   ]
 }
