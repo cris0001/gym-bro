@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router';
+import { format, parseISO } from 'date-fns';
 import { ClipboardList, Plus } from 'lucide-react';
 
 import { EmptyState } from '@/components/empty-state';
@@ -10,11 +11,11 @@ import { useActivePlan } from '../hooks/use-active-plan';
 import { usePlans } from '../hooks/use-plans';
 import { useSetActivePlan } from '../hooks/use-set-active-plan';
 import { usePlanUiStore } from '../stores/plan-ui.store';
-import { ActivePlanRow } from './active-plan-row';
 
-// The plans list. The active plan is pinned to the top as an expandable row (its
-// templates and exercises, open by default); every other plan links to its detail
-// page. Create lives in the page header; edit/delete live on the detail page.
+// The plans grid: every plan is an equal card (active first, marked with a badge),
+// linking to its detail page for templates and edit/delete. "Set active" flips the
+// active plan inline. One column on phones, up to three on desktop. Create lives in
+// the page header.
 export function PlanList() {
   const { data: plans, isPending, isError, error, refetch } = usePlans();
   const { data: activePlan } = useActivePlan();
@@ -45,43 +46,56 @@ export function PlanList() {
     );
   }
 
-  // The active plan is its own expandable card; the rest sit in a second card below.
-  const activeItem = plans.find((plan) => plan.id === activePlan?.id);
-  const others = plans.filter((plan) => plan.id !== activePlan?.id);
+  // Active plan first, the rest in their existing order.
+  const ordered = [
+    ...plans.filter((plan) => plan.id === activePlan?.id),
+    ...plans.filter((plan) => plan.id !== activePlan?.id),
+  ];
 
   return (
-    <div className="flex flex-col gap-4">
-      {activeItem ? <ActivePlanRow planId={activeItem.id} name={activeItem.name} /> : null}
-      {others.length > 0 ? (
-        <ul className="bg-card divide-y divide-dashed divide-[#e4dad2] dark:divide-[#40353c] overflow-hidden rounded-2xl border">
-          {others.map((plan) => (
-            <li
-              key={plan.id}
-              className="hover:bg-accent flex items-center gap-2 px-4 py-3 transition-colors"
-            >
-              <Link to="/plans/$planId" params={{ planId: plan.id }} className="min-w-0 flex-1">
-                <p className="truncate font-semibold">{plan.name}</p>
-                {plan.description ? (
-                  <p className="text-muted-foreground truncate text-sm">{plan.description}</p>
-                ) : null}
-                <p className="text-muted-foreground text-xs">
-                  {plan.templateCount} {plan.templateCount === 1 ? 'template' : 'templates'}
-                </p>
-              </Link>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="text-primary h-8 shrink-0"
-                disabled={setActive.isPending}
-                onClick={() => setActive.mutate(plan.id)}
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {ordered.map((plan) => {
+        const isActive = plan.id === activePlan?.id;
+        return (
+          <div
+            key={plan.id}
+            className="bg-card flex flex-col gap-2 rounded-2xl border p-4 lg:min-h-[150px] lg:gap-3 lg:p-5"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <Link
+                to="/plans/$planId"
+                params={{ planId: plan.id }}
+                className="font-heading min-w-0 flex-1 truncate text-lg font-semibold hover:underline lg:text-xl"
               >
-                Set active
-              </Button>
-            </li>
-          ))}
-        </ul>
-      ) : null}
+                {plan.name}
+              </Link>
+              {isActive ? (
+                <span className="shrink-0 rounded-full bg-[#efe6e9] px-2 py-0.5 text-[10px] font-bold tracking-[0.06em] text-[#8d4a5e] uppercase dark:bg-[#3a2f34] dark:text-[#c98fa0]">
+                  Active
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  className="text-primary shrink-0 text-xs font-semibold disabled:opacity-50"
+                  disabled={setActive.isPending}
+                  onClick={() => setActive.mutate(plan.id)}
+                >
+                  Set active
+                </button>
+              )}
+            </div>
+
+            {plan.description ? (
+              <p className="text-muted-foreground line-clamp-2 text-sm">{plan.description}</p>
+            ) : null}
+
+            <p className="text-muted-foreground mt-auto text-xs">
+              {plan.templateCount} {plan.templateCount === 1 ? 'template' : 'templates'} · started{' '}
+              {format(parseISO(plan.createdAt), 'MMM d')}
+            </p>
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -49,6 +49,16 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
   const setCount = performance.sets.length;
   // The set you're on: the first without reps yet (−1 when all are logged).
   const currentSetIndex = performance.sets.findIndex((entry) => entry.reps === null);
+  // Copy-last only makes sense once the previous set holds data worth copying — reps
+  // plus a weight (or an explicit bodyweight set).
+  const lastSet = performance.sets.at(-1);
+  const canCopyLast =
+    lastSet !== undefined &&
+    lastSet.reps !== null &&
+    (lastSet.weight !== null || lastSet.isBodyweight);
+  // Logged sets drive the collapsed-card recap chips.
+  const loggedSets = performance.sets.filter((entry) => entry.reps !== null);
+  const doneCount = loggedSets.length;
 
   // Copies the most recent prior session's sets into this exercise and expands it.
   // Fetched on demand (shares the limit-1 cache with the history panel) so we don't
@@ -135,6 +145,26 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
         </button>
       </div>
 
+      {/* Collapsed: a quick recap of the logged sets as chips (top set plum, with ★). */}
+      {!expanded && doneCount > 0 && (
+        <div className="flex flex-wrap gap-1.5 px-3 pb-3">
+          {loggedSets.map((set) => (
+            <span
+              key={set.id}
+              className={cn(
+                'rounded-lg px-[9px] py-1 text-[11px] font-bold',
+                set.isTopSet
+                  ? 'bg-[#f5e7ea] text-[#75394c] dark:bg-[#3a2f34] dark:text-[#e8cdd5]'
+                  : 'bg-[#f0e9e3] text-[#574c52] dark:bg-[#2a2228] dark:text-[#c6b8bd]',
+              )}
+            >
+              {set.isTopSet ? '★ ' : ''}
+              {set.weight ?? 'BW'} × {set.reps ?? '—'}
+            </span>
+          ))}
+        </div>
+      )}
+
       {expanded && (
         <div className="flex flex-col gap-3 border-t border-dashed px-3 pt-3 pb-3">
           <SessionPreviousLine exerciseId={performance.actualExerciseId} before={performedDate} />
@@ -169,15 +199,15 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
           )}
 
           <div className="flex flex-col gap-2 border-t border-dashed pt-3 md:flex-row-reverse md:items-center md:justify-between">
-            <div className="flex gap-2">
+            <div className="flex w-full gap-2 md:w-auto">
               <button
                 type="button"
-                className="bg-accent text-accent-foreground hover:bg-accent/70 h-10 flex-1 rounded-full px-4 text-sm font-semibold md:flex-none"
+                className="bg-accent text-accent-foreground hover:bg-accent/70 h-10 w-1/2 rounded-full px-4 text-sm font-semibold md:w-auto md:flex-none"
                 onClick={() => addEmptySet(performance.id)}
               >
                 {t.exerciseCard.addSet}
               </button>
-              {setCount > 0 && (
+              {canCopyLast && (
                 <button
                   type="button"
                   className="text-accent-foreground hover:bg-muted h-10 flex-1 rounded-full border px-4 text-sm font-medium md:flex-none"
