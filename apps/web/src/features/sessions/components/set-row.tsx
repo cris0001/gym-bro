@@ -1,4 +1,4 @@
-import { Check, ChevronDown, Star, X } from 'lucide-react';
+import { ChevronDown, X } from 'lucide-react';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 
 import { Input } from '@/components/ui/input';
@@ -26,52 +26,6 @@ function parseField(value: string): number | null {
 }
 
 const toValue = (n: number | null): string => (n === null ? '' : String(n));
-
-// The round status marker at the start of the row. Done + top set = a plum-tinted
-// star; a normal done set = a green check; otherwise the set number, filled plum for
-// the current/top set and outlined for the rest.
-function StatusBadge({
-  done,
-  isTopSet,
-  isCurrent,
-  index,
-}: {
-  done: boolean;
-  isTopSet: boolean;
-  isCurrent: boolean;
-  index: number;
-}) {
-  const base =
-    'flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold';
-  if (done && isTopSet) {
-    return (
-      <span className={cn(base, 'bg-accent text-primary')}>
-        <Star className="size-3.5 fill-current" />
-      </span>
-    );
-  }
-  if (done) {
-    return (
-      <span
-        className={cn(base, 'bg-[#e8efe4] text-[#5a7a52] dark:bg-[#2f3a2b] dark:text-[#8fae85]')}
-      >
-        <Check className="size-3.5" />
-      </span>
-    );
-  }
-  return (
-    <span
-      className={cn(
-        base,
-        isCurrent || isTopSet
-          ? 'bg-primary text-primary-foreground'
-          : 'text-muted-foreground border bg-background',
-      )}
-    >
-      {index + 1}
-    </span>
-  );
-}
 
 // One set-type chip (Top set / BW / Clear). Selected = filled plum; unselected =
 // the warm secondary pill. Clear reuses the unselected look.
@@ -101,15 +55,13 @@ function TypeChip({
   );
 }
 
-// One logged set: weight × reps × optional RIR. Set type is chosen inline (desktop:
-// Top set / BW chips after the fields) or under the row via a chevron (mobile: Top
-// set / BW / Clear). The status badge shows a green check for a done set and a plum
-// star for a done top set; a bodyweight set replaces the weight input with "BW".
-// Weight uses a decimal keyboard (e.g. 10.2). Inputs keep their own strings so a
-// partial "2." survives while typing; header labels live in the parent card.
+// One logged set: weight × reps × optional RIR, set type, and a remove ✕ — no status
+// marker (the row is the fields themselves). Set type is chosen inline (desktop: Top
+// set / BW chips after the fields) or under the row via a chevron (mobile: Top set /
+// BW / Clear). A bodyweight set replaces the weight input with "BW". Weight uses a
+// decimal keyboard (e.g. 10.2). Inputs keep their own strings so a partial "2."
+// survives while typing; header labels live in the parent card.
 export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowProps) {
-  // A set counts as logged once it has reps.
-  const done = set.reps !== null;
   const updateSet = useWorkoutDraftStore((s) => s.updateSet);
   const removeSet = useWorkoutDraftStore((s) => s.removeSet);
   const toggleTopSet = useWorkoutDraftStore((s) => s.toggleTopSet);
@@ -138,8 +90,8 @@ export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowP
   }
 
   const field = cn(
-    'h-10 rounded-[10px] text-center font-heading text-base font-semibold',
-    isCurrent && 'border-primary border-[1.5px]',
+    'h-10 rounded-[10px] border-[#e8e1da] bg-[#f6f3f0] text-center font-heading text-base font-semibold dark:border-[#40353c] dark:bg-[#2a2228]',
+    isCurrent && 'border-primary border-[1.5px] dark:border-primary',
   );
   const iconBtn =
     'text-muted-foreground hover:text-foreground flex size-8 shrink-0 items-center justify-center transition-colors';
@@ -147,11 +99,22 @@ export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowP
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center gap-1.5 md:gap-2">
-        <StatusBadge done={done} isTopSet={set.isTopSet} isCurrent={isCurrent} index={index} />
+        {/* Set number. A top set carries a plum-tinted badge; the rest are a quiet
+            serif numeral. */}
+        <span
+          className={cn(
+            'font-heading flex size-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold',
+            set.isTopSet
+              ? 'bg-[#efe6e9] text-[#8d4a5e] dark:bg-[#3a2f34] dark:text-[#c98fa0]'
+              : 'text-[#c9bcb2]',
+          )}
+        >
+          {index + 1}
+        </span>
 
         {set.isBodyweight ? (
           <div
-            className="border-input text-muted-foreground flex h-10 flex-1 items-center justify-center rounded-[10px] border bg-background text-sm font-medium md:w-[110px] md:flex-none"
+            className="text-muted-foreground flex h-10 flex-1 items-center justify-center rounded-[10px] border border-[#e8e1da] bg-[#f6f3f0] text-sm font-medium dark:border-[#40353c] dark:bg-[#2a2228] md:w-[110px] md:flex-none"
             aria-label={t.setRow.bodyweightAria(index + 1)}
           >
             BW

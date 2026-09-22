@@ -19,7 +19,7 @@ function SetSummary({ set }: { set: ExerciseHistoryEntry['sets'][number] }) {
   const rir = set.rir === null ? '' : ` @${set.rir}`;
   const text = `${weight} × ${set.reps ?? '–'}${rir}`;
   return set.isTopSet ? (
-    <span className="text-accent-foreground font-semibold">★ {text}</span>
+    <span className="font-semibold text-[#75394c] dark:text-[#c98fa0]">★ {text}</span>
   ) : (
     <span>{text}</span>
   );
@@ -57,7 +57,8 @@ export function SessionPreviousLine({ exerciseId, before }: SessionPreviousLineP
   const { data: entries = [], isLoading } = useExerciseHistory(exerciseId, before, HISTORY_LIMIT);
   const t = useSessionsTranslation();
 
-  const box = 'rounded-[10px] border border-border/60 bg-muted/40 px-3 py-2';
+  const box =
+    'rounded-[10px] border border-[#efe8e2] bg-[#faf6f3] px-3 py-2 dark:border-[#40353c] dark:bg-[#221a20]';
 
   if (isLoading && entries.length === 0) {
     return <p className={cn(box, 'text-muted-foreground text-xs italic')}>{t.previous.loading}</p>;
@@ -71,7 +72,7 @@ export function SessionPreviousLine({ exerciseId, before }: SessionPreviousLineP
   return (
     <div className={box}>
       <div className="flex items-start justify-between gap-3">
-        <SessionLine label={t.previous.label} entry={latest} />
+        <SessionLine entry={latest} />
         {older.length > 0 && (
           <button
             type="button"

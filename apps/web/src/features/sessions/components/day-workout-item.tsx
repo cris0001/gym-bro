@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { Check, ChevronDown, Star } from 'lucide-react';
+import { Check, ChevronDown, Pencil, Star, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -90,22 +90,22 @@ export function DayWorkoutItem({
       <button
         type="button"
         onClick={() => setExpanded((value) => !value)}
-        className="hover:bg-muted/40 flex w-full items-start gap-2 p-3 text-left transition-colors"
+        className="hover:bg-muted/40 flex w-full items-center gap-3 p-3 text-left transition-colors"
         aria-expanded={expanded}
       >
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#e8efe4] text-[#5a7a52] dark:bg-[#2f3a2b] dark:text-[#8fae85]">
+          <Check className="size-5" />
+        </span>
         <div className="min-w-0 flex-1">
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#e8efe4] px-2 py-0.5 text-[10px] font-bold tracking-[0.06em] text-[#5a7a52] uppercase dark:bg-[#2f3a2b] dark:text-[#8fae85]">
-            <Check className="size-3" />
-            {t.dayWorkout.finished}
-          </span>
-          <p className="font-heading mt-1 truncate text-[22px] leading-tight font-semibold">
+          <p className="font-heading truncate text-lg leading-tight font-semibold">
             {workout.name}
           </p>
           <p className="text-muted-foreground mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs">
             {workout.durationMinutes !== null && <span>{workout.durationMinutes} min</span>}
             {totals && (
               <>
-                <span>· {t.dayWorkout.sets(totals.sets)}</span>
+                {workout.durationMinutes !== null && <span>·</span>}
+                <span>{t.dayWorkout.sets(totals.sets)}</span>
                 {totals.volume > 0 && <span>· {fmt(totals.volume)} kg</span>}
               </>
             )}
@@ -113,7 +113,7 @@ export function DayWorkoutItem({
           </p>
         </div>
         {workout.tags.length > 0 && (
-          <span className="mt-0.5 flex shrink-0 gap-1">
+          <span className="flex shrink-0 gap-1">
             {workout.tags.map((tag) => (
               <span
                 key={tag.id}
@@ -123,9 +123,12 @@ export function DayWorkoutItem({
             ))}
           </span>
         )}
+        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#e8efe4] px-2 py-0.5 text-[10px] font-bold tracking-[0.06em] text-[#5a7a52] uppercase dark:bg-[#2f3a2b] dark:text-[#8fae85]">
+          {t.dayWorkout.finished}
+        </span>
         <ChevronDown
           className={cn(
-            'text-muted-foreground mt-0.5 size-4 shrink-0 transition-transform',
+            'text-muted-foreground size-4 shrink-0 transition-transform',
             !expanded && '-rotate-90',
           )}
         />
@@ -148,12 +151,12 @@ export function DayWorkoutItem({
                 return (
                   <div key={performance.id} className="flex flex-col gap-1.5">
                     <div className="flex items-baseline justify-between gap-2">
-                      <span className="truncate text-[13px] font-bold">
+                      <span className="font-heading truncate text-[15px] font-semibold">
                         {performance.exercise.name}
                       </span>
                       {topSet && (
-                        <span className="shrink-0 text-[10px] font-semibold tracking-wide text-[#d9a441] uppercase">
-                          {t.dayWorkout.top(topSet.weight ?? 'BW')}
+                        <span className="shrink-0 text-[11px] font-semibold text-[#75394c] dark:text-[#c98fa0]">
+                          ★ {t.dayWorkout.top(topSet.weight ?? 'BW')}
                         </span>
                       )}
                     </div>
@@ -164,11 +167,10 @@ export function DayWorkoutItem({
                           className={cn(
                             'rounded-lg px-[9px] py-1 text-[11px] font-bold',
                             set.isTopSet
-                              ? 'bg-accent text-accent-foreground'
-                              : 'bg-secondary text-[#574c52] dark:text-[#c6b8bd]',
+                              ? 'bg-[#f5e7ea] text-[#75394c] dark:bg-[#3a2f34] dark:text-[#e8cdd5]'
+                              : 'bg-[#f0e9e3] text-[#574c52] dark:bg-[#2a2228] dark:text-[#c6b8bd]',
                           )}
                         >
-                          {set.isTopSet ? '★ ' : ''}
                           {set.weight ?? 'BW'} × {set.reps ?? '—'}
                         </span>
                       ))}
@@ -188,35 +190,31 @@ export function DayWorkoutItem({
                 </button>
               )}
 
-              <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
-                {detail.sessionType === 'strength' && (
-                  <Button
-                    size="sm"
-                    className="h-[34px] rounded-full"
-                    onClick={() => void editWorkout(detail)}
-                  >
-                    {t.common.edit}
-                  </Button>
-                )}
-                <Button
-                  asChild
-                  size="sm"
-                  variant="ghost"
-                  className="bg-accent text-primary hover:bg-accent/70 h-[34px] rounded-full"
-                >
+              <div className="flex items-center gap-2 border-t border-border pt-3">
+                <Button asChild className="h-11 flex-1 rounded-full">
                   <Link to="/history/$sessionId" params={{ sessionId: workout.id }}>
                     {t.dayWorkout.open}
                   </Link>
                 </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="text-muted-foreground ml-auto h-[34px] rounded-full"
+                {detail.sessionType === 'strength' && (
+                  <button
+                    type="button"
+                    className="text-muted-foreground hover:bg-muted flex size-11 shrink-0 items-center justify-center rounded-full border transition-colors"
+                    aria-label={t.common.edit}
+                    onClick={() => void editWorkout(detail)}
+                  >
+                    <Pencil className="size-4" />
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="text-muted-foreground hover:bg-muted flex size-11 shrink-0 items-center justify-center rounded-full border transition-colors disabled:opacity-50"
+                  aria-label={t.common.delete}
                   onClick={() => void handleDelete()}
                   disabled={remove.isPending}
                 >
-                  {t.common.delete}
-                </Button>
+                  <Trash2 className="size-4" />
+                </button>
               </div>
             </>
           )}

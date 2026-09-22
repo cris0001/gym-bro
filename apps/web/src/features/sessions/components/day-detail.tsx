@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { ChevronLeft, ChevronRight, Dumbbell, Plus, Trash2 } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import { ChevronLeft, ChevronRight, Dumbbell, Pencil, Play, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import type { PlannedSessionWithTemplate } from '@gym-bro/shared';
 
 import { Button } from '@/components/ui/button';
-import { RouteMap, useStravaSessions } from '@/features/strava';
+import { RouteMap, stravaActivityIcon, useStravaSessions } from '@/features/strava';
 import { useTemplate } from '@/features/training';
 import { cn } from '@/lib/utils';
 
@@ -64,19 +65,12 @@ function PlannedTodoCard({ session }: { session: PlannedSessionWithTemplate }) {
         <div className="min-w-0 flex-1">
           <p className="font-heading truncate text-lg font-semibold">{session.template.name}</p>
           <p className="text-muted-foreground text-xs">
-            {t.dayDetail.plannedExercises(exercises.length)}
+            {t.dayDetail.exercisesCount(exercises.length)}
           </p>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-muted-foreground -mt-1 -mr-1 size-8 shrink-0"
-          aria-label={t.dayDetail.deletePlannedAria}
-          onClick={() => deleteMutation.mutate(session.id)}
-          disabled={deleteMutation.isPending}
-        >
-          <Trash2 className="size-4" />
-        </Button>
+        <span className="shrink-0 rounded-full bg-[#efe6e9] px-2 py-0.5 text-[10px] font-bold tracking-[0.06em] text-[#8d4a5e] uppercase dark:bg-[#3a2f34] dark:text-[#c98fa0]">
+          {t.calendar.planned}
+        </span>
       </div>
 
       {exercises.length > 0 && (
@@ -114,9 +108,9 @@ function PlannedTodoCard({ session }: { session: PlannedSessionWithTemplate }) {
       )}
 
       {session.status === 'planned' && (
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           <Button
-            className="h-10 flex-1 rounded-full"
+            className="h-11 flex-1 rounded-full"
             onClick={() => {
               void startFromTemplate({
                 templateId: session.template.id,
@@ -126,10 +120,16 @@ function PlannedTodoCard({ session }: { session: PlannedSessionWithTemplate }) {
               });
             }}
           >
-            {t.common.start}
+            <Play className="size-4" />
+            {t.common.startWorkout}
           </Button>
-          <label className="bg-accent text-primary hover:bg-accent/70 flex h-10 cursor-pointer items-center rounded-full px-4 text-sm font-medium transition-colors">
-            {t.dayDetail.move}
+          {/* Pencil reschedules via a native date picker (spec: no calendar icon,
+              the pencil is the date-change action). */}
+          <label
+            className="text-muted-foreground hover:bg-muted flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full border transition-colors"
+            aria-label={t.dayDetail.changeDateAria}
+          >
+            <Pencil className="size-4" />
             <input
               type="date"
               className="sr-only"
@@ -140,6 +140,15 @@ function PlannedTodoCard({ session }: { session: PlannedSessionWithTemplate }) {
               }
             />
           </label>
+          <button
+            type="button"
+            className="text-muted-foreground hover:bg-muted flex size-11 shrink-0 items-center justify-center rounded-full border transition-colors"
+            aria-label={t.dayDetail.deletePlannedAria}
+            onClick={() => deleteMutation.mutate(session.id)}
+            disabled={deleteMutation.isPending}
+          >
+            <Trash2 className="size-4" />
+          </button>
         </div>
       )}
     </div>
@@ -195,35 +204,83 @@ export function DayDetail({ date }: { date: string }) {
         />
       ))}
 
-      {stravaSessions.map((session) => (
-        <div key={session.id} className="bg-card flex flex-col gap-2 rounded-2xl border p-3">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#fbe3d4] px-2 py-0.5 text-[10px] font-bold tracking-[0.06em] text-[#d15b28] uppercase dark:bg-[#45291b] dark:text-[#ff7a3d]">
-              {t.calendar.strava}
-            </span>
+      {stravaSessions.map((session) => {
+        const km =
+          session.distanceM !== null && session.distanceM > 0
+            ? (session.distanceM / 1000).toFixed(1)
+            : null;
+        const min =
+          session.movingTimeS !== null && session.movingTimeS > 0
+            ? Math.round(session.movingTimeS / 60)
+            : null;
+        const kmh =
+          session.averageSpeedMs !== null && session.averageSpeedMs > 0
+            ? (session.averageSpeedMs * 3.6).toFixed(1)
+            : null;
+        const Icon = stravaActivityIcon(session.activityType);
+        return (
+          <div key={session.id} className="bg-card flex flex-col gap-3 rounded-2xl border p-4">
+            <div className="flex items-center gap-3">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#fbe3d4] text-[#d15b28] dark:bg-[#45291b] dark:text-[#ff7a3d]">
+                <Icon className="size-5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="font-heading truncate text-lg leading-tight font-semibold">
+                  {session.name}
+                </p>
+                <p className="text-muted-foreground text-xs">
+                  <span className="capitalize">{session.activityType}</span> ·{' '}
+                  {format(parseISO(session.startedAt), 'HH:mm')}
+                </p>
+              </div>
+            </div>
+
+            {(km !== null || min !== null || kmh !== null) && (
+              <div className="grid grid-cols-3 gap-2 border-t border-dashed border-[#e4dad2] pt-3 dark:border-[#40353c]">
+                {km && (
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-muted-foreground text-[10px] font-semibold tracking-wide uppercase">
+                      {t.dayDetail.distance}
+                    </span>
+                    <span className="font-heading text-lg font-semibold">{km} km</span>
+                  </div>
+                )}
+                {min !== null && (
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-muted-foreground text-[10px] font-semibold tracking-wide uppercase">
+                      {t.dayDetail.time}
+                    </span>
+                    <span className="font-heading text-lg font-semibold">{min} min</span>
+                  </div>
+                )}
+                {kmh && (
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-muted-foreground text-[10px] font-semibold tracking-wide uppercase">
+                      {t.dayDetail.avgSpeed}
+                    </span>
+                    <span className="font-heading text-lg font-semibold">{kmh} km/h</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {session.summaryPolyline ? (
+              <div className="px-2">
+                <RouteMap polyline={session.summaryPolyline} className="h-64 rounded-xl" />
+              </div>
+            ) : null}
+
             <button
               type="button"
-              className="flex min-w-0 flex-1 items-center gap-2 text-left"
+              className="flex items-center gap-1 self-end text-sm font-semibold text-[#d15b28] dark:text-[#ff7a3d]"
               onClick={() => void navigate({ to: '/strava', search: { activity: session.id } })}
             >
-              <span className="min-w-0 flex-1 truncate font-medium">{session.name}</span>
-              <ChevronRight className="text-muted-foreground size-4 shrink-0" />
+              {t.dayWorkout.open}
+              <ChevronRight className="size-4" />
             </button>
           </div>
-          <div className="text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 text-xs">
-            {session.distanceM !== null && session.distanceM > 0 ? (
-              <span>{(session.distanceM / 1000).toFixed(1)} km</span>
-            ) : null}
-            {session.movingTimeS !== null && session.movingTimeS > 0 ? (
-              <span>{Math.round(session.movingTimeS / 60)} min</span>
-            ) : null}
-            <span className="capitalize">{session.activityType}</span>
-          </div>
-          {session.summaryPolyline ? (
-            <RouteMap polyline={session.summaryPolyline} className="h-52 rounded-xl" />
-          ) : null}
-        </div>
-      ))}
+        );
+      })}
 
       {todos.length === 0 && nothingElse ? (
         <p className="text-muted-foreground text-sm">{t.dayDetail.nothingThisDay}</p>
@@ -233,7 +290,7 @@ export function DayDetail({ date }: { date: string }) {
 
       <Button
         variant="ghost"
-        className="bg-accent text-accent-foreground hover:bg-accent/70 h-11 rounded-2xl border"
+        className="h-11 rounded-2xl border border-[#e0d3d8] bg-[#efe6e9] font-semibold text-[#8d4a5e] hover:bg-[#e6d8dd] dark:border-[#4a3a42] dark:bg-[#3a2f34] dark:text-[#c98fa0] dark:hover:bg-[#43363c]"
         onClick={() => setAssigning(true)}
       >
         <Plus className="size-4" />
