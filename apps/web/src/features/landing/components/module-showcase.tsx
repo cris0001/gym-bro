@@ -4,8 +4,6 @@ import { cn } from '@/lib/utils';
 
 import { LANDING_MODULES, type LandingModule } from '../data/modules';
 
-const DESKTOP = '(min-width: 1024px)';
-
 // The browser-panel preview of one module. Uses the real screenshot when present in
 // /public/landing; until then a module-tinted placeholder so the switch is visible.
 // Wiring real PNGs later is a one-line change (set `screenshot`).
@@ -50,13 +48,15 @@ export function ModuleShowcase() {
   const jumpingRef = useRef(false);
   const jumpTimer = useRef<number | undefined>(undefined);
 
-  // Map scroll position within the track to the active module (desktop only).
+  // The section is a pinned tall track on every breakpoint: it stays fixed on screen
+  // while scroll progress through the track advances the active module (cards expand
+  // one by one). Reaching the end releases the pin and the page scrolls on.
   useEffect(() => {
     let raf = 0;
     const update = () => {
       raf = 0;
       const el = sectionRef.current;
-      if (!el || !window.matchMedia(DESKTOP).matches || jumpingRef.current) return;
+      if (!el || jumpingRef.current) return;
       const range = el.offsetHeight - window.innerHeight; // pinned scroll distance
       if (range <= 0) return;
       const scrolled = Math.min(Math.max(-el.getBoundingClientRect().top, 0), range);
@@ -81,14 +81,10 @@ export function ModuleShowcase() {
     };
   }, []);
 
-  // Clicking a card jumps the page to that module's slice of the track (desktop) or
-  // just selects it (mobile, where nothing is pinned).
+  // Clicking a card jumps the page to that module's slice of the track.
   function goToModule(index: number) {
     const el = sectionRef.current;
-    if (!el || !window.matchMedia(DESKTOP).matches) {
-      setActive(index);
-      return;
-    }
+    if (!el) return;
     const range = el.offsetHeight - window.innerHeight;
     const top = el.getBoundingClientRect().top + window.scrollY;
     const target = top + ((index + 0.5) / LANDING_MODULES.length) * range;
@@ -106,9 +102,9 @@ export function ModuleShowcase() {
   const current = LANDING_MODULES[active] ?? LANDING_MODULES[0]!;
 
   return (
-    <section id="inside" ref={sectionRef} className="scroll-mt-16 bg-[#f5e7ea] lg:h-[400vh]">
-      {/* Pinned viewport on desktop; a normal block on mobile. */}
-      <div className="py-16 md:py-24 lg:sticky lg:top-0 lg:flex lg:h-screen lg:items-center lg:py-0">
+    <section id="inside" ref={sectionRef} className="scroll-mt-16 bg-[#f5e7ea] h-[400vh]">
+      {/* Pinned viewport (all breakpoints): stays fixed while the track scrolls. */}
+      <div className="sticky top-0 flex h-dvh items-center overflow-hidden">
         <div className="mx-auto w-full max-w-[1060px] px-6">
           <div className="mb-6 flex flex-col items-center gap-2 text-center md:mb-10">
             <span className="font-heading text-[15px] text-[#8d4a5e] italic">
