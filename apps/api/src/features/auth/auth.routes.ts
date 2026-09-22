@@ -17,8 +17,8 @@ import * as authService from './auth.service';
 export const authRoutes = new Hono<AppEnv>();
 
 authRoutes.post('/register', async (c) => {
-  const { email, password } = await parseJson(c, registerSchema);
-  const { user, token } = await authService.register(email, password);
+  const { email, password, name } = await parseJson(c, registerSchema);
+  const { user, token } = await authService.register(email, password, name);
   setCookie(c, AUTH_COOKIE_NAME, token, authCookieOptions());
   return c.json({ data: user }, 201);
 });

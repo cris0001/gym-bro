@@ -6,6 +6,8 @@ import { SEX_OPTIONS } from '../constants/auth.constants';
 // with these; the web infers form types from them so rules can't drift apart.
 
 export const registerSchema = z.object({
+  // Display name captured at sign-up; trimmed, 1–80 chars.
+  name: z.string().trim().min(1, 'Name is required').max(80, 'Name is too long'),
   email: z.email('Enter a valid email'),
   // Min 8 — a usable baseline for a personal app, not draconian.
   password: z.string().min(8, 'Password must be at least 8 characters'),

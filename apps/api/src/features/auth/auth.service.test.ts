@@ -13,6 +13,7 @@ function fakeUser(overrides: Partial<User> = {}): User {
   return {
     id: 'user-1',
     email: 'test@example.com',
+    name: null,
     passwordHash: 'placeholder-hash',
     birthdate: null,
     sex: null,
@@ -37,7 +38,7 @@ describe('register', () => {
       Promise.resolve(fakeUser({ email: data.email, passwordHash: data.passwordHash })),
     );
 
-    const { user, token } = await register('TEST@Example.com', 'password123');
+    const { user, token } = await register('TEST@Example.com', 'password123', 'Test User');
 
     expect(repo.findByEmail).toHaveBeenCalledWith('test@example.com');
     const createArg = repo.create.mock.calls[0]?.[0];
@@ -50,7 +51,9 @@ describe('register', () => {
   it('rejects a duplicate email with ConflictError', async () => {
     repo.findByEmail.mockResolvedValue(fakeUser());
 
-    await expect(register('test@example.com', 'password123')).rejects.toBeInstanceOf(ConflictError);
+    await expect(register('test@example.com', 'password123', 'Test User')).rejects.toBeInstanceOf(
+      ConflictError,
+    );
     expect(repo.create).not.toHaveBeenCalled();
   });
 });

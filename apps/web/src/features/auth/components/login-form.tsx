@@ -48,8 +48,8 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
                   type="email"
                   inputMode="email"
                   autoComplete="email"
-                  placeholder=""
-                  className="h-11"
+                  placeholder="you@example.com"
+                  className="h-12 rounded-xl border-[#e8e1da] bg-[#fdfbf9]"
                   {...field}
                 />
               </FormControl>
@@ -68,7 +68,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
                 <Input
                   type="password"
                   autoComplete="current-password"
-                  className="h-11"
+                  className="h-12 rounded-xl border-[#e8e1da] bg-[#fdfbf9]"
                   {...field}
                 />
               </FormControl>
@@ -85,7 +85,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
           </p>
         ) : null}
 
-        <Button type="submit" className="h-11 w-full rounded-full" disabled={isPending}>
+        <Button type="submit" className="mt-1 h-12 w-full rounded-full" disabled={isPending}>
           {isPending ? t.login.signingIn : t.login.signIn}
         </Button>
       </form>

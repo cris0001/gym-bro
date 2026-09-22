@@ -1,6 +1,7 @@
 // Public interface of the auth feature. Everything outside this folder imports
 // from '@/features/auth' only — never from internal paths.
 
+export { AuthShell } from './components/auth-shell';
 export { LoginForm } from './components/login-form';
 export { RegisterForm } from './components/register-form';
 export { LogoutButton } from './components/logout-button';

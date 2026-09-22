@@ -16,6 +16,7 @@ function toPublicUser(user: User): PublicUser {
 export async function register(
   email: string,
   password: string,
+  name: string,
 ): Promise<{ user: PublicUser; token: string }> {
   const normalizedEmail = email.toLowerCase();
   if (await authRepository.findByEmail(normalizedEmail)) {
@@ -25,6 +26,7 @@ export async function register(
   const user = await authRepository.create({
     email: normalizedEmail,
     passwordHash,
+    name,
   });
   return { user: toPublicUser(user), token: await signToken(user.id) };
 }

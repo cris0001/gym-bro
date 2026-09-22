@@ -20,6 +20,8 @@ export type Sex = NonNullable<UpdateProfileInput['sex']>;
 // shape the client receives.
 export interface PublicUser {
   id: string;
+  // Display name; null for accounts created before names were captured.
+  name: string | null;
   email: string;
   birthdate: string | null;
   sex: Sex | null;

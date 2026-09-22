@@ -12,6 +12,7 @@ function fakeUser(overrides: Partial<User> = {}): User {
   return {
     id: 'user-1',
     email: 'test@example.com',
+    name: null,
     passwordHash: 'placeholder-hash',
     birthdate: null,
     sex: null,
@@ -49,6 +50,7 @@ describe('auth routes', () => {
     repo.create.mockResolvedValue(fakeUser());
 
     const res = await post('/api/auth/register', {
+      name: 'Test User',
       email: 'test@example.com',
       password: 'password123',
     });
@@ -64,6 +66,7 @@ describe('auth routes', () => {
     repo.findByEmail.mockResolvedValue(fakeUser());
 
     const res = await post('/api/auth/register', {
+      name: 'Test User',
       email: 'test@example.com',
       password: 'password123',
     });
@@ -93,6 +96,7 @@ describe('auth routes', () => {
     repo.findByEmail.mockResolvedValue(undefined);
     repo.create.mockResolvedValue(fakeUser());
     const reg = await post('/api/auth/register', {
+      name: 'Test User',
       email: 'test@example.com',
       password: 'password123',
     });
@@ -151,6 +155,7 @@ describe('auth routes', () => {
     repo.findByEmail.mockResolvedValue(undefined);
     repo.create.mockResolvedValue(fakeUser());
     const reg = await post('/api/auth/register', {
+      name: 'Test User',
       email: 'test@example.com',
       password: 'password123',
     });

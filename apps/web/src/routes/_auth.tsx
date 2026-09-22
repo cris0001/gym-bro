@@ -1,10 +1,10 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
 
-import { BrandMark } from '@/components/brand-mark';
 import { meQueryOptions } from '@/features/auth';
 
 // Public layout for the auth pages. If the user is already signed in, bounce
-// them to the dashboard instead of showing login/register.
+// them to the dashboard instead of showing login/register. The split-panel chrome
+// lives in each page's <AuthShell>, so this is just the auth-gate + outlet.
 export const Route = createFileRoute('/_auth')({
   beforeLoad: async ({ context }) => {
     try {
@@ -14,18 +14,5 @@ export const Route = createFileRoute('/_auth')({
     }
     throw redirect({ to: '/dashboard' });
   },
-  component: AuthLayout,
+  component: Outlet,
 });
-
-function AuthLayout() {
-  return (
-    <main className="bg-background flex min-h-dvh flex-col justify-center p-6">
-      <div className="mx-auto w-full max-w-sm">
-        <div className="bg-card flex flex-col gap-6 rounded-2xl border p-6">
-          <BrandMark className="mx-auto size-12" />
-          <Outlet />
-        </div>
-      </div>
-    </main>
-  );
-}

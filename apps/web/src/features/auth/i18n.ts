@@ -3,15 +3,21 @@ import { createFeatureTranslation } from '@/lib/i18n/create-translation';
 // Auth feature copy (login, register, onboarding). English is the source shape.
 export const useAuthTranslation = createFeatureTranslation({
   en: {
+    name: 'Name',
     email: 'Email',
     password: 'Password',
     login: {
+      title: 'Welcome back',
+      subtitle: 'Pick up where you left off.',
       signIn: 'Sign in',
       signingIn: 'Signing in…',
       noAccount: 'No account?',
       createOne: 'Create one',
     },
     register: {
+      title: 'Create your account',
+      subtitle: 'Free forever · no app store needed.',
+      minChars: 'min. 8 characters',
       createAccount: 'Create account',
       creating: 'Creating account…',
       haveAccount: 'Already have an account?',
@@ -32,15 +38,21 @@ export const useAuthTranslation = createFeatureTranslation({
     },
   },
   pl: {
+    name: 'Imię',
     email: 'E-mail',
     password: 'Hasło',
     login: {
+      title: 'Witaj ponownie',
+      subtitle: 'Wróć tam, gdzie skończyłeś.',
       signIn: 'Zaloguj się',
       signingIn: 'Logowanie…',
       noAccount: 'Nie masz konta?',
       createOne: 'Załóż je',
     },
     register: {
+      title: 'Załóż konto',
+      subtitle: 'Za darmo na zawsze · bez app store.',
+      minChars: 'min. 8 znaków',
       createAccount: 'Załóż konto',
       creating: 'Tworzenie konta…',
       haveAccount: 'Masz już konto?',

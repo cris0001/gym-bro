@@ -27,6 +27,9 @@ export const users = pgTable(
     // built into Postgres 13+ / Neon.
     id: uuid('id').primaryKey().defaultRandom(),
     email: text('email').notNull(),
+    // Display name captured at sign-up. Nullable: accounts created before this
+    // column existed have no name (the app falls back to email).
+    name: text('name'),
     // bcrypt hash, never the raw password.
     passwordHash: text('password_hash').notNull(),
     // Optional profile (onboarding is skippable).
