@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
+import { createFileRoute, Outlet, redirect, useNavigate } from '@tanstack/react-router';
 
 import { BrandMark } from '@/components/brand-mark';
 import { BottomNav } from '@/components/nav/bottom-nav';
@@ -6,24 +6,41 @@ import { SectionTabs } from '@/components/nav/section-tabs';
 import { SidebarNav } from '@/components/nav/sidebar-nav';
 import { LanguageToggle } from '@/components/language-toggle';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { LogoutButton, OnboardingSheet, meQueryOptions } from '@/features/auth';
+import {
+  LogoutButton,
+  OnboardingSheet,
+  meQueryOptions,
+  useCurrentUser,
+  useLogout,
+} from '@/features/auth';
+import { isLicenseExpired, PaywallModal, startCheckout } from '@/features/billing';
 import { ActiveSessionBubble } from '@/features/sessions';
 
 // Protected layout. beforeLoad resolves the current user from the shared cache
 // (fetching once if needed); a 401 throws and we redirect to the public landing
-// before any child renders, so there's no flash of authenticated UI.
+// before any child renders, so there's no flash of authenticated UI. A lapsed
+// licence is confined to the dashboard (the paywall handles the rest).
 export const Route = createFileRoute('/_app')({
-  beforeLoad: async ({ context }) => {
+  beforeLoad: async ({ context, location }) => {
+    let user;
     try {
-      await context.queryClient.ensureQueryData(meQueryOptions);
+      user = await context.queryClient.ensureQueryData(meQueryOptions);
     } catch {
       throw redirect({ to: '/' });
+    }
+    if (isLicenseExpired(user) && location.pathname !== '/dashboard') {
+      throw redirect({ to: '/dashboard' });
     }
   },
   component: AppLayout,
 });
 
 function AppLayout() {
+  const { data: user } = useCurrentUser();
+  const { mutate: logout } = useLogout();
+  const navigate = useNavigate();
+  const expired = user ? isLicenseExpired(user) : false;
+
   return (
     <div className="flex min-h-dvh flex-col lg:flex-row">
       <SidebarNav />
@@ -51,6 +68,13 @@ function AppLayout() {
       <BottomNav />
       <ActiveSessionBubble />
       <OnboardingSheet />
+      {expired && user ? (
+        <PaywallModal
+          expiresAt={user.licenseExpiresAt}
+          onRenew={startCheckout}
+          onSignOut={() => logout(undefined, { onSuccess: () => void navigate({ to: '/login' }) })}
+        />
+      ) : null}
     </div>
   );
 }
