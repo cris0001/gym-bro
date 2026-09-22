@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import type { FoodLogEntry } from '@gym-bro/shared';
 
 import { useDeleteFoodLogEntry } from '../hooks/use-delete-food-log-entry';
+import { useNutritionTranslation } from '../i18n';
 import { EntryEditForm } from './entry-edit-form';
 
 // Short unit label for the compact portion prefix.
@@ -37,6 +38,7 @@ export function DiaryEntryRow({
   // "Added to meal" card in the add view.
   mutedDelete?: boolean;
 }) {
+  const t = useNutritionTranslation();
   const remove = useDeleteFoodLogEntry();
   const [editing, setEditing] = useState(false);
 
@@ -72,7 +74,7 @@ export function DiaryEntryRow({
       <button
         type="button"
         className="min-w-0 flex-1 text-left"
-        aria-label={`Edit ${entry.itemName}`}
+        aria-label={t.diary.editEntryAria(entry.itemName)}
         onClick={() => (onEdit ? onEdit(entry) : setEditing(true))}
       >
         <p className="flex items-center gap-1.5 truncate font-semibold">
@@ -100,7 +102,7 @@ export function DiaryEntryRow({
           'size-9 shrink-0',
           mutedDelete ? 'text-[#c9bcb2] dark:text-[#5a4d55]' : 'text-destructive',
         )}
-        aria-label={`Remove ${entry.itemName}`}
+        aria-label={t.diary.removeEntryAria(entry.itemName)}
         disabled={remove.isPending}
         onClick={() => remove.mutate(entry.id)}
       >

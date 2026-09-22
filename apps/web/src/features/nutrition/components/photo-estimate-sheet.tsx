@@ -18,17 +18,13 @@ import type { CreateFoodLogInput } from '@gym-bro/shared';
 
 import { useCreateFoodLogEntry } from '../hooks/use-create-food-log-entry';
 import { useEstimateFoodPhoto } from '../hooks/use-estimate-food-photo';
+import { useNutritionTranslation } from '../i18n';
 import { useDiaryUiStore } from '../stores/diary-ui.store';
 import { resizeImageToDataUrl } from '../utils/resize-image';
 
-const MACRO_FIELDS = [
-  { key: 'kcal', label: 'Calories (kcal)' },
-  { key: 'proteinG', label: 'Protein (g)' },
-  { key: 'carbsG', label: 'Carbs (g)' },
-  { key: 'fatG', label: 'Fat (g)' },
-] as const;
+const MACRO_FIELDS = ['kcal', 'proteinG', 'carbsG', 'fatG'] as const;
 
-type MacroKey = (typeof MACRO_FIELDS)[number]['key'];
+type MacroKey = (typeof MACRO_FIELDS)[number];
 type Macros = Record<MacroKey, string>;
 const EMPTY_MACROS: Macros = { kcal: '', proteinG: '', carbsG: '', fatG: '' };
 
@@ -42,6 +38,7 @@ function isValidMacro(value: string): boolean {
 // then save. The photo is only sent for the estimate — never stored. Works on desktop
 // too: the file picker opens the gallery there; mobile offers the camera.
 export function PhotoEstimateSheet({ loggedDate }: { loggedDate: string }) {
+  const t = useNutritionTranslation();
   const photoMeal = useDiaryUiStore((s) => s.photoMeal);
   const closePhoto = useDiaryUiStore((s) => s.closePhoto);
   const open = photoMeal !== null;
@@ -78,7 +75,7 @@ export function PhotoEstimateSheet({ loggedDate }: { loggedDate: string }) {
       setImage(await resizeImageToDataUrl(file, 768));
       setEstimated(false);
     } catch {
-      toast.error("Couldn't process that image.");
+      toast.error(t.common.imageProcessError);
     }
   }
 
@@ -105,7 +102,7 @@ export function PhotoEstimateSheet({ loggedDate }: { loggedDate: string }) {
     );
   }
 
-  const macrosValid = MACRO_FIELDS.every((f) => isValidMacro(macros[f.key]));
+  const macrosValid = MACRO_FIELDS.every((f) => isValidMacro(macros[f]));
   const canSave = estimated && name.trim() !== '' && macrosValid && !create.isPending;
 
   function save() {
@@ -131,11 +128,9 @@ export function PhotoEstimateSheet({ loggedDate }: { loggedDate: string }) {
       <SheetContent side="bottom" className="gap-0">
         <SheetHeader>
           <SheetTitle className="capitalize">
-            Add from photo{photoMeal ? ` to ${photoMeal.replace('_', ' ')}` : ''}
+            {t.photo.title(photoMeal ? t.meals[photoMeal] : null)}
           </SheetTitle>
-          <SheetDescription>
-            Snap your meal — the AI estimates calories and macros. Review before saving.
-          </SheetDescription>
+          <SheetDescription>{t.photo.description}</SheetDescription>
         </SheetHeader>
 
         <div className="grid gap-4 p-4">
@@ -153,7 +148,7 @@ export function PhotoEstimateSheet({ loggedDate }: { loggedDate: string }) {
                     setImage(null);
                     setEstimated(false);
                   }}
-                  aria-label="Remove photo"
+                  aria-label={t.common.removePhoto}
                   className="bg-background absolute -top-2 -right-2 rounded-full border p-1 shadow"
                 >
                   <X className="size-4" />
@@ -168,7 +163,7 @@ export function PhotoEstimateSheet({ loggedDate }: { loggedDate: string }) {
             >
               <label>
                 <Camera className="size-4" />
-                {image ? 'Change photo' : 'Take / choose photo'}
+                {image ? t.common.changePhoto : t.photo.takePhoto}
                 <input
                   type="file"
                   accept="image/*"
@@ -181,22 +176,22 @@ export function PhotoEstimateSheet({ loggedDate }: { loggedDate: string }) {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="photo-name">Name</Label>
+            <Label htmlFor="photo-name">{t.common.name}</Label>
             <Input
               id="photo-name"
               className="h-11"
-              placeholder="e.g. kebab"
+              placeholder={t.photo.namePlaceholder}
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="photo-note">Note for the AI (optional)</Label>
+            <Label htmlFor="photo-note">{t.photo.noteLabel}</Label>
             <Textarea
               id="photo-note"
               rows={2}
-              placeholder="e.g. large portion, extra sauce — helps the estimate"
+              placeholder={t.photo.notePlaceholder}
               value={note}
               onChange={(e) => setNote(e.target.value)}
             />
@@ -206,21 +201,19 @@ export function PhotoEstimateSheet({ loggedDate }: { loggedDate: string }) {
             <>
               <div className="grid grid-cols-2 gap-3">
                 {MACRO_FIELDS.map((f) => (
-                  <div key={f.key} className="grid gap-1.5">
-                    <Label htmlFor={`photo-${f.key}`}>{f.label}</Label>
+                  <div key={f} className="grid gap-1.5">
+                    <Label htmlFor={`photo-${f}`}>{t.common.macroFields[f]}</Label>
                     <Input
-                      id={`photo-${f.key}`}
+                      id={`photo-${f}`}
                       inputMode="decimal"
                       className="h-11"
-                      value={macros[f.key]}
-                      onChange={(e) => setMacros((m) => ({ ...m, [f.key]: e.target.value }))}
+                      value={macros[f]}
+                      onChange={(e) => setMacros((m) => ({ ...m, [f]: e.target.value }))}
                     />
                   </div>
                 ))}
               </div>
-              <p className="text-muted-foreground text-xs">
-                AI estimate — adjust anything that looks off before saving.
-              </p>
+              <p className="text-muted-foreground text-xs">{t.photo.estimateHint}</p>
             </>
           ) : (
             <Button
@@ -230,7 +223,7 @@ export function PhotoEstimateSheet({ loggedDate }: { loggedDate: string }) {
               onClick={runEstimate}
             >
               <Sparkles className="size-4" />
-              {estimate.isPending ? 'Estimating…' : 'Estimate macros'}
+              {estimate.isPending ? t.photo.estimating : t.photo.estimateMacros}
             </Button>
           )}
 
@@ -243,11 +236,11 @@ export function PhotoEstimateSheet({ loggedDate }: { loggedDate: string }) {
           <div className="flex gap-2">
             {estimated ? (
               <Button type="button" className="h-11 flex-1" disabled={!canSave} onClick={save}>
-                {create.isPending ? 'Saving…' : 'Save to diary'}
+                {create.isPending ? t.common.saving : t.photo.saveToDiary}
               </Button>
             ) : null}
             <Button type="button" variant="outline" className="h-11" onClick={closePhoto}>
-              Cancel
+              {t.common.cancel}
             </Button>
           </div>
         </div>

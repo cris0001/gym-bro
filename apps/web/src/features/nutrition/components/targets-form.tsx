@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import type { NutritionTarget, SetNutritionTargetInput } from '@gym-bro/shared';
 
 import { useSetTarget } from '../hooks/use-set-target';
+import { useNutritionTranslation } from '../i18n';
 
 // A required daily-target field, kept as a string in the form and converted to a
 // number on submit (same approach as the food form).
@@ -39,12 +40,7 @@ const targetFormSchema = z.object({
 
 type TargetFormValues = z.infer<typeof targetFormSchema>;
 
-const FIELDS = [
-  { name: 'kcal', label: 'Calories (kcal)' },
-  { name: 'proteinG', label: 'Protein (g)' },
-  { name: 'carbsG', label: 'Carbs (g)' },
-  { name: 'fatG', label: 'Fat (g)' },
-] as const;
+const FIELDS = ['kcal', 'proteinG', 'carbsG', 'fatG'] as const;
 
 interface TargetsFormProps {
   current: NutritionTarget | null;
@@ -58,6 +54,7 @@ interface TargetsFormProps {
 // to today; in edit mode it seeds from the selected history entry (date + macros).
 // Saving upserts that date; the current target and history refresh on success.
 export function TargetsForm({ current, editing, onDone }: TargetsFormProps) {
+  const t = useNutritionTranslation();
   const source = editing ?? current;
   const form = useForm<TargetFormValues>({
     resolver: zodResolver(targetFormSchema),
@@ -111,7 +108,7 @@ export function TargetsForm({ current, editing, onDone }: TargetsFormProps) {
           name="effectiveDate"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Effective date</FormLabel>
+              <FormLabel>{t.targets.effectiveDate}</FormLabel>
               <FormControl>
                 <Input
                   type="date"
@@ -120,23 +117,21 @@ export function TargetsForm({ current, editing, onDone }: TargetsFormProps) {
                   {...field}
                 />
               </FormControl>
-              <p className="text-muted-foreground text-xs">
-                Today by default. Pick a past date to back-fill a historical target.
-              </p>
+              <p className="text-muted-foreground text-xs">{t.targets.effectiveDateHint}</p>
               <FormMessage />
             </FormItem>
           )}
         />
 
         <div className="grid grid-cols-2 gap-3">
-          {FIELDS.map((field) => (
+          {FIELDS.map((fieldName) => (
             <FormField
-              key={field.name}
+              key={fieldName}
               control={form.control}
-              name={field.name}
+              name={fieldName}
               render={({ field: f }) => (
                 <FormItem>
-                  <FormLabel>{field.label}</FormLabel>
+                  <FormLabel>{t.common.macroFields[fieldName]}</FormLabel>
                   <FormControl>
                     <Input inputMode="decimal" placeholder="0" className="h-11" {...f} />
                   </FormControl>
@@ -149,7 +144,7 @@ export function TargetsForm({ current, editing, onDone }: TargetsFormProps) {
 
         {split ? (
           <p className="font-heading text-muted-foreground text-sm italic">
-            = {split.p}% protein · {split.c}% carbs · {split.f}% fat
+            {t.targets.split(split.p, split.c, split.f)}
           </p>
         ) : null}
 
@@ -158,11 +153,17 @@ export function TargetsForm({ current, editing, onDone }: TargetsFormProps) {
             {setTarget.error.message}
           </p>
         ) : null}
-        {setTarget.isSuccess ? <p className="text-muted-foreground text-sm">Saved.</p> : null}
+        {setTarget.isSuccess ? (
+          <p className="text-muted-foreground text-sm">{t.targets.saved}</p>
+        ) : null}
 
         <div className="flex gap-2">
           <Button type="submit" className="h-11 flex-1 rounded-full" disabled={setTarget.isPending}>
-            {setTarget.isPending ? 'Saving…' : editing ? 'Save changes' : 'Save target'}
+            {setTarget.isPending
+              ? t.common.saving
+              : editing
+                ? t.common.saveChanges
+                : t.targets.saveTarget}
           </Button>
           {editing ? (
             <Button
@@ -171,7 +172,7 @@ export function TargetsForm({ current, editing, onDone }: TargetsFormProps) {
               className="h-11 rounded-full px-5"
               onClick={() => onDone?.()}
             >
-              Cancel
+              {t.common.cancel}
             </Button>
           ) : null}
         </div>

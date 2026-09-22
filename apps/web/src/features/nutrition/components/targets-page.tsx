@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { NutritionTarget } from '@gym-bro/shared';
 
 import { useCurrentTarget } from '../hooks/use-current-target';
+import { useNutritionTranslation } from '../i18n';
 import { TargetsForm } from './targets-form';
 import { TargetsHistory } from './targets-history';
 
@@ -12,23 +13,24 @@ import { TargetsHistory } from './targets-history';
 // and review the history of past targets. Editing state is owned here and shared by
 // the form (seeds it) and the history (its edit buttons set it).
 export function TargetsPage() {
+  const t = useNutritionTranslation();
   const { data: current, isPending } = useCurrentTarget();
   const [editing, setEditing] = useState<NutritionTarget | null>(null);
 
   return (
     <div className="mx-auto lg:col-span-3 flex w-full max-w-5xl flex-col gap-4 p-3 md:p-4">
-      <h1 className="font-heading text-[28px] leading-none font-medium">Targets</h1>
+      <h1 className="font-heading text-[28px] leading-none font-medium">{t.targets.title}</h1>
 
       <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
         <Card className="rounded-2xl">
           <CardHeader>
             <CardTitle className="font-heading text-lg">
-              {editing ? 'Edit target' : 'Daily target'}
+              {editing ? t.targets.editTarget : t.targets.dailyTarget}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {isPending ? (
-              <p className="text-muted-foreground text-sm">Loading…</p>
+              <p className="text-muted-foreground text-sm">{t.common.loading}</p>
             ) : (
               <TargetsForm
                 key={editing?.id ?? current?.id ?? 'none'}
@@ -42,7 +44,7 @@ export function TargetsPage() {
 
         <Card className="rounded-2xl">
           <CardHeader>
-            <CardTitle className="font-heading text-lg">History</CardTitle>
+            <CardTitle className="font-heading text-lg">{t.targets.history}</CardTitle>
           </CardHeader>
           <CardContent>
             <TargetsHistory onEdit={setEditing} />

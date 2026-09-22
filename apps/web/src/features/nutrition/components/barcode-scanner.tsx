@@ -11,6 +11,8 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 
+import { useNutritionTranslation } from '../i18n';
+
 interface BarcodeScannerProps {
   open: boolean;
   onClose: () => void;
@@ -97,6 +99,7 @@ function readSavedCamera(): string | null {
 // the main rear lens (avoids the ultra-wide that can't focus close) with a manual camera
 // switcher; tap the preview to refocus; a zoom slider appears when supported.
 export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProps) {
+  const t = useNutritionTranslation();
   const videoRef = useRef<HTMLVideoElement>(null);
   const controlsRef = useRef<{ stop: () => void } | null>(null);
   const trackRef = useRef<MediaStreamTrack | null>(null);
@@ -199,7 +202,7 @@ export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProp
           }
         }
       } catch {
-        if (!cancelled) setNote('Camera unavailable — type the barcode or upload a photo.');
+        if (!cancelled) setNote(t.barcode.cameraUnavailable);
       }
     })();
     return () => {
@@ -238,7 +241,7 @@ export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProp
       const result = await reader.decodeFromImageUrl(url);
       onDetected(result.getText());
     } catch {
-      setNote('No barcode found in that image.');
+      setNote(t.barcode.noBarcodeInImage);
     } finally {
       URL.revokeObjectURL(url);
     }
@@ -247,7 +250,7 @@ export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProp
   function submitManual() {
     const code = manual.trim();
     if (/^\d{8,14}$/.test(code)) onDetected(code);
-    else setNote('Enter a valid 8–14 digit barcode.');
+    else setNote(t.barcode.invalidBarcode);
   }
 
   const rearCams = rearCameras(cameras);
@@ -256,30 +259,27 @@ export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProp
     <Sheet open={open} onOpenChange={(next) => !next && onClose()}>
       <SheetContent side="bottom" className="gap-0">
         <SheetHeader>
-          <SheetTitle>Scan a barcode</SheetTitle>
-          <SheetDescription>
-            Point the camera at the barcode and tap to focus. If it won&rsquo;t sharpen, switch
-            camera or zoom in — or upload a photo, or type the number.
-          </SheetDescription>
+          <SheetTitle>{t.barcode.title}</SheetTitle>
+          <SheetDescription>{t.barcode.description}</SheetDescription>
         </SheetHeader>
 
         <div className="grid gap-4 p-4">
           <button
             type="button"
             onClick={() => void refocus()}
-            aria-label="Tap to focus"
+            aria-label={t.barcode.tapToFocus}
             className="relative block aspect-video w-full overflow-hidden rounded-2xl bg-[#2b2126]"
           >
             <video ref={videoRef} className="size-full object-cover" muted playsInline />
             <span className="pointer-events-none absolute inset-6 rounded-2xl border-2 border-[#fdf6f5]/80" />
             <span className="absolute bottom-1 left-1/2 -translate-x-1/2 rounded px-2 py-0.5 text-xs text-[#fdf6f5]/80">
-              Tap to focus
+              {t.barcode.tapToFocus}
             </span>
           </button>
 
           {rearCams.length > 1 ? (
             <label className="flex items-center gap-2 text-sm">
-              Camera
+              {t.barcode.cameraLabel}
               <select
                 value={deviceId ?? ''}
                 onChange={(e) => selectCamera(e.target.value)}
@@ -287,7 +287,7 @@ export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProp
               >
                 {rearCams.map((cam, i) => (
                   <option key={cam.deviceId} value={cam.deviceId}>
-                    {cam.label || `Camera ${i + 1}`}
+                    {cam.label || t.barcode.cameraN(i + 1)}
                   </option>
                 ))}
               </select>
@@ -296,7 +296,7 @@ export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProp
 
           {zoom ? (
             <label className="flex items-center gap-3 text-sm">
-              Zoom
+              {t.barcode.zoom}
               <input
                 type="range"
                 min={zoom.min}
@@ -314,7 +314,7 @@ export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProp
           <div className="flex gap-2">
             <Input
               inputMode="numeric"
-              placeholder="Barcode number"
+              placeholder={t.barcode.numberPlaceholder}
               className="h-11"
               value={manual}
               onChange={(e) => setManual(e.target.value)}
@@ -323,14 +323,14 @@ export function BarcodeScanner({ open, onClose, onDetected }: BarcodeScannerProp
               }}
             />
             <Button type="button" className="h-11" onClick={submitManual}>
-              Use
+              {t.barcode.use}
             </Button>
           </div>
 
           <Button asChild variant="outline" className="h-11">
             <label>
               <Upload className="size-4" />
-              Upload barcode photo
+              {t.barcode.uploadPhoto}
               <input
                 type="file"
                 accept="image/*"

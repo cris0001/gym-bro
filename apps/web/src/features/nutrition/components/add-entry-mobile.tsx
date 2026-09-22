@@ -4,6 +4,7 @@ import { Barcode, ChevronLeft, Plus, Search } from 'lucide-react';
 import type { MealType } from '@gym-bro/shared';
 
 import type { UseAddEntry } from '../hooks/use-add-entry';
+import { useNutritionTranslation } from '../i18n';
 import { useDiaryUiStore } from '../stores/diary-ui.store';
 import { defaultPortion } from '../utils/add-entry-list';
 import { AddEntryResultRow } from './add-entry-result-row';
@@ -22,6 +23,7 @@ export function AddEntryMobile({
   meal: MealType;
   state: UseAddEntry;
 }) {
+  const t = useNutritionTranslation();
   const closeAdd = useDiaryUiStore((s) => s.closeAdd);
   const {
     query,
@@ -37,7 +39,7 @@ export function AddEntryMobile({
     createNewFood,
   } = state;
 
-  const mealLabel = meal.replace('_', ' ');
+  const mealLabel = t.meals[meal];
 
   return (
     <div className="bg-background fixed inset-0 z-50 flex flex-col">
@@ -50,16 +52,14 @@ export function AddEntryMobile({
               className="text-muted-foreground -ml-1 flex items-center text-[13px] font-semibold"
             >
               <ChevronLeft className="size-4" />
-              Diary
+              {t.addEntry.back}
             </button>
             <span className="font-heading text-muted-foreground text-sm italic">
               {format(parseISO(loggedDate), 'EEEE, MMMM d')}
             </span>
           </div>
 
-          <h1 className="font-heading text-[26px] font-semibold">
-            Add to <span className="capitalize">{mealLabel}</span>
-          </h1>
+          <h1 className="font-heading text-[26px] font-semibold">{t.addEntry.addTo(mealLabel)}</h1>
 
           <div className="flex gap-2">
             <div className="relative min-w-0 flex-1">
@@ -67,14 +67,14 @@ export function AddEntryMobile({
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search a product or recipe…"
+                placeholder={t.addEntry.searchPlaceholder}
                 className="border-border bg-card placeholder:text-muted-foreground h-[46px] w-full rounded-xl border pr-3 pl-10 text-sm focus:outline-none"
               />
             </div>
             {canScan ? (
               <button
                 type="button"
-                aria-label="Scan a barcode"
+                aria-label={t.barcode.scanAria}
                 onClick={() => setScanning(true)}
                 className="border-border bg-card text-primary flex size-[46px] shrink-0 items-center justify-center rounded-xl border"
               >
@@ -109,7 +109,7 @@ export function AddEntryMobile({
               className="text-primary flex w-full items-center justify-center gap-1.5 border-t border-dashed border-[#d6c8bd] py-3.5 text-[12.5px] font-bold dark:border-[#40353c]"
             >
               <Plus className="size-4" />
-              Create a new food
+              {t.addEntry.createFood}
             </button>
           </div>
 
@@ -117,7 +117,7 @@ export function AddEntryMobile({
             <div className="flex flex-col gap-2">
               <div className="flex items-baseline justify-between">
                 <span className="text-muted-foreground text-[11px] font-semibold tracking-wide uppercase">
-                  Added to {mealLabel}
+                  {t.addEntry.addedTo(mealLabel)}
                 </span>
                 <span className="font-heading text-lg font-semibold">
                   {mealTotal.toLocaleString('en-US')}
@@ -137,7 +137,7 @@ export function AddEntryMobile({
       <div className="bg-background/95 border-border sticky bottom-0 flex items-center gap-3 border-t px-4 py-3 backdrop-blur">
         <div className="flex flex-col">
           <span className="text-muted-foreground text-[11px] font-semibold tracking-wide uppercase">
-            {mealLabel} total
+            {t.addEntry.mealTotalLabel(mealLabel)}
           </span>
           <span className="font-heading text-[17px] font-semibold">
             {mealTotal.toLocaleString('en-US')}
@@ -149,7 +149,7 @@ export function AddEntryMobile({
           onClick={closeAdd}
           className="bg-primary text-primary-foreground h-[46px] flex-1 rounded-full text-sm font-semibold"
         >
-          Done
+          {t.common.done}
         </button>
       </div>
     </div>

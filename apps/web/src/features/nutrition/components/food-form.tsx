@@ -21,6 +21,7 @@ import type { CreateFoodInput, Food } from '@gym-bro/shared';
 
 import { useCreateFood } from '../hooks/use-create-food';
 import { useUpdateFood } from '../hooks/use-update-food';
+import { useNutritionTranslation } from '../i18n';
 import type { ScanPrefill } from '../stores/food-ui.store';
 import { resizeImageToDataUrl } from '../utils/resize-image';
 
@@ -70,12 +71,8 @@ const foodFormSchema = z.object({
 
 type FoodFormValues = z.infer<typeof foodFormSchema>;
 
-const MACRO_FIELDS = [
-  { name: 'kcal', label: 'Calories (kcal)' },
-  { name: 'proteinG', label: 'Protein (g)' },
-  { name: 'carbsG', label: 'Carbs (g)' },
-  { name: 'fatG', label: 'Fat (g)' },
-] as const;
+// Field key → its macro-label key in the translation dict; labels resolve at render.
+const MACRO_FIELDS = ['kcal', 'proteinG', 'carbsG', 'fatG'] as const;
 
 interface FoodFormProps {
   editing: Food | null;
@@ -91,6 +88,7 @@ interface FoodFormProps {
 // string inputs and messages. A scan prefill seeds the fields and carries the
 // barcode/brand/image through to submit.
 export function FoodForm({ editing, prefill = null, onCreated, onSuccess }: FoodFormProps) {
+  const t = useNutritionTranslation();
   // A barcode from a scan or an already-saved food is fixed: shown read-only under the
   // photo and merged back in on submit. A manual add exposes an editable EAN field
   // instead (see `showEanField`). Brand is carried through the same way.
@@ -109,7 +107,7 @@ export function FoodForm({ editing, prefill = null, onCreated, onSuccess }: Food
     try {
       setImage(await resizeImageToDataUrl(file));
     } catch {
-      toast.error("Couldn't process that image.");
+      toast.error(t.common.imageProcessError);
     }
   }
 
@@ -189,7 +187,7 @@ export function FoodForm({ editing, prefill = null, onCreated, onSuccess }: Food
               <button
                 type="button"
                 onClick={() => setImage(null)}
-                aria-label="Remove photo"
+                aria-label={t.common.removePhoto}
                 className="bg-background absolute -top-2 -right-2 rounded-full border p-1 shadow"
               >
                 <X className="size-4" />
@@ -207,7 +205,7 @@ export function FoodForm({ editing, prefill = null, onCreated, onSuccess }: Food
           >
             <label>
               <Camera className="size-4" />
-              {image ? 'Change photo' : 'Add photo'}
+              {image ? t.common.changePhoto : t.common.addPhoto}
               <input
                 type="file"
                 accept="image/*"
@@ -221,16 +219,15 @@ export function FoodForm({ editing, prefill = null, onCreated, onSuccess }: Food
             </label>
           </Button>
           {brand ? <p className="text-muted-foreground text-sm">{brand}</p> : null}
-          {lockedEan ? <p className="text-muted-foreground text-xs">Barcode: {lockedEan}</p> : null}
+          {lockedEan ? (
+            <p className="text-muted-foreground text-xs">{t.foodForm.barcodeLabel(lockedEan)}</p>
+          ) : null}
         </div>
 
         {contributing ? (
           <div className="border-primary/30 bg-primary/5 rounded-md border p-3 text-sm">
-            <p className="font-medium">Adding to the shared product database</p>
-            <p className="text-muted-foreground mt-1">
-              Give it a clear, specific name and double-check the macros per 100&nbsp;g so other
-              users recognise it.
-            </p>
+            <p className="font-medium">{t.foodForm.contributingTitle}</p>
+            <p className="text-muted-foreground mt-1">{t.foodForm.contributingDesc}</p>
           </div>
         ) : null}
 
@@ -239,9 +236,9 @@ export function FoodForm({ editing, prefill = null, onCreated, onSuccess }: Food
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Name</FormLabel>
+              <FormLabel>{t.common.name}</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. Chicken breast" className="h-11" {...field} />
+                <Input placeholder={t.foodForm.namePlaceholder} className="h-11" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -254,35 +251,33 @@ export function FoodForm({ editing, prefill = null, onCreated, onSuccess }: Food
             name="ean"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Barcode (optional)</FormLabel>
+                <FormLabel>{t.foodForm.barcodeOptional}</FormLabel>
                 <FormControl>
                   <Input
                     inputMode="numeric"
-                    placeholder="e.g. 5900000000000"
+                    placeholder={t.foodForm.barcodePlaceholder}
                     className="h-11"
                     {...field}
                   />
                 </FormControl>
-                <p className="text-muted-foreground text-xs">
-                  Add an EAN to share this product globally and find it later by scanning.
-                </p>
+                <p className="text-muted-foreground text-xs">{t.foodForm.eanHint}</p>
                 <FormMessage />
               </FormItem>
             )}
           />
         ) : null}
 
-        <p className="text-muted-foreground text-sm">Macros per 100g.</p>
+        <p className="text-muted-foreground text-sm">{t.foodForm.macrosPer100g}</p>
 
         <div className="grid grid-cols-2 gap-3">
           {MACRO_FIELDS.map((macro) => (
             <FormField
-              key={macro.name}
+              key={macro}
               control={form.control}
-              name={macro.name}
+              name={macro}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{macro.label}</FormLabel>
+                  <FormLabel>{t.common.macroFields[macro]}</FormLabel>
                   <FormControl>
                     <Input inputMode="decimal" placeholder="0" className="h-11" {...field} />
                   </FormControl>
@@ -298,18 +293,16 @@ export function FoodForm({ editing, prefill = null, onCreated, onSuccess }: Food
           name="servingGrams"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Grams per serving (optional)</FormLabel>
+              <FormLabel>{t.foodForm.servingGramsLabel}</FormLabel>
               <FormControl>
                 <Input
                   inputMode="decimal"
-                  placeholder="e.g. 150"
+                  placeholder={t.foodForm.servingGramsPlaceholder}
                   className="h-11 w-40"
                   {...field}
                 />
               </FormControl>
-              <p className="text-muted-foreground text-xs">
-                Set this to log the food by serving as well as by grams.
-              </p>
+              <p className="text-muted-foreground text-xs">{t.foodForm.servingGramsHint}</p>
               <FormMessage />
             </FormItem>
           )}
@@ -320,13 +313,16 @@ export function FoodForm({ editing, prefill = null, onCreated, onSuccess }: Food
           name="unitGrams"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Grams per unit (optional)</FormLabel>
+              <FormLabel>{t.foodForm.unitGramsLabel}</FormLabel>
               <FormControl>
-                <Input inputMode="decimal" placeholder="e.g. 9" className="h-11 w-40" {...field} />
+                <Input
+                  inputMode="decimal"
+                  placeholder={t.foodForm.unitGramsPlaceholder}
+                  className="h-11 w-40"
+                  {...field}
+                />
               </FormControl>
-              <p className="text-muted-foreground text-xs">
-                Set this to log the food by unit/piece (e.g. 1 cracker) as well as by grams.
-              </p>
+              <p className="text-muted-foreground text-xs">{t.foodForm.unitGramsHint}</p>
               <FormMessage />
             </FormItem>
           )}
@@ -339,7 +335,7 @@ export function FoodForm({ editing, prefill = null, onCreated, onSuccess }: Food
         ) : null}
 
         <Button type="submit" className="h-11" disabled={isPending}>
-          {isPending ? 'Saving…' : editing ? 'Save changes' : 'Add food'}
+          {isPending ? t.common.saving : editing ? t.common.saveChanges : t.foods.addFood}
         </Button>
       </form>
     </Form>

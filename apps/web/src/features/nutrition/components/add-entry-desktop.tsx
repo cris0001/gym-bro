@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import type { MealType } from '@gym-bro/shared';
 
 import { useAddEntry } from '../hooks/use-add-entry';
+import { useNutritionTranslation } from '../i18n';
 import { useDiaryUiStore } from '../stores/diary-ui.store';
 import { defaultPortion } from '../utils/add-entry-list';
 import { MACRO_BAR, type MacroKey } from '../utils/macro-colors';
@@ -24,6 +25,7 @@ const dashed = 'border-dashed border-[#e4dad2] dark:border-[#40353c]';
 // to this meal, and the whole day's totals vs target after those adds. Same hooks/
 // mutations as mobile — only the layout differs.
 export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal: MealType }) {
+  const t = useNutritionTranslation();
   const closeAdd = useDiaryUiStore((s) => s.closeAdd);
   const state = useAddEntry(loggedDate);
   const {
@@ -56,7 +58,7 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  const mealLabel = meal.replace('_', ' ');
+  const mealLabel = t.meals[meal];
   const left = target ? Math.round(target.kcal - dayTotals.kcal) : 0;
 
   return (
@@ -70,10 +72,10 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
               className="text-muted-foreground -ml-0.5 flex w-fit items-center gap-1 text-[12.5px] font-medium"
             >
               <ChevronLeft className="size-3.5" />
-              Diary · {format(parseISO(loggedDate), 'EEEE, MMMM d')}
+              {t.addEntry.diaryCrumb(format(parseISO(loggedDate), 'EEEE, MMMM d'))}
             </button>
             <h1 className="font-heading text-[30px] leading-tight font-semibold">
-              Add to <span className="capitalize">{mealLabel}</span>
+              {t.addEntry.addTo(mealLabel)}
             </h1>
           </div>
           <button
@@ -81,7 +83,7 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
             onClick={closeAdd}
             className="bg-primary text-primary-foreground h-[42px] shrink-0 rounded-full px-6 text-[13.5px] font-semibold"
           >
-            Done
+            {t.common.done}
           </button>
         </header>
 
@@ -95,7 +97,7 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
                   ref={searchRef}
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search a product or recipe…"
+                  placeholder={t.addEntry.searchPlaceholder}
                   className="border-border bg-card placeholder:text-muted-foreground h-[46px] w-full rounded-xl border pr-14 pl-10 text-sm focus:outline-none"
                 />
                 <kbd className="border-border text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 rounded-md border px-1.5 py-0.5 text-[11px] font-medium">
@@ -105,7 +107,7 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
               {canScan ? (
                 <button
                   type="button"
-                  aria-label="Scan a barcode"
+                  aria-label={t.barcode.scanAria}
                   onClick={() => setScanning(true)}
                   className="border-border bg-card text-primary flex size-[46px] shrink-0 items-center justify-center rounded-xl border"
                 >
@@ -116,8 +118,8 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
 
             <div className="border-border bg-card overflow-hidden rounded-2xl border">
               <div className={cn('flex items-center justify-between border-b px-4 py-3', dashed)}>
-                <span className={microLabel}>All foods &amp; recipes</span>
-                <span className="text-muted-foreground text-[11px]">recent first</span>
+                <span className={microLabel}>{t.addEntry.allFoodsRecipes}</span>
+                <span className="text-muted-foreground text-[11px]">{t.addEntry.recentFirst}</span>
               </div>
               {rows.map((row, i) => (
                 <div key={`${row.kind}-${row.id}`} className={i > 0 ? cn('border-t', dashed) : ''}>
@@ -139,7 +141,7 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
                 )}
               >
                 <Plus className="size-4" />
-                Create a new food
+                {t.addEntry.createFood}
               </button>
             </div>
           </div>
@@ -148,7 +150,7 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
           <div className="sticky top-5 flex flex-col gap-[18px]">
             <div className="border-border bg-card rounded-2xl border p-4">
               <div className="flex items-baseline justify-between">
-                <span className={microLabel}>Added to {mealLabel}</span>
+                <span className={microLabel}>{t.addEntry.addedTo(mealLabel)}</span>
                 <span className="font-heading text-[17px] font-semibold">
                   {fmt(mealTotal)}
                   <span className="text-muted-foreground ml-0.5 text-[11px] font-normal">kcal</span>
@@ -162,16 +164,18 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
                     ))}
                   </ul>
                   <p className="font-heading text-muted-foreground mt-3 text-[12px] italic">
-                    tap a row to edit the portion
+                    {t.addEntry.tapToEdit}
                   </p>
                 </>
               ) : (
-                <p className="text-muted-foreground mt-3 text-[12.5px]">Nothing added yet.</p>
+                <p className="text-muted-foreground mt-3 text-[12.5px]">
+                  {t.addEntry.nothingAdded}
+                </p>
               )}
             </div>
 
             <div className="border-border bg-card rounded-2xl border p-4">
-              <span className={microLabel}>Day after adding</span>
+              <span className={microLabel}>{t.addEntry.dayAfter}</span>
               {target ? (
                 <>
                   <div className="mt-2 flex items-center justify-between gap-2">
@@ -183,24 +187,24 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
                       </span>
                     </span>
                     <span className="bg-accent text-accent-foreground shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold">
-                      {left >= 0 ? `${fmt(left)} left` : `${fmt(-left)} over`}
+                      {left >= 0 ? t.daySummary.left(fmt(left)) : t.daySummary.over(fmt(-left))}
                     </span>
                   </div>
                   <div className="mt-4 flex flex-col gap-3">
                     <DayMacroBar
-                      label="Protein"
+                      label={t.common.macroProtein}
                       macro="protein"
                       current={dayTotals.proteinG}
                       target={target.proteinG}
                     />
                     <DayMacroBar
-                      label="Carbs"
+                      label={t.common.macroCarbs}
                       macro="carbs"
                       current={dayTotals.carbsG}
                       target={target.carbsG}
                     />
                     <DayMacroBar
-                      label="Fat"
+                      label={t.common.macroFat}
                       macro="fat"
                       current={dayTotals.fatG}
                       target={target.fatG}
@@ -209,7 +213,7 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
                 </>
               ) : (
                 <p className="text-muted-foreground mt-2 text-[12.5px]">
-                  {fmt(dayTotals.kcal)} kcal today · set a daily target to see progress.
+                  {t.addEntry.noTargetHint(fmt(dayTotals.kcal))}
                 </p>
               )}
             </div>

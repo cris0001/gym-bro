@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { useMediaQuery } from '@/hooks/use-media-query';
 
 import { useScanFlow } from '../hooks/use-scan-flow';
+import { useNutritionTranslation } from '../i18n';
 import { useFoodUiStore } from '../stores/food-ui.store';
 import { BarcodeScanner } from './barcode-scanner';
 import { FoodDetailPanel } from './food-detail-panel';
@@ -17,6 +18,7 @@ import { FoodSheet } from './food-sheet';
 // always-visible form panel on the right (blank by default, a selected row loads it for
 // editing). Scanning (mobile only) looks a barcode up and prefills the form.
 export function FoodsPage() {
+  const t = useNutritionTranslation();
   const openCreate = useFoodUiStore((s) => s.openCreate);
   const editing = useFoodUiStore((s) => s.editing);
   const [search, setSearch] = useState('');
@@ -31,7 +33,7 @@ export function FoodsPage() {
   return (
     <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-4 p-3 md:p-4">
       <div className="flex items-center justify-between gap-2">
-        <h1 className="font-heading text-[28px] leading-none font-medium">Foods</h1>
+        <h1 className="font-heading text-[28px] leading-none font-medium">{t.foods.title}</h1>
         <div className="flex gap-2">
           {canScan ? (
             <Button
@@ -41,13 +43,13 @@ export function FoodsPage() {
               onClick={() => setScanning(true)}
             >
               <Barcode className="size-4" />
-              Scan
+              {t.common.scan}
             </Button>
           ) : null}
           <Button type="button" className="h-11 rounded-full px-5" onClick={openCreate}>
             <Plus className="size-4" />
             {/* On desktop this just clears the panel back to a blank "New food". */}
-            {isDesktop ? 'New' : 'Add'}
+            {isDesktop ? t.foods.new : t.common.add}
           </Button>
         </div>
       </div>
@@ -55,13 +57,13 @@ export function FoodsPage() {
       <div className="lg:grid lg:grid-cols-[1fr_28rem] lg:items-start lg:gap-6">
         <div className="flex flex-col gap-4">
           <Input
-            placeholder="Search foods"
+            placeholder={t.foods.searchFoods}
             className="h-11"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
           <p className="font-heading text-muted-foreground -mt-2 px-1 text-xs italic">
-            Macros per 100 g
+            {t.foods.macrosPer100g}
           </p>
           <div className="bg-card overflow-hidden rounded-2xl border">
             <FoodList search={search} selectedId={isDesktop ? (editing?.id ?? null) : null} />

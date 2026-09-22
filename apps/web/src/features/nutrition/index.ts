@@ -8,6 +8,8 @@ export { RecipeEditPage } from './components/recipe-edit-page';
 export { TargetsPage } from './components/targets-page';
 export { DiaryPage } from './components/diary-page';
 
+export { useNutritionTranslation } from './i18n';
+
 // Composed by the dashboard (the cross-module aggregation view).
 export { useDailyFoodLog } from './hooks/use-daily-food-log';
 export { useCurrentTarget } from './hooks/use-current-target';
