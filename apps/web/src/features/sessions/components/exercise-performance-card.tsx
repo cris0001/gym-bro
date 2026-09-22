@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { useConfirm } from '@/stores/confirm.store';
 
 import { exerciseHistoryQueryOptions } from '../hooks/use-exercise-history';
+import { useSessionsTranslation } from '../i18n';
 import type { DraftPerformance } from '../stores/workout-draft.store';
 import { useWorkoutDraftStore } from '../stores/workout-draft.store';
 import { SessionPreviousLine } from './session-previous-line';
@@ -17,10 +18,13 @@ interface ExercisePerformanceCardProps {
 }
 
 // A short "weight × reps" label for the Copy-last button, taken from the last set.
-function lastSetLabel(performance: DraftPerformance): string {
+function lastSetLabel(
+  performance: DraftPerformance,
+  t: ReturnType<typeof useSessionsTranslation>['exerciseCard'],
+): string {
   const last = performance.sets.at(-1);
-  if (!last) return 'Copy last';
-  return `Copy last (${last.weight ?? 'BW'} × ${last.reps ?? '–'})`;
+  if (!last) return t.copyLast;
+  return t.copyLastWith(last.weight ?? 'BW', last.reps ?? '–');
 }
 
 // One exercise within the active session. Collapsible so finished exercises can be
@@ -37,6 +41,7 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
 
   const queryClient = useQueryClient();
   const confirm = useConfirm();
+  const t = useSessionsTranslation();
   const [expanded, setExpanded] = useState(false);
   const [showNote, setShowNote] = useState(performance.notes !== null);
 
@@ -66,9 +71,9 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
 
   async function handleRemove() {
     const ok = await confirm({
-      title: 'Remove exercise?',
-      description: `${performance.exerciseName} and its sets will be removed from this workout.`,
-      confirmText: 'Remove',
+      title: t.exerciseCard.removeConfirm.title,
+      description: t.exerciseCard.removeConfirm.description(performance.exerciseName),
+      confirmText: t.exerciseCard.removeConfirm.confirmText,
       destructive: true,
     });
     if (ok) removeExercise(performance.id);
@@ -98,8 +103,8 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
             </span>
             <span className="text-muted-foreground block text-[11.5px]">
               {performance.category}
-              {isSwapped && ' · swapped'}
-              {setCount > 0 && ` · ${setCount} ${setCount === 1 ? 'set' : 'sets'}`}
+              {isSwapped && t.exerciseCard.swapped}
+              {setCount > 0 && ` · ${t.exerciseCard.sets(setCount)}`}
             </span>
           </span>
         </button>
@@ -107,18 +112,23 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
         <button
           type="button"
           className={iconBtn}
-          aria-label="Copy sets from last training"
+          aria-label={t.exerciseCard.copySetsAria}
           onClick={() => void handleCopyLast()}
         >
           <Copy className="size-4" />
         </button>
-        <button type="button" className={iconBtn} aria-label="Swap exercise" onClick={onSwap}>
+        <button
+          type="button"
+          className={iconBtn}
+          aria-label={t.exerciseCard.swapAria}
+          onClick={onSwap}
+        >
           <ArrowLeftRight className="size-4" />
         </button>
         <button
           type="button"
           className={iconBtn}
-          aria-label="Remove exercise"
+          aria-label={t.exerciseCard.removeAria}
           onClick={() => void handleRemove()}
         >
           <Trash2 className="size-4" />
@@ -133,10 +143,14 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
             <>
               <div className="text-muted-foreground flex items-center gap-1.5 text-[10.5px] font-semibold tracking-wide uppercase md:gap-2">
                 <span className="size-7 shrink-0" aria-hidden />
-                <span className="flex-1 text-center md:w-[110px] md:flex-none">Weight</span>
-                <span className="flex-1 text-center md:w-[110px] md:flex-none">Reps</span>
-                <span className="flex-1 text-center md:w-[90px] md:flex-none">RIR</span>
-                <span className="hidden md:block md:flex-1">Set type</span>
+                <span className="flex-1 text-center md:w-[110px] md:flex-none">
+                  {t.common.weight}
+                </span>
+                <span className="flex-1 text-center md:w-[110px] md:flex-none">
+                  {t.common.reps}
+                </span>
+                <span className="flex-1 text-center md:w-[90px] md:flex-none">{t.common.rir}</span>
+                <span className="hidden md:block md:flex-1">{t.common.setType}</span>
                 <span className="size-8 shrink-0 md:hidden" aria-hidden />
                 <span className="size-8 shrink-0" aria-hidden />
               </div>
@@ -161,7 +175,7 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
                 className="bg-accent text-accent-foreground hover:bg-accent/70 h-10 flex-1 rounded-full px-4 text-sm font-semibold md:flex-none"
                 onClick={() => addEmptySet(performance.id)}
               >
-                + Add set
+                {t.exerciseCard.addSet}
               </button>
               {setCount > 0 && (
                 <button
@@ -169,7 +183,7 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
                   className="text-accent-foreground hover:bg-muted h-10 flex-1 rounded-full border px-4 text-sm font-medium md:flex-none"
                   onClick={() => copyLastSet(performance.id)}
                 >
-                  {lastSetLabel(performance)}
+                  {lastSetLabel(performance, t.exerciseCard)}
                 </button>
               )}
             </div>
@@ -180,16 +194,16 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
                 onClick={() => setShowNote(true)}
               >
                 <FileText className="size-4" />
-                Add note
+                {t.exerciseCard.addNote}
               </button>
             )}
           </div>
 
           {showNote && (
             <textarea
-              aria-label="Exercise notes"
+              aria-label={t.exerciseCard.notesAria}
               rows={2}
-              placeholder="Notes for this exercise…"
+              placeholder={t.exerciseCard.notesPlaceholder}
               className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 rounded-lg border bg-background px-2.5 py-2 text-base transition-colors outline-none focus-visible:ring-3 md:text-sm"
               value={performance.notes ?? ''}
               onChange={(e) =>

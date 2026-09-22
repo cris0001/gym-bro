@@ -5,6 +5,7 @@ import type { ExerciseHistoryEntry } from '@gym-bro/shared';
 
 import { Button } from '@/components/ui/button';
 
+import { useSessionsTranslation } from '../i18n';
 import { useExerciseHistory } from '../hooks/use-exercise-history';
 
 // How many more past sessions each "Show more" reveals.
@@ -32,12 +33,13 @@ interface ExerciseHistoryPanelProps {
 export function ExerciseHistoryPanel({ exerciseId, before }: ExerciseHistoryPanelProps) {
   const [limit, setLimit] = useState(1);
   const { data: entries = [], isLoading } = useExerciseHistory(exerciseId, before, limit);
+  const t = useSessionsTranslation();
 
   if (isLoading && entries.length === 0) {
-    return <p className="text-muted-foreground text-xs">Loading previous…</p>;
+    return <p className="text-muted-foreground text-xs">{t.previous.loading}</p>;
   }
   if (entries.length === 0) {
-    return <p className="text-muted-foreground text-xs">No previous sessions.</p>;
+    return <p className="text-muted-foreground text-xs">{t.previous.none}</p>;
   }
 
   // A full window may have more behind it; a short one is the end.
@@ -45,7 +47,7 @@ export function ExerciseHistoryPanel({ exerciseId, before }: ExerciseHistoryPane
 
   return (
     <div className="bg-muted/40 flex flex-col gap-2 rounded-md p-2">
-      <span className="text-muted-foreground text-xs font-medium">Previous</span>
+      <span className="text-muted-foreground text-xs font-medium">{t.previous.label}</span>
       {entries.map((entry, index) => (
         <div key={`${entry.sessionId}-${index}`} className="flex flex-col">
           <span className="text-muted-foreground text-xs">
@@ -61,7 +63,7 @@ export function ExerciseHistoryPanel({ exerciseId, before }: ExerciseHistoryPane
           className="w-fit"
           onClick={() => setLimit((current) => current + STEP)}
         >
-          Show more
+          {t.previous.showMore}
         </Button>
       )}
     </div>

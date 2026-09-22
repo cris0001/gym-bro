@@ -5,6 +5,7 @@ import { planQueryOptions, plansQueryOptions, activePlanQueryOptions } from '@/f
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
+import { useSessionsTranslation } from '../i18n';
 import { useCreatePlannedSession } from '../hooks/use-create-planned-session';
 
 interface AssignTemplateFormProps {
@@ -33,6 +34,7 @@ export function AssignTemplateForm({ date, onDone }: AssignTemplateFormProps) {
   const templates = plan?.templates ?? [];
 
   const createMutation = useCreatePlannedSession();
+  const t = useSessionsTranslation();
 
   function handleAssign() {
     if (!templateId) return;
@@ -43,17 +45,13 @@ export function AssignTemplateForm({ date, onDone }: AssignTemplateFormProps) {
   }
 
   if (plans.length === 0) {
-    return (
-      <p className="text-muted-foreground p-4 text-sm">
-        Create a plan with templates first, then assign it here.
-      </p>
-    );
+    return <p className="text-muted-foreground p-4 text-sm">{t.assign.noPlans}</p>;
   }
 
   return (
     <div className="flex flex-col gap-3 p-4">
       <label className="flex flex-col gap-1 text-sm font-medium">
-        Plan
+        {t.assign.plan}
         <select
           value={planId ?? ''}
           onChange={(e) => {
@@ -71,7 +69,7 @@ export function AssignTemplateForm({ date, onDone }: AssignTemplateFormProps) {
       </label>
 
       {templates.length === 0 ? (
-        <p className="text-muted-foreground text-sm">This plan has no templates yet.</p>
+        <p className="text-muted-foreground text-sm">{t.assign.noTemplates}</p>
       ) : (
         <ul className="flex flex-col gap-2">
           {templates.map((template) => (
@@ -97,7 +95,7 @@ export function AssignTemplateForm({ date, onDone }: AssignTemplateFormProps) {
       )}
 
       <Button onClick={handleAssign} disabled={!templateId || createMutation.isPending}>
-        {createMutation.isPending ? 'Assigning…' : 'Assign'}
+        {createMutation.isPending ? t.assign.assigning : t.assign.assign}
       </Button>
     </div>
   );

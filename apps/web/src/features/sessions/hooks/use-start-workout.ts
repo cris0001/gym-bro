@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 
 import { templateQueryOptions } from '@/features/training';
 
+import { useSessionsTranslation } from '../i18n';
 import { useWorkoutDraftStore } from '../stores/workout-draft.store';
 
 interface StartFromTemplateInput {
@@ -24,12 +25,13 @@ export function useStartWorkout() {
   const queryClient = useQueryClient();
   const start = useWorkoutDraftStore((s) => s.start);
   const hasDraft = useWorkoutDraftStore((s) => s.draft !== null);
+  const t = useSessionsTranslation();
 
   // Only one workout at a time: if one's already in progress, bounce to it instead
   // of starting another (the user finishes or discards it there first).
   function blockedByActive(): boolean {
     if (!hasDraft) return false;
-    toast.error('You already have an active workout — finish or discard it first.');
+    toast.error(t.common.activeWorkoutBlock);
     void navigate({ to: '/session' });
     return true;
   }

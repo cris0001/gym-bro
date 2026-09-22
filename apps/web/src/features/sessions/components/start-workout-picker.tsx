@@ -10,6 +10,8 @@ import {
   usePlans,
 } from '@/features/training';
 
+import { useSessionsTranslation } from '../i18n';
+
 interface StartWorkoutPickerProps {
   onSelectTemplate: (template: { id: string; name: string }) => void;
 }
@@ -21,6 +23,7 @@ export function StartWorkoutPicker({ onSelectTemplate }: StartWorkoutPickerProps
   const { data: plans = [], isPending } = usePlans();
   const { data: activePlan } = useQuery(activePlanQueryOptions());
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const t = useSessionsTranslation();
 
   // Active plan first, then the rest alphabetically.
   const ordered = [...plans].sort((a, b) => {
@@ -35,14 +38,12 @@ export function StartWorkoutPicker({ onSelectTemplate }: StartWorkoutPickerProps
   const effectivePlanId = singlePlan && firstPlan ? firstPlan.id : selectedPlanId;
 
   if (isPending) {
-    return <p className="text-muted-foreground text-center text-sm">Loading plans…</p>;
+    return (
+      <p className="text-muted-foreground text-center text-sm">{t.startWorkout.loadingPlans}</p>
+    );
   }
   if (ordered.length === 0) {
-    return (
-      <p className="text-muted-foreground text-center text-sm">
-        No training plans yet — create one to start from a template.
-      </p>
-    );
+    return <p className="text-muted-foreground text-center text-sm">{t.startWorkout.noPlans}</p>;
   }
 
   if (effectivePlanId) {
@@ -73,8 +74,8 @@ export function StartWorkoutPicker({ onSelectTemplate }: StartWorkoutPickerProps
               {plan.name}
             </span>
             <span className="text-muted-foreground block text-xs">
-              {plan.templateCount} {plan.templateCount === 1 ? 'template' : 'templates'}
-              {plan.id === activePlan?.id && ' · active'}
+              {t.startWorkout.templates(plan.templateCount)}
+              {plan.id === activePlan?.id && t.startWorkout.active}
             </span>
           </span>
           <ChevronRight className="size-5 shrink-0 text-[#c9bcb2] dark:text-[#5a4d55]" />
@@ -98,21 +99,24 @@ function TemplatePicker({ planId, showBack, onBack, onSelectTemplate }: Template
   const { data: plan, isPending } = useQuery(planQueryOptions(planId));
   const templates = plan?.templates ?? [];
   const templateQueries = useQueries({
-    queries: templates.map((t) => templateQueryOptions(t.id)),
+    queries: templates.map((tpl) => templateQueryOptions(tpl.id)),
   });
+  const t = useSessionsTranslation();
 
   return (
     <div className="flex flex-col gap-2">
       {showBack && (
         <Button variant="ghost" size="sm" className="w-fit" onClick={onBack}>
           <ChevronLeft className="size-4" />
-          All plans
+          {t.startWorkout.allPlans}
         </Button>
       )}
       {isPending ? (
-        <p className="text-muted-foreground text-center text-sm">Loading templates…</p>
+        <p className="text-muted-foreground text-center text-sm">
+          {t.startWorkout.loadingTemplates}
+        </p>
       ) : templates.length === 0 ? (
-        <p className="text-muted-foreground text-center text-sm">No templates in this plan.</p>
+        <p className="text-muted-foreground text-center text-sm">{t.startWorkout.noTemplates}</p>
       ) : (
         templates.map((template, i) => {
           const count = templateQueries[i]?.data?.exercises.length;
@@ -131,7 +135,7 @@ function TemplatePicker({ planId, showBack, onBack, onSelectTemplate }: Template
                   {template.name}
                 </span>
                 <span className="text-muted-foreground block text-xs">
-                  {count === undefined ? '…' : `${count} ${count === 1 ? 'exercise' : 'exercises'}`}
+                  {count === undefined ? '…' : t.startWorkout.exercises(count)}
                 </span>
               </span>
               <Play className="text-primary size-4 shrink-0 fill-current" />

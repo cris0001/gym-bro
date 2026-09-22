@@ -1,5 +1,6 @@
 import { format, parseISO } from 'date-fns';
 
+import { useSessionsTranslation } from '../i18n';
 import { useCalendarUiStore } from '../stores/calendar-ui.store';
 import { DayDetail } from './day-detail';
 
@@ -11,6 +12,7 @@ const ISO = 'yyyy-MM-dd';
 // bottom sheet (see DayDetailSheet).
 export function DayDetailPanel() {
   const selectedDate = useCalendarUiStore((s) => s.selectedDate);
+  const t = useSessionsTranslation();
   const todayIso = format(new Date(), ISO);
   const date = selectedDate ?? todayIso;
   const isToday = date === todayIso;
@@ -30,7 +32,7 @@ export function DayDetailPanel() {
         </div>
         {isToday && (
           <span className="bg-accent text-primary rounded-full px-2.5 py-0.5 text-xs font-medium">
-            Today
+            {t.common.today}
           </span>
         )}
       </header>

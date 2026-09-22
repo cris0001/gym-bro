@@ -6,6 +6,8 @@ export { ActiveSessionPage } from './components/active-session-page';
 export { ActiveSessionBubble } from './components/active-session-bubble';
 export { WorkoutDetail } from './components/workout-detail';
 
+export { useSessionsTranslation } from './i18n';
+
 export {
   usePlannedSessions,
   plannedSessionsQueryOptions,

@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 
+import { useSessionsTranslation } from '../i18n';
 import { useCreateActivitySession } from '../hooks/use-create-activity-session';
 
 interface ActivityFormSheetProps {
@@ -37,6 +38,7 @@ const parseDuration = (value: string): number | null => {
 export function ActivityFormSheet({ open, onClose }: ActivityFormSheetProps) {
   const { data: tags = [] } = useTags();
   const createMutation = useCreateActivitySession();
+  const t = useSessionsTranslation();
 
   const [name, setName] = useState('');
   const [performedDate, setPerformedDate] = useState(today);
@@ -85,15 +87,15 @@ export function ActivityFormSheet({ open, onClose }: ActivityFormSheetProps) {
     <Sheet open={open} onOpenChange={(next) => !next && handleClose()}>
       <SheetContent side="bottom" className="gap-0">
         <SheetHeader>
-          <SheetTitle>Log activity</SheetTitle>
-          <SheetDescription>A standalone session — cardio, yoga, sports.</SheetDescription>
+          <SheetTitle>{t.activity.title}</SheetTitle>
+          <SheetDescription>{t.activity.description}</SheetDescription>
         </SheetHeader>
 
         <div className="flex max-h-[70vh] flex-col gap-4 overflow-y-auto p-4">
           <label className="flex flex-col gap-1 text-sm font-medium">
-            Name
+            {t.activity.name}
             <Input
-              placeholder="e.g. Morning run"
+              placeholder={t.activity.namePlaceholder}
               className="h-11"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -101,7 +103,7 @@ export function ActivityFormSheet({ open, onClose }: ActivityFormSheetProps) {
           </label>
 
           <label className="flex flex-col gap-1 text-sm font-medium">
-            Date
+            {t.activity.date}
             <Input
               type="date"
               className="h-11"
@@ -111,10 +113,10 @@ export function ActivityFormSheet({ open, onClose }: ActivityFormSheetProps) {
           </label>
 
           <label className="flex flex-col gap-1 text-sm font-medium">
-            Duration (min)
+            {t.activity.duration}
             <Input
               inputMode="numeric"
-              placeholder="Optional"
+              placeholder={t.common.optional}
               className="h-11"
               value={durationMinutes ?? ''}
               onChange={(e) => setDurationMinutes(parseDuration(e.target.value))}
@@ -122,13 +124,13 @@ export function ActivityFormSheet({ open, onClose }: ActivityFormSheetProps) {
           </label>
 
           <div className="flex flex-col gap-1">
-            <span className="text-sm font-medium">Rating</span>
+            <span className="text-sm font-medium">{t.activity.rating}</span>
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
                   type="button"
-                  aria-label={`${star} star${star > 1 ? 's' : ''}`}
+                  aria-label={t.activity.starAria(star)}
                   onClick={() => setRating(rating === star ? null : star)}
                 >
                   <Star
@@ -145,9 +147,9 @@ export function ActivityFormSheet({ open, onClose }: ActivityFormSheetProps) {
           </div>
 
           <label className="flex flex-col gap-1 text-sm font-medium">
-            Notes
+            {t.activity.notes}
             <textarea
-              placeholder="Optional"
+              placeholder={t.common.optional}
               rows={3}
               className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 rounded-lg border bg-background px-2.5 py-2 text-base transition-colors outline-none focus-visible:ring-3 md:text-sm"
               value={notes}
@@ -157,7 +159,7 @@ export function ActivityFormSheet({ open, onClose }: ActivityFormSheetProps) {
 
           {tags.length > 0 && (
             <div className="flex flex-col gap-1">
-              <span className="text-sm font-medium">Tags</span>
+              <span className="text-sm font-medium">{t.activity.tags}</span>
               <div className="flex flex-wrap gap-2">
                 {tags
                   .filter((tag) => tag.isActive)
@@ -191,7 +193,7 @@ export function ActivityFormSheet({ open, onClose }: ActivityFormSheetProps) {
             disabled={name.trim().length === 0 || createMutation.isPending}
             onClick={handleSave}
           >
-            {createMutation.isPending ? 'Saving…' : 'Log activity'}
+            {createMutation.isPending ? t.common.saving : t.activity.save}
           </Button>
         </div>
       </SheetContent>

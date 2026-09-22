@@ -6,6 +6,8 @@ import type { PlannedSessionWithTemplate } from '@gym-bro/shared';
 
 import { cn } from '@/lib/utils';
 
+import { useSessionsTranslation } from '../i18n';
+
 interface PlannedMarkerProps {
   session: PlannedSessionWithTemplate;
   // On the inverted "today" cell the plum marker is invisible; a lighter plum
@@ -21,13 +23,14 @@ export function PlannedMarker({ session, onDark = false }: PlannedMarkerProps) {
     id: session.id,
     data: { session },
   });
+  const t = useSessionsTranslation();
 
   return (
     <span
       ref={setNodeRef}
       {...listeners}
       style={{ transform: CSS.Translate.toString(transform) }}
-      aria-label={`Reschedule ${session.template.name}`}
+      aria-label={t.calendar.reschedule(session.template.name)}
       className={cn('cursor-grab touch-none', isDragging && 'opacity-40')}
     >
       <Dumbbell className={cn('size-4 rotate-45', onDark ? 'text-[#c98fa0]' : 'text-primary')} />

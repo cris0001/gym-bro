@@ -31,13 +31,13 @@ import { Button } from '@/components/ui/button';
 import { useStravaSessions } from '@/features/strava';
 import { cn } from '@/lib/utils';
 
+import { useSessionsTranslation } from '../i18n';
 import { usePlannedSessions } from '../hooks/use-planned-sessions';
 import { useUpdatePlannedSession } from '../hooks/use-update-planned-session';
 import { useWorkoutsInRange } from '../hooks/use-workouts-in-range';
 import { useCalendarUiStore } from '../stores/calendar-ui.store';
 import { CalendarDayCell } from './calendar-day-cell';
 
-const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const ISO = 'yyyy-MM-dd';
 
 // Groups planned sessions by their scheduled day for O(1) per-cell lookup.
@@ -120,6 +120,7 @@ export function CalendarGrid() {
   const goPrev = useCalendarUiStore((s) => s.goPrev);
   const goNext = useCalendarUiStore((s) => s.goNext);
   const goToToday = useCalendarUiStore((s) => s.goToToday);
+  const t = useSessionsTranslation();
 
   const isWeek = viewMode === 'week';
   // Month spans whole weeks (bleeding into adjacent months); week is the single
@@ -198,7 +199,7 @@ export function CalendarGrid() {
                     viewMode === mode ? 'bg-card text-foreground border' : 'text-muted-foreground',
                   )}
                 >
-                  {mode}
+                  {t.calendar[mode]}
                 </button>
               ))}
             </div>
@@ -208,14 +209,14 @@ export function CalendarGrid() {
               className="h-8 rounded-full px-3"
               onClick={goToToday}
             >
-              Today
+              {t.common.today}
             </Button>
             <Button
               variant="outline"
               size="icon"
               className="size-8"
               onClick={goPrev}
-              aria-label="Previous"
+              aria-label={t.calendar.prev}
             >
               <ChevronLeft className="size-4" />
             </Button>
@@ -224,7 +225,7 @@ export function CalendarGrid() {
               size="icon"
               className="size-8"
               onClick={goNext}
-              aria-label="Next"
+              aria-label={t.calendar.next}
             >
               <ChevronRight className="size-4" />
             </Button>
@@ -232,7 +233,7 @@ export function CalendarGrid() {
         </div>
 
         <div className="font-heading grid grid-cols-7 text-center text-sm italic text-[#a89a88] dark:text-[#8a7c69]">
-          {WEEKDAYS.map((day) => (
+          {t.calendar.weekdays.map((day) => (
             <span key={day} className="py-1">
               {day}
             </span>

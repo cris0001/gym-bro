@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 
 import type { WorkoutSessionDetail } from '@gym-bro/shared';
 
+import { useSessionsTranslation } from '../i18n';
 import { useWorkoutDraftStore } from '../stores/workout-draft.store';
 
 // Loads a finished strength workout into the draft editor and routes to the
@@ -16,10 +17,11 @@ export function useEditWorkout() {
   const liveWorkout = useWorkoutDraftStore(
     (s) => s.draft !== null && s.draft.editingSessionId === null,
   );
+  const t = useSessionsTranslation();
 
   return function editWorkout(detail: WorkoutSessionDetail) {
     if (liveWorkout) {
-      toast.error('You have a workout in progress — finish or discard it first.');
+      toast.error(t.common.liveWorkoutBlock);
       void navigate({ to: '/session' });
       return;
     }
