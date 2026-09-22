@@ -2,6 +2,8 @@ import { Link } from '@tanstack/react-router';
 import { BicepsFlexed } from 'lucide-react';
 import { useEffect } from 'react';
 
+import { LOCALES, useLocaleStore } from '@/stores/locale.store';
+
 import { ModuleShowcase } from './module-showcase';
 import { PricingSection } from './pricing-section';
 import { PwaSection } from './pwa-section';
@@ -18,6 +20,32 @@ function BrandLogo({ size = 34, radius = 10 }: { size?: number; radius?: number 
     >
       <BicepsFlexed style={{ width: size * 0.53, height: size * 0.53 }} />
     </span>
+  );
+}
+
+// EN/PL switch styled in the landing's fixed-light palette (the shared LanguageToggle
+// uses theme tokens, which would clash on this theme-independent page). Writes the
+// app-wide locale store; content translation of the landing itself comes later.
+function LandingLangSwitch() {
+  const locale = useLocaleStore((s) => s.locale);
+  const setLocale = useLocaleStore((s) => s.setLocale);
+  return (
+    <div className="flex items-center rounded-full border border-[#d6c8bd] bg-[#fdfbf9] p-0.5">
+      {LOCALES.map(({ code, label }) => (
+        <button
+          key={code}
+          type="button"
+          aria-pressed={locale === code}
+          onClick={() => setLocale(code)}
+          className={
+            'rounded-full px-2.5 py-1 text-xs font-semibold transition-colors ' +
+            (locale === code ? 'bg-[#8d4a5e] text-[#fdf6f5]' : 'text-[#5f5257]')
+          }
+        >
+          {label}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -99,6 +127,7 @@ export function LandingPage() {
           <a href="#pricing" className="hidden text-[13px] font-semibold text-[#5f5257] sm:inline">
             Pricing
           </a>
+          <LandingLangSwitch />
           <Link
             to="/login"
             className="flex h-[38px] items-center rounded-full bg-[#8d4a5e] px-[18px] text-[13px] font-semibold whitespace-nowrap text-[#fdf6f5] hover:bg-[#75394c]"
