@@ -1,0 +1,98 @@
+import { createFeatureTranslation } from '@/lib/i18n/create-translation';
+
+// Dashboard feature copy (home screen: header, hero cards, skeleton). English is the
+// source shape; Strava's own strings live in the strava feature.
+export const useDashboardTranslation = createFeatureTranslation({
+  en: {
+    greeting: { morning: 'Good morning', afternoon: 'Good afternoon', evening: 'Good evening' },
+    startWorkout: 'Start workout',
+    nutrition: {
+      label: "Today's plate",
+      setTarget: 'Set a target',
+      left: 'kcal left',
+      over: 'kcal over',
+      protein: 'Protein',
+      carbs: 'Carbs',
+      fat: 'Fat',
+    },
+    nextSession: {
+      label: 'Next session',
+      nothing: 'Nothing planned',
+      planOne: 'Plan one',
+      startEarly: 'Start early',
+      reschedule: 'Reschedule',
+      today: 'today',
+      tomorrow: 'tomorrow',
+      inDays: (n: number) => `in ${n} days`,
+    },
+    weight: {
+      label: 'Weight',
+      sinceLast: 'since last',
+      firstEntry: 'First entry',
+      logWeight: 'Log your weight',
+      thisMonth: 'this month',
+    },
+    lastWorkout: {
+      label: 'Last workout',
+      none: 'No workouts logged yet.',
+      startOne: 'Start one',
+      exercise: (n: number) => `${n} exercise${n === 1 ? '' : 's'}`,
+      minutes: (n: number) => `${n} min`,
+    },
+    skeleton: {
+      plate: "Today's plate",
+      nextSession: 'Next session',
+      weight: 'Weight',
+      lastWorkout: 'Last workout',
+      strava: 'Strava',
+      lastActivity: 'Last activity',
+      thisMonth: 'This month',
+    },
+  },
+  pl: {
+    greeting: { morning: 'Dzień dobry', afternoon: 'Dzień dobry', evening: 'Dobry wieczór' },
+    startWorkout: 'Rozpocznij trening',
+    nutrition: {
+      label: 'Dzisiejszy talerz',
+      setTarget: 'Ustaw cel',
+      left: 'kcal do celu',
+      over: 'kcal ponad',
+      protein: 'Białko',
+      carbs: 'Węgle',
+      fat: 'Tłuszcz',
+    },
+    nextSession: {
+      label: 'Następna sesja',
+      nothing: 'Nic nie zaplanowano',
+      planOne: 'Zaplanuj',
+      startEarly: 'Zacznij wcześniej',
+      reschedule: 'Przełóż',
+      today: 'dziś',
+      tomorrow: 'jutro',
+      inDays: (n: number) => `za ${n} dni`,
+    },
+    weight: {
+      label: 'Waga',
+      sinceLast: 'od ostatniego',
+      firstEntry: 'Pierwszy wpis',
+      logWeight: 'Zapisz wagę',
+      thisMonth: 'w tym miesiącu',
+    },
+    lastWorkout: {
+      label: 'Ostatni trening',
+      none: 'Brak zapisanych treningów.',
+      startOne: 'Zacznij trening',
+      exercise: (n: number) => `${n} ${n === 1 ? 'ćwiczenie' : 'ćwiczeń'}`,
+      minutes: (n: number) => `${n} min`,
+    },
+    skeleton: {
+      plate: 'Dzisiejszy talerz',
+      nextSession: 'Następna sesja',
+      weight: 'Waga',
+      lastWorkout: 'Ostatni trening',
+      strava: 'Strava',
+      lastActivity: 'Ostatnia aktywność',
+      thisMonth: 'W tym miesiącu',
+    },
+  },
+});

@@ -4,10 +4,13 @@ import { useBodyMeasurements } from '@/features/body';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
+import { useDashboardTranslation } from '../i18n';
+
 // Latest logged weight and its change since the previous measurement, or a prompt
 // to log one. Text-forward stat card — micro-label over a big serif value.
 export function LatestWeightCard() {
   const { data: entries = [], isPending } = useBodyMeasurements();
+  const t = useDashboardTranslation();
 
   const weights = entries
     .filter((entry) => entry.weightKg !== null)
@@ -19,7 +22,7 @@ export function LatestWeightCard() {
   return (
     <div className="bg-card flex flex-col gap-1 rounded-2xl border p-5">
       <p className="text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase">
-        Weight
+        {t.weight.label}
       </p>
       {isPending ? (
         <>
@@ -44,10 +47,10 @@ export function LatestWeightCard() {
                   {delta > 0 ? '+' : ''}
                   {delta.toFixed(1)} kg
                 </span>{' '}
-                since last
+                {t.weight.sinceLast}
               </>
             ) : (
-              'First entry'
+              t.weight.firstEntry
             )}
           </p>
         </>
@@ -56,7 +59,7 @@ export function LatestWeightCard() {
           to="/body"
           className="bg-accent text-primary hover:bg-accent/70 mt-1 inline-flex h-9 w-fit items-center rounded-full px-3.5 text-[12.5px] font-semibold"
         >
-          Log your weight
+          {t.weight.logWeight}
         </Link>
       )}
     </div>
