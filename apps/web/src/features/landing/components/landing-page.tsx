@@ -75,7 +75,7 @@ export function LandingPage() {
       </div>
 
       {/* Hero */}
-      <div className="mx-auto flex w-full max-w-[1060px] flex-col items-center gap-6 px-6 pt-16 pb-16 text-center md:gap-5 md:pt-13 md:pb-15">
+      <div className="mx-auto flex w-full max-w-[1060px] flex-col items-center gap-7 px-6 pt-20 pb-20 text-center md:gap-6 md:pt-16 md:pb-18">
         <h1 className="font-heading max-w-[760px] text-[clamp(38px,6vw,58px)] leading-[1.08] font-medium tracking-tight text-balance">
           Log your lifts. Track your plate. <em className="text-[#8d4a5e]">Watch the trend.</em>
         </h1>
