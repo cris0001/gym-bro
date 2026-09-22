@@ -21,6 +21,40 @@ function BrandLogo({ size = 34, radius = 10 }: { size?: number; radius?: number 
   );
 }
 
+// Decorative contour lines behind the whole hero — a shallow fan of thin taupe sweeps
+// anchored to the bottom-right corner, matching the reference. Full-bleed; `xMaxYMax
+// slice` keeps the fan pinned bottom-right and crops the left on narrow screens.
+function HeroLines() {
+  return (
+    <svg
+      aria-hidden
+      className="pointer-events-none absolute inset-0 h-full w-full translate-y-8 md:translate-y-0"
+      viewBox="0 0 1440 560"
+      preserveAspectRatio="xMaxYMax slice"
+      fill="none"
+    >
+      {/* A shallow bottom-right fan, each sweep in an app accent. A left→right mask
+          melts every left end to transparent so none appears to stop abruptly. */}
+      <defs>
+        <linearGradient id="hero-fade-mask" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#fff" stopOpacity="0" />
+          <stop offset="0.5" stopColor="#fff" stopOpacity="0.5" />
+          <stop offset="1" stopColor="#fff" stopOpacity="1" />
+        </linearGradient>
+        <mask id="hero-fade">
+          <rect x="0" y="0" width="1440" height="560" fill="url(#hero-fade-mask)" />
+        </mask>
+      </defs>
+      <g mask="url(#hero-fade)" strokeWidth="1" strokeOpacity="0.35">
+        <path stroke="#8d4a5e" d="M300 548 C 700 512, 1050 500, 1520 430" />
+        <path stroke="#c98fa0" d="M360 556 C 760 520, 1120 470, 1520 380" />
+        <path stroke="#5a7a52" d="M520 560 C 860 528, 1160 452, 1520 330" />
+        <path stroke="#75394c" d="M720 561 C 1000 530, 1220 440, 1520 285" />
+      </g>
+    </svg>
+  );
+}
+
 // The public marketing home page. Fixed light design (theme-independent) reproduced
 // from the approved mockup: nav, hero, the scroll-driven module showcase, a serif
 // strip, the dark PWA band, pricing + FAQ, and a closing CTA. All CTAs route to auth.
@@ -74,37 +108,32 @@ export function LandingPage() {
         </div>
       </div>
 
-      {/* Hero */}
-      <div className="mx-auto flex w-full max-w-[1060px] flex-col items-center gap-8 px-6 pt-24 pb-24 text-center md:gap-8 md:pt-28 md:pb-28">
-        <h1 className="font-heading max-w-[760px] text-[clamp(38px,6vw,58px)] leading-[1.08] font-medium tracking-tight text-balance">
-          Log your lifts. Track your plate.{' '}
-          <em className="mt-4 block text-[#8d4a5e] md:mt-0 md:inline">Watch the trend.</em>
-        </h1>
-        <p className="hidden max-w-[560px] text-base leading-relaxed text-[#5f5257] sm:block">
-          A gym log, a food diary and a body tracker that live in one place — with your Strava rides
-          next to your workouts. Free, no app store needed.
-        </p>
-        <div className="flex flex-wrap justify-center gap-3">
-          <Link
-            to="/register"
-            className="flex h-12 items-center rounded-full bg-[#8d4a5e] px-[26px] text-[14.5px] font-semibold whitespace-nowrap text-[#fdf6f5] hover:bg-[#75394c]"
-          >
-            Get started free
-          </Link>
-          <a
-            href="#inside"
-            className="hidden h-12 items-center rounded-full border border-[#d6c8bd] bg-[#fdfbf9] px-[22px] text-sm font-semibold whitespace-nowrap text-[#5f5257] sm:flex"
-          >
-            See what&apos;s inside ↓
-          </a>
-        </div>
-        <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 pt-2">
-          {['Free forever', 'Works offline', 'Strava import'].map((tick) => (
-            <span key={tick} className="flex items-center gap-1.5 text-[12.5px] text-[#94858b]">
-              <span className="text-[#5a7a52]">✓</span>
-              {tick}
-            </span>
-          ))}
+      {/* Hero — full-bleed wrapper so the contour lines span the whole section */}
+      <div className="relative w-full overflow-hidden">
+        <HeroLines />
+        <div className="relative z-10 mx-auto flex w-full max-w-[1060px] flex-col items-center gap-8 px-6 pt-24 pb-24 text-center md:gap-8 md:pt-28 md:pb-28">
+          <h1 className="font-heading max-w-[760px] text-[clamp(38px,6vw,58px)] leading-[1.08] font-medium tracking-tight text-balance">
+            Log your lifts. Track your plate.{' '}
+            <em className="mt-4 block text-[#8d4a5e] md:mt-0 md:inline">Watch the trend.</em>
+          </h1>
+          <p className="hidden max-w-[560px] text-base leading-relaxed text-[#5f5257] sm:block">
+            A gym log, a food diary and a body tracker that live in one place — with your Strava
+            rides next to your workouts. Free, no app store needed.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Link
+              to="/register"
+              className="flex h-12 items-center rounded-full bg-[#8d4a5e] px-[26px] text-[14.5px] font-semibold whitespace-nowrap text-[#fdf6f5] hover:bg-[#75394c]"
+            >
+              Get started free
+            </Link>
+            <a
+              href="#inside"
+              className="hidden h-12 items-center rounded-full border border-[#d6c8bd] bg-[#fdfbf9] px-[22px] text-sm font-semibold whitespace-nowrap text-[#5f5257] sm:flex"
+            >
+              See what&apos;s inside ↓
+            </a>
+          </div>
         </div>
       </div>
 

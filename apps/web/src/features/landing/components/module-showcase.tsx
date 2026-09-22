@@ -4,8 +4,6 @@ import { cn } from '@/lib/utils';
 
 import { LANDING_MODULES, type LandingModule } from '../data/modules';
 
-const DESKTOP = '(min-width: 1024px)';
-
 // The browser-panel preview of one module. Uses the real screenshot when present in
 // /public/landing; until then a module-tinted placeholder so the switch is visible.
 // Wiring real PNGs later is a one-line change (set `screenshot`).
@@ -37,31 +35,26 @@ function ModuleScreen({ module }: { module: LandingModule }) {
   );
 }
 
-// "What's inside" — a module showcase driven by scroll.
-//  - Desktop (lg+): a pinned tall track; the panel stays fixed and scroll progress
-//    advances the active module, crossfading its screen.
-//  - Mobile: normal flow (nothing pinned, so nothing gets clipped) + a scroll-spy —
-//    whichever card crosses the viewport centre becomes active and expands, the rest
-//    stay collapsed and dimmed. The preview panel is hidden on mobile.
+// "What's inside" — a pinned showcase on every breakpoint. The section is a tall scroll
+// track; the inner block stays fixed (static) on screen while scroll progress advances
+// the active module: its card expands, the rest collapse and dim, and (desktop) the
+// preview panel crossfades. To fit one screen on mobile, the active card's extra bullet
+// list is desktop-only; the panel is hidden on mobile.
 export function ModuleShowcase() {
   const [active, setActive] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
-  const cardRefs = useRef<(HTMLButtonElement | null)[]>([]);
   // While a click-to-jump smooth-scroll is running, ignore scroll→active updates so
   // the intermediate positions don't cascade every card's animation on the way.
   const jumpingRef = useRef(false);
   const jumpTimer = useRef<number | undefined>(undefined);
 
   useEffect(() => {
-    const isDesktop = () => window.matchMedia(DESKTOP).matches;
-
-    // Desktop: map pinned-track scroll progress → active module.
     let raf = 0;
     const update = () => {
       raf = 0;
       const el = sectionRef.current;
-      if (!el || !isDesktop() || jumpingRef.current) return;
-      const range = el.offsetHeight - window.innerHeight;
+      if (!el || jumpingRef.current) return;
+      const range = el.offsetHeight - window.innerHeight; // pinned scroll distance
       if (range <= 0) return;
       const scrolled = Math.min(Math.max(-el.getBoundingClientRect().top, 0), range);
       const progress = scrolled / range;
@@ -74,44 +67,23 @@ export function ModuleShowcase() {
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
-
-    // Mobile: whichever card spans the viewport's middle becomes active.
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (isDesktop() || jumpingRef.current) return;
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            setActive(Number((entry.target as HTMLElement).dataset.index));
-          }
-        }
-      },
-      { rootMargin: '-45% 0px -45% 0px', threshold: 0 },
-    );
-    for (const el of cardRefs.current) if (el) observer.observe(el);
-
     update();
     return () => {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
-      observer.disconnect();
       if (raf) cancelAnimationFrame(raf);
       if (jumpTimer.current) window.clearTimeout(jumpTimer.current);
     };
   }, []);
 
-  // Click: desktop jumps the page to that module's slice of the track; mobile selects
-  // it and brings the card to the centre.
+  // Clicking a card jumps the page to that module's slice of the track.
   function goToModule(index: number) {
     const el = sectionRef.current;
     if (!el) return;
-    if (!window.matchMedia(DESKTOP).matches) {
-      setActive(index);
-      cardRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return;
-    }
     const range = el.offsetHeight - window.innerHeight;
     const top = el.getBoundingClientRect().top + window.scrollY;
     const target = top + ((index + 0.5) / LANDING_MODULES.length) * range;
+    // Jump straight to the target module (no cascade), then let the scroll settle.
     jumpingRef.current = true;
     setActive(index);
     window.clearTimeout(jumpTimer.current);
@@ -124,22 +96,24 @@ export function ModuleShowcase() {
   const current = LANDING_MODULES[active] ?? LANDING_MODULES[0]!;
 
   return (
-    <section id="inside" ref={sectionRef} className="scroll-mt-16 bg-[#f5e7ea] lg:h-[400vh]">
-      {/* Desktop: pinned viewport. Mobile: normal block flow (nothing clipped). */}
-      <div className="py-16 md:py-24 lg:sticky lg:top-0 lg:flex lg:h-dvh lg:items-center lg:overflow-hidden lg:py-0">
-        <div className="mx-auto w-full max-w-[1060px] px-6">
-          <div className="mb-6 flex flex-col items-center gap-2 text-center md:mb-10">
-            <span className="font-heading text-[15px] text-[#8d4a5e] italic">
+    <section id="inside" ref={sectionRef} className="scroll-mt-16 bg-[#f5e7ea] h-[400vh]">
+      {/* Pinned viewport (all breakpoints): stays fixed while the track scrolls.
+          Centered via m-auto (not items-center) + overflow-y-auto so if the block
+          is ever taller than the screen it scrolls instead of clipping top/bottom. */}
+      <div className="no-scrollbar sticky top-0 flex h-dvh overflow-y-auto">
+        <div className="m-auto w-full max-w-[1060px] px-6 py-6 md:py-10">
+          <div className="mb-4 flex flex-col items-center gap-1 text-center md:mb-10 md:gap-2">
+            <span className="font-heading text-[13px] text-[#8d4a5e] italic md:text-[15px]">
               What&apos;s inside
             </span>
-            <h2 className="font-heading text-[clamp(26px,3.5vw,36px)] font-medium tracking-tight text-[#2b2126]">
+            <h2 className="font-heading text-[clamp(22px,3.5vw,36px)] font-medium tracking-tight text-[#2b2126]">
               Six modules, zero setup
             </h2>
           </div>
 
           <div className="grid gap-6 lg:grid-cols-[minmax(300px,1fr)_minmax(320px,460px)] lg:items-center">
-            {/* Left — the card list; scroll (or a click) sets the active/expanded one. */}
-            <div className="flex flex-col gap-2.5">
+            {/* Left — the card list; scroll progress or a click sets the active one. */}
+            <div className="flex flex-col gap-1.5 md:gap-2.5">
               {LANDING_MODULES.map((module, index) => {
                 const Icon = module.icon;
                 const isActive = index === active;
@@ -147,13 +121,9 @@ export function ModuleShowcase() {
                   <button
                     key={module.id}
                     type="button"
-                    ref={(el) => {
-                      cardRefs.current[index] = el;
-                    }}
-                    data-index={index}
                     onClick={() => goToModule(index)}
                     className={cn(
-                      'w-full rounded-2xl border p-4 text-left transition-all duration-300 md:p-[18px]',
+                      'w-full rounded-2xl border p-3 text-left transition-all duration-300 md:p-[18px]',
                       isActive
                         ? 'border-transparent bg-[#2b2126] shadow-lg'
                         : 'border-[#e8e1da] bg-[#fdfbf9] opacity-55 hover:border-[#8d4a5e]/40 lg:opacity-65',
@@ -161,14 +131,14 @@ export function ModuleShowcase() {
                   >
                     <div className="flex items-center gap-3">
                       <span
-                        className="flex size-[38px] shrink-0 items-center justify-center rounded-xl"
+                        className="flex size-[34px] shrink-0 items-center justify-center rounded-xl md:size-[38px]"
                         style={{ backgroundColor: module.color, color: module.iconFg }}
                       >
-                        <Icon className="size-[18px]" />
+                        <Icon className="size-4 md:size-[18px]" />
                       </span>
                       <span
                         className={cn(
-                          'font-heading flex-1 text-xl font-semibold',
+                          'font-heading flex-1 text-lg font-semibold md:text-xl',
                           isActive ? 'text-[#f0e7ea]' : 'text-[#2b2126]',
                         )}
                       >
@@ -181,7 +151,7 @@ export function ModuleShowcase() {
                       </span>
                     </div>
                     {/* Details collapse for inactive cards (grid-rows 0fr→1fr eases the
-                        height); only the active card is expanded, on every size. */}
+                        height); only the active card expands. */}
                     <div
                       className={cn(
                         'grid grid-rows-[1fr] opacity-100 transition-[grid-template-rows,opacity] duration-300 ease-out',
@@ -212,8 +182,9 @@ export function ModuleShowcase() {
                             </span>
                           ))}
                         </div>
+                        {/* Extra bullets are desktop-only so the pinned block fits a phone. */}
                         {isActive && (
-                          <ul className="mt-3 flex flex-col gap-1.5 pl-[50px]">
+                          <ul className="mt-3 hidden flex-col gap-1.5 pl-[50px] lg:flex">
                             {module.details.map((detail) => (
                               <li
                                 key={detail}
