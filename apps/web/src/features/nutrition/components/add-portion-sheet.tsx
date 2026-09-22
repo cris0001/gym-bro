@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 
 import type { FoodLogUnit } from '@gym-bro/shared';
 
+import { useNutritionTranslation } from '../i18n';
 import { type AddEntryRow, defaultPortion, type Portion } from '../utils/add-entry-list';
 import { PortionPicker, type PortionChoice } from './portion-picker';
 
@@ -21,6 +22,7 @@ export function AddPortionSheet({
   onAdd: (portion: Portion) => void;
   onClose: () => void;
 }) {
+  const t = useNutritionTranslation();
   const [choice, setChoice] = useState<PortionChoice | null>(null);
 
   const food = row?.kind === 'food' ? row.food : undefined;
@@ -55,7 +57,7 @@ export function AddPortionSheet({
     <Sheet open={row !== null} onOpenChange={(next) => !next && onClose()}>
       <SheetContent side="bottom" className="gap-0">
         <SheetHeader>
-          <SheetTitle className="truncate">{row?.name ?? 'Portion'}</SheetTitle>
+          <SheetTitle className="truncate">{row?.name ?? t.portion.portion}</SheetTitle>
         </SheetHeader>
         {row !== null ? (
           <div className="flex flex-col gap-3 p-4">
@@ -75,7 +77,7 @@ export function AddPortionSheet({
               disabled={choice === null}
               onClick={() => choice && onAdd(choice)}
             >
-              Add
+              {t.common.add}
             </Button>
           </div>
         ) : null}

@@ -12,6 +12,7 @@ import type { RecipeListItem } from '@gym-bro/shared';
 
 import { useDeleteRecipe } from '../hooks/use-delete-recipe';
 import { useRecipes } from '../hooks/use-recipes';
+import { useNutritionTranslation } from '../i18n';
 
 interface RecipeListProps {
   // Desktop master-detail: rows select the recipe locally (highlighting selectedId) and
@@ -25,18 +26,19 @@ interface RecipeListProps {
 // route. Desktop: rows call onSelect to load the recipe in the right pane. The delete
 // button is a sibling of the row action (not nested) and confirms first.
 export function RecipeList({ selectedId = null, onSelect }: RecipeListProps) {
+  const t = useNutritionTranslation();
   const { data: recipes = [], isPending } = useRecipes();
   const remove = useDeleteRecipe();
   const confirm = useConfirm();
 
   async function onDelete(recipe: RecipeListItem) {
     const ok = await confirm({
-      title: `Delete "${recipe.name}"?`,
-      description: 'It will be removed from your recipes.',
-      confirmText: 'Delete',
+      title: t.recipes.deleteConfirm.title(recipe.name),
+      description: t.recipes.deleteConfirm.description,
+      confirmText: t.common.delete,
       destructive: true,
     });
-    if (ok) remove.mutate(recipe.id, { onSuccess: () => toast.success('Recipe deleted') });
+    if (ok) remove.mutate(recipe.id, { onSuccess: () => toast.success(t.recipes.recipeDeleted) });
   }
 
   if (isPending) {
@@ -46,19 +48,19 @@ export function RecipeList({ selectedId = null, onSelect }: RecipeListProps) {
     return (
       <EmptyState
         icon={<ChefHat className="size-6" />}
-        title="No recipes yet"
-        description="Combine foods into a recipe to log it in one tap."
+        title={t.recipes.emptyTitle}
+        description={t.recipes.emptyDesc}
         action={
           onSelect ? (
             <Button type="button" className="h-11" onClick={() => onSelect('new')}>
               <Plus className="size-4" />
-              New recipe
+              {t.recipes.newRecipe}
             </Button>
           ) : (
             <Button asChild className="h-11">
               <Link to="/recipes/new">
                 <Plus className="size-4" />
-                New recipe
+                {t.recipes.newRecipe}
               </Link>
             </Button>
           )
@@ -88,10 +90,10 @@ export function RecipeList({ selectedId = null, onSelect }: RecipeListProps) {
                 {recipe.name}
               </p>
               <p className="text-muted-foreground text-xs">
-                {recipe.servings} {recipe.servings === 1 ? 'serving' : 'servings'} ·{' '}
+                {recipe.servings} {t.recipes.servingsWord(recipe.servings)} ·{' '}
                 {Math.round(recipe.perServing.kcal)} kcal · P{' '}
                 {Math.round(recipe.perServing.proteinG)} · C {Math.round(recipe.perServing.carbsG)}{' '}
-                · F {Math.round(recipe.perServing.fatG)} / serving
+                · F {Math.round(recipe.perServing.fatG)} {t.recipes.perServingSuffix}
               </p>
               {recipe.ingredientNames.length > 0 ? (
                 <p className="text-muted-foreground mt-0.5 line-clamp-2 text-sm">
@@ -132,7 +134,7 @@ export function RecipeList({ selectedId = null, onSelect }: RecipeListProps) {
               variant="ghost"
               size="icon"
               className="text-destructive size-11 shrink-0"
-              aria-label={`Delete ${recipe.name}`}
+              aria-label={t.recipes.deleteAria(recipe.name)}
               disabled={remove.isPending}
               onClick={() => void onDelete(recipe)}
             >

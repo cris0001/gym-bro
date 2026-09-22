@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import type { Food } from '@gym-bro/shared';
 
 import { useFoods } from '../hooks/use-foods';
+import { useNutritionTranslation } from '../i18n';
 
 interface FoodComboboxProps {
   selectedId: string | null;
@@ -32,10 +33,12 @@ export function FoodCombobox({
   selectedId,
   selectedName,
   onSelect,
-  placeholder = 'Select a food',
+  placeholder,
 }: FoodComboboxProps) {
+  const t = useNutritionTranslation();
   const [open, setOpen] = useState(false);
   const { data: foods = [] } = useFoods('');
+  const triggerLabel = placeholder ?? t.foods.selectFood;
 
   function handleSelect(food: Food) {
     onSelect(food);
@@ -47,16 +50,16 @@ export function FoodCombobox({
       <PopoverTrigger asChild>
         <Button variant="outline" className="h-11 w-full justify-between font-normal">
           <span className={cn('truncate', !selectedName && 'text-muted-foreground')}>
-            {selectedName ?? placeholder}
+            {selectedName ?? triggerLabel}
           </span>
           <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
         <Command>
-          <CommandInput placeholder="Search foods" />
+          <CommandInput placeholder={t.foods.searchFoods} />
           <CommandList>
-            <CommandEmpty>No foods yet.</CommandEmpty>
+            <CommandEmpty>{t.foods.noFoodsYet}</CommandEmpty>
             <CommandGroup>
               {foods.map((food) => (
                 <CommandItem key={food.id} value={food.name} onSelect={() => handleSelect(food)}>

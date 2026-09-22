@@ -7,9 +7,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useMediaQuery } from '@/hooks/use-media-query';
 
 import { MEAL_TYPES } from '@gym-bro/shared';
-import type { MealType } from '@gym-bro/shared';
 
 import { useDailyFoodLog } from '../hooks/use-daily-food-log';
+import { useNutritionTranslation } from '../i18n';
 import { useDiaryUiStore } from '../stores/diary-ui.store';
 import { AddEntryDesktop } from './add-entry-desktop';
 import { AddEntrySheet } from './add-entry-sheet';
@@ -20,14 +20,6 @@ import { PhotoEstimateSheet } from './photo-estimate-sheet';
 
 const ISO = 'yyyy-MM-dd';
 
-const MEAL_LABELS: Record<MealType, string> = {
-  breakfast: 'Breakfast',
-  second_breakfast: 'Second breakfast',
-  lunch: 'Lunch',
-  snack: 'Snack',
-  dinner: 'Dinner',
-};
-
 const switchBtn =
   'text-muted-foreground hover:bg-accent flex size-9 items-center justify-center rounded-full transition-colors';
 
@@ -35,6 +27,7 @@ const switchBtn =
 // future days to plan/back-fill), the day's summary vs target, and the five meal
 // sections (each with its own add action).
 export function DiaryPage() {
+  const t = useNutritionTranslation();
   const today = format(new Date(), ISO);
   const [date, setDate] = useState(today);
   const { data } = useDailyFoodLog(date);
@@ -58,11 +51,11 @@ export function DiaryPage() {
   return (
     <div className="lg:col-start-2 flex w-full max-w-5xl flex-col gap-4 p-3 pb-36 md:p-4 lg:pb-4">
       <header className="flex items-center justify-between gap-2">
-        <h1 className="font-heading text-[28px] leading-none font-medium">Diary</h1>
+        <h1 className="font-heading text-[28px] leading-none font-medium">{t.diary.title}</h1>
         <div className="bg-card flex items-center rounded-full border p-1">
           <button
             type="button"
-            aria-label="Previous day"
+            aria-label={t.diary.prevDay}
             className={switchBtn}
             onClick={() => shift(-1)}
           >
@@ -73,11 +66,11 @@ export function DiaryPage() {
             className="min-w-[6rem] px-2 text-center text-sm font-medium"
             onClick={() => setDate(today)}
           >
-            {isToday ? 'Today' : format(parseISO(date), 'EEE, MMM d')}
+            {isToday ? t.common.today : format(parseISO(date), 'EEE, MMM d')}
           </button>
           <button
             type="button"
-            aria-label="Next day"
+            aria-label={t.diary.nextDay}
             className={switchBtn}
             onClick={() => shift(1)}
           >
@@ -110,7 +103,7 @@ export function DiaryPage() {
             <MealSection
               key={meal}
               meal={meal}
-              label={MEAL_LABELS[meal]}
+              label={t.meals[meal]}
               entries={entries.filter((entry) => entry.meal === meal)}
             />
           ))}

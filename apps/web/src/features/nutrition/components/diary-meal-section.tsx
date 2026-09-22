@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { sumMacros } from '@gym-bro/shared';
 import type { FoodLogEntry, MealType } from '@gym-bro/shared';
 
+import { useNutritionTranslation } from '../i18n';
 import { useDiaryUiStore } from '../stores/diary-ui.store';
 import { DiaryEntryRow } from './diary-entry-row';
 
@@ -18,6 +19,7 @@ interface MealSectionProps {
 // actions (camera → photo estimate, plus → add sheet), then its entries separated by
 // dashed rules. An empty meal reads as a dashed-outline "nothing yet" card.
 export function MealSection({ meal, label, entries }: MealSectionProps) {
+  const t = useNutritionTranslation();
   const openAdd = useDiaryUiStore((s) => s.openAdd);
   const openPhoto = useDiaryUiStore((s) => s.openPhoto);
   const kcal = Math.round(sumMacros(entries).kcal);
@@ -29,7 +31,7 @@ export function MealSection({ meal, label, entries }: MealSectionProps) {
         variant="ghost"
         size="icon"
         className="text-primary hover:bg-accent size-9"
-        aria-label={`Add to ${label} from a photo`}
+        aria-label={t.addEntry.addFromPhoto(label)}
         onClick={() => openPhoto(meal)}
       >
         <Camera className="size-5" />
@@ -39,7 +41,7 @@ export function MealSection({ meal, label, entries }: MealSectionProps) {
         variant="ghost"
         size="icon"
         className="text-primary hover:bg-accent size-9"
-        aria-label={`Add to ${label}`}
+        aria-label={t.addEntry.addTo(label)}
         onClick={() => openAdd(meal)}
       >
         <Plus className="size-5" />
@@ -52,7 +54,9 @@ export function MealSection({ meal, label, entries }: MealSectionProps) {
       <div className="bg-card flex items-center justify-between gap-2 rounded-2xl border border-dashed border-[#d6c8bd] p-4 dark:border-[#4b3f47]">
         <div className="flex items-baseline gap-2">
           <h2 className="font-heading text-lg font-semibold">{label}</h2>
-          <span className="text-muted-foreground font-heading text-sm italic">nothing yet</span>
+          <span className="text-muted-foreground font-heading text-sm italic">
+            {t.diary.nothingYet}
+          </span>
         </div>
         {actions}
       </div>

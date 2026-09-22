@@ -25,6 +25,7 @@ import type { CreateRecipeInput, MacroTotals, RecipeDetail } from '@gym-bro/shar
 import { useCreateRecipe } from '../hooks/use-create-recipe';
 import { useScanFlow } from '../hooks/use-scan-flow';
 import { useUpdateRecipe } from '../hooks/use-update-recipe';
+import { useNutritionTranslation } from '../i18n';
 import { BarcodeScanner } from './barcode-scanner';
 import { FoodCombobox } from './food-combobox';
 import { FoodSheet } from './food-sheet';
@@ -121,6 +122,7 @@ interface RecipeBuilderProps {
 // computed live from the shared macro math. Rendered full-page on its own route.
 // (Bought/prepared products are modelled as foods with a serving size, not recipes.)
 export function RecipeBuilder({ editing }: RecipeBuilderProps) {
+  const t = useNutritionTranslation();
   const navigate = useNavigate();
   const finish = () => void navigate({ to: '/recipes' });
   const [name, setName] = useState(editing?.name ?? '');
@@ -138,7 +140,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
     try {
       setImageUrl(await resizeImageToDataUrl(file, 640));
     } catch {
-      toast.error("Couldn't process that image.");
+      toast.error(t.common.imageProcessError);
     }
   }
 
@@ -232,10 +234,10 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
         className="text-muted-foreground hover:text-foreground -mb-1 inline-flex w-fit items-center gap-1 text-sm"
       >
         <ChevronLeft className="size-4" />
-        Recipes
+        {t.recipes.title}
       </Link>
       <h1 className="font-heading text-[28px] font-medium break-words">
-        {name.trim() || (editing ? 'Edit recipe' : 'New recipe')}
+        {name.trim() || (editing ? t.recipes.editRecipe : t.recipes.newRecipe)}
       </h1>
 
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
@@ -248,14 +250,14 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
               ) : (
                 <div className="text-muted-foreground flex size-full flex-col items-center justify-center gap-1 text-xs">
                   <ImageIcon className="size-8 opacity-40" />
-                  No photo yet
+                  {t.recipes.noPhotoYet}
                 </div>
               )}
               {imageUrl ? (
                 <button
                   type="button"
                   onClick={() => setImageUrl(null)}
-                  aria-label="Remove photo"
+                  aria-label={t.common.removePhoto}
                   className="bg-background/80 absolute top-2 right-2 rounded-full border p-1 shadow backdrop-blur"
                 >
                   <X className="size-4" />
@@ -265,7 +267,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
             <Button asChild variant="outline" size="sm" className="h-9">
               <label>
                 <Camera className="size-4" />
-                {imageUrl ? 'Change photo' : 'Add photo'}
+                {imageUrl ? t.common.changePhoto : t.common.addPhoto}
                 <input
                   type="file"
                   accept="image/*"
@@ -281,11 +283,11 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
         {/* Right: the recipe form. */}
         <div className="flex min-w-0 flex-1 flex-col gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="recipe-name">Name</Label>
+            <Label htmlFor="recipe-name">{t.common.name}</Label>
             <Input
               id="recipe-name"
               className="h-11"
-              placeholder="e.g. Chili"
+              placeholder={t.recipes.namePlaceholder}
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -295,7 +297,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
             <div className="bg-card overflow-hidden rounded-2xl border">
               <div className="flex items-center justify-between px-4 pt-4 pb-2">
                 <h2 className="text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase">
-                  Ingredients
+                  {t.recipes.ingredients}
                 </h2>
                 {canScan ? (
                   <Button
@@ -306,14 +308,12 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
                     onClick={() => setScanning(true)}
                   >
                     <Barcode className="size-4" />
-                    Scan
+                    {t.common.scan}
                   </Button>
                 ) : null}
               </div>
               {ingredients.length === 0 ? (
-                <p className="text-muted-foreground px-4 pb-4 text-sm">
-                  No ingredients yet — search below to add one.
-                </p>
+                <p className="text-muted-foreground px-4 pb-4 text-sm">{t.recipes.noIngredients}</p>
               ) : (
                 <ul className="divide-y divide-dashed divide-[#d6c8bd] border-t border-dashed border-[#d6c8bd] dark:divide-[#40353c] dark:border-[#40353c]">
                   {ingredients.map((row) => {
@@ -326,7 +326,9 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
                         <div className="flex items-center gap-2">
                           <button
                             type="button"
-                            aria-label={`Edit ${row.food?.name ?? 'ingredient'}`}
+                            aria-label={t.recipes.editIngredientAria(
+                              row.food?.name ?? t.recipes.ingredientFallback,
+                            )}
                             className="min-w-0 flex-1 text-left"
                             onClick={() => setEditingKey(isRowEditing ? null : row.key)}
                           >
@@ -345,7 +347,9 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
                           </span>
                           <button
                             type="button"
-                            aria-label={`Edit ${row.food?.name ?? 'ingredient'}`}
+                            aria-label={t.recipes.editIngredientAria(
+                              row.food?.name ?? t.recipes.ingredientFallback,
+                            )}
                             className="shrink-0 text-[#c9bcb2] dark:text-[#5a4d55]"
                             onClick={() => setEditingKey(isRowEditing ? null : row.key)}
                           >
@@ -357,7 +361,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
                             <div className="flex items-center gap-2">
                               <Input
                                 inputMode="decimal"
-                                aria-label="Amount"
+                                aria-label={t.recipes.amountAria}
                                 className="h-10 w-20 text-center"
                                 value={row.amount}
                                 onChange={(e) => updateRow(row.key, { amount: e.target.value })}
@@ -381,7 +385,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
                                 variant="ghost"
                                 size="icon"
                                 className="text-destructive ml-auto size-9"
-                                aria-label="Remove ingredient"
+                                aria-label={t.recipes.removeIngredient}
                                 onClick={() => removeRow(row.key)}
                               >
                                 <Trash2 className="size-4" />
@@ -402,7 +406,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
             <FoodCombobox
               selectedId={null}
               selectedName={null}
-              placeholder="Search foods to add…"
+              placeholder={t.recipes.searchFoodsToAdd}
               onSelect={addIngredient}
             />
           </div>
@@ -410,14 +414,14 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
           <div className="bg-card flex items-center justify-between gap-4 rounded-2xl border p-4">
             <div className="min-w-0">
               <p className="text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase">
-                Servings
+                {t.recipes.servings}
               </p>
-              <p className="text-muted-foreground text-xs">how many portions this recipe makes</p>
+              <p className="text-muted-foreground text-xs">{t.recipes.servingsHint}</p>
             </div>
             <div className="flex h-11 shrink-0 items-center rounded-full border">
               <button
                 type="button"
-                aria-label="Fewer servings"
+                aria-label={t.recipes.fewerServings}
                 className="text-muted-foreground flex size-11 items-center justify-center"
                 onClick={() => setServings((s) => String(Math.max(1, (Number(s) || 1) - 1)))}
               >
@@ -426,7 +430,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
               <span className="font-heading w-8 text-center text-lg font-semibold">{servings}</span>
               <button
                 type="button"
-                aria-label="More servings"
+                aria-label={t.recipes.moreServings}
                 className="text-primary flex size-11 items-center justify-center"
                 onClick={() => setServings((s) => String((Number(s) || 0) + 1))}
               >
@@ -438,7 +442,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
           <div className="rounded-2xl border bg-[#fdfbf9] p-5 dark:bg-[#221a20]">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="font-heading text-xl font-semibold">Per serving</p>
+                <p className="font-heading text-xl font-semibold">{t.recipes.perServing}</p>
                 <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
                   <span className="flex items-center gap-1.5">
                     <span className="bg-primary size-2 rounded-full" />P{' '}
@@ -460,9 +464,12 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
               </p>
             </div>
             <p className="font-heading text-muted-foreground mt-2 text-xs italic">
-              whole recipe: {Math.round(total.kcal).toLocaleString('en-US')} kcal · P{' '}
-              {Math.round(total.proteinG)} · C {Math.round(total.carbsG)} · F{' '}
-              {Math.round(total.fatG)}
+              {t.recipes.wholeRecipe(
+                Math.round(total.kcal).toLocaleString('en-US'),
+                Math.round(total.proteinG),
+                Math.round(total.carbsG),
+                Math.round(total.fatG),
+              )}
             </p>
           </div>
 
@@ -474,10 +481,14 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
 
           <div className="flex gap-2">
             <Button type="button" variant="outline" className="h-11 flex-1" onClick={finish}>
-              Cancel
+              {t.common.cancel}
             </Button>
             <Button type="button" className="h-11 flex-1" disabled={!canSave} onClick={save}>
-              {isPending ? 'Saving…' : editing ? 'Save changes' : 'Create recipe'}
+              {isPending
+                ? t.common.saving
+                : editing
+                  ? t.common.saveChanges
+                  : t.recipes.createRecipe}
             </Button>
           </div>
         </div>

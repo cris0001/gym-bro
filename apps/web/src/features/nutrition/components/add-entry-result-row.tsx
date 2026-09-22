@@ -2,6 +2,7 @@ import { Plus } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
+import { useNutritionTranslation } from '../i18n';
 import type { AddEntryRow } from '../utils/add-entry-list';
 
 // One row of the results list: photo, name (+ RECENT badge), meta line, and a round
@@ -21,6 +22,7 @@ export function AddEntryResultRow({
   // RECENT badge on the accent tint (desktop) instead of solid primary (mobile default).
   badgeTint?: boolean;
 }) {
+  const t = useNutritionTranslation();
   return (
     <div className="flex items-center gap-3 px-3.5 py-3">
       <button
@@ -49,7 +51,7 @@ export function AddEntryResultRow({
                     : 'bg-primary text-primary-foreground',
                 )}
               >
-                Recent
+                {t.addEntry.recent}
               </span>
             ) : null}
           </span>
@@ -60,7 +62,7 @@ export function AddEntryResultRow({
       </button>
       <button
         type="button"
-        aria-label={`Add ${row.name}`}
+        aria-label={t.addEntry.addItemAria(row.name)}
         className="bg-accent text-primary hover:bg-accent/70 flex size-[34px] shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-50"
         disabled={disabled}
         onClick={onAdd}

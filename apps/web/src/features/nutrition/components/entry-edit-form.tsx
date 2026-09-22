@@ -8,6 +8,7 @@ import type { FoodLogEntry, FoodLogUnit } from '@gym-bro/shared';
 import { useFoods } from '../hooks/use-foods';
 import { useRecipes } from '../hooks/use-recipes';
 import { useUpdateFoodLogEntry } from '../hooks/use-update-food-log-entry';
+import { useNutritionTranslation } from '../i18n';
 import { PortionPicker, type PortionChoice } from './portion-picker';
 
 function unitLabel(unit: FoodLogUnit): string {
@@ -21,6 +22,7 @@ function unitLabel(unit: FoodLogUnit): string {
 // portion. Changing the unit re-snapshots server-side from the source. If the source
 // was soft-deleted it can't be recomputed, so only the quantity is editable.
 export function EntryEditForm({ entry, onDone }: { entry: FoodLogEntry; onDone: () => void }) {
+  const t = useNutritionTranslation();
   const update = useUpdateFoodLogEntry();
   const { data: foods = [] } = useFoods('');
   const { data: recipes = [] } = useRecipes();
@@ -81,7 +83,7 @@ export function EntryEditForm({ entry, onDone }: { entry: FoodLogEntry; onDone: 
       <div className="mt-1 flex flex-wrap items-center gap-2">
         <Input
           inputMode="decimal"
-          aria-label="Quantity"
+          aria-label={t.common.quantity}
           className="h-9 w-20"
           value={quantity}
           onChange={(e) => setQuantity(e.target.value)}
@@ -94,10 +96,10 @@ export function EntryEditForm({ entry, onDone }: { entry: FoodLogEntry; onDone: 
           disabled={update.isPending}
           onClick={saveQuantityOnly}
         >
-          Save
+          {t.common.save}
         </Button>
         <Button type="button" size="sm" variant="ghost" className="h-9" onClick={onDone}>
-          Cancel
+          {t.common.cancel}
         </Button>
       </div>
     );
@@ -122,10 +124,10 @@ export function EntryEditForm({ entry, onDone }: { entry: FoodLogEntry; onDone: 
           disabled={choice === null || update.isPending}
           onClick={saveFull}
         >
-          {update.isPending ? 'Saving…' : 'Save'}
+          {update.isPending ? t.common.saving : t.common.save}
         </Button>
         <Button type="button" size="sm" variant="ghost" className="h-9" onClick={onDone}>
-          Cancel
+          {t.common.cancel}
         </Button>
       </div>
     </div>

@@ -5,6 +5,8 @@ import { cn } from '@/lib/utils';
 
 import type { FoodLogUnit } from '@gym-bro/shared';
 
+import { useNutritionTranslation } from '../i18n';
+
 // The custom-input option id for each unit (used to preselect an initial portion).
 const CUSTOM_OPTION_ID: Record<FoodLogUnit, string> = { grams: 'gx', servings: 'sx', units: 'ux' };
 
@@ -17,19 +19,32 @@ interface PortionOption {
   input?: boolean;
 }
 
+type PortionLabels = ReturnType<typeof useNutritionTranslation>['portion'];
+
 // Build the preset list from what the item supports: grams are always available;
 // servings / units appear only when the item has that size. Presets first (1 serving,
 // 1 unit, 100 g), then the custom inputs.
-function buildOptions(hasServings: boolean, hasUnits: boolean): PortionOption[] {
+function buildOptions(
+  hasServings: boolean,
+  hasUnits: boolean,
+  labels: PortionLabels,
+): PortionOption[] {
   const options: PortionOption[] = [];
-  if (hasServings) options.push({ id: 's1', label: '1 serving', unit: 'servings', quantity: 1 });
-  if (hasUnits) options.push({ id: 'u1', label: '1 unit', unit: 'units', quantity: 1 });
-  options.push({ id: 'g100', label: '100 g', unit: 'grams', quantity: 100 });
   if (hasServings)
-    options.push({ id: 'sx', label: 'Servings', unit: 'servings', quantity: null, input: true });
+    options.push({ id: 's1', label: labels.oneServing, unit: 'servings', quantity: 1 });
+  if (hasUnits) options.push({ id: 'u1', label: labels.oneUnit, unit: 'units', quantity: 1 });
+  options.push({ id: 'g100', label: labels.hundredGrams, unit: 'grams', quantity: 100 });
+  if (hasServings)
+    options.push({
+      id: 'sx',
+      label: labels.servings,
+      unit: 'servings',
+      quantity: null,
+      input: true,
+    });
   if (hasUnits)
-    options.push({ id: 'ux', label: 'Units', unit: 'units', quantity: null, input: true });
-  options.push({ id: 'gx', label: 'Grams', unit: 'grams', quantity: null, input: true });
+    options.push({ id: 'ux', label: labels.units, unit: 'units', quantity: null, input: true });
+  options.push({ id: 'gx', label: labels.grams, unit: 'grams', quantity: null, input: true });
   return options;
 }
 
@@ -66,7 +81,11 @@ export function PortionPicker({
   initial,
   onChange,
 }: PortionPickerProps) {
-  const options = useMemo(() => buildOptions(hasServings, hasUnits), [hasServings, hasUnits]);
+  const t = useNutritionTranslation();
+  const options = useMemo(
+    () => buildOptions(hasServings, hasUnits, t.portion),
+    [hasServings, hasUnits, t.portion],
+  );
   const [selected, setSelected] = useState(() => {
     if (initial) {
       const id = CUSTOM_OPTION_ID[initial.unit];
@@ -126,7 +145,11 @@ export function PortionPicker({
         const gramsHint =
           gpx !== undefined && quantity !== null ? `${Math.round(quantity * gpx)} g` : null;
         const inputLabel =
-          option.unit === 'grams' ? 'g' : option.unit === 'servings' ? 'servings' : 'units';
+          option.unit === 'grams'
+            ? 'g'
+            : option.unit === 'servings'
+              ? t.portion.inputServings
+              : t.portion.inputUnits;
         return (
           <button
             key={option.id}

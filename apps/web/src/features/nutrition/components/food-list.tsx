@@ -11,6 +11,7 @@ import type { Food } from '@gym-bro/shared';
 
 import { useDeleteFood } from '../hooks/use-delete-food';
 import { useFoods } from '../hooks/use-foods';
+import { useNutritionTranslation } from '../i18n';
 import { useFoodUiStore } from '../stores/food-ui.store';
 
 interface FoodListProps {
@@ -24,6 +25,7 @@ interface FoodListProps {
 // client-side (a personal list is small; avoids a request per keystroke). Each
 // row shows the per-100g macros; tapping it opens the edit sheet, delete confirms.
 export function FoodList({ search, selectedId = null }: FoodListProps) {
+  const t = useNutritionTranslation();
   const { data: foods = [], isPending } = useFoods('');
   const openEdit = useFoodUiStore((s) => s.openEdit);
   const openCreate = useFoodUiStore((s) => s.openCreate);
@@ -35,12 +37,12 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
 
   async function onDelete(food: Food) {
     const ok = await confirm({
-      title: `Delete "${food.name}"?`,
-      description: 'It will be removed from your foods.',
-      confirmText: 'Delete',
+      title: t.foods.deleteConfirm.title(food.name),
+      description: t.foods.deleteConfirm.description,
+      confirmText: t.common.delete,
       destructive: true,
     });
-    if (ok) remove.mutate(food.id, { onSuccess: () => toast.success('Food deleted') });
+    if (ok) remove.mutate(food.id, { onSuccess: () => toast.success(t.foods.foodDeleted) });
   }
 
   if (isPending) {
@@ -48,17 +50,19 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
   }
   if (filtered.length === 0) {
     if (query) {
-      return <EmptyState title="No matches" description={`No foods match "${search.trim()}".`} />;
+      return (
+        <EmptyState title={t.foods.noMatches} description={t.foods.noMatchesDesc(search.trim())} />
+      );
     }
     return (
       <EmptyState
         icon={<Apple className="size-6" />}
-        title="No foods yet"
-        description="Add your first food to start building recipes and logging meals."
+        title={t.foods.emptyTitle}
+        description={t.foods.emptyDesc}
         action={
           <Button type="button" className="h-11 rounded-full px-5" onClick={openCreate}>
             <Plus className="size-4" />
-            Add food
+            {t.foods.addFood}
           </Button>
         }
       />
@@ -78,7 +82,7 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
           <button
             type="button"
             className="flex min-w-0 flex-1 items-center gap-3 text-left"
-            aria-label={`Edit ${food.name}`}
+            aria-label={t.foods.editAria(food.name)}
             onClick={() => openEdit(food)}
           >
             {food.imageUrl ? (
@@ -108,7 +112,7 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
             variant="ghost"
             size="icon"
             className="text-destructive size-11 shrink-0"
-            aria-label={`Delete ${food.name}`}
+            aria-label={t.foods.deleteAria(food.name)}
             disabled={remove.isPending}
             onClick={() => void onDelete(food)}
           >
