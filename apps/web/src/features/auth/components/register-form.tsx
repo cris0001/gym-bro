@@ -22,10 +22,12 @@ interface RegisterFormProps {
   onSuccess?: () => void;
 }
 
+const FIELD = 'h-12 rounded-xl border-[#e8e1da] bg-[#fdfbf9]';
+
 export function RegisterForm({ onSuccess }: RegisterFormProps) {
   const form = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { email: '', password: '' },
+    defaultValues: { name: '', email: '', password: '' },
   });
   const { mutate, isPending, error } = useRegister();
   const t = useAuthTranslation();
@@ -39,6 +41,20 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       <form onSubmit={(e) => void form.handleSubmit(onSubmit)(e)} className="grid gap-4" noValidate>
         <FormField
           control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t.name}</FormLabel>
+              <FormControl>
+                <Input type="text" autoComplete="name" className={FIELD} {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
@@ -48,8 +64,8 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
                   type="email"
                   inputMode="email"
                   autoComplete="email"
-                  placeholder=""
-                  className="h-11"
+                  placeholder="you@example.com"
+                  className={FIELD}
                   {...field}
                 />
               </FormControl>
@@ -65,8 +81,9 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             <FormItem>
               <FormLabel>{t.password}</FormLabel>
               <FormControl>
-                <Input type="password" autoComplete="new-password" className="h-11" {...field} />
+                <Input type="password" autoComplete="new-password" className={FIELD} {...field} />
               </FormControl>
+              <p className="text-[11.5px] text-[#94858b]">{t.register.minChars}</p>
               <FormMessage />
             </FormItem>
           )}
@@ -80,7 +97,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           </p>
         ) : null}
 
-        <Button type="submit" className="h-11 w-full rounded-full" disabled={isPending}>
+        <Button type="submit" className="mt-1 h-12 w-full rounded-full" disabled={isPending}>
           {isPending ? t.register.creating : t.register.createAccount}
         </Button>
       </form>

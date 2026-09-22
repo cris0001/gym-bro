@@ -25,7 +25,11 @@ export async function findById(id: string): Promise<User | undefined> {
   return user;
 }
 
-export async function create(data: { email: string; passwordHash: string }): Promise<User> {
+export async function create(data: {
+  email: string;
+  passwordHash: string;
+  name: string;
+}): Promise<User> {
   const [user] = await db.insert(users).values(data).returning();
   if (!user) {
     // INSERT ... RETURNING always yields a row; this guards an impossible state.
