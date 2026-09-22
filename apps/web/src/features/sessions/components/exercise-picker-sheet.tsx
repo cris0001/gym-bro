@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 
+import { useSessionsTranslation } from '../i18n';
 import { useWorkoutDraftStore } from '../stores/workout-draft.store';
 import type { PickerMode } from './active-session-page';
 
@@ -48,6 +49,7 @@ export function ExercisePickerSheet({ mode, onClose }: ExercisePickerSheetProps)
   const hasTemplate = workoutTemplateId !== null;
   const [source, setSource] = useState<'template' | 'all'>('template');
   const [search, setSearch] = useState('');
+  const t = useSessionsTranslation();
 
   // Add scopes to the template by default; swap opens on the full library.
   useEffect(() => {
@@ -86,9 +88,9 @@ export function ExercisePickerSheet({ mode, onClose }: ExercisePickerSheetProps)
     <Sheet open={mode !== null} onOpenChange={(next) => !next && handleClose()}>
       <SheetContent side="bottom" className="gap-0 sm:h-[70dvh]">
         <SheetHeader>
-          <SheetTitle>{isSwap ? 'Swap exercise' : 'Add exercise'}</SheetTitle>
+          <SheetTitle>{isSwap ? t.picker.swapTitle : t.picker.addTitle}</SheetTitle>
           <SheetDescription>
-            {isSwap ? 'Pick the exercise you did instead.' : 'Pick an exercise to add.'}
+            {isSwap ? t.picker.swapDescription : t.picker.addDescription}
           </SheetDescription>
         </SheetHeader>
 
@@ -105,21 +107,21 @@ export function ExercisePickerSheet({ mode, onClose }: ExercisePickerSheetProps)
                     effectiveSource === option && 'bg-background font-medium shadow-sm',
                   )}
                 >
-                  {option === 'template' ? 'Template' : 'All'}
+                  {option === 'template' ? t.picker.template : t.picker.all}
                 </button>
               ))}
             </div>
           )}
 
           <Input
-            placeholder="Search exercises"
+            placeholder={t.picker.searchPlaceholder}
             className="h-11"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
 
           {filtered.length === 0 ? (
-            <p className="text-muted-foreground text-sm">No matching exercises.</p>
+            <p className="text-muted-foreground text-sm">{t.picker.noMatches}</p>
           ) : (
             <ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
               {filtered.map((exercise) => (

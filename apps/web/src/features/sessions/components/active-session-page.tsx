@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useConfirm } from '@/stores/confirm.store';
 
+import { useSessionsTranslation } from '../i18n';
 import { usePlannedSessions } from '../hooks/use-planned-sessions';
 import { useStartWorkout } from '../hooks/use-start-workout';
 import { useWorkoutDraftStore } from '../stores/workout-draft.store';
@@ -41,6 +42,7 @@ export function ActiveSessionPage() {
   const { startFromTemplate, startEmpty } = useStartWorkout();
   const confirm = useConfirm();
   const navigate = useNavigate();
+  const t = useSessionsTranslation();
 
   const todayIso = format(new Date(), 'yyyy-MM-dd');
   const { data: plannedToday = [] } = usePlannedSessions(todayIso, todayIso);
@@ -62,7 +64,9 @@ export function ActiveSessionPage() {
       <div className="mx-auto flex w-full max-w-sm flex-col gap-4 p-6 pt-10 lg:col-span-3">
         <div className="flex flex-col items-center gap-2 text-center">
           <BrandMark className="size-14 rounded-2xl" />
-          <h1 className="font-heading text-[28px] leading-none font-medium">Start a workout</h1>
+          <h1 className="font-heading text-[28px] leading-none font-medium">
+            {t.activeSession.startTitle}
+          </h1>
           <p className="font-heading text-muted-foreground text-sm italic">
             {format(new Date(), 'EEEE, MMMM d')}
           </p>
@@ -71,7 +75,7 @@ export function ActiveSessionPage() {
         {todaysPlanned.length > 0 && (
           <div className="flex flex-col gap-2">
             <p className="text-muted-foreground px-1 text-[11px] font-medium tracking-[0.08em] uppercase">
-              Planned for today
+              {t.activeSession.plannedForToday}
             </p>
             {todaysPlanned.map((session) => (
               <button
@@ -94,14 +98,16 @@ export function ActiveSessionPage() {
                   <span className="font-heading block truncate text-[17px] font-semibold">
                     {session.template.name}
                   </span>
-                  <span className="text-muted-foreground block text-xs">planned for today</span>
+                  <span className="text-muted-foreground block text-xs">
+                    {t.activeSession.plannedForTodayCaption}
+                  </span>
                 </span>
                 <Play className="text-primary size-4 shrink-0 fill-current" />
               </button>
             ))}
             <div className="text-muted-foreground font-heading flex items-center gap-3 text-xs italic">
               <span className="bg-border h-px flex-1" />
-              or pick a template
+              {t.activeSession.orPickTemplate}
               <span className="bg-border h-px flex-1" />
             </div>
           </div>
@@ -117,7 +123,7 @@ export function ActiveSessionPage() {
           className="text-muted-foreground h-11"
           onClick={() => void startEmpty()}
         >
-          Start empty workout
+          {t.activeSession.startEmpty}
         </Button>
       </div>
     );
@@ -129,10 +135,11 @@ export function ActiveSessionPage() {
   const isTemplateBased = draft.workoutTemplateId !== null;
 
   async function handleDiscard() {
+    const dc = t.activeSession.discardConfirm;
     const ok = await confirm({
-      title: isEditing ? 'Stop editing?' : 'Discard this workout?',
-      description: isEditing ? "Your changes won't be saved." : 'Logged sets will be lost.',
-      confirmText: isEditing ? 'Stop editing' : 'Discard',
+      title: isEditing ? dc.stopTitle : dc.discardTitle,
+      description: isEditing ? dc.stopDescription : dc.discardDescription,
+      confirmText: isEditing ? dc.stopConfirm : dc.discardConfirm,
       destructive: true,
     });
     if (ok) discard();
@@ -146,8 +153,8 @@ export function ActiveSessionPage() {
     else el.focus();
   }
 
-  const discardLabel = isEditing ? 'Cancel' : 'Discard';
-  const saveLabel = isEditing ? 'Save changes' : 'Finish workout';
+  const discardLabel = isEditing ? t.activeSession.cancel : t.activeSession.discard;
+  const saveLabel = isEditing ? t.activeSession.saveChanges : t.activeSession.finishWorkout;
 
   return (
     <div className="mx-auto flex w-full max-w-[820px] flex-col gap-3 p-3 pb-28 md:p-4 md:pb-8 lg:col-span-3">
@@ -157,11 +164,11 @@ export function ActiveSessionPage() {
           variant="ghost"
           size="sm"
           className="text-muted-foreground -ml-2 gap-1.5"
-          aria-label="Minimize — your session keeps running in the background"
+          aria-label={t.activeSession.minimizeAria}
           onClick={() => void navigate({ to: '/dashboard' })}
         >
           <ChevronLeft className="size-4" />
-          Minimize
+          {t.activeSession.minimize}
         </Button>
         {draft.startedAt && !isEditing ? (
           <span className="bg-accent text-primary rounded-full px-3 py-1 text-xs font-extrabold tabular-nums">
@@ -176,11 +183,11 @@ export function ActiveSessionPage() {
             variant="ghost"
             size="sm"
             className="text-muted-foreground -ml-2 mb-1 hidden w-fit gap-1.5 md:inline-flex"
-            aria-label="Minimize — your session keeps running in the background"
+            aria-label={t.activeSession.minimizeAria}
             onClick={() => void navigate({ to: '/dashboard' })}
           >
             <ChevronLeft className="size-4" />
-            Minimize
+            {t.activeSession.minimize}
           </Button>
           {isTemplateBased ? (
             <h1 className="font-heading truncate text-[26px] font-semibold md:text-[30px]">
@@ -188,7 +195,7 @@ export function ActiveSessionPage() {
             </h1>
           ) : (
             <Input
-              aria-label="Workout name"
+              aria-label={t.activeSession.workoutNameAria}
               className="font-heading h-auto border-transparent bg-transparent px-0 text-[26px] font-semibold shadow-none focus-visible:ring-0 md:text-[30px]"
               value={draft.name}
               onChange={(e) => setName(e.target.value)}
@@ -196,19 +203,19 @@ export function ActiveSessionPage() {
           )}
           <p className="font-heading text-muted-foreground text-[13px] italic">
             {format(parseISO(draft.performedDate), 'EEEE, MMMM d')} ·{' '}
-            {isTemplateBased ? 'from template' : 'freestyle'} ·{' '}
+            {isTemplateBased ? t.activeSession.fromTemplate : t.activeSession.freestyle} ·{' '}
             <button
               type="button"
               className="hover:text-foreground underline underline-offset-2"
               onClick={openDatePicker}
             >
-              edit date
+              {t.activeSession.editDate}
             </button>
           </p>
           <input
             ref={dateInputRef}
             type="date"
-            aria-label="Workout date"
+            aria-label={t.activeSession.workoutDateAria}
             className="sr-only"
             value={draft.performedDate}
             onChange={(e) => e.target.value && setPerformedDate(e.target.value)}
@@ -245,7 +252,7 @@ export function ActiveSessionPage() {
         className="text-primary hover:bg-accent/40 w-full rounded-2xl border border-dashed border-[#d6c8bd] py-4 text-sm font-semibold transition-colors dark:border-[#40353c]"
         onClick={() => setPicker({ type: 'add' })}
       >
-        + Add exercise
+        {t.activeSession.addExercise}
       </button>
 
       {/* Mobile: sticky action bar (desktop uses the header actions). */}

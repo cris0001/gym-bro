@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useConfirm } from '@/stores/confirm.store';
 
+import { useSessionsTranslation } from '../i18n';
 import { useDeleteWorkoutSession } from '../hooks/use-delete-workout-session';
 import { useEditWorkout } from '../hooks/use-edit-workout';
 import { useWorkoutSession } from '../hooks/use-workout-session';
@@ -67,15 +68,16 @@ export function DayWorkoutItem({
   const editWorkout = useEditWorkout();
   const remove = useDeleteWorkoutSession();
   const confirm = useConfirm();
+  const t = useSessionsTranslation();
 
   async function handleDelete() {
     const ok = await confirm({
-      title: 'Delete this workout?',
-      description: 'This cannot be undone.',
-      confirmText: 'Delete',
+      title: t.common.deleteWorkoutConfirm.title,
+      description: t.common.deleteWorkoutConfirm.description,
+      confirmText: t.common.deleteWorkoutConfirm.confirmText,
       destructive: true,
     });
-    if (ok) remove.mutate(workout.id, { onSuccess: () => toast.success('Workout deleted') });
+    if (ok) remove.mutate(workout.id, { onSuccess: () => toast.success(t.common.workoutDeleted) });
   }
 
   const totals = detail ? workoutTotals(detail) : null;
@@ -94,7 +96,7 @@ export function DayWorkoutItem({
         <div className="min-w-0 flex-1">
           <span className="inline-flex items-center gap-1 rounded-full bg-[#e8efe4] px-2 py-0.5 text-[10px] font-bold tracking-[0.06em] text-[#5a7a52] uppercase dark:bg-[#2f3a2b] dark:text-[#8fae85]">
             <Check className="size-3" />
-            Finished
+            {t.dayWorkout.finished}
           </span>
           <p className="font-heading mt-1 truncate text-[22px] leading-tight font-semibold">
             {workout.name}
@@ -103,7 +105,7 @@ export function DayWorkoutItem({
             {workout.durationMinutes !== null && <span>{workout.durationMinutes} min</span>}
             {totals && (
               <>
-                <span>· {totals.sets} sets</span>
+                <span>· {t.dayWorkout.sets(totals.sets)}</span>
                 {totals.volume > 0 && <span>· {fmt(totals.volume)} kg</span>}
               </>
             )}
@@ -132,7 +134,7 @@ export function DayWorkoutItem({
       {expanded && (
         <div className="flex flex-col gap-3 border-t border-border p-3">
           {isLoading || !detail ? (
-            <p className="text-muted-foreground text-sm">Loading…</p>
+            <p className="text-muted-foreground text-sm">{t.common.loading}</p>
           ) : (
             <>
               {detail.notes !== null && (
@@ -151,7 +153,7 @@ export function DayWorkoutItem({
                       </span>
                       {topSet && (
                         <span className="shrink-0 text-[10px] font-semibold tracking-wide text-[#d9a441] uppercase">
-                          Top {topSet.weight} kg
+                          {t.dayWorkout.top(topSet.weight ?? 'BW')}
                         </span>
                       )}
                     </div>
@@ -181,7 +183,7 @@ export function DayWorkoutItem({
                   onClick={() => setShowAll(true)}
                   className="text-muted-foreground flex items-center gap-1 self-start text-xs font-medium"
                 >
-                  + {hiddenCount} more exercise{hiddenCount === 1 ? '' : 's'}
+                  {t.dayWorkout.moreExercises(hiddenCount)}
                   <ChevronDown className="size-3.5" />
                 </button>
               )}
@@ -193,7 +195,7 @@ export function DayWorkoutItem({
                     className="h-[34px] rounded-full"
                     onClick={() => void editWorkout(detail)}
                   >
-                    Edit
+                    {t.common.edit}
                   </Button>
                 )}
                 <Button
@@ -203,7 +205,7 @@ export function DayWorkoutItem({
                   className="bg-accent text-primary hover:bg-accent/70 h-[34px] rounded-full"
                 >
                   <Link to="/history/$sessionId" params={{ sessionId: workout.id }}>
-                    Open
+                    {t.dayWorkout.open}
                   </Link>
                 </Button>
                 <Button
@@ -213,7 +215,7 @@ export function DayWorkoutItem({
                   onClick={() => void handleDelete()}
                   disabled={remove.isPending}
                 >
-                  Delete
+                  {t.common.delete}
                 </Button>
               </div>
             </>

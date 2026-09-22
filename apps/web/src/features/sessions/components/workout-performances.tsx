@@ -2,6 +2,7 @@ import type { WorkoutSessionDetail } from '@gym-bro/shared';
 
 import { cn } from '@/lib/utils';
 
+import { useSessionsTranslation } from '../i18n';
 import { ExerciseHistoryPanel } from './exercise-history-panel';
 
 const cell = (value: number | null): string => (value === null ? '—' : String(value));
@@ -23,6 +24,7 @@ export function WorkoutPerformances({
   performedDate,
   showPrevious = true,
 }: WorkoutPerformancesProps) {
+  const t = useSessionsTranslation();
   return (
     <div className="flex flex-col gap-3">
       {performances.map((performance) => {
@@ -33,7 +35,7 @@ export function WorkoutPerformances({
               <span className="font-semibold">{performance.exercise.name}</span>
               <span className="text-muted-foreground text-xs">
                 {performance.exercise.category}
-                {swapped && ` · swapped from ${performance.originalExercise.name}`}
+                {swapped && t.workoutDetail.swappedFrom(performance.originalExercise.name)}
               </span>
             </div>
             {performance.notes !== null && (
@@ -41,9 +43,9 @@ export function WorkoutPerformances({
             )}
             <div className="text-muted-foreground grid grid-cols-[1.5rem_1fr_1fr_1fr] gap-2 text-center text-xs font-medium">
               <span>#</span>
-              <span>Weight</span>
-              <span>Reps</span>
-              <span>RIR</span>
+              <span>{t.common.weight}</span>
+              <span>{t.common.reps}</span>
+              <span>{t.common.rir}</span>
             </div>
             {performance.sets.map((set, index) => (
               <div

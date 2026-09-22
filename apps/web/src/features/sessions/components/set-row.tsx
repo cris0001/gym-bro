@@ -4,6 +4,7 @@ import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
+import { useSessionsTranslation } from '../i18n';
 import type { DraftSet } from '../stores/workout-draft.store';
 import { useWorkoutDraftStore } from '../stores/workout-draft.store';
 
@@ -113,6 +114,7 @@ export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowP
   const removeSet = useWorkoutDraftStore((s) => s.removeSet);
   const toggleTopSet = useWorkoutDraftStore((s) => s.toggleTopSet);
   const toggleBodyweight = useWorkoutDraftStore((s) => s.toggleBodyweight);
+  const t = useSessionsTranslation();
 
   const [weight, setWeight] = useState(() => toValue(set.weight));
   const [reps, setReps] = useState(() => toValue(set.reps));
@@ -150,14 +152,14 @@ export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowP
         {set.isBodyweight ? (
           <div
             className="border-input text-muted-foreground flex h-10 flex-1 items-center justify-center rounded-[10px] border bg-background text-sm font-medium md:w-[110px] md:flex-none"
-            aria-label={`Set ${index + 1} bodyweight`}
+            aria-label={t.setRow.bodyweightAria(index + 1)}
           >
             BW
           </div>
         ) : (
           <Input
             inputMode="decimal"
-            aria-label={`Set ${index + 1} weight`}
+            aria-label={t.setRow.weightAria(index + 1)}
             placeholder="—"
             className={cn('flex-1 md:w-[110px] md:flex-none', field)}
             value={weight}
@@ -169,7 +171,7 @@ export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowP
         )}
         <Input
           inputMode="numeric"
-          aria-label={`Set ${index + 1} reps`}
+          aria-label={t.setRow.repsAria(index + 1)}
           placeholder="—"
           className={cn('flex-1 md:w-[110px] md:flex-none', field)}
           value={reps}
@@ -180,7 +182,7 @@ export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowP
         />
         <Input
           inputMode="numeric"
-          aria-label={`Set ${index + 1} RIR`}
+          aria-label={t.setRow.rirAria(index + 1)}
           placeholder="—"
           className={cn('flex-1 md:w-[90px] md:flex-none', field)}
           value={rir}
@@ -193,7 +195,7 @@ export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowP
         {/* Desktop: set-type chips inline after the fields (fill the row so X sits at the end). */}
         <div className="hidden items-center gap-1.5 md:flex md:flex-1">
           <TypeChip active={set.isTopSet} onClick={() => toggleTopSet(performanceId, set.id)}>
-            Top set
+            {t.setRow.topSet}
           </TypeChip>
           <TypeChip
             active={set.isBodyweight}
@@ -207,7 +209,7 @@ export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowP
         <button
           type="button"
           className={cn(iconBtn, 'md:hidden')}
-          aria-label={`Set ${index + 1} type`}
+          aria-label={t.setRow.typeAria(index + 1)}
           aria-expanded={expanded}
           onClick={() => setExpanded((value) => !value)}
         >
@@ -216,7 +218,7 @@ export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowP
         <button
           type="button"
           className={iconBtn}
-          aria-label={`Remove set ${index + 1}`}
+          aria-label={t.setRow.removeAria(index + 1)}
           onClick={() => removeSet(performanceId, set.id)}
         >
           <X className="size-4" />
@@ -225,9 +227,9 @@ export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowP
 
       {expanded && (
         <div className="flex items-center gap-2 pl-9 md:hidden">
-          <span className="text-muted-foreground text-xs">Set type:</span>
+          <span className="text-muted-foreground text-xs">{t.setRow.setTypeLabel}</span>
           <TypeChip active={set.isTopSet} onClick={() => toggleTopSet(performanceId, set.id)}>
-            Top set
+            {t.setRow.topSet}
           </TypeChip>
           <TypeChip
             active={set.isBodyweight}
@@ -236,7 +238,7 @@ export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowP
             BW
           </TypeChip>
           <TypeChip active={false} onClick={clearType}>
-            Clear
+            {t.setRow.clear}
           </TypeChip>
         </div>
       )}

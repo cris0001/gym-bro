@@ -5,6 +5,7 @@ import type { ExerciseHistoryEntry } from '@gym-bro/shared';
 
 import { cn } from '@/lib/utils';
 
+import { useSessionsTranslation } from '../i18n';
 import { useExerciseHistory } from '../hooks/use-exercise-history';
 
 // Past sessions to load: the most recent shown inline, up to five older ones
@@ -54,22 +55,23 @@ interface SessionPreviousLineProps {
 export function SessionPreviousLine({ exerciseId, before }: SessionPreviousLineProps) {
   const [open, setOpen] = useState(false);
   const { data: entries = [], isLoading } = useExerciseHistory(exerciseId, before, HISTORY_LIMIT);
+  const t = useSessionsTranslation();
 
   const box = 'rounded-[10px] border border-border/60 bg-muted/40 px-3 py-2';
 
   if (isLoading && entries.length === 0) {
-    return <p className={cn(box, 'text-muted-foreground text-xs italic')}>Loading previous…</p>;
+    return <p className={cn(box, 'text-muted-foreground text-xs italic')}>{t.previous.loading}</p>;
   }
   const latest = entries[0];
   if (!latest) {
-    return <p className={cn(box, 'text-muted-foreground text-xs italic')}>No previous sessions.</p>;
+    return <p className={cn(box, 'text-muted-foreground text-xs italic')}>{t.previous.none}</p>;
   }
   const older = entries.slice(1);
 
   return (
     <div className={box}>
       <div className="flex items-start justify-between gap-3">
-        <SessionLine label="Previous" entry={latest} />
+        <SessionLine label={t.previous.label} entry={latest} />
         {older.length > 0 && (
           <button
             type="button"
@@ -77,7 +79,7 @@ export function SessionPreviousLine({ exerciseId, before }: SessionPreviousLineP
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
           >
-            {open ? 'Less ▴' : 'More ▾'}
+            {open ? t.previous.less : t.previous.more}
           </button>
         )}
       </div>

@@ -10,6 +10,7 @@ import { RouteMap, useStravaSessions } from '@/features/strava';
 import { useTemplate } from '@/features/training';
 import { cn } from '@/lib/utils';
 
+import { useSessionsTranslation } from '../i18n';
 import { useDeletePlannedSession } from '../hooks/use-delete-planned-session';
 import { plannedSessionsQueryOptions } from '../hooks/use-planned-sessions';
 import { useStartWorkout } from '../hooks/use-start-workout';
@@ -28,13 +29,18 @@ function repRange(min: number | null, max: number | null): string {
 
 // The uppercase "N SETS × M REPS" target for a planned exercise row, or null when the
 // template exercise has neither a set count nor a rep target.
-function targetLabel(sets: number | null, min: number | null, max: number | null): string | null {
+function targetLabel(
+  sets: number | null,
+  min: number | null,
+  max: number | null,
+  t: ReturnType<typeof useSessionsTranslation>['dayDetail'],
+): string | null {
   const hasReps = min !== null || max !== null;
   if (sets === null && !hasReps) return null;
   const reps = repRange(min, max);
-  if (sets === null) return `${reps} REPS`;
-  if (!hasReps) return `${sets} SETS`;
-  return `${sets} SETS × ${reps} REPS`;
+  if (sets === null) return t.targetReps(reps);
+  if (!hasReps) return t.targetSets(sets);
+  return t.targetFull(sets, reps);
 }
 
 // One planned to-do: the template with a tint icon, its exercises (name · sets × reps),
@@ -45,6 +51,7 @@ function PlannedTodoCard({ session }: { session: PlannedSessionWithTemplate }) {
   const deleteMutation = useDeletePlannedSession();
   const updateMutation = useUpdatePlannedSession();
   const { startFromTemplate } = useStartWorkout();
+  const t = useSessionsTranslation();
 
   const exercises = template?.exercises ?? [];
 
@@ -57,14 +64,14 @@ function PlannedTodoCard({ session }: { session: PlannedSessionWithTemplate }) {
         <div className="min-w-0 flex-1">
           <p className="font-heading truncate text-lg font-semibold">{session.template.name}</p>
           <p className="text-muted-foreground text-xs">
-            Planned · {exercises.length} exercise{exercises.length === 1 ? '' : 's'}
+            {t.dayDetail.plannedExercises(exercises.length)}
           </p>
         </div>
         <Button
           variant="ghost"
           size="icon"
           className="text-muted-foreground -mt-1 -mr-1 size-8 shrink-0"
-          aria-label="Delete planned session"
+          aria-label={t.dayDetail.deletePlannedAria}
           onClick={() => deleteMutation.mutate(session.id)}
           disabled={deleteMutation.isPending}
         >
@@ -75,7 +82,12 @@ function PlannedTodoCard({ session }: { session: PlannedSessionWithTemplate }) {
       {exercises.length > 0 && (
         <ul className="flex flex-col">
           {exercises.map((item, index) => {
-            const target = targetLabel(item.targetSets, item.targetRepsMin, item.targetRepsMax);
+            const target = targetLabel(
+              item.targetSets,
+              item.targetRepsMin,
+              item.targetRepsMax,
+              t.dayDetail,
+            );
             return (
               <li
                 key={item.id}
@@ -114,10 +126,10 @@ function PlannedTodoCard({ session }: { session: PlannedSessionWithTemplate }) {
               });
             }}
           >
-            Start
+            {t.common.start}
           </Button>
           <label className="bg-accent text-primary hover:bg-accent/70 flex h-10 cursor-pointer items-center rounded-full px-4 text-sm font-medium transition-colors">
-            Move
+            {t.dayDetail.move}
             <input
               type="date"
               className="sr-only"
@@ -151,6 +163,7 @@ export function DayDetail({ date }: { date: string }) {
   });
   const { data: stravaSessions = [] } = useStravaSessions(date || undefined, date || undefined);
   const navigate = useNavigate();
+  const t = useSessionsTranslation();
 
   const todos = planned.filter((session) => session.status !== 'completed');
   const workouts = workoutsPage?.items ?? [];
@@ -161,7 +174,7 @@ export function DayDetail({ date }: { date: string }) {
       <div className="flex flex-col">
         <Button variant="ghost" size="sm" className="w-fit" onClick={() => setAssigning(false)}>
           <ChevronLeft className="size-4" />
-          Back
+          {t.dayDetail.back}
         </Button>
         <AssignTemplateForm date={date} onDone={() => setAssigning(false)} />
       </div>
@@ -186,7 +199,7 @@ export function DayDetail({ date }: { date: string }) {
         <div key={session.id} className="bg-card flex flex-col gap-2 rounded-2xl border p-3">
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1 rounded-full bg-[#fbe3d4] px-2 py-0.5 text-[10px] font-bold tracking-[0.06em] text-[#d15b28] uppercase dark:bg-[#45291b] dark:text-[#ff7a3d]">
-              Strava
+              {t.calendar.strava}
             </span>
             <button
               type="button"
@@ -213,9 +226,9 @@ export function DayDetail({ date }: { date: string }) {
       ))}
 
       {todos.length === 0 && nothingElse ? (
-        <p className="text-muted-foreground text-sm">Nothing on this day.</p>
+        <p className="text-muted-foreground text-sm">{t.dayDetail.nothingThisDay}</p>
       ) : todos.length > 0 && nothingElse ? (
-        <p className="text-muted-foreground text-sm">Nothing else this day.</p>
+        <p className="text-muted-foreground text-sm">{t.dayDetail.nothingElse}</p>
       ) : null}
 
       <Button
@@ -224,7 +237,7 @@ export function DayDetail({ date }: { date: string }) {
         onClick={() => setAssigning(true)}
       >
         <Plus className="size-4" />
-        Add session
+        {t.dayDetail.addSession}
       </Button>
     </div>
   );

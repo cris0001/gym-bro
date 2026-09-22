@@ -8,6 +8,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 
+import { useSessionsTranslation } from '../i18n';
 import { useCalendarUiStore } from '../stores/calendar-ui.store';
 import { DayDetail } from './day-detail';
 
@@ -17,6 +18,7 @@ import { DayDetail } from './day-detail';
 export function DayDetailSheet() {
   const selectedDate = useCalendarUiStore((s) => s.selectedDate);
   const closeDay = useCalendarUiStore((s) => s.closeDay);
+  const t = useSessionsTranslation();
 
   return (
     <Sheet open={selectedDate !== null} onOpenChange={(next) => !next && closeDay()}>
@@ -25,7 +27,7 @@ export function DayDetailSheet() {
           <SheetTitle>
             {selectedDate ? format(parseISO(selectedDate), 'EEEE, MMM d') : ''}
           </SheetTitle>
-          <SheetDescription>Planned and finished sessions for this day.</SheetDescription>
+          <SheetDescription>{t.dayDetail.sheetDescription}</SheetDescription>
         </SheetHeader>
 
         {selectedDate && <DayDetail date={selectedDate} />}

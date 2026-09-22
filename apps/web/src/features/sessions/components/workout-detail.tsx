@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useConfirm } from '@/stores/confirm.store';
 
+import { useSessionsTranslation } from '../i18n';
 import { useDeleteWorkoutSession } from '../hooks/use-delete-workout-session';
 import { useEditWorkout } from '../hooks/use-edit-workout';
 import { useWorkoutSession } from '../hooks/use-workout-session';
@@ -25,18 +26,19 @@ export function WorkoutDetail({ sessionId }: WorkoutDetailProps) {
   const deleteMutation = useDeleteWorkoutSession();
   const editWorkout = useEditWorkout();
   const confirm = useConfirm();
+  const t = useSessionsTranslation();
 
   async function handleDelete() {
     const ok = await confirm({
-      title: 'Delete this workout?',
-      description: 'This cannot be undone.',
-      confirmText: 'Delete',
+      title: t.common.deleteWorkoutConfirm.title,
+      description: t.common.deleteWorkoutConfirm.description,
+      confirmText: t.common.deleteWorkoutConfirm.confirmText,
       destructive: true,
     });
     if (ok) {
       deleteMutation.mutate(sessionId, {
         onSuccess: () => {
-          toast.success('Workout deleted');
+          toast.success(t.common.workoutDeleted);
           void navigate({ to: '/calendar' });
         },
       });
@@ -57,9 +59,9 @@ export function WorkoutDetail({ sessionId }: WorkoutDetailProps) {
   if (isError || !session) {
     return (
       <div className="flex flex-col gap-3 p-4">
-        <p className="text-muted-foreground text-sm">Workout not found.</p>
+        <p className="text-muted-foreground text-sm">{t.workoutDetail.notFound}</p>
         <Link to="/calendar" className="text-sm underline">
-          Back to calendar
+          {t.workoutDetail.backToCalendar}
         </Link>
       </div>
     );
@@ -68,7 +70,7 @@ export function WorkoutDetail({ sessionId }: WorkoutDetailProps) {
   return (
     <div className="mx-auto lg:col-span-3 flex w-full max-w-2xl flex-col gap-4 p-3 md:p-4">
       <Link to="/calendar" className="text-muted-foreground text-sm">
-        ← Calendar
+        {t.workoutDetail.calendarLink}
       </Link>
 
       <header className="flex flex-col gap-2">
@@ -97,7 +99,7 @@ export function WorkoutDetail({ sessionId }: WorkoutDetailProps) {
       </header>
 
       {session.performances.length === 0 ? (
-        <p className="text-muted-foreground text-sm">No exercises logged.</p>
+        <p className="text-muted-foreground text-sm">{t.workoutDetail.noExercises}</p>
       ) : (
         <WorkoutPerformances
           performances={session.performances}
@@ -112,7 +114,7 @@ export function WorkoutDetail({ sessionId }: WorkoutDetailProps) {
             className="bg-accent text-primary hover:bg-accent/70 h-11 flex-1 rounded-full"
             onClick={() => void editWorkout(session)}
           >
-            Edit
+            {t.common.edit}
           </Button>
         )}
         <Button
@@ -121,7 +123,7 @@ export function WorkoutDetail({ sessionId }: WorkoutDetailProps) {
           onClick={() => void handleDelete()}
           disabled={deleteMutation.isPending}
         >
-          Delete
+          {t.common.delete}
         </Button>
       </div>
     </div>

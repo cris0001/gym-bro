@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 
+import { useSessionsTranslation } from '../i18n';
 import type { WorkoutDraft } from '../stores/workout-draft.store';
 import { useWorkoutDraftStore } from '../stores/workout-draft.store';
 import { useCreateStrengthSession } from '../hooks/use-create-strength-session';
@@ -75,6 +76,7 @@ export function FinishSessionSheet({ open, onClose }: FinishSessionSheetProps) {
   const createMutation = useCreateStrengthSession();
   const updateMutation = useUpdateStrengthSession();
   const navigate = useNavigate();
+  const t = useSessionsTranslation();
 
   if (!draft) return null;
 
@@ -84,9 +86,9 @@ export function FinishSessionSheet({ open, onClose }: FinishSessionSheetProps) {
 
   const validationError =
     draft.performances.length === 0
-      ? 'Add at least one exercise before finishing.'
+      ? t.finish.needExercise
       : draft.performances.some((p) => p.sets.length === 0)
-        ? 'Every exercise needs at least one set.'
+        ? t.finish.needSet
         : null;
 
   function toggleTag(tagId: string) {
@@ -126,19 +128,19 @@ export function FinishSessionSheet({ open, onClose }: FinishSessionSheetProps) {
     <Sheet open={open} onOpenChange={(next) => !next && onClose()}>
       <SheetContent side="bottom" className="gap-0">
         <SheetHeader>
-          <SheetTitle>{isEditing ? 'Save changes' : 'Finish workout'}</SheetTitle>
-          <SheetDescription>Rate it and add tags, then save.</SheetDescription>
+          <SheetTitle>{isEditing ? t.finish.editTitle : t.finish.title}</SheetTitle>
+          <SheetDescription>{t.finish.description}</SheetDescription>
         </SheetHeader>
 
         <div className="flex max-h-[70vh] flex-col gap-4 overflow-y-auto p-4">
           <div className="flex flex-col gap-1">
-            <span className="text-sm font-medium">Rating</span>
+            <span className="text-sm font-medium">{t.finish.rating}</span>
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
                   type="button"
-                  aria-label={`${star} star${star > 1 ? 's' : ''}`}
+                  aria-label={t.finish.starAria(star)}
                   onClick={() => setRating(draft.rating === star ? null : star)}
                 >
                   <Star
@@ -155,10 +157,10 @@ export function FinishSessionSheet({ open, onClose }: FinishSessionSheetProps) {
           </div>
 
           <label className="flex flex-col gap-1 text-sm font-medium">
-            Duration (min)
+            {t.finish.duration}
             <Input
               inputMode="numeric"
-              placeholder="Optional"
+              placeholder={t.common.optional}
               className="h-11"
               value={draft.durationMinutes ?? ''}
               onChange={(e) => setDuration(parseDuration(e.target.value))}
@@ -166,9 +168,9 @@ export function FinishSessionSheet({ open, onClose }: FinishSessionSheetProps) {
           </label>
 
           <label className="flex flex-col gap-1 text-sm font-medium">
-            Notes
+            {t.finish.notes}
             <textarea
-              placeholder="Optional"
+              placeholder={t.common.optional}
               rows={3}
               className="border-input bg-background placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 rounded-lg border px-2.5 py-2 text-base transition-colors outline-none focus-visible:ring-3 md:text-sm"
               value={draft.notes ?? ''}
@@ -178,7 +180,7 @@ export function FinishSessionSheet({ open, onClose }: FinishSessionSheetProps) {
 
           {tags.length > 0 && (
             <div className="flex flex-col gap-1">
-              <span className="text-sm font-medium">Tags</span>
+              <span className="text-sm font-medium">{t.finish.tags}</span>
               <div className="flex flex-wrap gap-2">
                 {tags
                   .filter((tag) => tag.isActive)
@@ -211,7 +213,7 @@ export function FinishSessionSheet({ open, onClose }: FinishSessionSheetProps) {
             disabled={validationError !== null || isPending}
             onClick={handleFinish}
           >
-            {isPending ? 'Saving…' : isEditing ? 'Save changes' : 'Finish workout'}
+            {isPending ? t.common.saving : isEditing ? t.finish.editTitle : t.finish.title}
           </Button>
         </div>
       </SheetContent>

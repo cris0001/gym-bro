@@ -4,6 +4,7 @@ import { Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useMediaQuery } from '@/hooks/use-media-query';
 
+import { useSessionsTranslation } from '../i18n';
 import { CalendarGrid } from './calendar-grid';
 import { DayDetailPanel } from './day-detail-panel';
 import { DayDetailSheet } from './day-detail-sheet';
@@ -14,31 +15,32 @@ import { DayDetailSheet } from './day-detail-sheet';
 // and the panel are mutually exclusive (one mounts per breakpoint).
 export function CalendarPage() {
   const isDesktop = useMediaQuery('(min-width: 1024px)');
+  const t = useSessionsTranslation();
 
   return (
     <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-4 p-3 md:p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-3">
-          <h1 className="font-heading text-[28px] leading-none font-medium">Calendar</h1>
+          <h1 className="font-heading text-[28px] leading-none font-medium">{t.calendar.title}</h1>
           <Button asChild className="h-9 rounded-full px-4">
             <Link to="/session">
               <Play className="size-4" />
-              Start
+              {t.common.start}
             </Link>
           </Button>
         </div>
         <div className="text-muted-foreground flex items-center gap-4 text-xs">
           <span className="flex items-center gap-1.5">
             <span className="size-2.5 rounded-full bg-[#5a7a52] dark:bg-[#8fae85]" />
-            Finished
+            {t.calendar.finished}
           </span>
           <span className="flex items-center gap-1.5">
             <span className="bg-primary size-2.5 rounded-full" />
-            Planned
+            {t.calendar.planned}
           </span>
           <span className="flex items-center gap-1.5">
             <span className="size-2.5 rounded-full bg-[#d15b28] dark:bg-[#ff7a3d]" />
-            Strava
+            {t.calendar.strava}
           </span>
         </div>
       </div>
