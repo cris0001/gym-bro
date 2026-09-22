@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 
 import type { PlannedSessionWithTemplate } from '@gym-bro/shared';
 
+import { useDashboardTranslation } from '../i18n';
+
 interface NextSessionCardProps {
   session: PlannedSessionWithTemplate | null;
 }
@@ -13,18 +15,20 @@ interface NextSessionCardProps {
 const microLabel = 'text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase';
 const secondaryPill = 'bg-accent text-primary hover:bg-accent/70 h-10 rounded-full px-4';
 
-function relativeDay(days: number): string {
-  if (days <= 0) return 'today';
-  if (days === 1) return 'tomorrow';
-  return `in ${days} days`;
-}
-
 // The soonest upcoming planned session, or a prompt to plan one. Text-forward stat card.
 export function NextSessionCard({ session }: NextSessionCardProps) {
   const { startFromTemplate } = useStartWorkout();
+  const t = useDashboardTranslation();
+
+  const relativeDay = (days: number): string => {
+    if (days <= 0) return t.nextSession.today;
+    if (days === 1) return t.nextSession.tomorrow;
+    return t.nextSession.inDays(days);
+  };
+
   return (
     <div className="bg-card flex h-full flex-col gap-1.5 rounded-2xl border p-5">
-      <p className={microLabel}>Next session</p>
+      <p className={microLabel}>{t.nextSession.label}</p>
       {session ? (
         <>
           <div className="flex flex-col gap-0.5">
@@ -48,18 +52,20 @@ export function NextSessionCard({ session }: NextSessionCardProps) {
                 })
               }
             >
-              Start early
+              {t.nextSession.startEarly}
             </Button>
             <Button asChild variant="ghost" className={secondaryPill}>
-              <Link to="/calendar">Reschedule</Link>
+              <Link to="/calendar">{t.nextSession.reschedule}</Link>
             </Button>
           </div>
         </>
       ) : (
         <>
-          <p className="font-heading text-[22px] leading-tight font-semibold">Nothing planned</p>
+          <p className="font-heading text-[22px] leading-tight font-semibold">
+            {t.nextSession.nothing}
+          </p>
           <Button asChild variant="ghost" className={`${secondaryPill} mt-auto w-fit`}>
-            <Link to="/calendar">Plan one</Link>
+            <Link to="/calendar">{t.nextSession.planOne}</Link>
           </Button>
         </>
       )}

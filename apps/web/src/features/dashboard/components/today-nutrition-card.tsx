@@ -5,11 +5,14 @@ import { MACRO_BAR, type MacroKey } from '@/features/nutrition/utils/macro-color
 import { SkeletonHero } from '@/components/skeletons';
 import { cn } from '@/lib/utils';
 
+import { useDashboardTranslation } from '../i18n';
+
 // The dashboard's nutrition hero: a calorie ring against today's target plus the three
 // macro bars, replacing the old plain calorie card. Read-only summary of the diary.
 export function TodayNutritionCard({ date }: { date: string }) {
   const { data: day, isPending } = useDailyFoodLog(date);
   const { data: target } = useCurrentTarget();
+  const t = useDashboardTranslation();
 
   const kcal = Math.round(day?.totals.kcal ?? 0);
   const targetKcal = target?.kcal ?? null;
@@ -18,7 +21,7 @@ export function TodayNutritionCard({ date }: { date: string }) {
   return (
     <div className="bg-card flex flex-col gap-4 rounded-2xl border p-5">
       <p className="text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase">
-        Today&apos;s plate
+        {t.nutrition.label}
       </p>
 
       {isPending ? (
@@ -30,7 +33,7 @@ export function TodayNutritionCard({ date }: { date: string }) {
             to="/targets"
             className="bg-accent text-primary hover:bg-accent/70 mt-1 inline-flex h-9 w-fit items-center rounded-full px-3.5 text-[12.5px] font-semibold"
           >
-            Set a target
+            {t.nutrition.setTarget}
           </Link>
         </div>
       ) : (
@@ -38,26 +41,26 @@ export function TodayNutritionCard({ date }: { date: string }) {
           <CalorieRing kcal={kcal} target={targetKcal} />
           <div className="flex min-w-0 flex-1 flex-col gap-3">
             <MacroBar
-              label="Protein"
+              label={t.nutrition.protein}
               macro="protein"
               value={day?.totals.proteinG ?? 0}
               target={target?.proteinG ?? 0}
             />
             <MacroBar
-              label="Carbs"
+              label={t.nutrition.carbs}
               macro="carbs"
               value={day?.totals.carbsG ?? 0}
               target={target?.carbsG ?? 0}
             />
             <MacroBar
-              label="Fat"
+              label={t.nutrition.fat}
               macro="fat"
               value={day?.totals.fatG ?? 0}
               target={target?.fatG ?? 0}
             />
             {left !== null ? (
               <span className="bg-accent text-accent-foreground w-fit rounded-full px-3 py-1 text-xs font-medium">
-                {left >= 0 ? `${left} kcal left` : `${-left} kcal over`}
+                {left >= 0 ? `${left} ${t.nutrition.left}` : `${-left} ${t.nutrition.over}`}
               </span>
             ) : null}
           </div>

@@ -5,6 +5,8 @@ import { ChevronRight, Star } from 'lucide-react';
 import { useWorkoutSession, useWorkoutSessions } from '@/features/sessions';
 import { Skeleton } from '@/components/ui/skeleton';
 
+import { useDashboardTranslation } from '../i18n';
+
 // A small window of recent sessions to find the latest strength one within (ad-hoc
 // activities are skipped) — enough for the dashboard without paging.
 const RECENT_WINDOW = 10;
@@ -21,11 +23,12 @@ export function LastWorkoutCard() {
   // there's a session to show.
   const { data: detail } = useWorkoutSession(last?.id ?? '', Boolean(last));
   const exercises = detail?.performances.map((performance) => performance.exercise.name) ?? [];
+  const t = useDashboardTranslation();
 
   if (isPending) {
     return (
       <div className="bg-card flex flex-col gap-2 rounded-2xl border p-5">
-        <p className={microLabel}>Last workout</p>
+        <p className={microLabel}>{t.lastWorkout.label}</p>
         <Skeleton className="h-5 w-2/3" />
         <Skeleton className="h-3 w-1/2" />
       </div>
@@ -35,13 +38,13 @@ export function LastWorkoutCard() {
   if (!last) {
     return (
       <div className="bg-card flex flex-col gap-1 rounded-2xl border p-5">
-        <p className={microLabel}>Last workout</p>
-        <span className="text-muted-foreground text-sm">No workouts logged yet.</span>
+        <p className={microLabel}>{t.lastWorkout.label}</p>
+        <span className="text-muted-foreground text-sm">{t.lastWorkout.none}</span>
         <Link
           to="/session"
           className="bg-accent text-primary hover:bg-accent/70 mt-1 inline-flex h-9 w-fit items-center rounded-full px-3.5 text-[12.5px] font-semibold"
         >
-          Start one
+          {t.lastWorkout.startOne}
         </Link>
       </div>
     );
@@ -49,10 +52,8 @@ export function LastWorkoutCard() {
 
   const meta = [
     format(parseISO(last.performedDate), 'EEEE'),
-    last.durationMinutes ? `${last.durationMinutes} min` : null,
-    exercises.length > 0
-      ? `${exercises.length} exercise${exercises.length === 1 ? '' : 's'}`
-      : null,
+    last.durationMinutes ? t.lastWorkout.minutes(last.durationMinutes) : null,
+    exercises.length > 0 ? t.lastWorkout.exercise(exercises.length) : null,
   ]
     .filter(Boolean)
     .join(' · ');
@@ -64,7 +65,7 @@ export function LastWorkoutCard() {
       className="bg-card flex flex-col gap-1 rounded-2xl border p-5"
     >
       <div className="flex items-center justify-between">
-        <p className={microLabel}>Last workout</p>
+        <p className={microLabel}>{t.lastWorkout.label}</p>
         <ChevronRight className="text-muted-foreground size-5 shrink-0" />
       </div>
       <p className="font-heading truncate text-[22px] leading-tight font-semibold">{last.name}</p>

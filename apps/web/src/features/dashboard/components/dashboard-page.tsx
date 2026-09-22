@@ -8,6 +8,7 @@ import { usePlannedSessions, useWorkoutSessions } from '@/features/sessions';
 import { StravaSection } from '@/features/strava';
 import { Button } from '@/components/ui/button';
 
+import { useDashboardTranslation } from '../i18n';
 import { DashboardSkeleton } from './dashboard-skeleton';
 import { LastWorkoutCard } from './last-workout-card';
 import { LatestWeightCard } from './latest-weight-card';
@@ -21,16 +22,17 @@ const ISO = 'yyyy-MM-dd';
 // Window for finding the next planned session.
 const LOOKAHEAD_DAYS = 60;
 
-function greetingFor(hour: number): string {
-  if (hour < 12) return 'Good morning';
-  if (hour < 18) return 'Good afternoon';
-  return 'Good evening';
+function greetingKey(hour: number): 'morning' | 'afternoon' | 'evening' {
+  if (hour < 12) return 'morning';
+  if (hour < 18) return 'afternoon';
+  return 'evening';
 }
 
 // Home screen: an editorial header + start CTA, the nutrition hero paired with the next
 // planned session, weight + last-workout stats, and the Strava section. Composes the
 // features' public hooks — no dashboard-specific backend.
 export function DashboardPage() {
+  const t = useDashboardTranslation();
   const today = new Date();
   const todayIso = format(today, ISO);
 
@@ -66,14 +68,14 @@ export function DashboardPage() {
             {format(today, 'EEEE, MMMM d')}
           </p>
           <h1 className="font-heading text-[28px] leading-tight font-medium lg:text-[34px]">
-            {greetingFor(today.getHours())}
+            {t.greeting[greetingKey(today.getHours())]}
           </h1>
         </div>
         <div className="flex items-center gap-3">
           <Button asChild className="hidden h-11 rounded-full px-5 lg:inline-flex">
             <Link to="/session">
               <Play className="size-4" />
-              Start workout
+              {t.startWorkout}
             </Link>
           </Button>
           <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#f5e7ea] text-[#75394c] dark:bg-[#3d2a32] dark:text-[#d9a4b3]">
@@ -85,7 +87,7 @@ export function DashboardPage() {
       <Button asChild className="h-12 w-full rounded-full text-base lg:hidden">
         <Link to="/session">
           <Play className="size-5" />
-          Start workout
+          {t.startWorkout}
         </Link>
       </Button>
 
