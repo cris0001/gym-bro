@@ -8,12 +8,25 @@ describe('shared public interface', () => {
   });
 
   it('accepts a valid registration', () => {
-    const result = registerSchema.safeParse({ email: 'a@b.com', password: 'password1' });
+    const result = registerSchema.safeParse({
+      name: 'Alex',
+      email: 'a@b.com',
+      password: 'password1',
+    });
     expect(result.success).toBe(true);
   });
 
   it('rejects a short password', () => {
-    const result = registerSchema.safeParse({ email: 'a@b.com', password: 'short' });
+    const result = registerSchema.safeParse({ name: 'Alex', email: 'a@b.com', password: 'short' });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects a blank name', () => {
+    const result = registerSchema.safeParse({
+      name: '   ',
+      email: 'a@b.com',
+      password: 'password1',
+    });
     expect(result.success).toBe(false);
   });
 });
