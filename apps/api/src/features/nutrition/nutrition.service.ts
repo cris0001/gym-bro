@@ -216,6 +216,9 @@ async function buildRecipeDetail(recipe: {
     amountGrams: line.amountGrams,
     position: line.position,
     macros: scaleMacros(line.per100g, line.amountGrams),
+    servingGrams: line.servingGrams,
+    unitGrams: line.unitGrams,
+    imageUrl: line.imageUrl,
   }));
   const total = sumMacros(ingredients.map((i) => i.macros));
   const totalGrams = ingredients.reduce((sum, i) => sum + i.amountGrams, 0);

@@ -334,8 +334,9 @@ export async function findRecipeById(userId: string, id: string) {
   return row;
 }
 
-// A recipe's ingredient lines, ordered, each with its food's name and per-100g
-// macros (coerced to numbers) so the service can scale them to amount_grams.
+// A recipe's ingredient lines, ordered, each with its food's name, per-100g macros
+// (coerced to numbers) so the service can scale them to amount_grams, and the food's
+// serving/unit weights so the builder can offer those units when editing a line.
 export interface RecipeIngredientWithFoodRow {
   id: string;
   foodId: string;
@@ -343,6 +344,9 @@ export interface RecipeIngredientWithFoodRow {
   amountGrams: number;
   position: number;
   per100g: { kcal: number; proteinG: number; carbsG: number; fatG: number };
+  servingGrams: number | null;
+  unitGrams: number | null;
+  imageUrl: string | null;
 }
 
 export async function listRecipeIngredientsWithFood(
@@ -360,6 +364,9 @@ export async function listRecipeIngredientsWithFood(
       proteinG: foods.proteinG,
       carbsG: foods.carbsG,
       fatG: foods.fatG,
+      servingGrams: foods.servingGrams,
+      unitGrams: foods.unitGrams,
+      imageUrl: foods.imageUrl,
     })
     .from(recipeIngredients)
     .innerJoin(foods, eq(recipeIngredients.foodId, foods.id))
@@ -378,6 +385,9 @@ export async function listRecipeIngredientsWithFood(
       carbsG: Number(row.carbsG),
       fatG: Number(row.fatG),
     },
+    servingGrams: row.servingGrams === null ? null : Number(row.servingGrams),
+    unitGrams: row.unitGrams === null ? null : Number(row.unitGrams),
+    imageUrl: row.imageUrl,
   }));
 }
 

@@ -161,6 +161,12 @@ export interface RecipeIngredientWithFood {
   amountGrams: number;
   position: number;
   macros: MacroTotals;
+  // The food's serving / unit weight (null when it has none) — lets the recipe builder
+  // offer "serv" / "u" for this line, not just grams.
+  servingGrams: number | null;
+  unitGrams: number | null;
+  // The food's photo, for the ingredient row thumbnail (null when it has none).
+  imageUrl: string | null;
 }
 
 // Full recipe with its ingredients and computed macro totals (whole recipe and
