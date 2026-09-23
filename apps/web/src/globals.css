@@ -9,6 +9,14 @@
 /* shadcn/ui init will add the design-token theme (CSS variables) and dark-mode
    layer here. Kept minimal for now so the Tailwind pipeline is wired up. */
 
+/* Extra wide-screen breakpoints (1440px, 1690px), used by the auth split layout. Named
+   breakpoints are ordered by value, whereas arbitrary min-[…] variants land before
+   xl/2xl in the output and lose to them. */
+@theme {
+  --breakpoint-3xl: 90rem;
+  --breakpoint-4xl: 105.625rem;
+}
+
 @theme inline {
   /* Newsreader (variable serif) for display/editorial type; Geist stays the UI face. */
   --font-heading: 'Newsreader Variable', serif;
@@ -48,6 +56,13 @@
   --color-border: var(--border);
 
   --color-destructive: var(--destructive);
+  --color-destructive-hover: var(--destructive-hover);
+  --color-destructive-tint: var(--destructive-tint);
+  --color-destructive-tint-2: var(--destructive-tint-2);
+  --color-destructive-solid: var(--destructive-solid);
+  --color-destructive-solid-hover: var(--destructive-solid-hover);
+  --color-destructive-solid-foreground: var(--destructive-solid-foreground);
+  --color-destructive-rest: var(--destructive-rest);
 
   --color-accent-foreground: var(--accent-foreground);
 
@@ -122,7 +137,16 @@
 
   --accent-foreground: #75394c;
 
-  --destructive: oklch(0.577 0.245 27.325);
+  /* Delete family: text/icon red, its hover, the soft hover tints, and the one solid
+     fill (confirm dialog only). */
+  --destructive: #a4474f;
+  --destructive-hover: #8f3a42;
+  --destructive-tint: #f7e6e6;
+  --destructive-tint-2: #f0d6d7;
+  --destructive-solid: #a4474f;
+  --destructive-solid-hover: #8f3a42;
+  --destructive-solid-foreground: #fdf6f5;
+  --destructive-rest: #b3a6ac;
 
   --border: #e8e1da;
 
@@ -191,7 +215,14 @@
 
   --accent-foreground: #d9a4b3;
 
-  --destructive: oklch(0.704 0.191 22.216);
+  --destructive: #e08a8f;
+  --destructive-hover: #f0a4a8;
+  --destructive-tint: #3a2226;
+  --destructive-tint-2: #45282c;
+  --destructive-solid: #c45a61;
+  --destructive-solid-hover: #d46b72;
+  --destructive-solid-foreground: #1f191c;
+  --destructive-rest: #7a6c72;
 
   --border: #453840;
 

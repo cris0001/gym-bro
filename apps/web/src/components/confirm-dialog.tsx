@@ -8,7 +8,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 import { useConfirmStore } from '@/stores/confirm.store';
@@ -36,11 +35,21 @@ export function ConfirmDialog() {
           ) : null}
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => resolve(false)}>
+          <AlertDialogCancel
+            className={cn(
+              request?.destructive &&
+                'h-10 rounded-full border-[#e8e1da] bg-[#fdfbf9] px-[18px] text-[13px] font-semibold dark:border-[#3a3035] dark:bg-[#282124]',
+            )}
+            onClick={() => resolve(false)}
+          >
             {request?.cancelText ?? 'Cancel'}
           </AlertDialogCancel>
+          {/* The only place a delete gets the solid red fill. */}
           <AlertDialogAction
-            className={cn(request?.destructive && buttonVariants({ variant: 'destructive' }))}
+            className={cn(
+              request?.destructive &&
+                'bg-destructive-solid text-destructive-solid-foreground hover:bg-destructive-solid-hover h-10 rounded-full px-[18px] text-[13px] font-semibold transition-colors duration-150',
+            )}
             onClick={() => resolve(true)}
           >
             {request?.confirmText ?? 'Confirm'}
