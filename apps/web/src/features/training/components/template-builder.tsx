@@ -84,7 +84,7 @@ export function TemplateBuilder({ templateId }: TemplateBuilderProps) {
       <button
         type="button"
         onClick={() => openCreate(template.id)}
-        className="text-primary rounded-[18px] border border-dashed border-[#d6c8bd] p-[13px] text-center text-[13px] font-bold dark:border-[#4b3f47]"
+        className="rounded-[18px] border border-border bg-card px-[13px] py-2.5 text-center text-[13px] font-bold text-primary transition-colors hover:bg-muted"
       >
         + Add exercise from library
       </button>

@@ -1,7 +1,6 @@
-import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
-import { Button } from '@/components/ui/button';
+import { DeleteIconButton } from '@/components/delete-icon-button';
 import { cn } from '@/lib/utils';
 
 import type { FoodLogEntry } from '@gym-bro/shared';
@@ -25,7 +24,6 @@ export function DiaryEntryRow({
   onEdit,
   highlighted = false,
   showImage = false,
-  mutedDelete = false,
 }: {
   entry: FoodLogEntry;
   onEdit?: (entry: FoodLogEntry) => void;
@@ -34,9 +32,6 @@ export function DiaryEntryRow({
   // Always reserve a thumbnail slot (placeholder when the item has no photo). Used in
   // the add sheet, where rows read as cards; the main diary list leaves it off.
   showImage?: boolean;
-  // Muted (parchment) trash icon instead of the default destructive red — matches the
-  // "Added to meal" card in the add view.
-  mutedDelete?: boolean;
 }) {
   const t = useNutritionTranslation();
   const remove = useDeleteFoodLogEntry();
@@ -94,20 +89,11 @@ export function DiaryEntryRow({
         {Math.round(entry.kcal)}
         <span className="text-muted-foreground ml-0.5 text-[11px] font-normal">kcal</span>
       </span>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className={cn(
-          'size-9 shrink-0',
-          mutedDelete ? 'text-[#c9bcb2] dark:text-[#5a4d55]' : 'text-destructive',
-        )}
+      <DeleteIconButton
         aria-label={t.diary.removeEntryAria(entry.itemName)}
         disabled={remove.isPending}
         onClick={() => remove.mutate(entry.id)}
-      >
-        <Trash2 className="size-4" />
-      </Button>
+      />
     </li>
   );
 }

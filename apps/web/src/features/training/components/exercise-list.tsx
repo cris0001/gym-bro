@@ -1,6 +1,7 @@
-import { Dumbbell, Pencil, Plus, Trash2 } from 'lucide-react';
+import { ChevronRight, Dumbbell, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { DeleteIconButton } from '@/components/delete-icon-button';
 import { EmptyState } from '@/components/empty-state';
 import { ErrorState } from '@/components/error-state';
 import { SkeletonList } from '@/components/skeletons';
@@ -76,44 +77,40 @@ export function ExerciseList({ category, search }: ExerciseListProps) {
     return <p className="text-muted-foreground p-4 text-sm">No exercises match your search.</p>;
   }
 
+  // Mobile: a divided list. Desktop: a grid of cards. Tapping a row/card opens the edit
+  // sheet; delete lives in that sheet on mobile, and appears on hover on desktop.
   return (
-    <ul className="divide-y divide-dashed divide-[#e4dad2] dark:divide-[#40353c]">
+    <ul className="divide-y divide-dashed divide-[#e4dad2] md:grid md:grid-cols-2 md:gap-3 md:divide-y-0 lg:grid-cols-3 dark:divide-[#40353c]">
       {filtered.map((exercise) => (
         <li
           key={exercise.id}
-          className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/50"
+          className="group hover:bg-muted/50 relative flex items-center transition-colors md:bg-card md:rounded-2xl md:border md:hover:border-[#d6c8bd] md:hover:bg-card"
         >
-          {/* Only useful under "All", where rows mix categories. */}
-          {category === null ? (
-            <span className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-full">
-              <CategoryIcon category={exercise.category} className="size-4" />
-            </span>
-          ) : null}
-          <div className="min-w-0 flex-1">
-            <p className="truncate font-semibold">{exercise.name}</p>
-            <p className="text-muted-foreground text-xs">{exercise.category}</p>
-          </div>
-          <Button
+          <button
             type="button"
-            variant="ghost"
-            size="icon"
-            className="size-11 shrink-0"
-            aria-label={`Edit ${exercise.name}`}
+            className="flex min-w-0 flex-1 items-center gap-3 px-4 py-3 text-left md:py-4"
             onClick={() => openEdit(exercise)}
           >
-            <Pencil className="size-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="text-destructive size-11 shrink-0"
+            {/* Only useful under "All", where rows mix categories. */}
+            {category === null ? (
+              <span className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-full">
+                <CategoryIcon category={exercise.category} className="size-4" />
+              </span>
+            ) : null}
+            <span className="min-w-0 flex-1">
+              <span className="md:font-heading block truncate font-semibold md:text-base">
+                {exercise.name}
+              </span>
+              <span className="text-muted-foreground block text-xs">{exercise.category}</span>
+            </span>
+            <ChevronRight className="text-muted-foreground hidden size-4 shrink-0 md:block" />
+          </button>
+          <DeleteIconButton
+            className="mr-2 hidden transition-[opacity,background-color,color] group-hover:opacity-100 focus-visible:opacity-100 md:inline-flex md:opacity-0"
             aria-label={`Delete ${exercise.name}`}
             disabled={remove.isPending}
             onClick={() => void onDelete(exercise)}
-          >
-            <Trash2 className="size-4" />
-          </Button>
+          />
         </li>
       ))}
     </ul>

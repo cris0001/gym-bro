@@ -1,7 +1,8 @@
 import { format, parseISO } from 'date-fns';
-import { ChevronDown, ChevronRight, Pencil, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Pencil } from 'lucide-react';
 import { useState } from 'react';
 
+import { DeleteIconButton } from '@/components/delete-icon-button';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
@@ -107,15 +108,7 @@ function MeasurementRow({
         </Button>
         <Popover open={confirmOpen} onOpenChange={setConfirmOpen}>
           <PopoverTrigger asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="text-destructive size-9 shrink-0"
-              aria-label={`Delete ${entry.measuredDate}`}
-            >
-              <Trash2 className="size-4" />
-            </Button>
+            <DeleteIconButton aria-label={`Delete ${entry.measuredDate}`} />
           </PopoverTrigger>
           <PopoverContent align="end" className="w-60">
             <p className="text-sm font-medium">Delete this entry?</p>
@@ -125,14 +118,16 @@ function MeasurementRow({
                 type="button"
                 variant="outline"
                 size="sm"
+                className="rounded-full border-[#e8e1da] bg-[#fdfbf9] px-[18px] text-[13px] font-semibold dark:border-[#3a3035] dark:bg-[#282124]"
                 onClick={() => setConfirmOpen(false)}
               >
                 Cancel
               </Button>
+              {/* This popover is the confirm step, so it gets the solid delete fill. */}
               <Button
                 type="button"
-                variant="destructive"
                 size="sm"
+                className="bg-destructive-solid text-destructive-solid-foreground hover:bg-destructive-solid-hover rounded-full px-[18px] text-[13px] font-semibold"
                 disabled={remove.isPending}
                 onClick={() => remove.mutate(entry.id, { onSuccess: () => setConfirmOpen(false) })}
               >

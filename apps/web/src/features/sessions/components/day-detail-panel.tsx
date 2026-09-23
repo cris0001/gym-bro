@@ -70,7 +70,7 @@ export function DayDetailPanel() {
         <div className="flex shrink-0 gap-1.5">
           <button
             type="button"
-            className="flex size-9 items-center justify-center rounded-xl border border-[#e0d3d8] bg-[#efe6e9] text-[#8d4a5e] transition-colors hover:bg-[#e6d8dd] dark:border-[#4a3a42] dark:bg-[#3a2f34] dark:text-[#c98fa0] dark:hover:bg-[#43363c]"
+            className="flex size-9 items-center justify-center rounded-xl border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             aria-label={t.calendar.prev}
             onClick={() => selectDay(format(subDays(parseISO(date), 1), ISO))}
           >
@@ -78,7 +78,7 @@ export function DayDetailPanel() {
           </button>
           <button
             type="button"
-            className="flex size-9 items-center justify-center rounded-xl border border-[#e0d3d8] bg-[#efe6e9] text-[#8d4a5e] transition-colors hover:bg-[#e6d8dd] dark:border-[#4a3a42] dark:bg-[#3a2f34] dark:text-[#c98fa0] dark:hover:bg-[#43363c]"
+            className="flex size-9 items-center justify-center rounded-xl border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             aria-label={t.calendar.next}
             onClick={() => selectDay(format(addDays(parseISO(date), 1), ISO))}
           >

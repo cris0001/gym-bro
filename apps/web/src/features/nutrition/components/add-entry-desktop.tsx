@@ -160,7 +160,7 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
                 <>
                   <ul className={cn('mt-2 flex flex-col divide-y divide-dashed', dashed)}>
                     {mealEntries.map((entry) => (
-                      <DiaryEntryRow key={entry.id} entry={entry} showImage mutedDelete />
+                      <DiaryEntryRow key={entry.id} entry={entry} showImage />
                     ))}
                   </ul>
                   <p className="font-heading text-muted-foreground mt-3 text-[12px] italic">

@@ -1,6 +1,7 @@
-import { Apple, ChevronRight, Plus, Trash2 } from 'lucide-react';
+import { Apple, ChevronRight, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { DeleteIconButton } from '@/components/delete-icon-button';
 import { EmptyState } from '@/components/empty-state';
 import { SkeletonList } from '@/components/skeletons';
 import { Button } from '@/components/ui/button';
@@ -107,17 +108,12 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
             </div>
             <ChevronRight className="size-5 shrink-0 text-[#c9bcb2] dark:text-[#5a4d55]" />
           </button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="text-destructive size-11 shrink-0"
+          <DeleteIconButton
+            className="mr-2"
             aria-label={t.foods.deleteAria(food.name)}
             disabled={remove.isPending}
             onClick={() => void onDelete(food)}
-          >
-            <Trash2 className="size-4" />
-          </Button>
+          />
         </li>
       ))}
     </ul>

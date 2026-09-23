@@ -1,10 +1,12 @@
 import { Link } from '@tanstack/react-router';
-import { Check, ChevronDown, Pencil, Star, Trash2 } from 'lucide-react';
+import { Check, ChevronDown, Star } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 import type { WorkoutSessionDetail, WorkoutSessionListItem } from '@gym-bro/shared';
 
+import { DeleteIconButton } from '@/components/delete-icon-button';
+import { EditIconButton } from '@/components/edit-icon-button';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useConfirm } from '@/stores/confirm.store';
@@ -197,24 +199,16 @@ export function DayWorkoutItem({
                   </Link>
                 </Button>
                 {detail.sessionType === 'strength' && (
-                  <button
-                    type="button"
-                    className="text-muted-foreground hover:bg-muted flex size-11 shrink-0 items-center justify-center rounded-full border transition-colors"
+                  <EditIconButton
                     aria-label={t.common.edit}
                     onClick={() => void editWorkout(detail)}
-                  >
-                    <Pencil className="size-4" />
-                  </button>
+                  />
                 )}
-                <button
-                  type="button"
-                  className="text-muted-foreground hover:bg-muted flex size-11 shrink-0 items-center justify-center rounded-full border transition-colors disabled:opacity-50"
+                <DeleteIconButton
                   aria-label={t.common.delete}
                   onClick={() => void handleDelete()}
                   disabled={remove.isPending}
-                >
-                  <Trash2 className="size-4" />
-                </button>
+                />
               </div>
             </>
           )}

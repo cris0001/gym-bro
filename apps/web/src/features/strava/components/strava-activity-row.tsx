@@ -1,7 +1,7 @@
 import { format, parseISO } from 'date-fns';
-import { ChevronDown, Trash2 } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
+import { DeleteButton } from '@/components/delete-button';
 import { cn } from '@/lib/utils';
 import { useConfirm } from '@/stores/confirm.store';
 
@@ -98,17 +98,9 @@ export function StravaActivityRow({
             >
               View on Strava ↗
             </a>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="text-destructive gap-1.5"
-              disabled={remove.isPending}
-              onClick={() => void handleDelete()}
-            >
-              <Trash2 className="size-4" />
+            <DeleteButton disabled={remove.isPending} onClick={() => void handleDelete()}>
               Remove
-            </Button>
+            </DeleteButton>
           </div>
         </div>
       )}

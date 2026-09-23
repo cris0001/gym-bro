@@ -1,7 +1,8 @@
 import { Link } from '@tanstack/react-router';
-import { ChefHat, ChevronRight, Plus, Trash2 } from 'lucide-react';
+import { ChefHat, ChevronRight, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { DeleteIconButton } from '@/components/delete-icon-button';
 import { EmptyState } from '@/components/empty-state';
 import { SkeletonList } from '@/components/skeletons';
 import { Button } from '@/components/ui/button';
@@ -129,17 +130,12 @@ export function RecipeList({ selectedId = null, onSelect }: RecipeListProps) {
                 {inner}
               </Link>
             )}
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="text-destructive size-11 shrink-0"
+            <DeleteIconButton
+              className="mr-2"
               aria-label={t.recipes.deleteAria(recipe.name)}
               disabled={remove.isPending}
               onClick={() => void onDelete(recipe)}
-            >
-              <Trash2 className="size-4" />
-            </Button>
+            />
           </li>
         );
       })}

@@ -1,8 +1,9 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Pencil, Trash2 } from 'lucide-react';
+import { GripVertical, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { DeleteIconButton } from '@/components/delete-icon-button';
 import { cn } from '@/lib/utils';
 import { useConfirm } from '@/stores/confirm.store';
 import type { TemplateExerciseWithExercise } from '@gym-bro/shared';
@@ -61,7 +62,7 @@ export function TemplateExerciseRow({ templateExercise }: TemplateExerciseRowPro
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(
-        'flex items-center gap-2.5 border-t border-dashed border-[#e4dad2] bg-card py-[11px] dark:border-[#40353c]',
+        'flex items-center gap-2.5 border-t border-dashed border-[#e4dad2] bg-card py-[11px] first:border-t-0 dark:border-[#40353c]',
         isDragging && 'opacity-50',
       )}
     >
@@ -98,15 +99,11 @@ export function TemplateExerciseRow({ templateExercise }: TemplateExerciseRowPro
       >
         <Pencil className="size-[14px]" />
       </button>
-      <button
-        type="button"
-        className="shrink-0 p-1.5 text-[#c9bcb2] disabled:opacity-50 dark:text-[#5a4d55]"
+      <DeleteIconButton
         aria-label={`Remove ${exercise.name}`}
         disabled={remove.isPending}
         onClick={() => void onDelete()}
-      >
-        <Trash2 className="size-[14px]" />
-      </button>
+      />
     </li>
   );
 }

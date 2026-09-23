@@ -1,11 +1,13 @@
-import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
+import { Search } from 'lucide-react';
+import { useState } from 'react';
 
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { FIELD_CLASS } from '@/lib/form-styles';
 import { cn } from '@/lib/utils';
 
 import { useExercises } from '../hooks/use-exercises';
+import { PickedExerciseCard } from './picked-exercise-card';
 
 interface ExercisePickerProps {
   // Currently selected exercise id, or '' if none.
@@ -50,20 +52,7 @@ export function ExercisePicker({ value, onChange }: ExercisePickerProps) {
 
   // Collapsed state: an exercise is picked and we're not actively changing it.
   if (selected && !changing) {
-    return (
-      <div className="flex items-center justify-between gap-2 rounded-lg border px-3 py-2">
-        <span className="min-w-0 truncate font-medium">{selected.name}</span>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-8 shrink-0"
-          onClick={() => setChanging(true)}
-        >
-          Change
-        </Button>
-      </div>
-    );
+    return <PickedExerciseCard name={selected.name} onChange={() => setChanging(true)} />;
   }
 
   const filtered = exercises.filter((e) =>
@@ -78,15 +67,18 @@ export function ExercisePicker({ value, onChange }: ExercisePickerProps) {
 
   return (
     <div className="grid gap-2">
-      <Input
-        placeholder="Search exercises…"
-        className="h-11"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-      />
-      <ul className="max-h-48 overflow-y-auto rounded-lg border">
+      <div className="relative">
+        <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2" />
+        <Input
+          placeholder="Search exercises…"
+          className={cn(FIELD_CLASS, 'pl-10')}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+      </div>
+      <ul className="max-h-48 divide-y divide-[#efe8e2] overflow-y-auto rounded-xl border border-[#e8e1da] bg-[#fdfbf9] dark:divide-[#3a3035] dark:border-[#3a3035] dark:bg-[#282124]">
         {filtered.length === 0 ? (
-          <li className="text-muted-foreground p-3 text-sm">No matches.</li>
+          <li className="text-muted-foreground px-3.5 py-3 text-sm">No matches.</li>
         ) : (
           filtered.map((exercise) => (
             <li key={exercise.id}>
@@ -94,13 +86,20 @@ export function ExercisePicker({ value, onChange }: ExercisePickerProps) {
                 type="button"
                 aria-pressed={value === exercise.id}
                 className={cn(
-                  'flex w-full items-center justify-between gap-2 px-3 py-2 text-left',
-                  value === exercise.id ? 'bg-accent' : 'hover:bg-accent/50',
+                  'flex w-full items-center justify-between gap-2 px-3.5 py-2.5 text-left text-[13.5px] transition-colors',
+                  value === exercise.id ? 'bg-accent font-semibold' : 'hover:bg-muted/60',
                 )}
                 onClick={() => pick(exercise.id)}
               >
                 <span className="truncate">{exercise.name}</span>
-                <span className="text-muted-foreground shrink-0 text-xs">{exercise.category}</span>
+                <span
+                  className={cn(
+                    'shrink-0 text-[11px]',
+                    value === exercise.id ? 'text-accent-foreground' : 'text-muted-foreground',
+                  )}
+                >
+                  {exercise.category}
+                </span>
               </button>
             </li>
           ))

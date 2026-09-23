@@ -1,11 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { format, parseISO } from 'date-fns';
-import { ChevronLeft, ChevronRight, Dumbbell, Pencil, Play, Plus, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Dumbbell, Pencil, Play, Plus } from 'lucide-react';
 import { useState } from 'react';
 
 import type { PlannedSessionWithTemplate } from '@gym-bro/shared';
 
+import { DeleteIconButton } from '@/components/delete-icon-button';
+import { EDIT_ICON_BUTTON_CLASS } from '@/components/edit-icon-button';
 import { Button } from '@/components/ui/button';
 import { RouteMap, stravaActivityIcon, useStravaSessions } from '@/features/strava';
 import { useTemplate } from '@/features/training';
@@ -125,11 +127,8 @@ function PlannedTodoCard({ session }: { session: PlannedSessionWithTemplate }) {
           </Button>
           {/* Pencil reschedules via a native date picker (spec: no calendar icon,
               the pencil is the date-change action). */}
-          <label
-            className="text-muted-foreground hover:bg-muted flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full border transition-colors"
-            aria-label={t.dayDetail.changeDateAria}
-          >
-            <Pencil className="size-4" />
+          <label className={EDIT_ICON_BUTTON_CLASS} aria-label={t.dayDetail.changeDateAria}>
+            <Pencil className="size-[15px]" strokeWidth={2} />
             <input
               type="date"
               className="sr-only"
@@ -140,15 +139,11 @@ function PlannedTodoCard({ session }: { session: PlannedSessionWithTemplate }) {
               }
             />
           </label>
-          <button
-            type="button"
-            className="text-muted-foreground hover:bg-muted flex size-11 shrink-0 items-center justify-center rounded-full border transition-colors"
+          <DeleteIconButton
             aria-label={t.dayDetail.deletePlannedAria}
             onClick={() => deleteMutation.mutate(session.id)}
             disabled={deleteMutation.isPending}
-          >
-            <Trash2 className="size-4" />
-          </button>
+          />
         </div>
       )}
     </div>
@@ -290,7 +285,7 @@ export function DayDetail({ date }: { date: string }) {
 
       <Button
         variant="ghost"
-        className="h-11 rounded-2xl border border-[#e0d3d8] bg-[#efe6e9] font-semibold text-[#8d4a5e] hover:bg-[#e6d8dd] dark:border-[#4a3a42] dark:bg-[#3a2f34] dark:text-[#c98fa0] dark:hover:bg-[#43363c]"
+        className="h-11 rounded-2xl border border-border bg-card font-semibold text-primary hover:bg-muted"
         onClick={() => setAssigning(true)}
       >
         <Plus className="size-4" />

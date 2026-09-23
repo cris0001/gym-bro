@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 
-import { Button } from '@/components/ui/button';
+import { FormSheetActions } from '@/components/form-sheet-actions';
 import {
   Form,
   FormControl,
@@ -11,7 +11,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
+import { FIELD_CLASS, LABEL_CLASS, TEXTAREA_CLASS } from '@/lib/form-styles';
 import {
   createTemplateSchema,
   type CreateTemplateInput,
@@ -20,11 +20,7 @@ import {
 
 import { useCreateTemplate } from '../hooks/use-create-template';
 import { useUpdateTemplate } from '../hooks/use-update-template';
-
-// Native textarea styled to match the Input primitive (no shadcn Textarea is
-// installed; descriptions read better multi-line).
-const textareaClassName =
-  'min-h-20 w-full min-w-0 rounded-lg border border-input bg-background px-2.5 py-1.5 text-base transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-input/30';
+import { OptionalHint } from './optional-hint';
 
 interface TemplateFormProps {
   // The row being edited, or null for create mode.
@@ -33,9 +29,10 @@ interface TemplateFormProps {
   planId: string | null;
   // Called after a successful create/update (the sheet closes on this).
   onSuccess: () => void;
+  onCancel: () => void;
 }
 
-export function TemplateForm({ editing, planId, onSuccess }: TemplateFormProps) {
+export function TemplateForm({ editing, planId, onSuccess, onCancel }: TemplateFormProps) {
   const form = useForm<CreateTemplateInput>({
     resolver: zodResolver(createTemplateSchema),
     defaultValues: {
@@ -64,15 +61,18 @@ export function TemplateForm({ editing, planId, onSuccess }: TemplateFormProps) 
 
   return (
     <Form {...form}>
-      <form onSubmit={(e) => void form.handleSubmit(onSubmit)(e)} className="grid gap-4 p-4">
+      <form
+        onSubmit={(e) => void form.handleSubmit(onSubmit)(e)}
+        className="grid gap-4 px-5 pt-3 pb-6 sm:px-6"
+      >
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Name</FormLabel>
+              <FormLabel className={LABEL_CLASS}>Name</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. Push" className="h-11" {...field} />
+                <Input placeholder="e.g. Push" className={FIELD_CLASS} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -84,11 +84,13 @@ export function TemplateForm({ editing, planId, onSuccess }: TemplateFormProps) 
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description (optional)</FormLabel>
+              <FormLabel className={LABEL_CLASS}>
+                Description <OptionalHint />
+              </FormLabel>
               <FormControl>
                 <textarea
                   placeholder="e.g. Chest, shoulders, triceps"
-                  className={cn(textareaClassName)}
+                  className={TEXTAREA_CLASS}
                   value={field.value ?? ''}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -107,9 +109,11 @@ export function TemplateForm({ editing, planId, onSuccess }: TemplateFormProps) 
           </p>
         ) : null}
 
-        <Button type="submit" className="h-11" disabled={isPending}>
-          {isPending ? 'Saving…' : editing ? 'Save changes' : 'Add template'}
-        </Button>
+        <FormSheetActions
+          submitLabel={editing ? 'Save changes' : 'Add template'}
+          isPending={isPending}
+          onCancel={onCancel}
+        />
       </form>
     </Form>
   );
