@@ -15,9 +15,14 @@
       (function () {
         try {
           var t = localStorage.getItem('gym-bro-theme') || 'system';
+          // The landing and auth pages are light-only (see useForceLightTheme in
+          // src/hooks/use-force-light-theme.ts) — never start them dark.
+          var p = window.location.pathname.replace(/\/+$/, '') || '/';
+          var lightOnly = p === '/' || p === '/login' || p === '/register';
           var dark =
-            t === 'dark' ||
-            (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            !lightOnly &&
+            (t === 'dark' ||
+              (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches));
           if (dark) document.documentElement.classList.add('dark');
         } catch (e) {
           /* localStorage unavailable — fall back to light */
