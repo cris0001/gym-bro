@@ -26,12 +26,12 @@ function useDayStatus(date: string, isToday: boolean): { label: string; color: s
   });
   const { data: stravaSessions = [] } = useStravaSessions(date || undefined, date || undefined);
 
-  if (isToday) return { label: t.common.today, color: '#8d4a5e' };
+  if (isToday) return { label: t.common.today, color: 'var(--primary)' };
   if ((workoutsPage?.items.length ?? 0) > 0)
     return { label: t.dayWorkout.finished, color: '#5a7a52' };
   if (stravaSessions.length > 0) return { label: t.calendar.strava, color: '#d15b28' };
   if (planned.some((s) => s.status !== 'completed'))
-    return { label: t.calendar.planned, color: '#8d4a5e' };
+    return { label: t.calendar.planned, color: 'var(--primary)' };
   return null;
 }
 

@@ -7,8 +7,7 @@ import { useNutritionTranslation } from '../i18n';
 import { TargetsForm } from './targets-form';
 import { TargetsHistory } from './targets-history';
 
-const CARD =
-  'rounded-[20px] border border-[#e8e1da] bg-[#fdfbf9] p-5 md:p-6 dark:border-[#2f292d] dark:bg-card';
+const CARD = 'rounded-[20px] border border-border bg-card p-5 md:p-6';
 
 // Targets settings: set the current daily target or back-fill/edit a dated entry,
 // and review the history of past targets. Editing state is owned here and shared by

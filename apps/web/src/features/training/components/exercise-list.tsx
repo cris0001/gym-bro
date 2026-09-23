@@ -80,11 +80,11 @@ export function ExerciseList({ category, search }: ExerciseListProps) {
   // Mobile: a divided list. Desktop: a grid of cards. Tapping a row/card opens the edit
   // sheet; delete lives in that sheet on mobile, and appears on hover on desktop.
   return (
-    <ul className="divide-y divide-dashed divide-[#e4dad2] md:grid md:grid-cols-2 md:gap-3 md:divide-y-0 lg:grid-cols-3 dark:divide-[#2f292d]">
+    <ul className="divide-y divide-dashed divide-border md:grid md:grid-cols-2 md:gap-3 md:divide-y-0 lg:grid-cols-3">
       {filtered.map((exercise) => (
         <li
           key={exercise.id}
-          className="group hover:bg-muted/50 relative flex items-center transition-colors md:bg-card md:rounded-2xl md:border md:hover:border-[#d6c8bd] md:hover:bg-card"
+          className="group hover:bg-muted/50 relative flex items-center transition-colors md:bg-card md:rounded-2xl md:border md:hover:border-border-strong md:hover:bg-card"
         >
           <button
             type="button"

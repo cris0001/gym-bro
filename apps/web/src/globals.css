@@ -68,6 +68,14 @@
 
   --color-accent: var(--accent);
 
+  --color-soft: var(--soft);
+  --color-field: var(--field);
+  --color-field-muted: var(--field-muted);
+  --color-muted-strong: var(--muted-strong);
+  --color-border-strong: var(--border-strong);
+  --color-subtle-foreground: var(--subtle-foreground);
+  --color-faint-foreground: var(--faint-foreground);
+
   --color-muted-foreground: var(--muted-foreground);
 
   --color-muted: var(--muted);
@@ -79,6 +87,7 @@
   --color-primary-foreground: var(--primary-foreground);
 
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
 
   --color-popover-foreground: var(--popover-foreground);
 
@@ -115,27 +124,31 @@
 
   --card: #fdfbf9;
 
-  --card-foreground: #2b2126;
+  --card-foreground: var(--foreground);
 
-  --popover: #fdfbf9;
+  --popover: var(--card);
 
-  --popover-foreground: #2b2126;
+  --popover-foreground: var(--foreground);
 
   --primary: #8d4a5e; /* plum */
 
   --primary-foreground: #fdf6f5;
 
+  --primary-hover: #75394c;
+
   --secondary: #f0e9e3;
 
-  --secondary-foreground: #2b2126;
+  --secondary-foreground: var(--foreground);
 
   --muted: #efe8e2;
 
-  --muted-foreground: #94858b;
+  --muted-foreground: #85767c;
 
   --accent: #f5e7ea;
 
   --accent-foreground: #75394c;
+
+  --soft: #c98fa0; /* light accent tint for marks on dark surfaces (inverted calendar cells) */
 
   /* Delete family: text/icon red, its hover, the soft hover tints, and the one solid
      fill (confirm dialog only). */
@@ -150,11 +163,21 @@
 
   --border: #e8e1da;
 
-  --input: #e8e1da;
+  /* In-between shades derived from the core tokens, so every palette gets them:
+     input fields, stronger borders, handles, and two text tones between
+     foreground and muted-foreground. */
+  --field: var(--card);
+  --field-muted: var(--background);
+  --muted-strong: color-mix(in oklab, var(--muted), var(--foreground) 7%);
+  --border-strong: color-mix(in oklab, var(--border), var(--foreground) 10%);
+  --subtle-foreground: color-mix(in oklab, var(--foreground) 55%, var(--muted-foreground));
+  --faint-foreground: color-mix(in oklab, var(--muted-foreground) 50%, var(--background));
 
-  --ring: #8d4a5e;
+  --input: var(--border);
 
-  --chart-1: #8d4a5e;
+  --ring: var(--primary);
+
+  --chart-1: var(--primary);
 
   --chart-2: #d9a441;
 
@@ -166,21 +189,21 @@
 
   --radius: 0.875rem;
 
-  --sidebar: #fdfbf9;
+  --sidebar: var(--card);
 
-  --sidebar-foreground: #2b2126;
+  --sidebar-foreground: var(--foreground);
 
-  --sidebar-primary: #8d4a5e;
+  --sidebar-primary: var(--primary);
 
-  --sidebar-primary-foreground: #fdf6f5;
+  --sidebar-primary-foreground: var(--primary-foreground);
 
-  --sidebar-accent: #f5e7ea;
+  --sidebar-accent: var(--accent);
 
-  --sidebar-accent-foreground: #75394c;
+  --sidebar-accent-foreground: var(--accent-foreground);
 
-  --sidebar-border: #e8e1da;
+  --sidebar-border: var(--border);
 
-  --sidebar-ring: #8d4a5e;
+  --sidebar-ring: var(--primary);
 }
 
 .dark {
@@ -194,19 +217,21 @@
 
   --card: #1e1a1d;
 
-  --card-foreground: #f4eef0;
+  --card-foreground: var(--foreground);
 
-  --popover: #1e1a1d;
+  --popover: var(--card);
 
-  --popover-foreground: #f4eef0;
+  --popover-foreground: var(--foreground);
 
   --primary: #d68aa0; /* rose — bright enough to read on the near-black ground */
 
   --primary-foreground: #fdf6f5;
 
+  --primary-hover: #e09bb0;
+
   --secondary: #282326;
 
-  --secondary-foreground: #f4eef0;
+  --secondary-foreground: var(--foreground);
 
   --muted: #282326;
 
@@ -215,6 +240,8 @@
   --accent: #2c1f25; /* dark rose tint behind accent text */
 
   --accent-foreground: #f0bccb;
+
+  --soft: #c98fa0;
 
   --destructive: #e08a8f;
   --destructive-hover: #f0a4a8;
@@ -227,11 +254,18 @@
 
   --border: #2f292d;
 
-  --input: #2f292d;
+  --field: color-mix(in oklab, var(--background) 70%, var(--card));
+  --field-muted: var(--field);
+  --muted-strong: color-mix(in oklab, var(--muted), var(--foreground) 7%);
+  --border-strong: color-mix(in oklab, var(--border), var(--foreground) 10%);
+  --subtle-foreground: color-mix(in oklab, var(--foreground) 55%, var(--muted-foreground));
+  --faint-foreground: color-mix(in oklab, var(--muted-foreground) 50%, var(--background));
 
-  --ring: #d68aa0;
+  --input: var(--border);
 
-  --chart-1: #d68aa0;
+  --ring: var(--primary);
+
+  --chart-1: var(--primary);
 
   --chart-2: #d9a441;
 
@@ -241,21 +275,332 @@
 
   --chart-5: #a3937f;
 
-  --sidebar: #1e1a1d;
+  --sidebar: var(--card);
 
-  --sidebar-foreground: #f4eef0;
+  --sidebar-foreground: var(--foreground);
 
-  --sidebar-primary: #d68aa0;
+  --sidebar-primary: var(--primary);
 
-  --sidebar-primary-foreground: #fdf6f5;
+  --sidebar-primary-foreground: var(--primary-foreground);
 
-  --sidebar-accent: #2c1f25;
+  --sidebar-accent: var(--accent);
 
-  --sidebar-accent-foreground: #f0bccb;
+  --sidebar-accent-foreground: var(--accent-foreground);
 
-  --sidebar-border: #2f292d;
+  --sidebar-border: var(--border);
 
-  --sidebar-ring: #d68aa0;
+  --sidebar-ring: var(--primary);
+}
+
+/* Palettes (the palette picker sets data-palette on <html>; plum is the default
+   above and has no attribute). Each sets the accent family plus the neutrals; the
+   derived tokens (ring, sidebar, field, border-strong, …) follow via var().
+   Destructive and macro colors stay fixed. The html.dark selectors outrank the
+   light html[...] ones, so each palette's dark values win in dark mode. */
+html[data-palette='berry'] {
+  --primary: #9a2f4a;
+  --primary-foreground: #fff5f7;
+  --primary-hover: #7f233b;
+  --accent: #f8e3e8;
+  --accent-foreground: #7f233b;
+  --chart-4: #62192c;
+  --soft: #d88fa1;
+  --background: #f8f2f3;
+  --card: #fdfafa;
+  --muted: #f1e5e8;
+  --secondary: #f3e9ec;
+  --border: #eadbe0;
+  --foreground: #2d1c22;
+  --muted-foreground: #8a727a;
+}
+
+html.dark[data-palette='berry'] {
+  --primary: #e57f98;
+  --primary-foreground: #1a0d11;
+  --primary-hover: #ee9aae;
+  --accent: #321820;
+  --accent-foreground: #f5bfcc;
+  --chart-4: #f5bfcc;
+  --soft: #8c4557;
+  --background: #151012;
+  --card: #1f181b;
+  --muted: #2a2125;
+  --secondary: #2a2125;
+  --border: #33282d;
+  --foreground: #f5ecef;
+  --muted-foreground: #a28f96;
+}
+
+html[data-palette='brass'] {
+  --primary: #8a6420;
+  --primary-foreground: #fffaf0;
+  --primary-hover: #714f15;
+  --accent: #f5ecd9;
+  --accent-foreground: #6b4c14;
+  --chart-4: #5a4011;
+  --soft: #d2b06a;
+  --background: #f7f3ea;
+  --card: #fdfbf5;
+  --muted: #efe8d9;
+  --secondary: #f1ebdf;
+  --border: #e6dcc8;
+  --foreground: #2b2314;
+  --muted-foreground: #857a62;
+}
+
+html.dark[data-palette='brass'] {
+  --primary: #e0b458;
+  --primary-foreground: #17120a;
+  --primary-hover: #eac476;
+  --accent: #2e2515;
+  --accent-foreground: #f0d392;
+  --chart-4: #f0d392;
+  --soft: #8c6d2e;
+  --background: #15120c;
+  --card: #1f1b13;
+  --muted: #29241a;
+  --secondary: #29241a;
+  --border: #332c20;
+  --foreground: #f5efe2;
+  --muted-foreground: #a39a85;
+}
+
+html[data-palette='indigo'] {
+  --primary: #3b4a8c;
+  --primary-foreground: #f6f7fd;
+  --primary-hover: #2f3b72;
+  --accent: #e7eaf7;
+  --accent-foreground: #2f3b72;
+  --chart-4: #232c57;
+  --soft: #9aa5d4;
+  --background: #f3f3f8;
+  --card: #fbfbfd;
+  --muted: #e7e8f2;
+  --secondary: #ebecf4;
+  --border: #dcdde9;
+  --foreground: #1e2033;
+  --muted-foreground: #737590;
+}
+
+html.dark[data-palette='indigo'] {
+  --primary: #99a6e0;
+  --primary-foreground: #10121c;
+  --primary-hover: #b0bbe8;
+  --accent: #1d2236;
+  --accent-foreground: #cbd2f1;
+  --chart-4: #cbd2f1;
+  --soft: #59639a;
+  --background: #101117;
+  --card: #191a22;
+  --muted: #22232d;
+  --secondary: #22232d;
+  --border: #2a2c38;
+  --foreground: #eeeff7;
+  --muted-foreground: #9395ab;
+}
+
+html[data-palette='olive'] {
+  --primary: #6b6a2a;
+  --primary-foreground: #fbfaf0;
+  --primary-hover: #57561f;
+  --accent: #efeedd;
+  --accent-foreground: #4f4e1c;
+  --chart-4: #403f16;
+  --soft: #b7b57a;
+  --background: #f5f4ec;
+  --card: #fcfbf6;
+  --muted: #ebe9dc;
+  --secondary: #eeecdf;
+  --border: #e1dfcf;
+  --foreground: #26251a;
+  --muted-foreground: #7b7a66;
+}
+
+html.dark[data-palette='olive'] {
+  --primary: #c4c276;
+  --primary-foreground: #15150b;
+  --primary-hover: #d3d18e;
+  --accent: #26261a;
+  --accent-foreground: #e0dfae;
+  --chart-4: #e0dfae;
+  --soft: #74723d;
+  --background: #13130e;
+  --card: #1c1c15;
+  --muted: #25251c;
+  --secondary: #25251c;
+  --border: #2e2e23;
+  --foreground: #f1f0e6;
+  --muted-foreground: #999884;
+}
+
+html[data-palette='sage'] {
+  --primary: #4f6b47;
+  --primary-foreground: #f6f8f2;
+  --primary-hover: #3e5638;
+  --accent: #e7eee3;
+  --accent-foreground: #3e5638;
+  --chart-4: #2f4229;
+  --soft: #9cb393;
+  --background: #f3f4ef;
+  --card: #fbfcf8;
+  --muted: #e8ebe3;
+  --secondary: #eceee7;
+  --border: #dfe3d8;
+  --foreground: #1f2a1d;
+  --muted-foreground: #737d6f;
+}
+
+html.dark[data-palette='sage'] {
+  --primary: #9cbf91;
+  --primary-foreground: #111710;
+  --primary-hover: #b0cfa6;
+  --accent: #1f2a1e;
+  --accent-foreground: #c6e0bd;
+  --chart-4: #c6e0bd;
+  --soft: #5c7755;
+  --background: #111411;
+  --card: #1a1e1a;
+  --muted: #232823;
+  --secondary: #232823;
+  --border: #2b312b;
+  --foreground: #eef2ec;
+  --muted-foreground: #909a8d;
+}
+
+html[data-palette='slate'] {
+  --primary: #3f5f86;
+  --primary-foreground: #f5f8fc;
+  --primary-hover: #314c6d;
+  --accent: #e5edf6;
+  --accent-foreground: #314c6d;
+  --chart-4: #243a55;
+  --soft: #93acc9;
+  --background: #f2f4f7;
+  --card: #fbfcfd;
+  --muted: #e6eaf0;
+  --secondary: #eaedf2;
+  --border: #dbe0e8;
+  --foreground: #1b2430;
+  --muted-foreground: #6f7b8b;
+}
+
+html.dark[data-palette='slate'] {
+  --primary: #8fb1dc;
+  --primary-foreground: #0f141b;
+  --primary-hover: #a6c2e6;
+  --accent: #1c2533;
+  --accent-foreground: #c3d6ef;
+  --chart-4: #c3d6ef;
+  --soft: #566f8f;
+  --background: #0f1216;
+  --card: #181c22;
+  --muted: #21262e;
+  --secondary: #21262e;
+  --border: #2a3039;
+  --foreground: #edf1f6;
+  --muted-foreground: #8e99a8;
+}
+
+html[data-palette='teal'] {
+  --primary: #2f6b6a;
+  --primary-foreground: #f3faf9;
+  --primary-hover: #245554;
+  --accent: #e2f0ef;
+  --accent-foreground: #245554;
+  --chart-4: #1b4140;
+  --soft: #8fbdbb;
+  --background: #f1f5f4;
+  --card: #fafcfc;
+  --muted: #e4ecea;
+  --secondary: #e8efed;
+  --border: #d8e3e1;
+  --foreground: #182726;
+  --muted-foreground: #6b7e7c;
+}
+
+html.dark[data-palette='teal'] {
+  --primary: #7fc2bf;
+  --primary-foreground: #0d1716;
+  --primary-hover: #98d1ce;
+  --accent: #182a29;
+  --accent-foreground: #b8e2df;
+  --chart-4: #b8e2df;
+  --soft: #4f7f7d;
+  --background: #0f1313;
+  --card: #171d1c;
+  --muted: #202827;
+  --secondary: #202827;
+  --border: #28312f;
+  --foreground: #ebf2f1;
+  --muted-foreground: #8c9d9b;
+}
+
+html[data-palette='terracotta'] {
+  --primary: #a4502f;
+  --primary-foreground: #fff7f2;
+  --primary-hover: #87401f;
+  --accent: #f7e7df;
+  --accent-foreground: #87401f;
+  --chart-4: #6e3a24;
+  --soft: #d99a80;
+  --background: #f7f1ec;
+  --card: #fdfaf7;
+  --muted: #f0e6de;
+  --secondary: #f2e9e2;
+  --border: #e9ddd3;
+  --foreground: #2e1f18;
+  --muted-foreground: #8a7466;
+}
+
+html.dark[data-palette='terracotta'] {
+  --primary: #e0866a;
+  --primary-foreground: #1a110d;
+  --primary-hover: #eb9c84;
+  --accent: #33211a;
+  --accent-foreground: #f3c0ad;
+  --chart-4: #f3c0ad;
+  --soft: #8f5540;
+  --background: #16110e;
+  --card: #201915;
+  --muted: #2b221d;
+  --secondary: #2b221d;
+  --border: #352a24;
+  --foreground: #f5ece6;
+  --muted-foreground: #a39285;
+}
+
+html[data-palette='violet'] {
+  --primary: #6a4a8a;
+  --primary-foreground: #faf6fd;
+  --primary-hover: #563a72;
+  --accent: #eee7f5;
+  --accent-foreground: #563a72;
+  --chart-4: #43305a;
+  --soft: #b39cd0;
+  --background: #f5f3f7;
+  --card: #fcfbfd;
+  --muted: #ebe6f0;
+  --secondary: #eee9f2;
+  --border: #e1dae8;
+  --foreground: #26202e;
+  --muted-foreground: #7f7589;
+}
+
+html.dark[data-palette='violet'] {
+  --primary: #b99ad8;
+  --primary-foreground: #140f19;
+  --primary-hover: #c9afe3;
+  --accent: #251d2e;
+  --accent-foreground: #dac8ee;
+  --chart-4: #dac8ee;
+  --soft: #6f5890;
+  --background: #131116;
+  --card: #1c1920;
+  --muted: #26222b;
+  --secondary: #26222b;
+  --border: #2e2934;
+  --foreground: #f2eef5;
+  --muted-foreground: #9a90a3;
 }
 
 /* Keep an element scrollable but hide its scrollbar (mobile submenus, in-sheet

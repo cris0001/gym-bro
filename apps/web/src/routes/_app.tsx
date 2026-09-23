@@ -5,6 +5,7 @@ import { BottomNav } from '@/components/nav/bottom-nav';
 import { SectionTabs } from '@/components/nav/section-tabs';
 import { SidebarNav } from '@/components/nav/sidebar-nav';
 import { LanguageToggle } from '@/components/language-toggle';
+import { PalettePicker } from '@/components/palette-picker';
 import { ThemeToggle } from '@/components/theme-toggle';
 import {
   LogoutButton,
@@ -52,6 +53,7 @@ function AppLayout() {
           </span>
           <div className="flex items-center gap-1">
             <LanguageToggle />
+            <PalettePicker />
             <ThemeToggle />
             <LogoutButton />
           </div>

@@ -78,7 +78,7 @@ export function DashboardPage() {
               {t.startWorkout}
             </Link>
           </Button>
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#f5e7ea] text-[#75394c] dark:bg-[#2c1f25] dark:text-[#f0bccb]">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground">
             <User className="size-5" />
           </span>
         </div>

@@ -8,7 +8,7 @@ interface PickedExerciseCardProps {
 // serif name, with an optional "Change" link back to the picker.
 export function PickedExerciseCard({ name, onChange }: PickedExerciseCardProps) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-[#e8e1da] bg-[#fdfbf9] px-4 py-2.5 dark:border-[#2f292d] dark:bg-[#171316]">
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-field px-4 py-2.5">
       <div className="min-w-0">
         <p className="text-muted-foreground text-[10px] font-bold tracking-[0.08em] uppercase">
           Exercise

@@ -140,7 +140,7 @@ export function TagForm({ editing, onSuccess, onCancel }: TagFormProps) {
                     picked colour once it's outside the palette. */}
                 <label
                   className={cn(
-                    'text-muted-foreground inline-flex size-9 cursor-pointer items-center justify-center rounded-full border border-dashed border-[#c9bcb2] transition-colors hover:bg-muted dark:border-[#5c5358]',
+                    'text-muted-foreground inline-flex size-9 cursor-pointer items-center justify-center rounded-full border border-dashed border-faint-foreground transition-colors hover:bg-muted',
                     isCustom &&
                       'ring-foreground ring-offset-background border-0 ring-2 ring-offset-2',
                   )}

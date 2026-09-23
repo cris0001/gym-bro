@@ -90,7 +90,7 @@ export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowP
   }
 
   const field = cn(
-    'h-10 rounded-[10px] border-[#e8e1da] bg-[#f6f3f0] text-center font-heading text-base font-semibold dark:border-[#2f292d] dark:bg-[#262124]',
+    'h-10 rounded-[10px] border-border bg-secondary text-center font-heading text-base font-semibold',
     isCurrent && 'border-primary border-[1.5px] dark:border-primary',
   );
   const iconBtn =
@@ -104,9 +104,7 @@ export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowP
         <span
           className={cn(
             'font-heading flex size-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold',
-            set.isTopSet
-              ? 'bg-[#efe6e9] text-[#8d4a5e] dark:bg-[#2c1f25] dark:text-[#f0bccb]'
-              : 'text-[#c9bcb2]',
+            set.isTopSet ? 'bg-accent text-accent-foreground' : 'text-[#c9bcb2]',
           )}
         >
           {index + 1}
@@ -114,7 +112,7 @@ export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowP
 
         {set.isBodyweight ? (
           <div
-            className="text-muted-foreground flex h-10 flex-1 items-center justify-center rounded-[10px] border border-[#e8e1da] bg-[#f6f3f0] text-sm font-medium dark:border-[#2f292d] dark:bg-[#262124] md:w-[110px] md:flex-none"
+            className="text-muted-foreground flex h-10 flex-1 items-center justify-center rounded-[10px] border border-border bg-secondary text-sm font-medium md:w-[110px] md:flex-none"
             aria-label={t.setRow.bodyweightAria(index + 1)}
           >
             BW

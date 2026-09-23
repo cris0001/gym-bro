@@ -21,10 +21,7 @@ export function FoodAddModeToggle({ value, onChange }: FoodAddModeToggleProps) {
   ] as const;
 
   return (
-    <div
-      role="tablist"
-      className="grid grid-cols-2 gap-1 rounded-full bg-[#ece5de] p-1 dark:bg-[#262124]"
-    >
+    <div role="tablist" className="grid grid-cols-2 gap-1 rounded-full bg-secondary p-1">
       {options.map(({ mode, label, Icon }) => {
         const selected = value === mode;
         return (
@@ -36,7 +33,7 @@ export function FoodAddModeToggle({ value, onChange }: FoodAddModeToggleProps) {
             className={cn(
               'inline-flex h-[38px] items-center justify-center gap-2 rounded-full text-[13.5px] transition-colors',
               selected
-                ? 'bg-[#fdfbf9] font-bold text-[#2b2126] shadow-[0_1px_3px_rgba(43,33,38,0.12)] dark:bg-[#2f292d] dark:text-[#f4eef0]'
+                ? 'bg-card dark:bg-border font-bold text-foreground shadow-[0_1px_3px_rgba(43,33,38,0.12)]'
                 : 'font-semibold text-[#7a6c72] dark:text-[#9c9097]',
             )}
             onClick={() => onChange(mode)}

@@ -164,7 +164,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
             />
           </div>
 
-          <div className="overflow-hidden rounded-[20px] border border-[#e8e1da] bg-[#fdfbf9] dark:border-[#2f292d] dark:bg-card">
+          <div className="overflow-hidden rounded-[20px] border border-border bg-card">
             {/* Card header: the section label on phones, the column header on desktop. */}
             <div
               className={cn(
@@ -181,7 +181,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
             </div>
 
             {ingredients.length === 0 ? (
-              <p className="text-muted-foreground border-t border-dashed border-[#e4dad2] px-4 py-3 text-[13px] dark:border-[#2f292d]">
+              <p className="text-muted-foreground border-t border-dashed border-border px-4 py-3 text-[13px]">
                 {t.recipes.noIngredients}
               </p>
             ) : (
@@ -200,7 +200,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
             )}
 
             {/* Add: search the foods dictionary, or (touch devices) scan a barcode. */}
-            <div className="relative border-t border-dashed border-[#e4dad2] p-3 dark:border-[#2f292d]">
+            <div className="relative border-t border-dashed border-border p-3">
               <FoodCombobox
                 variant="add"
                 selectedId={null}
@@ -236,7 +236,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
           <div className="grid grid-cols-[1fr_1.4fr] gap-2 xl:flex xl:flex-col-reverse">
             <button
               type="button"
-              className="border-border bg-card hover:bg-muted h-11 rounded-full border text-[14px] font-semibold text-[#5f5257] transition-colors dark:text-[#c9bfc4]"
+              className="border-border bg-card hover:bg-muted h-11 rounded-full border text-[14px] font-semibold text-subtle-foreground transition-colors"
               onClick={finish}
             >
               {t.common.cancel}
@@ -244,7 +244,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
             <button
               type="button"
               disabled={!canSave}
-              className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-primary/50 inline-flex h-11 items-center justify-center gap-2 rounded-full text-[14px] font-semibold transition-colors disabled:pointer-events-none"
+              className="bg-primary text-primary-foreground hover:bg-primary-hover disabled:bg-primary/50 inline-flex h-11 items-center justify-center gap-2 rounded-full text-[14px] font-semibold transition-colors disabled:pointer-events-none"
               onClick={save}
             >
               {isPending ? <Loader2 className="size-4 animate-spin" /> : null}

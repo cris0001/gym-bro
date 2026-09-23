@@ -50,7 +50,7 @@ const MACRO_FIELDS = [
 ] as const;
 
 // In a card the fields sit on parchment rather than the card's own white.
-const PANEL_BG = 'bg-[#f6f3f0] dark:bg-[#171316]';
+const PANEL_BG = 'bg-field-muted';
 const FIELD = cn(FIELD_CLASS, PANEL_BG);
 
 interface TargetsFormProps {
@@ -211,7 +211,7 @@ export function TargetsForm({ current, editing, onDone }: TargetsFormProps) {
           <button
             type="submit"
             disabled={setTarget.isPending}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-primary/60 inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-full text-[14.5px] font-semibold transition-colors disabled:pointer-events-none"
+            className="bg-primary text-primary-foreground hover:bg-primary-hover disabled:bg-primary/60 inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-full text-[14.5px] font-semibold transition-colors disabled:pointer-events-none"
           >
             {setTarget.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
             {setTarget.isPending
@@ -223,7 +223,7 @@ export function TargetsForm({ current, editing, onDone }: TargetsFormProps) {
           {editing ? (
             <button
               type="button"
-              className="border-border bg-card hover:bg-muted h-12 rounded-full border px-6 text-[14px] font-semibold text-[#5f5257] transition-colors dark:text-[#c9bfc4]"
+              className="border-border bg-card hover:bg-muted h-12 rounded-full border px-6 text-[14px] font-semibold text-subtle-foreground transition-colors"
               onClick={() => onDone?.()}
             >
               {t.common.cancel}

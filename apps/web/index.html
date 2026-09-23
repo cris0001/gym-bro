@@ -24,6 +24,10 @@
             (t === 'dark' ||
               (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches));
           if (dark) document.documentElement.classList.add('dark');
+          // Accent palette (src/stores/palette.store.ts); plum is the default.
+          var palette = localStorage.getItem('gym-bro-palette');
+          if (!lightOnly && palette && palette !== 'plum')
+            document.documentElement.setAttribute('data-palette', palette);
         } catch (e) {
           /* localStorage unavailable — fall back to light */
         }
