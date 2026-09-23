@@ -2,6 +2,7 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { format, parseISO } from 'date-fns';
 import { toast } from 'sonner';
 
+import { DeleteButton } from '@/components/delete-button';
 import { SkeletonList } from '@/components/skeletons';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -117,14 +118,14 @@ export function WorkoutDetail({ sessionId }: WorkoutDetailProps) {
             {t.common.edit}
           </Button>
         )}
-        <Button
-          variant="ghost"
-          className="text-destructive h-11 flex-1 rounded-full"
+        {/* h-11 to line up with the Edit pill it sits beside. */}
+        <DeleteButton
+          className="h-11 flex-1 justify-center"
           onClick={() => void handleDelete()}
           disabled={deleteMutation.isPending}
         >
           {t.common.delete}
-        </Button>
+        </DeleteButton>
       </div>
     </div>
   );

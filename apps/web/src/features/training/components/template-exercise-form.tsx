@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 
-import { Button } from '@/components/ui/button';
+import { FormSheetActions } from '@/components/form-sheet-actions';
 import {
   Form,
   FormControl,
@@ -9,7 +9,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { cn } from '@/lib/utils';
+import { LABEL_CLASS, TEXTAREA_CLASS } from '@/lib/form-styles';
 import {
   createTemplateExerciseSchema,
   updateTemplateExerciseSchema,
@@ -20,9 +20,8 @@ import { useCreateTemplateExercise } from '../hooks/use-create-template-exercise
 import { useUpdateTemplateExercise } from '../hooks/use-update-template-exercise';
 import { ExercisePicker } from './exercise-picker';
 import { NumberField } from './number-field';
-
-const textareaClassName =
-  'min-h-20 w-full min-w-0 rounded-lg border border-input bg-background px-2.5 py-1.5 text-base transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-input/30';
+import { OptionalHint } from './optional-hint';
+import { PickedExerciseCard } from './picked-exercise-card';
 
 interface TemplateExerciseFormValues {
   exerciseId: string;
@@ -43,12 +42,14 @@ interface TemplateExerciseFormProps {
   editing: TemplateExerciseWithExercise | null;
   templateId: string | null;
   onSuccess: () => void;
+  onCancel: () => void;
 }
 
 export function TemplateExerciseForm({
   editing,
   templateId,
   onSuccess,
+  onCancel,
 }: TemplateExerciseFormProps) {
   const form = useForm<TemplateExerciseFormValues>({
     defaultValues: {
@@ -107,43 +108,76 @@ export function TemplateExerciseForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={(e) => void form.handleSubmit(onSubmit)(e)} className="grid gap-4 p-4">
+      <form
+        onSubmit={(e) => void form.handleSubmit(onSubmit)(e)}
+        className="grid gap-4 px-5 pt-3 pb-6 sm:px-6"
+      >
         {editing ? (
-          <div>
-            <p className="text-sm font-medium">Exercise</p>
-            <p className="text-muted-foreground text-sm">{editing.exercise.name}</p>
-          </div>
+          <>
+            <PickedExerciseCard name={editing.exercise.name} />
+            {/* Editing: the three targets side by side, values centred. */}
+            <div className="grid grid-cols-3 gap-2">
+              <NumberField
+                control={form.control}
+                name="targetSets"
+                label="Sets"
+                className="text-center"
+              />
+              <NumberField
+                control={form.control}
+                name="targetRepsMin"
+                label="Reps min"
+                className="text-center"
+              />
+              <NumberField
+                control={form.control}
+                name="targetRepsMax"
+                label="Reps max"
+                className="text-center"
+              />
+            </div>
+          </>
         ) : (
-          <FormField
-            control={form.control}
-            name="exerciseId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Exercise</FormLabel>
-                <ExercisePicker value={field.value} onChange={field.onChange} />
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <>
+            <FormField
+              control={form.control}
+              name="exerciseId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className={LABEL_CLASS}>Exercise</FormLabel>
+                  <ExercisePicker value={field.value} onChange={field.onChange} />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <NumberField
+              control={form.control}
+              name="targetSets"
+              label={
+                <>
+                  Sets <OptionalHint />
+                </>
+              }
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <NumberField control={form.control} name="targetRepsMin" label="Reps min" />
+              <NumberField control={form.control} name="targetRepsMax" label="Reps max" />
+            </div>
+          </>
         )}
-
-        <NumberField control={form.control} name="targetSets" label="Sets (optional)" />
-
-        <div className="grid grid-cols-2 gap-2">
-          <NumberField control={form.control} name="targetRepsMin" label="Reps min" />
-          <NumberField control={form.control} name="targetRepsMax" label="Reps max" />
-        </div>
 
         <FormField
           control={form.control}
           name="notes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Notes (optional)</FormLabel>
+              <FormLabel className={LABEL_CLASS}>
+                Notes <OptionalHint />
+              </FormLabel>
               <FormControl>
                 <textarea
                   placeholder="e.g. last set to failure"
-                  className={cn(textareaClassName)}
+                  className={TEXTAREA_CLASS}
                   {...field}
                 />
               </FormControl>
@@ -158,9 +192,11 @@ export function TemplateExerciseForm({
           </p>
         ) : null}
 
-        <Button type="submit" className="h-11" disabled={isPending}>
-          {isPending ? 'Saving…' : editing ? 'Save changes' : 'Add exercise'}
-        </Button>
+        <FormSheetActions
+          submitLabel={editing ? 'Save changes' : 'Add exercise'}
+          isPending={isPending}
+          onCancel={onCancel}
+        />
       </form>
     </Form>
   );

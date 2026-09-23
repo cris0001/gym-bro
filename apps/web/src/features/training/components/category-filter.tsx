@@ -15,11 +15,12 @@ const chipClass = (active: boolean): string =>
     active ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground',
   );
 
-// Horizontal, scrollable category chips for the exercise library. Leading "All"
-// clears the filter (the default = show everything).
+// Category chips for the exercise library: a swipeable row on touch screens, and
+// wrapped onto extra lines on desktop (a mouse can't swipe a hidden-scrollbar row).
+// Leading "All" clears the filter (the default = show everything).
 export function CategoryFilter({ value, onChange }: CategoryFilterProps) {
   return (
-    <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 pb-2">
+    <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 pb-2 md:flex-wrap md:overflow-visible md:px-0 md:pb-0">
       <button type="button" onClick={() => onChange(null)} className={chipClass(value === null)}>
         All
       </button>

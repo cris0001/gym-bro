@@ -1,6 +1,7 @@
-import { Pencil, Plus, Tag, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Tag } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { DeleteIconButton } from '@/components/delete-icon-button';
 import { EmptyState } from '@/components/empty-state';
 import { ErrorState } from '@/components/error-state';
 import { SkeletonList } from '@/components/skeletons';
@@ -78,17 +79,11 @@ export function TagList() {
           >
             <Pencil className="size-4" />
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="text-destructive size-11 shrink-0"
+          <DeleteIconButton
             aria-label={`Delete ${tag.name}`}
             disabled={remove.isPending}
             onClick={() => void onDelete(tag)}
-          >
-            <Trash2 className="size-4" />
-          </Button>
+          />
         </li>
       ))}
     </ul>

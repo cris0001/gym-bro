@@ -1,7 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { ArrowLeftRight, ChevronDown, Copy, FileText, Trash2 } from 'lucide-react';
+import { ArrowLeftRight, ChevronDown, Copy, FileText } from 'lucide-react';
 import { useState } from 'react';
 
+import { DeleteIconButton } from '@/components/delete-icon-button';
 import { cn } from '@/lib/utils';
 import { useConfirm } from '@/stores/confirm.store';
 
@@ -135,14 +136,10 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
         >
           <ArrowLeftRight className="size-4" />
         </button>
-        <button
-          type="button"
-          className={iconBtn}
+        <DeleteIconButton
           aria-label={t.exerciseCard.removeAria}
           onClick={() => void handleRemove()}
-        >
-          <Trash2 className="size-4" />
-        </button>
+        />
       </div>
 
       {/* Collapsed: a quick recap of the logged sets as chips (top set plum, with ★). */}

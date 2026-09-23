@@ -126,7 +126,7 @@ export function AddEntryMobile({
               </div>
               <ul className="border-border bg-card flex flex-col divide-y divide-dashed divide-[#d6c8bd] rounded-[18px] border px-4 dark:divide-[#40353c]">
                 {mealEntries.map((entry) => (
-                  <DiaryEntryRow key={entry.id} entry={entry} showImage mutedDelete />
+                  <DiaryEntryRow key={entry.id} entry={entry} showImage />
                 ))}
               </ul>
             </div>

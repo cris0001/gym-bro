@@ -2,6 +2,7 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { ChevronLeft, Star } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { DeleteButton } from '@/components/delete-button';
 import { ErrorState } from '@/components/error-state';
 import { SkeletonList } from '@/components/skeletons';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -137,7 +138,7 @@ export function PlanDetail({ planId }: PlanDetailProps) {
       <button
         type="button"
         onClick={() => openCreateTemplate(plan.id)}
-        className="text-primary rounded-[18px] border border-dashed border-[#d6c8bd] p-[13px] text-center text-[13px] font-bold dark:border-[#4b3f47]"
+        className="rounded-[18px] border border-border bg-card px-[13px] py-2.5 text-center text-[13px] font-bold text-primary transition-colors hover:bg-muted"
       >
         + Add template
       </button>
@@ -148,14 +149,13 @@ export function PlanDetail({ planId }: PlanDetailProps) {
         </p>
       ) : null}
 
-      <button
-        type="button"
-        className="self-center text-[13px] font-semibold text-[#75394c] disabled:opacity-50 dark:text-[#d9a4b3]"
+      <DeleteButton
+        className="self-center"
         disabled={remove.isPending}
         onClick={() => void onDelete(plan)}
       >
         Delete plan
-      </button>
+      </DeleteButton>
 
       <PlanSheet />
       <TemplateSheet />

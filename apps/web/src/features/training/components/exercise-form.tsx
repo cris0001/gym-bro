@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { Button } from '@/components/ui/button';
+import { FormSheetActions } from '@/components/form-sheet-actions';
 import {
   Form,
   FormControl,
@@ -12,6 +12,8 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { FIELD_CLASS, LABEL_CLASS } from '@/lib/form-styles';
+import { cn } from '@/lib/utils';
 import { EXERCISE_CATEGORIES, type CreateExerciseInput, type Exercise } from '@gym-bro/shared';
 
 import { useCreateExercise } from '../hooks/use-create-exercise';
@@ -38,9 +40,10 @@ interface ExerciseFormProps {
   editing: Exercise | null;
   // Called after a successful create/update (the sheet closes on this).
   onSuccess: () => void;
+  onCancel: () => void;
 }
 
-export function ExerciseForm({ editing, onSuccess }: ExerciseFormProps) {
+export function ExerciseForm({ editing, onSuccess, onCancel }: ExerciseFormProps) {
   const form = useForm<ExerciseFormInput, unknown, ExerciseFormValues>({
     resolver: zodResolver(exerciseFormSchema),
     defaultValues: editing
@@ -66,15 +69,18 @@ export function ExerciseForm({ editing, onSuccess }: ExerciseFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={(e) => void form.handleSubmit(onSubmit)(e)} className="grid gap-4 p-4">
+      <form
+        onSubmit={(e) => void form.handleSubmit(onSubmit)(e)}
+        className="grid gap-4 px-5 pt-3 pb-6 sm:px-6"
+      >
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Name</FormLabel>
+              <FormLabel className={LABEL_CLASS}>Name</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. Bench Press" className="h-11" {...field} />
+                <Input placeholder="e.g. Bench Press" className={FIELD_CLASS} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -86,18 +92,23 @@ export function ExerciseForm({ editing, onSuccess }: ExerciseFormProps) {
           name="category"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Category</FormLabel>
+              <FormLabel className={LABEL_CLASS}>Category</FormLabel>
               <div className="grid grid-cols-3 gap-2">
                 {EXERCISE_CATEGORIES.map((category) => (
-                  <Button
+                  <button
                     key={category}
                     type="button"
-                    variant={field.value === category ? 'default' : 'outline'}
-                    className="h-11"
+                    aria-pressed={field.value === category}
+                    className={cn(
+                      'h-10 rounded-xl border text-[13px] font-medium transition-colors',
+                      field.value === category
+                        ? 'bg-primary text-primary-foreground border-transparent font-semibold'
+                        : 'border-[#e8e1da] bg-[#fdfbf9] hover:bg-muted dark:border-[#3a3035] dark:bg-[#282124]',
+                    )}
                     onClick={() => field.onChange(category)}
                   >
                     {category}
-                  </Button>
+                  </button>
                 ))}
               </div>
               <FormMessage />
@@ -111,9 +122,11 @@ export function ExerciseForm({ editing, onSuccess }: ExerciseFormProps) {
           </p>
         ) : null}
 
-        <Button type="submit" className="h-11" disabled={isPending}>
-          {isPending ? 'Saving…' : editing ? 'Save changes' : 'Add exercise'}
-        </Button>
+        <FormSheetActions
+          submitLabel={editing ? 'Save changes' : 'Add exercise'}
+          isPending={isPending}
+          onCancel={onCancel}
+        />
       </form>
     </Form>
   );

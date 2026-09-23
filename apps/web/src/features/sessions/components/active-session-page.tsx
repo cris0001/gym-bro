@@ -249,7 +249,7 @@ export function ActiveSessionPage() {
 
       <button
         type="button"
-        className="w-full rounded-2xl border border-[#e0d3d8] bg-[#efe6e9] py-2.5 text-sm font-semibold text-[#8d4a5e] transition-colors hover:bg-[#e6d8dd] dark:border-[#4a3a42] dark:bg-[#3a2f34] dark:text-[#c98fa0] dark:hover:bg-[#43363c]"
+        className="w-full rounded-2xl border border-border bg-card py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-muted"
         onClick={() => setPicker({ type: 'add' })}
       >
         {t.activeSession.addExercise}

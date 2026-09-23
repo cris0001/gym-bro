@@ -29,14 +29,18 @@ export function ExercisesPage() {
         </Button>
       </div>
 
-      <Input
-        placeholder="Search exercises"
-        className="h-11"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
-      <CategoryFilter value={category} onChange={setCategory} />
-      <div className="bg-card overflow-hidden rounded-2xl border">
+      <div className="flex flex-col gap-3">
+        <Input
+          placeholder="Search exercises"
+          className="h-11 md:max-w-[360px]"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <CategoryFilter value={category} onChange={setCategory} />
+      </div>
+      {/* Mobile: one card holding the list. Desktop: the grid cards carry their own
+          surface, so the wrapper drops its chrome. */}
+      <div className="bg-card overflow-hidden rounded-2xl border md:overflow-visible md:rounded-none md:border-0 md:bg-transparent">
         <ExerciseList category={category} search={search} />
       </div>
       <ExerciseSheet />

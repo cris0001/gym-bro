@@ -7,12 +7,12 @@ import {
   Minus,
   Pencil,
   Plus,
-  Trash2,
   X,
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+import { DeleteIconButton } from '@/components/delete-icon-button';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -380,16 +380,11 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
                                   })
                                 }
                               />
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="text-destructive ml-auto size-9"
+                              <DeleteIconButton
+                                className="ml-auto"
                                 aria-label={t.recipes.removeIngredient}
                                 onClick={() => removeRow(row.key)}
-                              >
-                                <Trash2 className="size-4" />
-                              </Button>
+                              />
                             </div>
                             <p className="text-muted-foreground text-xs">
                               = {macros ? Math.round(macros.kcal) : 0} kcal
