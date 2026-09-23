@@ -214,6 +214,9 @@ const INGREDIENT_LINES: RecipeIngredientWithFoodRow[] = [
     amountGrams: 500,
     position: 0,
     per100g: { kcal: 250, proteinG: 26, carbsG: 0, fatG: 15 },
+    servingGrams: null,
+    unitGrams: null,
+    imageUrl: null,
   },
   {
     id: 'line-2',
@@ -222,6 +225,9 @@ const INGREDIENT_LINES: RecipeIngredientWithFoodRow[] = [
     amountGrams: 400,
     position: 1,
     per100g: { kcal: 90, proteinG: 6, carbsG: 15, fatG: 0.5 },
+    servingGrams: 200,
+    unitGrams: null,
+    imageUrl: 'https://img/beans.jpg',
   },
 ];
 
@@ -252,7 +258,11 @@ describe('recipe create route (macro computation)', () => {
         totalGrams: number;
         total: Record<string, number>;
         perServing: Record<string, number>;
-        ingredients: { macros: Record<string, number> }[];
+        ingredients: {
+          macros: Record<string, number>;
+          servingGrams: number | null;
+          unitGrams: number | null;
+        }[];
       };
     };
 
@@ -265,6 +275,18 @@ describe('recipe create route (macro computation)', () => {
       proteinG: 130,
       carbsG: 0,
       fatG: 75,
+    });
+    // Each line carries its food's serving/unit weights (the builder's unit toggle) and
+    // photo (the row thumbnail).
+    expect(body.data.ingredients[0]).toMatchObject({
+      servingGrams: null,
+      unitGrams: null,
+      imageUrl: null,
+    });
+    expect(body.data.ingredients[1]).toMatchObject({
+      servingGrams: 200,
+      unitGrams: null,
+      imageUrl: 'https://img/beans.jpg',
     });
   });
 
