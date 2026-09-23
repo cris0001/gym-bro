@@ -22,7 +22,7 @@ export function FormSheetActions({
     <div className="mt-1 flex gap-2 sm:justify-end">
       <button
         type="button"
-        className="hidden h-10 rounded-full border border-[#e8e1da] bg-[#fdfbf9] px-5 text-[13px] font-semibold transition-colors hover:bg-muted sm:inline-flex sm:items-center dark:border-[#3a3035] dark:bg-[#282124]"
+        className="hidden h-10 rounded-full border border-[#e8e1da] bg-[#fdfbf9] px-5 text-[13px] font-semibold transition-colors hover:bg-muted sm:inline-flex sm:items-center dark:border-[#2f292d] dark:bg-[#171316]"
         onClick={onCancel}
       >
         Cancel

@@ -1,4 +1,4 @@
-import { Apple, ChevronRight, Plus } from 'lucide-react';
+import { Apple, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { DeleteIconButton } from '@/components/delete-icon-button';
@@ -14,6 +14,11 @@ import { useDeleteFood } from '../hooks/use-delete-food';
 import { useFoods } from '../hooks/use-foods';
 import { useNutritionTranslation } from '../i18n';
 import { useFoodUiStore } from '../stores/food-ui.store';
+import { MacroValues } from './macro-values';
+
+// Desktop table track: name | kcal | P | C | F | delete (32px button + 8px gap). The
+// header uses it directly; rows split it between the row button and the delete.
+const TABLE_COLUMNS = 'grid-cols-[minmax(0,1fr)_64px_52px_52px_52px_40px]';
 
 interface FoodListProps {
   search: string;
@@ -47,7 +52,7 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
   }
 
   if (isPending) {
-    return <SkeletonList avatar />;
+    return <SkeletonList avatar avatarClassName="size-[46px] rounded-xl" />;
   }
   if (filtered.length === 0) {
     if (query) {
@@ -70,52 +75,95 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
     );
   }
 
+  // Below 1280px each food is its own bordered card (one column on phones, two from
+  // 768px) so rows never blur together. 1280px+: a table (column header + aligned
+  // kcal/P/C/F cells) sitting next to the detail panel.
   return (
-    <ul className="divide-y divide-dashed divide-[#d6c8bd] dark:divide-[#40353c]">
-      {filtered.map((food) => (
-        <li
-          key={food.id}
-          className={cn(
-            'hover:bg-muted/50 flex items-center gap-2 px-4 py-3 transition-colors',
-            food.id === selectedId && 'bg-accent',
-          )}
-        >
-          <button
-            type="button"
-            className="flex min-w-0 flex-1 items-center gap-3 text-left"
-            aria-label={t.foods.editAria(food.name)}
-            onClick={() => openEdit(food)}
-          >
-            {food.imageUrl ? (
-              <img
-                src={food.imageUrl}
-                alt=""
-                className="bg-muted size-14 shrink-0 rounded-lg border object-cover"
+    <div>
+      <div
+        className={cn(
+          TABLE_COLUMNS,
+          'text-muted-foreground hidden border-b border-[#e8e1da] py-3 pr-2 pl-3.5 text-[10.5px] font-bold tracking-[0.08em] uppercase xl:grid dark:border-[#2f292d]',
+        )}
+      >
+        <span className="pl-14">{t.common.name}</span>
+        <span className="text-right">kcal</span>
+        <span className="text-right text-[#8d4a5e]">{t.common.macroShort.protein}</span>
+        <span className="text-right text-[#b8862a]">{t.common.macroShort.carbs}</span>
+        <span className="text-right text-[#5a7a52]">{t.common.macroShort.fat}</span>
+        <span aria-hidden />
+      </div>
+      <ul className="grid grid-cols-1 gap-2 md:grid-cols-2 md:gap-3 xl:block">
+        {filtered.map((food) => {
+          const selected = food.id === selectedId;
+          return (
+            <li
+              key={food.id}
+              className={cn(
+                'bg-card border-border flex items-center gap-2 rounded-2xl border py-3 pr-2 pl-3.5 transition-colors hover:border-[#d6c8bd]',
+                'xl:hover:bg-muted/50 xl:rounded-none xl:border-x-0 xl:border-t-0 xl:border-b xl:border-[#e8e1da] xl:bg-transparent xl:py-3 xl:last:border-b-0 xl:dark:border-[#2f292d]',
+                selected && 'bg-accent xl:bg-accent xl:hover:bg-accent',
+              )}
+            >
+              <button
+                type="button"
+                className={cn(
+                  'flex min-w-0 flex-1 items-center gap-3 text-left',
+                  'xl:grid xl:grid-cols-[minmax(0,1fr)_64px_52px_52px_52px] xl:gap-0',
+                )}
+                aria-label={t.foods.editAria(food.name)}
+                onClick={() => openEdit(food)}
+              >
+                <span className="flex min-w-0 items-center gap-3">
+                  {food.imageUrl ? (
+                    <img
+                      src={food.imageUrl}
+                      alt=""
+                      className="bg-muted size-[46px] shrink-0 rounded-xl object-cover xl:size-11"
+                    />
+                  ) : (
+                    <span className="bg-muted flex size-[46px] shrink-0 items-center justify-center rounded-xl text-[#a8969d] xl:size-11">
+                      <Apple className="size-5" />
+                    </span>
+                  )}
+                  <span className="min-w-0 flex-1">
+                    <span
+                      className={cn(
+                        'font-heading block truncate text-[16.5px] leading-tight font-medium xl:text-base',
+                        selected && 'xl:text-accent-foreground',
+                      )}
+                    >
+                      {food.name}
+                    </span>
+                    {/* Compact macro line — below 1280px, where there are no columns. */}
+                    <span className="mt-0.5 flex items-center gap-2.5 text-[11.5px] text-[#7a6c72] xl:hidden dark:text-[#9c9097]">
+                      <span className="text-foreground font-bold">{food.kcal} kcal</span>
+                      <MacroValues protein={food.proteinG} carbs={food.carbsG} fat={food.fatG} />
+                    </span>
+                  </span>
+                </span>
+                <span className="hidden text-right text-[13.5px] font-bold xl:block">
+                  {food.kcal}
+                </span>
+                {[food.proteinG, food.carbsG, food.fatG].map((value, i) => (
+                  <span
+                    key={i}
+                    className="hidden text-right text-[13px] text-[#5f5257] xl:block dark:text-[#c9bfc4]"
+                  >
+                    {value}
+                  </span>
+                ))}
+              </button>
+              <DeleteIconButton
+                className="mr-2 xl:mr-0"
+                aria-label={t.foods.deleteAria(food.name)}
+                disabled={remove.isPending}
+                onClick={() => void onDelete(food)}
               />
-            ) : (
-              <span className="bg-muted text-muted-foreground flex size-14 shrink-0 items-center justify-center rounded-lg">
-                <Apple className="size-5" />
-              </span>
-            )}
-            <div className="min-w-0 flex-1">
-              <p className="font-heading truncate text-[17px] leading-tight font-medium">
-                {food.name}
-              </p>
-              <p className="text-muted-foreground text-xs">
-                {food.kcal} kcal · P {food.proteinG} · C {food.carbsG} · F {food.fatG}
-                <span> / 100g</span>
-              </p>
-            </div>
-            <ChevronRight className="size-5 shrink-0 text-[#c9bcb2] dark:text-[#5a4d55]" />
-          </button>
-          <DeleteIconButton
-            className="mr-2"
-            aria-label={t.foods.deleteAria(food.name)}
-            disabled={remove.isPending}
-            onClick={() => void onDelete(food)}
-          />
-        </li>
-      ))}
-    </ul>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }

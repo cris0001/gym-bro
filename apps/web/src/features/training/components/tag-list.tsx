@@ -57,7 +57,7 @@ export function TagList() {
   }
 
   return (
-    <ul className="divide-y divide-dashed divide-[#e4dad2] dark:divide-[#40353c]">
+    <ul className="divide-y divide-dashed divide-[#e4dad2] dark:divide-[#2f292d]">
       {tags.map((tag) => (
         <li
           key={tag.id}

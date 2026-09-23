@@ -56,7 +56,7 @@ export function CalendarDayCell({
   const bgClass = isSelected
     ? 'bg-accent ring-primary ring-inset ring-2'
     : inverted
-      ? 'bg-[#2b2126] text-[#fdf6f5] dark:bg-[#f0e7ea] dark:text-[#221a20]'
+      ? 'bg-[#2b2126] text-[#fdf6f5] dark:bg-[#f4eef0] dark:text-[#141113]'
       : finished > 0
         ? 'bg-[#e8efe4] dark:bg-[#2f3a2b]'
         : stravaTypes.length > 0
@@ -82,7 +82,7 @@ export function CalendarDayCell({
         tall ? 'min-h-24' : 'aspect-square',
         'focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2',
         !inverted && 'hover:bg-accent',
-        !inMonth && 'text-[#c8bcc1] dark:text-[#5a4d55]',
+        !inMonth && 'text-[#c8bcc1] dark:text-[#5c5358]',
         bgClass,
         isOver && 'ring-primary ring-2',
       )}
@@ -146,7 +146,7 @@ export function CalendarDayCell({
           {workoutNames.length > 3 && (
             <span
               className={
-                inverted ? 'text-[#fdf6f5]/60 dark:text-[#221a20]/60' : 'text-muted-foreground'
+                inverted ? 'text-[#fdf6f5]/60 dark:text-[#141113]/60' : 'text-muted-foreground'
               }
             >
               +{workoutNames.length - 3}

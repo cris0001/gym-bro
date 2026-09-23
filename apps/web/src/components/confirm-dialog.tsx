@@ -38,7 +38,7 @@ export function ConfirmDialog() {
           <AlertDialogCancel
             className={cn(
               request?.destructive &&
-                'h-10 rounded-full border-[#e8e1da] bg-[#fdfbf9] px-[18px] text-[13px] font-semibold dark:border-[#3a3035] dark:bg-[#282124]',
+                'h-10 rounded-full border-[#e8e1da] bg-[#fdfbf9] px-[18px] text-[13px] font-semibold dark:border-[#2f292d] dark:bg-[#171316]',
             )}
             onClick={() => resolve(false)}
           >

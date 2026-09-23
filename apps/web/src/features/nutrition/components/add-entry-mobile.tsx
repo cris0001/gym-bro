@@ -91,7 +91,7 @@ export function AddEntryMobile({
                 <div
                   key={`${row.kind}-${row.id}`}
                   className={
-                    i > 0 ? 'border-t border-dashed border-[#d6c8bd] dark:border-[#40353c]' : ''
+                    i > 0 ? 'border-t border-dashed border-[#d6c8bd] dark:border-[#2f292d]' : ''
                   }
                 >
                   <AddEntryResultRow
@@ -106,7 +106,7 @@ export function AddEntryMobile({
             <button
               type="button"
               onClick={createNewFood}
-              className="text-primary flex w-full items-center justify-center gap-1.5 border-t border-dashed border-[#d6c8bd] py-3.5 text-[12.5px] font-bold dark:border-[#40353c]"
+              className="text-primary flex w-full items-center justify-center gap-1.5 border-t border-dashed border-[#d6c8bd] py-3.5 text-[12.5px] font-bold dark:border-[#2f292d]"
             >
               <Plus className="size-4" />
               {t.addEntry.createFood}
@@ -124,7 +124,7 @@ export function AddEntryMobile({
                   <span className="text-muted-foreground ml-0.5 text-[11px] font-normal">kcal</span>
                 </span>
               </div>
-              <ul className="border-border bg-card flex flex-col divide-y divide-dashed divide-[#d6c8bd] rounded-[18px] border px-4 dark:divide-[#40353c]">
+              <ul className="border-border bg-card flex flex-col divide-y divide-dashed divide-[#d6c8bd] rounded-[18px] border px-4 dark:divide-[#2f292d]">
                 {mealEntries.map((entry) => (
                   <DiaryEntryRow key={entry.id} entry={entry} showImage />
                 ))}

@@ -151,8 +151,8 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
               className={cn(
                 'rounded-lg px-[9px] py-1 text-[11px] font-bold',
                 set.isTopSet
-                  ? 'bg-[#f5e7ea] text-[#75394c] dark:bg-[#3a2f34] dark:text-[#e8cdd5]'
-                  : 'bg-[#f0e9e3] text-[#574c52] dark:bg-[#2a2228] dark:text-[#c6b8bd]',
+                  ? 'bg-[#f5e7ea] text-[#75394c] dark:bg-[#2c1f25] dark:text-[#f0bccb]'
+                  : 'bg-[#f0e9e3] text-[#574c52] dark:bg-[#262124] dark:text-[#c9bfc4]',
               )}
             >
               {set.isTopSet ? '★ ' : ''}

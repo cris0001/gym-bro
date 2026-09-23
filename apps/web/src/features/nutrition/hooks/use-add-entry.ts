@@ -20,7 +20,7 @@ import { useDailyFoodLog } from './use-daily-food-log';
 import { useFoods } from './use-foods';
 import { useRecentDiaryItems } from './use-recent-diary-items';
 import { useRecipes } from './use-recipes';
-import { useScanFlow } from './use-scan-flow';
+import { useScanFlow, type ScanOutcome } from './use-scan-flow';
 import { useTargetForDate } from './use-target-for-date';
 
 // Shared state + behaviour behind the diary "Add to meal" view, consumed by both the
@@ -44,7 +44,7 @@ export interface UseAddEntry {
   target: NutritionTarget | null;
   logPortion: (row: AddEntryRow, portion: Portion) => void;
   createNewFood: () => void;
-  handleEan: (ean: string) => Promise<void>;
+  handleEan: (ean: string) => Promise<ScanOutcome>;
 }
 
 export function useAddEntry(loggedDate: string): UseAddEntry {

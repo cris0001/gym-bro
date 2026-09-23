@@ -18,7 +18,7 @@ import { DiaryEntryRow } from './diary-entry-row';
 const fmt = (n: number): string => Math.round(n).toLocaleString('en-US');
 
 const microLabel = 'text-muted-foreground text-[11px] font-semibold tracking-[0.08em] uppercase';
-const dashed = 'border-dashed border-[#e4dad2] dark:border-[#40353c]';
+const dashed = 'border-dashed border-[#e4dad2] dark:border-[#2f292d]';
 
 // Desktop "Add to {meal}" view: a two-pane page inside the app layout (sidebar stays).
 // Left: search (+ ⌘K, + barcode) over the results list. Right (sticky): the items added
@@ -255,7 +255,7 @@ function DayMacroBar({
           </span>
         </span>
       </div>
-      <div className="h-[5px] overflow-hidden rounded-[3px] bg-[#efe8e2] dark:bg-[#3a2f36]">
+      <div className="h-[5px] overflow-hidden rounded-[3px] bg-[#efe8e2] dark:bg-[#2c1f25]">
         <div
           className={cn('h-full rounded-[3px]', over ? 'bg-destructive' : MACRO_BAR[macro])}
           style={{ width: `${pct}%` }}

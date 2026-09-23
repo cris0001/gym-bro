@@ -1,4 +1,4 @@
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { Apple, Check, ChevronsUpDown, Plus } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,9 @@ interface FoodComboboxProps {
   onSelect: (food: Food) => void;
   // Trigger text when nothing is selected (e.g. an "add ingredient" search).
   placeholder?: string;
+  // 'add': a light "+ Search foods to add…" trigger with room on the right for an
+  // overlaid action (the recipe builder's scan button).
+  variant?: 'default' | 'add';
 }
 
 // Searchable food picker for a recipe ingredient. Lists the active food
@@ -34,6 +37,7 @@ export function FoodCombobox({
   selectedName,
   onSelect,
   placeholder,
+  variant = 'default',
 }: FoodComboboxProps) {
   const t = useNutritionTranslation();
   const [open, setOpen] = useState(false);
@@ -48,33 +52,69 @@ export function FoodCombobox({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="h-11 w-full justify-between font-normal">
-          <span className={cn('truncate', !selectedName && 'text-muted-foreground')}>
-            {selectedName ?? triggerLabel}
-          </span>
-          <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
-        </Button>
+        {variant === 'add' ? (
+          <button
+            type="button"
+            className="border-border bg-card text-primary hover:bg-muted flex h-12 w-full items-center gap-2.5 rounded-[14px] border pr-14 pl-4 text-left text-[14px] font-semibold transition-colors"
+          >
+            <Plus className="size-4 shrink-0" />
+            <span className="truncate">{triggerLabel}</span>
+          </button>
+        ) : (
+          <Button variant="outline" className="h-11 w-full justify-between font-normal">
+            <span className={cn('truncate', !selectedName && 'text-muted-foreground')}>
+              {selectedName ?? triggerLabel}
+            </span>
+            <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
+          </Button>
+        )}
       </PopoverTrigger>
-      <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
+      <PopoverContent
+        className="w-(--radix-popover-trigger-width) overflow-hidden rounded-[14px] border-[#e8e1da] p-0 shadow-lg dark:border-[#2f292d]"
+        align="start"
+      >
         <Command>
-          <CommandInput placeholder={t.foods.searchFoods} />
-          <CommandList>
-            <CommandEmpty>{t.foods.noFoodsYet}</CommandEmpty>
+          {/* A roomier search field with a readable placeholder, so it's obvious you
+              can type to filter. */}
+          <CommandInput
+            placeholder={t.foods.searchFoods}
+            className="h-11 text-[14px] placeholder:text-[#7a6c72] dark:placeholder:text-[#9c9097]"
+          />
+          <CommandList className="max-h-72">
+            <CommandEmpty className="text-muted-foreground py-6 text-center text-[13px]">
+              {t.foods.noFoodsYet}
+            </CommandEmpty>
             <CommandGroup>
               {foods.map((food) => (
-                <CommandItem key={food.id} value={food.name} onSelect={() => handleSelect(food)}>
-                  <Check
-                    className={cn('size-4', food.id === selectedId ? 'opacity-100' : 'opacity-0')}
-                  />
+                <CommandItem
+                  key={food.id}
+                  value={food.name}
+                  onSelect={() => handleSelect(food)}
+                  className="gap-2.5 rounded-[10px] px-2 py-2"
+                >
                   {food.imageUrl ? (
                     <img
                       src={food.imageUrl}
                       alt=""
-                      className="bg-muted size-6 shrink-0 rounded object-cover"
+                      className="bg-muted size-8 shrink-0 rounded-lg object-cover"
                     />
-                  ) : null}
-                  <span className="truncate">{food.name}</span>
-                  <span className="text-muted-foreground ml-auto text-xs">{food.kcal} kcal</span>
+                  ) : (
+                    <span className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg text-[#a8969d]">
+                      <Apple className="size-4" />
+                    </span>
+                  )}
+                  <span className="min-w-0 flex-1 truncate text-[14px] font-medium">
+                    {food.name}
+                  </span>
+                  <span className="text-muted-foreground shrink-0 text-[12px]">
+                    {food.kcal} kcal
+                  </span>
+                  <Check
+                    className={cn(
+                      'text-primary size-4 shrink-0',
+                      food.id === selectedId ? 'opacity-100' : 'hidden',
+                    )}
+                  />
                 </CommandItem>
               ))}
             </CommandGroup>

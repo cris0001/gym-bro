@@ -70,7 +70,7 @@ function PlannedTodoCard({ session }: { session: PlannedSessionWithTemplate }) {
             {t.dayDetail.exercisesCount(exercises.length)}
           </p>
         </div>
-        <span className="shrink-0 rounded-full bg-[#efe6e9] px-2 py-0.5 text-[10px] font-bold tracking-[0.06em] text-[#8d4a5e] uppercase dark:bg-[#3a2f34] dark:text-[#c98fa0]">
+        <span className="shrink-0 rounded-full bg-[#efe6e9] px-2 py-0.5 text-[10px] font-bold tracking-[0.06em] text-[#8d4a5e] uppercase dark:bg-[#2c1f25] dark:text-[#f0bccb]">
           {t.calendar.planned}
         </span>
       </div>
@@ -89,7 +89,7 @@ function PlannedTodoCard({ session }: { session: PlannedSessionWithTemplate }) {
                 key={item.id}
                 className={cn(
                   'flex items-baseline gap-3 py-2',
-                  index > 0 && 'border-t border-dashed border-[#e4dad2] dark:border-[#40353c]',
+                  index > 0 && 'border-t border-dashed border-[#e4dad2] dark:border-[#2f292d]',
                 )}
               >
                 <span className="font-heading w-4 shrink-0 text-center text-sm text-[#c9bcb2] italic">
@@ -231,7 +231,7 @@ export function DayDetail({ date }: { date: string }) {
             </div>
 
             {(km !== null || min !== null || kmh !== null) && (
-              <div className="grid grid-cols-3 gap-2 border-t border-dashed border-[#e4dad2] pt-3 dark:border-[#40353c]">
+              <div className="grid grid-cols-3 gap-2 border-t border-dashed border-[#e4dad2] pt-3 dark:border-[#2f292d]">
                 {km && (
                   <div className="flex flex-col gap-0.5">
                     <span className="text-muted-foreground text-[10px] font-semibold tracking-wide uppercase">

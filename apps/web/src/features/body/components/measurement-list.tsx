@@ -118,7 +118,7 @@ function MeasurementRow({
                 type="button"
                 variant="outline"
                 size="sm"
-                className="rounded-full border-[#e8e1da] bg-[#fdfbf9] px-[18px] text-[13px] font-semibold dark:border-[#3a3035] dark:bg-[#282124]"
+                className="rounded-full border-[#e8e1da] bg-[#fdfbf9] px-[18px] text-[13px] font-semibold dark:border-[#2f292d] dark:bg-[#171316]"
                 onClick={() => setConfirmOpen(false)}
               >
                 Cancel
@@ -169,7 +169,7 @@ export function MeasurementList({
   }
 
   return (
-    <div className="flex flex-col divide-y divide-dashed divide-[#d6c8bd] dark:divide-[#40353c]">
+    <div className="flex flex-col divide-y divide-dashed divide-[#d6c8bd] dark:divide-[#2f292d]">
       {monthGroups(entries).map((group, index) => {
         const open = overrides[group.key] ?? index === 0;
         return (
@@ -184,7 +184,7 @@ export function MeasurementList({
               <span className="text-muted-foreground ml-auto text-xs">{group.items.length}</span>
             </button>
             {open ? (
-              <ul className="divide-y divide-dashed divide-[#d6c8bd] border-t border-dashed border-[#d6c8bd] dark:divide-[#40353c] dark:border-[#40353c]">
+              <ul className="divide-y divide-dashed divide-[#d6c8bd] border-t border-dashed border-[#d6c8bd] dark:divide-[#2f292d] dark:border-[#2f292d]">
                 {group.items.map((entry) => (
                   <MeasurementRow key={entry.id} entry={entry} targets={targets} />
                 ))}

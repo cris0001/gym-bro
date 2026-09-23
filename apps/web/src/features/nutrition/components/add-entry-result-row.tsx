@@ -37,7 +37,7 @@ export function AddEntryResultRow({
             className="border-border size-[38px] shrink-0 rounded-[10px] border object-cover"
           />
         ) : (
-          <span className="size-[38px] shrink-0 rounded-[10px] bg-gradient-to-br from-[#efe0e4] to-[#cbaab3] dark:from-[#3d2a32] dark:to-[#4a3d43]" />
+          <span className="size-[38px] shrink-0 rounded-[10px] bg-gradient-to-br from-[#efe0e4] to-[#cbaab3] dark:from-[#2c1f25] dark:to-[#3d363a]" />
         )}
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-1.5">

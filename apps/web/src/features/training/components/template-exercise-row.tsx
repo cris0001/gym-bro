@@ -62,13 +62,13 @@ export function TemplateExerciseRow({ templateExercise }: TemplateExerciseRowPro
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(
-        'flex items-center gap-2.5 border-t border-dashed border-[#e4dad2] bg-card py-[11px] first:border-t-0 dark:border-[#40353c]',
+        'flex items-center gap-2.5 border-t border-dashed border-[#e4dad2] bg-card py-[11px] first:border-t-0 dark:border-[#2f292d]',
         isDragging && 'opacity-50',
       )}
     >
       <button
         type="button"
-        className="shrink-0 cursor-grab touch-none p-1 text-[#c9bcb2] active:cursor-grabbing dark:text-[#5a4d55]"
+        className="shrink-0 cursor-grab touch-none p-1 text-[#c9bcb2] active:cursor-grabbing dark:text-[#5c5358]"
         aria-label={`Reorder ${exercise.name}`}
         {...attributes}
         {...listeners}
@@ -93,7 +93,7 @@ export function TemplateExerciseRow({ templateExercise }: TemplateExerciseRowPro
 
       <button
         type="button"
-        className="shrink-0 p-1.5 text-[#c9bcb2] dark:text-[#5a4d55]"
+        className="shrink-0 p-1.5 text-[#c9bcb2] dark:text-[#5c5358]"
         aria-label={`Edit ${exercise.name}`}
         onClick={() => openEdit(templateExercise)}
       >

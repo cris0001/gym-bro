@@ -22,8 +22,8 @@ function MacroPair({
     <span className="flex items-center gap-1">
       <span className="size-[7px] shrink-0 rounded-full" style={{ backgroundColor: dot }} />
       <span className="whitespace-nowrap">
-        <span className="text-xs font-bold text-[#fdf6f5] dark:text-[#221a20]">{r(eaten)}</span>
-        <span className="text-[10px] text-[#b9a8ad] dark:text-[#a8969d]">
+        <span className="text-xs font-bold text-[#fdf6f5] dark:text-[#141113]">{r(eaten)}</span>
+        <span className="text-[10px] text-[#b9a8ad] dark:text-[#9c9097]">
           /{r(target)}g {letter}
         </span>
       </span>
@@ -40,7 +40,7 @@ export function DiaryBottomBar({ totals, date }: { totals: MacroTotals; date: st
 
   return (
     <div className="fixed inset-x-0 bottom-[3.75rem] z-20 px-3 lg:hidden">
-      <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 rounded-2xl bg-[#2b2126] px-4 py-2.5 dark:bg-[#f0e7ea] text-[#fdf6f5] dark:text-[#221a20]">
+      <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 rounded-2xl bg-[#2b2126] px-4 py-2.5 dark:bg-[#f4eef0] text-[#fdf6f5] dark:text-[#141113]">
         <span className="text-[13px] font-bold">{fmt(totals.kcal)} kcal</span>
         <MacroPair dot="#c98fa0" eaten={totals.proteinG} target={target.proteinG} letter="P" />
         <MacroPair dot="#d9a441" eaten={totals.carbsG} target={target.carbsG} letter="C" />
