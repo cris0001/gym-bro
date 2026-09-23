@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { BicepsFlexed } from 'lucide-react';
 import { useEffect } from 'react';
 
+import { useForceLightTheme } from '@/hooks/use-force-light-theme';
 import { LOCALES, useLocaleStore } from '@/stores/locale.store';
 
 import { ModuleShowcase } from './module-showcase';
@@ -87,6 +88,8 @@ function HeroLines() {
 // from the approved mockup: nav, hero, the scroll-driven module showcase, a serif
 // strip, the dark PWA band, pricing + FAQ, and a closing CTA. All CTAs route to auth.
 export function LandingPage() {
+  // The marketing page is designed light-only, whatever theme the app is set to.
+  useForceLightTheme();
   // Page title/description for this route, plus smooth anchor scrolling while the
   // landing is mounted (restored on leave so the app isn't affected).
   useEffect(() => {
