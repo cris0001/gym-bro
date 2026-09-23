@@ -5,7 +5,8 @@
 // - Sheet wires up useSheetBackClose so the phone Back button closes an open sheet
 //   instead of navigating away to another URL (applies to every sheet in the app);
 // - Warm-editorial: --card surface, 2xl radius on the desktop modal, a serif SheetTitle,
-//   and a grab-handle affordance on mobile bottom sheets.
+//   and a grab-handle affordance on mobile bottom sheets;
+// - SheetContent takes a closeClassName so a caller can restyle the × button.
 import * as React from 'react';
 import { Dialog as SheetPrimitive } from 'radix-ui';
 import { XIcon } from 'lucide-react';
@@ -51,9 +52,11 @@ function SheetContent({
   children,
   side = 'right',
   onOpenAutoFocus,
+  closeClassName,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Content> & {
   side?: 'top' | 'right' | 'bottom' | 'left';
+  closeClassName?: string;
 }) {
   return (
     <SheetPortal>
@@ -94,7 +97,12 @@ function SheetContent({
           />
         ) : null}
         {children}
-        <SheetPrimitive.Close className="ring-offset-background focus:ring-ring hover:bg-muted absolute top-3 right-3 flex size-9 items-center justify-center rounded-md opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none">
+        <SheetPrimitive.Close
+          className={cn(
+            'ring-offset-background focus:ring-ring hover:bg-muted absolute top-3 right-3 flex size-9 items-center justify-center rounded-md opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none',
+            closeClassName,
+          )}
+        >
           <XIcon className="size-5" />
           <span className="sr-only">Close</span>
         </SheetPrimitive.Close>
