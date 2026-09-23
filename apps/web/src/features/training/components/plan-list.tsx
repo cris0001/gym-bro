@@ -70,7 +70,7 @@ export function PlanList() {
                 {plan.name}
               </Link>
               {isActive ? (
-                <span className="shrink-0 rounded-full bg-[#efe6e9] px-2 py-0.5 text-[10px] font-bold tracking-[0.06em] text-[#8d4a5e] uppercase dark:bg-[#2c1f25] dark:text-[#f0bccb]">
+                <span className="shrink-0 rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold tracking-[0.06em] text-accent-foreground uppercase">
                   Active
                 </span>
               ) : (

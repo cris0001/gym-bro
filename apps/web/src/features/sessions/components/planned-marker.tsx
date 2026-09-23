@@ -11,7 +11,7 @@ import { useSessionsTranslation } from '../i18n';
 interface PlannedMarkerProps {
   session: PlannedSessionWithTemplate;
   // On the inverted "today" cell the plum marker is invisible; a lighter plum
-  // (#c98fa0) keeps it legible against the dark background.
+  // (the soft accent) keeps it legible against the dark background.
   onDark?: boolean;
 }
 
@@ -33,7 +33,7 @@ export function PlannedMarker({ session, onDark = false }: PlannedMarkerProps) {
       aria-label={t.calendar.reschedule(session.template.name)}
       className={cn('cursor-grab touch-none', isDragging && 'opacity-40')}
     >
-      <Dumbbell className={cn('size-4 rotate-45', onDark ? 'text-[#c98fa0]' : 'text-primary')} />
+      <Dumbbell className={cn('size-4 rotate-45', onDark ? 'text-soft' : 'text-primary')} />
     </span>
   );
 }

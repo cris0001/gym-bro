@@ -41,13 +41,13 @@ export function TemplateRow({ template }: TemplateRowProps) {
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(
-        'flex items-center gap-2.5 border-t border-dashed border-[#e4dad2] bg-card py-[11px] first:border-t-0 dark:border-[#2f292d]',
+        'flex items-center gap-2.5 border-t border-dashed border-border bg-card py-[11px] first:border-t-0',
         isDragging && 'opacity-50',
       )}
     >
       <button
         type="button"
-        className="shrink-0 cursor-grab touch-none p-1 text-[#c9bcb2] active:cursor-grabbing dark:text-[#5c5358]"
+        className="shrink-0 cursor-grab touch-none p-1 text-faint-foreground active:cursor-grabbing"
         aria-label={`Reorder ${template.name}`}
         {...attributes}
         {...listeners}
@@ -68,7 +68,7 @@ export function TemplateRow({ template }: TemplateRowProps) {
 
       <button
         type="button"
-        className="shrink-0 p-1.5 text-[#c9bcb2] dark:text-[#5c5358]"
+        className="shrink-0 p-1.5 text-faint-foreground"
         aria-label={`Edit ${template.name}`}
         onClick={() => openEdit(template)}
       >

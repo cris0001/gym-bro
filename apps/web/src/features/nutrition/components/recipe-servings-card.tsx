@@ -11,14 +11,14 @@ interface RecipeServingsCardProps {
 export function RecipeServingsCard({ servings, onChange }: RecipeServingsCardProps) {
   const t = useNutritionTranslation();
   return (
-    <div className="flex items-center justify-between gap-4 rounded-[20px] border border-[#e8e1da] bg-[#fdfbf9] p-4 dark:border-[#2f292d] dark:bg-card">
+    <div className="flex items-center justify-between gap-4 rounded-[20px] border border-border bg-card p-4">
       <div className="min-w-0">
         <p className="text-muted-foreground text-[11px] font-bold tracking-[0.08em] uppercase">
           {t.recipes.servings}
         </p>
         <p className="text-muted-foreground text-[12.5px] leading-snug">{t.recipes.servingsHint}</p>
       </div>
-      <div className="flex h-11 shrink-0 items-center rounded-full border border-[#e8e1da] bg-[#f6f3f0] dark:border-[#2f292d] dark:bg-[#171316]">
+      <div className="flex h-11 shrink-0 items-center rounded-full border border-border bg-field-muted">
         <button
           type="button"
           aria-label={t.recipes.fewerServings}

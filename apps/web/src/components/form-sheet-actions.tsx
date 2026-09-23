@@ -22,7 +22,7 @@ export function FormSheetActions({
     <div className="mt-1 flex gap-2 sm:justify-end">
       <button
         type="button"
-        className="hidden h-10 rounded-full border border-[#e8e1da] bg-[#fdfbf9] px-5 text-[13px] font-semibold transition-colors hover:bg-muted sm:inline-flex sm:items-center dark:border-[#2f292d] dark:bg-[#171316]"
+        className="hidden h-10 rounded-full border border-border bg-field px-5 text-[13px] font-semibold transition-colors hover:bg-muted sm:inline-flex sm:items-center"
         onClick={onCancel}
       >
         Cancel
@@ -31,7 +31,7 @@ export function FormSheetActions({
         type="submit"
         disabled={isPending}
         className={cn(
-          'bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full px-6 text-[14px] font-semibold transition-colors sm:h-10 sm:w-auto sm:text-[13px]',
+          'bg-primary text-primary-foreground hover:bg-primary-hover inline-flex h-11 w-full items-center justify-center gap-2 rounded-full px-6 text-[14px] font-semibold transition-colors sm:h-10 sm:w-auto sm:text-[13px]',
           'disabled:bg-primary/60 disabled:pointer-events-none',
         )}
       >

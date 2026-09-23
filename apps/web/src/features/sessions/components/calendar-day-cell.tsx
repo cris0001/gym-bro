@@ -56,7 +56,7 @@ export function CalendarDayCell({
   const bgClass = isSelected
     ? 'bg-accent ring-primary ring-inset ring-2'
     : inverted
-      ? 'bg-[#2b2126] text-[#fdf6f5] dark:bg-[#f4eef0] dark:text-[#141113]'
+      ? 'bg-foreground text-background'
       : finished > 0
         ? 'bg-[#e8efe4] dark:bg-[#2f3a2b]'
         : stravaTypes.length > 0
@@ -82,7 +82,7 @@ export function CalendarDayCell({
         tall ? 'min-h-24' : 'aspect-square',
         'focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2',
         !inverted && 'hover:bg-accent',
-        !inMonth && 'text-[#c8bcc1] dark:text-[#5c5358]',
+        !inMonth && 'text-faint-foreground',
         bgClass,
         isOver && 'ring-primary ring-2',
       )}
@@ -107,7 +107,7 @@ export function CalendarDayCell({
                 <span
                   className={cn(
                     'text-[10px] font-semibold leading-none',
-                    inverted ? 'text-[#c98fa0]' : 'text-primary',
+                    inverted ? 'text-soft' : 'text-primary',
                   )}
                 >
                   ×{planned.length}

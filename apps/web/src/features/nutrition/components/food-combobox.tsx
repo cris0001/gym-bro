@@ -70,7 +70,7 @@ export function FoodCombobox({
         )}
       </PopoverTrigger>
       <PopoverContent
-        className="w-(--radix-popover-trigger-width) overflow-hidden rounded-[14px] border-[#e8e1da] p-0 shadow-lg dark:border-[#2f292d]"
+        className="w-(--radix-popover-trigger-width) overflow-hidden rounded-[14px] border-border p-0 shadow-lg"
         align="start"
       >
         <Command>
@@ -99,7 +99,7 @@ export function FoodCombobox({
                       className="bg-muted size-8 shrink-0 rounded-lg object-cover"
                     />
                   ) : (
-                    <span className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg text-[#a8969d]">
+                    <span className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground">
                       <Apple className="size-4" />
                     </span>
                   )}

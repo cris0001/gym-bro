@@ -83,7 +83,7 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
       <div
         className={cn(
           TABLE_COLUMNS,
-          'text-muted-foreground hidden border-b border-[#e8e1da] py-3 pr-2 pl-3.5 text-[10.5px] font-bold tracking-[0.08em] uppercase xl:grid dark:border-[#2f292d]',
+          'text-muted-foreground hidden border-b border-border py-3 pr-2 pl-3.5 text-[10.5px] font-bold tracking-[0.08em] uppercase xl:grid',
         )}
       >
         <span className="pl-14">{t.common.name}</span>
@@ -100,8 +100,8 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
             <li
               key={food.id}
               className={cn(
-                'bg-card border-border flex items-center gap-2 rounded-2xl border py-3 pr-2 pl-3.5 transition-colors hover:border-[#d6c8bd]',
-                'xl:hover:bg-muted/50 xl:rounded-none xl:border-x-0 xl:border-t-0 xl:border-b xl:border-[#e8e1da] xl:bg-transparent xl:py-3 xl:last:border-b-0 xl:dark:border-[#2f292d]',
+                'bg-card border-border flex items-center gap-2 rounded-2xl border py-3 pr-2 pl-3.5 transition-colors hover:border-border-strong',
+                'xl:hover:bg-muted/50 xl:rounded-none xl:border-x-0 xl:border-t-0 xl:border-b xl:border-border xl:bg-transparent xl:py-3 xl:last:border-b-0',
                 selected && 'bg-accent xl:bg-accent xl:hover:bg-accent',
               )}
             >
@@ -122,7 +122,7 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
                       className="bg-muted size-[46px] shrink-0 rounded-xl object-cover xl:size-11"
                     />
                   ) : (
-                    <span className="bg-muted flex size-[46px] shrink-0 items-center justify-center rounded-xl text-[#a8969d] xl:size-11">
+                    <span className="bg-muted flex size-[46px] shrink-0 items-center justify-center rounded-xl text-muted-foreground xl:size-11">
                       <Apple className="size-5" />
                     </span>
                   )}
@@ -148,7 +148,7 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
                 {[food.proteinG, food.carbsG, food.fatG].map((value, i) => (
                   <span
                     key={i}
-                    className="hidden text-right text-[13px] text-[#5f5257] xl:block dark:text-[#c9bfc4]"
+                    className="hidden text-right text-[13px] text-subtle-foreground xl:block"
                   >
                     {value}
                   </span>

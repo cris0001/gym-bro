@@ -15,7 +15,7 @@ export function SkeletonList({
   avatarClassName?: string;
 }) {
   return (
-    <ul className="divide-y divide-dashed divide-[#d6c8bd] dark:divide-[#2f292d]">
+    <ul className="divide-y divide-dashed divide-border-strong">
       {Array.from({ length: rows }).map((_, i) => (
         <li key={i} className="flex items-center gap-3 px-4 py-3">
           {avatar ? (

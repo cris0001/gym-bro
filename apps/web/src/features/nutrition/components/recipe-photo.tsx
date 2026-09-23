@@ -49,7 +49,7 @@ export function RecipePhoto({ imageUrl, onPick, onRemove, variant, className }: 
             'flex size-full cursor-pointer flex-col items-center justify-center gap-1 overflow-hidden rounded-2xl',
             imageUrl
               ? ''
-              : 'text-muted-foreground border-[1.5px] border-dashed border-[#d6c8bd] dark:border-[#3d363a]',
+              : 'text-muted-foreground border-[1.5px] border-dashed border-border-strong',
           )}
         >
           {imageUrl ? (
@@ -72,7 +72,7 @@ export function RecipePhoto({ imageUrl, onPick, onRemove, variant, className }: 
       <div
         className={cn(
           'bg-muted relative aspect-square overflow-hidden rounded-[18px]',
-          !imageUrl && 'border-[1.5px] border-dashed border-[#d6c8bd] dark:border-[#3d363a]',
+          !imageUrl && 'border-[1.5px] border-dashed border-border-strong',
         )}
       >
         {imageUrl ? (

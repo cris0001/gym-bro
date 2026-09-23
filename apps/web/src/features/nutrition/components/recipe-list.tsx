@@ -16,8 +16,7 @@ import { useRecipes } from '../hooks/use-recipes';
 import { useNutritionTranslation } from '../i18n';
 import { MacroValues } from './macro-values';
 
-const CARD =
-  'overflow-hidden rounded-[20px] border border-[#e8e1da] bg-[#fdfbf9] dark:border-[#2f292d] dark:bg-card';
+const CARD = 'overflow-hidden rounded-[20px] border border-border bg-card';
 
 interface RecipeListProps {
   // Desktop master-detail: rows select the recipe locally (highlighting selectedId) and
@@ -99,7 +98,7 @@ export function RecipeList({ selectedId = null, onSelect }: RecipeListProps) {
                 className="bg-muted size-16 shrink-0 rounded-[14px] object-cover"
               />
             ) : (
-              <span className="bg-muted flex size-16 shrink-0 items-center justify-center rounded-[14px] text-[#a8969d]">
+              <span className="bg-muted flex size-16 shrink-0 items-center justify-center rounded-[14px] text-muted-foreground">
                 <ChefHat className="size-6" />
               </span>
             )}
@@ -124,7 +123,7 @@ export function RecipeList({ selectedId = null, onSelect }: RecipeListProps) {
                   carbs={Math.round(recipe.perServing.carbsG)}
                   fat={Math.round(recipe.perServing.fatG)}
                 />
-                <span className="text-[#b3a6ac]">{t.recipes.perServingSuffix}</span>
+                <span className="text-muted-foreground">{t.recipes.perServingSuffix}</span>
               </span>
               {recipe.ingredientNames.length > 0 ? (
                 <span className="text-muted-foreground mt-1 line-clamp-2 block text-[12.5px] leading-snug">
@@ -139,7 +138,7 @@ export function RecipeList({ selectedId = null, onSelect }: RecipeListProps) {
             key={recipe.id}
             className={cn(
               CARD,
-              'flex items-start gap-1 p-3 pr-1.5 transition-colors hover:border-[#d6c8bd]',
+              'flex items-start gap-1 p-3 pr-1.5 transition-colors hover:border-border-strong',
               recipe.id === selectedId && 'bg-accent',
             )}
           >

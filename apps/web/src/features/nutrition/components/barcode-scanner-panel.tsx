@@ -327,9 +327,9 @@ export function BarcodeScannerPanel({ active, onDetected }: BarcodeScannerPanelP
       {note ? <p className="text-muted-foreground text-sm">{note}</p> : null}
 
       <div className="font-heading text-muted-foreground flex items-center gap-3 text-[13px] italic">
-        <span className="h-px flex-1 bg-[#e4dad2] dark:bg-[#2f292d]" />
+        <span className="h-px flex-1 bg-border" />
         {t.barcode.orTypeNumber}
-        <span className="h-px flex-1 bg-[#e4dad2] dark:bg-[#2f292d]" />
+        <span className="h-px flex-1 bg-border" />
       </div>
 
       <div className="flex gap-2">
@@ -345,7 +345,7 @@ export function BarcodeScannerPanel({ active, onDetected }: BarcodeScannerPanelP
         />
         <button
           type="button"
-          className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 shrink-0 rounded-full px-5 text-[14.5px] font-semibold transition-colors"
+          className="bg-primary text-primary-foreground hover:bg-primary-hover h-12 shrink-0 rounded-full px-5 text-[14.5px] font-semibold transition-colors"
           onClick={submitManual}
         >
           {t.barcode.use}

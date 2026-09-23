@@ -73,12 +73,7 @@ export function RecipeIngredientRow({
   }
 
   return (
-    <li
-      className={cn(
-        'border-t border-dashed border-[#e4dad2] dark:border-[#2f292d]',
-        editing && 'bg-[#faf6f3] dark:bg-[#1a1618]',
-      )}
-    >
+    <li className={cn('border-t border-dashed border-border', editing && 'bg-field-muted')}>
       <div
         className={cn(
           'flex items-center gap-3 px-4 py-4 xl:grid xl:py-3.5 xl:gap-0',
@@ -98,7 +93,7 @@ export function RecipeIngredientRow({
               className="bg-muted size-10 shrink-0 rounded-[10px] object-cover"
             />
           ) : (
-            <span className="bg-muted flex size-10 shrink-0 items-center justify-center rounded-[10px] text-[#a8969d]">
+            <span className="bg-muted flex size-10 shrink-0 items-center justify-center rounded-[10px] text-muted-foreground">
               <Apple className="size-4" />
             </span>
           )}
@@ -128,7 +123,7 @@ export function RecipeIngredientRow({
           <Input
             inputMode="decimal"
             aria-label={t.recipes.amountAria}
-            className="font-heading border-primary h-10 w-[76px] rounded-[10px] border-[1.5px] bg-[#fdfbf9] text-center text-base font-semibold shadow-none dark:bg-[#171316]"
+            className="font-heading border-primary h-10 w-[76px] rounded-[10px] border-[1.5px] bg-field text-center text-base font-semibold shadow-none"
             value={row.amount}
             onChange={(e) => onChange({ amount: e.target.value })}
           />

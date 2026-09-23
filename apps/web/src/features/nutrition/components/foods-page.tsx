@@ -51,7 +51,7 @@ export function FoodsPage() {
             <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2" />
             <Input
               placeholder={t.foods.searchFoods}
-              className="h-11 rounded-xl border-[#e8e1da] bg-[#fdfbf9] pl-10 text-[14px] shadow-none dark:border-[#2f292d] dark:bg-[#171316]"
+              className="h-11 rounded-xl border-border bg-field pl-10 text-[14px] shadow-none"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -64,7 +64,7 @@ export function FoodsPage() {
           </div>
           {/* Below xl the rows are their own cards; at xl the table sits in one card
               next to the panel. */}
-          <div className="xl:dark:bg-card xl:overflow-hidden xl:rounded-[20px] xl:border xl:border-[#e8e1da] xl:bg-[#fdfbf9] xl:dark:border-[#2f292d]">
+          <div className=" xl:overflow-hidden xl:rounded-[20px] xl:border xl:border-border xl:bg-card">
             <FoodList search={search} selectedId={isDesktop ? (editing?.id ?? null) : null} />
           </div>
         </div>

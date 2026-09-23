@@ -107,7 +107,7 @@ const MACRO_LABEL_COLOR: Record<(typeof MACRO_FIELDS)[number], string> = {
 };
 
 // In a card the fields sit on parchment rather than the card's own white.
-const PANEL_FIELD = 'bg-[#f6f3f0] dark:bg-[#171316]';
+const PANEL_FIELD = 'bg-field-muted';
 
 // Create/edit a food. Macros are entered per 100g. The shared schema is the
 // source of truth on the server; this local schema mirrors it with form-friendly
@@ -254,11 +254,11 @@ export function FoodForm({
               </button>
             </div>
           ) : panel ? (
-            <span className="bg-muted flex size-[72px] shrink-0 items-center justify-center rounded-2xl text-[#a8969d]">
+            <span className="bg-muted flex size-[72px] shrink-0 items-center justify-center rounded-2xl text-muted-foreground">
               <Apple className="size-7" />
             </span>
           ) : (
-            <span className="text-muted-foreground flex size-16 shrink-0 items-center justify-center rounded-[14px] border-[1.5px] border-dashed border-[#d6c8bd] dark:border-[#3d363a]">
+            <span className="text-muted-foreground flex size-16 shrink-0 items-center justify-center rounded-[14px] border-[1.5px] border-dashed border-border-strong">
               <Camera className="size-5" />
             </span>
           )}
@@ -454,7 +454,7 @@ export function FoodForm({
         <button
           type="submit"
           disabled={isPending}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-primary/60 inline-flex h-12 items-center justify-center gap-2 rounded-full text-[14.5px] font-semibold transition-colors disabled:pointer-events-none"
+          className="bg-primary text-primary-foreground hover:bg-primary-hover disabled:bg-primary/60 inline-flex h-12 items-center justify-center gap-2 rounded-full text-[14.5px] font-semibold transition-colors disabled:pointer-events-none"
         >
           {isPending ? <Loader2 className="size-4 animate-spin" /> : null}
           {isPending ? t.common.saving : editing ? t.common.saveChanges : t.foods.addFood}

@@ -13,7 +13,7 @@ export function FoodDetailPanel() {
   const close = useFoodUiStore((s) => s.close);
 
   return (
-    <div className="sticky top-4 overflow-hidden rounded-[20px] border border-[#e8e1da] bg-[#fdfbf9] dark:border-[#2f292d] dark:bg-card">
+    <div className="sticky top-4 overflow-hidden rounded-[20px] border border-border bg-card">
       {/* Keyed so switching rows (or back to "new") resets the form's default values.
           The panel layout renders its own header (photo + title) inside the form. */}
       <FoodForm

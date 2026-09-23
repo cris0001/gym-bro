@@ -76,7 +76,7 @@ export function ExercisePicker({ value, onChange }: ExercisePickerProps) {
           onChange={(e) => setQuery(e.target.value)}
         />
       </div>
-      <ul className="max-h-48 divide-y divide-[#efe8e2] overflow-y-auto rounded-xl border border-[#e8e1da] bg-[#fdfbf9] dark:divide-[#2f292d] dark:border-[#2f292d] dark:bg-[#171316]">
+      <ul className="max-h-48 divide-y divide-border overflow-y-auto rounded-xl border border-border bg-field">
         {filtered.length === 0 ? (
           <li className="text-muted-foreground px-3.5 py-3 text-sm">No matches.</li>
         ) : (

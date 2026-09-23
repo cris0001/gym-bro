@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router';
 
 import { BrandMark } from '@/components/brand-mark';
 import { LanguageToggle } from '@/components/language-toggle';
+import { PalettePicker } from '@/components/palette-picker';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LogoutButton } from '@/features/auth';
 import { useTranslation } from '@/lib/i18n/use-translation';
@@ -79,6 +80,7 @@ export function SidebarNav() {
         <LogoutButton />
         <div className="flex items-center gap-2">
           <LanguageToggle />
+          <PalettePicker />
           <ThemeToggle />
         </div>
       </div>

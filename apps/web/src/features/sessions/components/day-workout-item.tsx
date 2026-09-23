@@ -143,7 +143,7 @@ export function DayWorkoutItem({
           ) : (
             <>
               {detail.notes !== null && (
-                <p className="font-heading rounded-xl border border-[#efe8e2] bg-[#fdfbf9] p-3 text-[13px] text-[#574c52] italic dark:border-[#2f292d] dark:bg-[#171316] dark:text-[#c9bfc4]">
+                <p className="font-heading rounded-xl border border-border bg-field p-3 text-[13px] text-subtle-foreground italic">
                   “{detail.notes}”
                 </p>
               )}
@@ -157,7 +157,7 @@ export function DayWorkoutItem({
                         {performance.exercise.name}
                       </span>
                       {topSet && (
-                        <span className="shrink-0 text-[11px] font-semibold text-[#75394c] dark:text-[#f0bccb]">
+                        <span className="shrink-0 text-[11px] font-semibold text-accent-foreground">
                           ★ {t.dayWorkout.top(topSet.weight ?? 'BW')}
                         </span>
                       )}
@@ -169,8 +169,8 @@ export function DayWorkoutItem({
                           className={cn(
                             'rounded-lg px-[9px] py-1 text-[11px] font-bold',
                             set.isTopSet
-                              ? 'bg-[#f5e7ea] text-[#75394c] dark:bg-[#2c1f25] dark:text-[#f0bccb]'
-                              : 'bg-[#f0e9e3] text-[#574c52] dark:bg-[#262124] dark:text-[#c9bfc4]',
+                              ? 'bg-accent text-accent-foreground'
+                              : 'bg-secondary text-subtle-foreground',
                           )}
                         >
                           {set.weight ?? 'BW'} × {set.reps ?? '—'}

@@ -29,7 +29,7 @@ export function TargetsHistory({ onEdit }: { onEdit: (target: NutritionTarget) =
   const short = t.common.macroShort;
 
   return (
-    <ul className="divide-y divide-dashed divide-[#e4dad2] dark:divide-[#2f292d]">
+    <ul className="divide-y divide-dashed divide-border">
       {ordered.map((target, index) => {
         const current = index === 0;
         return (
@@ -38,7 +38,7 @@ export function TargetsHistory({ onEdit }: { onEdit: (target: NutritionTarget) =
               aria-hidden
               className={cn(
                 'w-1 shrink-0 self-stretch rounded-full',
-                current ? 'bg-[#8d4a5e]' : 'bg-[#e8e1da] dark:bg-[#2f292d]',
+                current ? 'bg-primary' : 'bg-border',
               )}
             />
             <div className="min-w-0 flex-1">
