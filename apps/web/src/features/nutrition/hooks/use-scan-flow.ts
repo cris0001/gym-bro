@@ -21,6 +21,8 @@ export interface ResolvedFood {
   unitGrams: number | null;
 }
 
+export type ScanOutcome = 'resolved' | 'form' | 'error';
+
 function fromFood(f: Food): ResolvedFood {
   return {
     id: f.id,
@@ -80,17 +82,20 @@ export function useScanFlow(onResolved?: (food: ResolvedFood) => void) {
     else toast.success(`Added ${food.name} to your foods.`);
   }
 
-  async function handleEan(ean: string) {
+  // Resolves to how the scan ended: the product is in your foods ('resolved'), the
+  // food form opened with a prefill ('form'), or the lookup failed ('error') — so a
+  // host like the add-food sheet knows whether to close.
+  async function handleEan(ean: string): Promise<ScanOutcome> {
     try {
       const result = await lookup.mutateAsync(ean);
       if (result.status === 'found') {
         if (result.inPantry && result.foodId) {
           if (onResolved) onResolved(fromGlobal(result.product, result.foodId));
           else toast.info('This product is already in your foods.');
-          return;
+          return 'resolved';
         }
         resolved(await createFood.mutateAsync(globalToInput(result.product)));
-        return;
+        return 'resolved';
       }
       const prefill =
         result.status === 'off'
@@ -101,8 +106,10 @@ export function useScanFlow(onResolved?: (food: ResolvedFood) => void) {
             }
           : blankPrefill(result.ean);
       openScanned(prefill, onResolved ? resolved : undefined);
+      return 'form';
     } catch {
       toast.error('Barcode lookup failed. Try again.');
+      return 'error';
     }
   }
 

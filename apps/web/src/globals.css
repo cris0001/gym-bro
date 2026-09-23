@@ -184,36 +184,37 @@
 }
 
 .dark {
-  /* Plum & Parchment — dark. Deep plum-tinted neutrals instead of warm browns, a
-     brightened plum primary; same rules (bordered cards, no shadows). The page sits a
-     couple of shades below the card so bordered cards read clearly without shadows. */
-  --background: #191316;
+  /* Plum & Parchment — dark. Near-black, faintly plum neutrals with a light rose
+     primary and a pale-pink accent (text/icons on a dark rose tint); same rules
+     (bordered cards, no shadows). The page sits a shade below the card so bordered
+     cards read clearly without shadows. */
+  --background: #141113;
 
-  --foreground: #f0e7ea;
+  --foreground: #f4eef0;
 
-  --card: #2f262b;
+  --card: #1e1a1d;
 
-  --card-foreground: #f0e7ea;
+  --card-foreground: #f4eef0;
 
-  --popover: #2f262b;
+  --popover: #1e1a1d;
 
-  --popover-foreground: #f0e7ea;
+  --popover-foreground: #f4eef0;
 
-  --primary: #b06a7e; /* brightened plum */
+  --primary: #d68aa0; /* rose — bright enough to read on the near-black ground */
 
   --primary-foreground: #fdf6f5;
 
-  --secondary: #352a30;
+  --secondary: #282326;
 
-  --secondary-foreground: #f0e7ea;
+  --secondary-foreground: #f4eef0;
 
-  --muted: #3a2f35;
+  --muted: #282326;
 
-  --muted-foreground: #a8969d;
+  --muted-foreground: #9c9097;
 
-  --accent: #3d2a32;
+  --accent: #2c1f25; /* dark rose tint behind accent text */
 
-  --accent-foreground: #d9a4b3;
+  --accent-foreground: #f0bccb;
 
   --destructive: #e08a8f;
   --destructive-hover: #f0a4a8;
@@ -224,37 +225,37 @@
   --destructive-solid-foreground: #1f191c;
   --destructive-rest: #7a6c72;
 
-  --border: #453840;
+  --border: #2f292d;
 
-  --input: #453840;
+  --input: #2f292d;
 
-  --ring: #b06a7e;
+  --ring: #d68aa0;
 
-  --chart-1: #b06a7e;
+  --chart-1: #d68aa0;
 
   --chart-2: #d9a441;
 
   --chart-3: #8fae85;
 
-  --chart-4: #d9a4b3;
+  --chart-4: #f0bccb;
 
   --chart-5: #a3937f;
 
-  --sidebar: #2f262b;
+  --sidebar: #1e1a1d;
 
-  --sidebar-foreground: #f0e7ea;
+  --sidebar-foreground: #f4eef0;
 
-  --sidebar-primary: #b06a7e;
+  --sidebar-primary: #d68aa0;
 
   --sidebar-primary-foreground: #fdf6f5;
 
-  --sidebar-accent: #3d2a32;
+  --sidebar-accent: #2c1f25;
 
-  --sidebar-accent-foreground: #d9a4b3;
+  --sidebar-accent-foreground: #f0bccb;
 
-  --sidebar-border: #453840;
+  --sidebar-border: #2f292d;
 
-  --sidebar-ring: #b06a7e;
+  --sidebar-ring: #d68aa0;
 }
 
 /* Keep an element scrollable but hide its scrollbar (mobile submenus, in-sheet

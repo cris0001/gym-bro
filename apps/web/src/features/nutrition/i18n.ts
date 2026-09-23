@@ -28,6 +28,8 @@ export const useNutritionTranslation = createFeatureTranslation({
       macroProtein: 'Protein',
       macroCarbs: 'Carbs',
       macroFat: 'Fat',
+      // One-letter macro keys for dot legends and compact rows.
+      macroShort: { protein: 'P', carbs: 'C', fat: 'F' },
       macroFields: {
         kcal: 'Calories (kcal)',
         proteinG: 'Protein (g)',
@@ -101,6 +103,10 @@ export const useNutritionTranslation = createFeatureTranslation({
       contributingDesc:
         'Give it a clear, specific name and double-check the macros per 100 g so other users recognise it.',
       barcodeLabel: (ean: string) => `Barcode: ${ean}`,
+      optional: 'optional',
+      servingShort: 'g per serving',
+      unitShort: 'g per unit',
+      portionsHint: 'Both optional — lets you log by serving or piece, not only grams.',
     },
     foods: {
       title: 'Foods',
@@ -136,6 +142,7 @@ export const useNutritionTranslation = createFeatureTranslation({
       newRecipe: 'New recipe',
       noPhotoYet: 'No photo yet',
       ingredients: 'Ingredients',
+      amount: 'Amount',
       noIngredients: 'No ingredients yet — search below to add one.',
       editIngredientAria: (name: string) => `Edit ${name}`,
       ingredientFallback: 'ingredient',
@@ -202,6 +209,10 @@ export const useNutritionTranslation = createFeatureTranslation({
       numberPlaceholder: 'Barcode number',
       use: 'Use',
       uploadPhoto: 'Upload barcode photo',
+      orTypeNumber: 'or type the number',
+      pointCamera: 'Point the camera at the barcode.',
+      modeManual: 'Manual',
+      modeScan: 'Scan barcode',
       scanAria: 'Scan a barcode',
       cameraUnavailable: 'Camera unavailable — type the barcode or upload a photo.',
       noBarcodeInImage: 'No barcode found in that image.',
@@ -229,6 +240,7 @@ export const useNutritionTranslation = createFeatureTranslation({
       macroProtein: 'Białko',
       macroCarbs: 'Węglowodany',
       macroFat: 'Tłuszcz',
+      macroShort: { protein: 'P', carbs: 'C', fat: 'F' },
       macroFields: {
         kcal: 'Kalorie (kcal)',
         proteinG: 'Białko (g)',
@@ -303,6 +315,11 @@ export const useNutritionTranslation = createFeatureTranslation({
       contributingDesc:
         'Nadaj mu jasną, konkretną nazwę i sprawdź makro na 100 g, aby inni użytkownicy go rozpoznali.',
       barcodeLabel: (ean: string) => `Kod kreskowy: ${ean}`,
+      optional: 'opcjonalnie',
+      servingShort: 'g na porcję',
+      unitShort: 'g na sztukę',
+      portionsHint:
+        'Oba opcjonalne — pozwalają zapisywać na porcje lub sztuki, nie tylko w gramach.',
     },
     foods: {
       title: 'Produkty',
@@ -338,6 +355,7 @@ export const useNutritionTranslation = createFeatureTranslation({
       newRecipe: 'Nowy przepis',
       noPhotoYet: 'Brak zdjęcia',
       ingredients: 'Składniki',
+      amount: 'Ilość',
       noIngredients: 'Brak składników — wyszukaj poniżej, aby dodać.',
       editIngredientAria: (name: string) => `Edytuj ${name}`,
       ingredientFallback: 'składnik',
@@ -406,6 +424,10 @@ export const useNutritionTranslation = createFeatureTranslation({
       numberPlaceholder: 'Numer kodu kreskowego',
       use: 'Użyj',
       uploadPhoto: 'Prześlij zdjęcie kodu',
+      orTypeNumber: 'albo wpisz numer',
+      pointCamera: 'Skieruj aparat na kod kreskowy.',
+      modeManual: 'Ręcznie',
+      modeScan: 'Skanuj kod',
       scanAria: 'Zeskanuj kod kreskowy',
       cameraUnavailable: 'Aparat niedostępny — wpisz kod kreskowy lub prześlij zdjęcie.',
       noBarcodeInImage: 'Nie znaleziono kodu kreskowego na tym zdjęciu.',

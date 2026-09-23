@@ -103,7 +103,7 @@ export function ExerciseForm({ editing, onSuccess, onCancel }: ExerciseFormProps
                       'h-10 rounded-xl border text-[13px] font-medium transition-colors',
                       field.value === category
                         ? 'bg-primary text-primary-foreground border-transparent font-semibold'
-                        : 'border-[#e8e1da] bg-[#fdfbf9] hover:bg-muted dark:border-[#3a3035] dark:bg-[#282124]',
+                        : 'border-[#e8e1da] bg-[#fdfbf9] hover:bg-muted dark:border-[#2f292d] dark:bg-[#171316]',
                     )}
                     onClick={() => field.onChange(category)}
                   >

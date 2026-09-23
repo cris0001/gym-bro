@@ -1,9 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
+import { Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -13,6 +13,8 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { FIELD_CLASS, LABEL_CLASS, NUMBER_FIELD_CLASS } from '@/lib/form-styles';
+import { cn } from '@/lib/utils';
 
 import type { NutritionTarget, SetNutritionTargetInput } from '@gym-bro/shared';
 
@@ -40,7 +42,16 @@ const targetFormSchema = z.object({
 
 type TargetFormValues = z.infer<typeof targetFormSchema>;
 
-const FIELDS = ['kcal', 'proteinG', 'carbsG', 'fatG'] as const;
+// Protein / carbs / fat share one row; each label wears its macro colour.
+const MACRO_FIELDS = [
+  { name: 'proteinG', labelClass: 'text-[#8d4a5e] dark:text-[#f0bccb]' },
+  { name: 'carbsG', labelClass: 'text-[#b8862a] dark:text-[#d9a441]' },
+  { name: 'fatG', labelClass: 'text-[#5a7a52] dark:text-[#8fae85]' },
+] as const;
+
+// In a card the fields sit on parchment rather than the card's own white.
+const PANEL_BG = 'bg-[#f6f3f0] dark:bg-[#171316]';
+const FIELD = cn(FIELD_CLASS, PANEL_BG);
 
 interface TargetsFormProps {
   current: NutritionTarget | null;
@@ -108,32 +119,63 @@ export function TargetsForm({ current, editing, onDone }: TargetsFormProps) {
           name="effectiveDate"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t.targets.effectiveDate}</FormLabel>
+              <FormLabel className={LABEL_CLASS}>{t.targets.effectiveDate}</FormLabel>
               <FormControl>
                 <Input
                   type="date"
                   max={format(new Date(), 'yyyy-MM-dd')}
-                  className="h-11"
+                  className={cn(FIELD, 'max-w-[220px]')}
                   {...field}
                 />
               </FormControl>
-              <p className="text-muted-foreground text-xs">{t.targets.effectiveDateHint}</p>
+              <p className="text-muted-foreground text-[12px]">{t.targets.effectiveDateHint}</p>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <div className="grid grid-cols-2 gap-3">
-          {FIELDS.map((fieldName) => (
+        {/* Calories on their own, larger — the number the day is measured against. */}
+        <FormField
+          control={form.control}
+          name="kcal"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className={LABEL_CLASS}>{t.common.macroFields.kcal}</FormLabel>
+              <FormControl>
+                <Input
+                  inputMode="decimal"
+                  placeholder="0"
+                  className={cn(
+                    FIELD,
+                    'font-heading h-14 px-4 text-[24px] font-semibold md:text-[24px]',
+                  )}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* items-end: a wrapped label (e.g. PL "Węglowodany (g)") keeps the fields in line. */}
+        <div className="grid grid-cols-3 items-end gap-3">
+          {MACRO_FIELDS.map(({ name, labelClass }) => (
             <FormField
-              key={fieldName}
+              key={name}
               control={form.control}
-              name={fieldName}
+              name={name}
               render={({ field: f }) => (
                 <FormItem>
-                  <FormLabel>{t.common.macroFields[fieldName]}</FormLabel>
+                  <FormLabel className={cn(LABEL_CLASS, labelClass)}>
+                    {t.common.macroFields[name]}
+                  </FormLabel>
                   <FormControl>
-                    <Input inputMode="decimal" placeholder="0" className="h-11" {...f} />
+                    <Input
+                      inputMode="decimal"
+                      placeholder="0"
+                      className={cn(NUMBER_FIELD_CLASS, PANEL_BG)}
+                      {...f}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -142,10 +184,18 @@ export function TargetsForm({ current, editing, onDone }: TargetsFormProps) {
           ))}
         </div>
 
+        {/* Where the calories come from: a proportion bar + the same split as text. */}
         {split ? (
-          <p className="font-heading text-muted-foreground text-sm italic">
-            {t.targets.split(split.p, split.c, split.f)}
-          </p>
+          <div className="grid gap-2">
+            <div className="flex h-2.5 gap-0.5 overflow-hidden rounded-full">
+              <span className="bg-[#8d4a5e]" style={{ flexGrow: split.p, flexBasis: 0 }} />
+              <span className="bg-[#d9a441]" style={{ flexGrow: split.c, flexBasis: 0 }} />
+              <span className="bg-[#5a7a52]" style={{ flexGrow: split.f, flexBasis: 0 }} />
+            </div>
+            <p className="font-heading text-muted-foreground text-[13px] italic">
+              {t.targets.split(split.p, split.c, split.f)}
+            </p>
+          </div>
         ) : null}
 
         {setTarget.error ? (
@@ -158,22 +208,26 @@ export function TargetsForm({ current, editing, onDone }: TargetsFormProps) {
         ) : null}
 
         <div className="flex gap-2">
-          <Button type="submit" className="h-11 flex-1 rounded-full" disabled={setTarget.isPending}>
+          <button
+            type="submit"
+            disabled={setTarget.isPending}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-primary/60 inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-full text-[14.5px] font-semibold transition-colors disabled:pointer-events-none"
+          >
+            {setTarget.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
             {setTarget.isPending
               ? t.common.saving
               : editing
                 ? t.common.saveChanges
                 : t.targets.saveTarget}
-          </Button>
+          </button>
           {editing ? (
-            <Button
+            <button
               type="button"
-              variant="outline"
-              className="h-11 rounded-full px-5"
+              className="border-border bg-card hover:bg-muted h-12 rounded-full border px-6 text-[14px] font-semibold text-[#5f5257] transition-colors dark:text-[#c9bfc4]"
               onClick={() => onDone?.()}
             >
               {t.common.cancel}
-            </Button>
+            </button>
           ) : null}
         </div>
       </form>
