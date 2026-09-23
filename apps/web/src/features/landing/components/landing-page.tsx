@@ -140,7 +140,7 @@ export function LandingPage() {
       {/* Hero — full-bleed wrapper so the contour lines span the whole section */}
       <div className="relative w-full overflow-hidden">
         <HeroLines />
-        <div className="relative z-10 mx-auto flex w-full max-w-[1060px] flex-col items-center gap-8 px-6 pt-24 pb-24 text-center md:gap-8 md:pt-28 md:pb-28">
+        <div className="relative z-10 mx-auto flex w-full max-w-[1060px] flex-col items-center gap-8 px-6 pt-32 pb-32 text-center md:gap-9 md:pt-40 md:pb-40 lg:pt-48 lg:pb-48">
           <h1 className="font-heading max-w-[760px] text-[clamp(38px,6vw,58px)] leading-[1.08] font-medium tracking-tight text-balance">
             Log your lifts. Track your plate.{' '}
             <em className="mt-4 block text-[#8d4a5e] md:mt-0 md:inline">Watch the trend.</em>

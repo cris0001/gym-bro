@@ -3,6 +3,7 @@ import { createFeatureTranslation } from '@/lib/i18n/create-translation';
 // Auth feature copy (login, register, onboarding). English is the source shape.
 export const useAuthTranslation = createFeatureTranslation({
   en: {
+    backHome: 'Back to home',
     name: 'Name',
     email: 'Email',
     password: 'Password',
@@ -38,6 +39,7 @@ export const useAuthTranslation = createFeatureTranslation({
     },
   },
   pl: {
+    backHome: 'Strona główna',
     name: 'Imię',
     email: 'E-mail',
     password: 'Hasło',
