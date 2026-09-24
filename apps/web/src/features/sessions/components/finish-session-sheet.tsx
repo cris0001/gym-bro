@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 import { Star } from 'lucide-react';
+import { useEffect } from 'react';
 
 import type { CreateStrengthSessionInput } from '@gym-bro/shared';
 
@@ -77,6 +78,19 @@ export function FinishSessionSheet({ open, onClose }: FinishSessionSheetProps) {
   const updateMutation = useUpdateStrengthSession();
   const navigate = useNavigate();
   const t = useSessionsTranslation();
+
+  // Prefill the duration from the live timer each time the sheet opens on a new
+  // session, so it gets saved without typing. Runs on open only (reading the draft
+  // via getState) so clearing the field while the sheet is open sticks; editing a
+  // past session keeps its stored value.
+  useEffect(() => {
+    if (!open) return;
+    const current = useWorkoutDraftStore.getState().draft;
+    if (!current?.startedAt || current.editingSessionId !== null) return;
+    if (current.durationMinutes !== null) return;
+    const minutes = Math.round((Date.now() - new Date(current.startedAt).getTime()) / 60_000);
+    setDuration(Math.max(1, minutes));
+  }, [open, setDuration]);
 
   if (!draft) return null;
 

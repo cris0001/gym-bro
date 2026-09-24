@@ -190,9 +190,11 @@ export const useSessionsTranslation = createFeatureTranslation({
     workoutDetail: {
       notFound: 'Workout not found.',
       backToCalendar: 'Back to calendar',
-      calendarLink: '← Calendar',
+      calendarLink: 'Calendar',
       noExercises: 'No exercises logged.',
       swappedFrom: (name: string) => ` · swapped from ${name}`,
+      activity: 'Activity',
+      stats: { duration: 'Duration', volume: 'Volume', sets: 'Sets', rating: 'Rating' },
     },
   },
   pl: {
@@ -379,9 +381,11 @@ export const useSessionsTranslation = createFeatureTranslation({
     workoutDetail: {
       notFound: 'Nie znaleziono treningu.',
       backToCalendar: 'Wróć do kalendarza',
-      calendarLink: '← Kalendarz',
+      calendarLink: 'Kalendarz',
       noExercises: 'Nie zapisano ćwiczeń.',
       swappedFrom: (name: string) => ` · zamienione z ${name}`,
+      activity: 'Aktywność',
+      stats: { duration: 'Czas', volume: 'Objętość', sets: 'Serie', rating: 'Ocena' },
     },
   },
 });

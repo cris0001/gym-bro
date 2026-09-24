@@ -3,7 +3,7 @@ import { Check, ChevronDown, Star } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import type { WorkoutSessionDetail, WorkoutSessionListItem } from '@gym-bro/shared';
+import type { WorkoutSessionListItem } from '@gym-bro/shared';
 
 import { DeleteIconButton } from '@/components/delete-icon-button';
 import { EditIconButton } from '@/components/edit-icon-button';
@@ -15,8 +15,9 @@ import { useSessionsTranslation } from '../i18n';
 import { useDeleteWorkoutSession } from '../hooks/use-delete-workout-session';
 import { useEditWorkout } from '../hooks/use-edit-workout';
 import { useWorkoutSession } from '../hooks/use-workout-session';
-
-const fmt = (n: number): string => Math.round(n).toLocaleString('en-US');
+import { formatVolume, workoutTotals } from '../utils/workout-totals';
+import { WorkoutNote } from './workout-note';
+import { WorkoutTagPills } from './workout-tag-pills';
 
 // Five stars, filled up to `rating` (gold), the rest a warm empty tone.
 function Stars({ rating }: { rating: number }) {
@@ -34,20 +35,6 @@ function Stars({ rating }: { rating: number }) {
       ))}
     </span>
   );
-}
-
-// Total logged sets and lifted volume (kg × reps, bodyweight sets excluded) across a
-// finished workout's performances.
-function workoutTotals(detail: WorkoutSessionDetail): { sets: number; volume: number } {
-  let sets = 0;
-  let volume = 0;
-  for (const performance of detail.performances) {
-    for (const set of performance.sets) {
-      sets += 1;
-      if (set.weight !== null && set.reps !== null) volume += set.weight * set.reps;
-    }
-  }
-  return { sets, volume };
 }
 
 // Long workouts collapse their exercise list behind a "+ N more" toggle.
@@ -108,7 +95,7 @@ export function DayWorkoutItem({
               <>
                 {workout.durationMinutes !== null && <span>·</span>}
                 <span>{t.dayWorkout.sets(totals.sets)}</span>
-                {totals.volume > 0 && <span>· {fmt(totals.volume)} kg</span>}
+                {totals.volume > 0 && <span>· {formatVolume(totals.volume)} kg</span>}
               </>
             )}
             {workout.rating !== null && <Stars rating={workout.rating} />}
@@ -142,11 +129,9 @@ export function DayWorkoutItem({
             <p className="text-muted-foreground text-sm">{t.common.loading}</p>
           ) : (
             <>
-              {detail.notes !== null && (
-                <p className="font-heading rounded-xl border border-border bg-field p-3 text-[13px] text-subtle-foreground italic">
-                  “{detail.notes}”
-                </p>
-              )}
+              <WorkoutTagPills tags={detail.tags} />
+
+              {detail.notes !== null && <WorkoutNote note={detail.notes} />}
 
               {visible.map((performance) => {
                 const topSet = performance.sets.find((s) => s.isTopSet && s.weight !== null);
@@ -162,6 +147,11 @@ export function DayWorkoutItem({
                         </span>
                       )}
                     </div>
+                    {performance.notes !== null && (
+                      <p className="text-subtle-foreground text-[12px] break-words whitespace-pre-line">
+                        {performance.notes}
+                      </p>
+                    )}
                     <div className="flex flex-wrap gap-1.5">
                       {performance.sets.map((set) => (
                         <span
