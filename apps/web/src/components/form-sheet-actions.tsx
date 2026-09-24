@@ -7,6 +7,8 @@ interface FormSheetActionsProps {
   isPending: boolean;
   onCancel: () => void;
   pendingLabel?: string;
+  // Blocks submit while the form isn't ready (on top of isPending).
+  disabled?: boolean;
 }
 
 // Footer for a FormSheet form. Phones get one full-width submit pill (the sheet's
@@ -17,6 +19,7 @@ export function FormSheetActions({
   isPending,
   onCancel,
   pendingLabel = 'Saving…',
+  disabled = false,
 }: FormSheetActionsProps) {
   return (
     <div className="mt-1 flex gap-2 sm:justify-end">
@@ -29,7 +32,7 @@ export function FormSheetActions({
       </button>
       <button
         type="submit"
-        disabled={isPending}
+        disabled={isPending || disabled}
         className={cn(
           'bg-primary text-primary-foreground hover:bg-primary-hover inline-flex h-11 w-full items-center justify-center gap-2 rounded-full px-6 text-[14px] font-semibold transition-colors sm:h-10 sm:w-auto sm:text-[13px]',
           'disabled:bg-primary/60 disabled:pointer-events-none',
