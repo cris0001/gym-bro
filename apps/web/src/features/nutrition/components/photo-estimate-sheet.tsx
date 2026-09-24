@@ -1,18 +1,11 @@
-import { Camera, Sparkles, X } from 'lucide-react';
+import { Loader2, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import { Button } from '@/components/ui/button';
+import { FormSheet } from '@/components/form-sheet';
+import { FormSheetActions } from '@/components/form-sheet-actions';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
-import { Textarea } from '@/components/ui/textarea';
+import { FIELD_CLASS, LABEL_CLASS, TEXTAREA_CLASS } from '@/lib/form-styles';
 
 import type { CreateFoodLogInput } from '@gym-bro/shared';
 
@@ -21,12 +14,10 @@ import { useEstimateFoodPhoto } from '../hooks/use-estimate-food-photo';
 import { useNutritionTranslation } from '../i18n';
 import { useDiaryUiStore } from '../stores/diary-ui.store';
 import { resizeImageToDataUrl } from '../utils/resize-image';
+import { PHOTO_MACRO_FIELDS, PhotoEstimateMacros, type PhotoMacros } from './photo-estimate-macros';
+import { PhotoEstimatePicker } from './photo-estimate-picker';
 
-const MACRO_FIELDS = ['kcal', 'proteinG', 'carbsG', 'fatG'] as const;
-
-type MacroKey = (typeof MACRO_FIELDS)[number];
-type Macros = Record<MacroKey, string>;
-const EMPTY_MACROS: Macros = { kcal: '', proteinG: '', carbsG: '', fatG: '' };
+const EMPTY_MACROS: PhotoMacros = { kcal: '', proteinG: '', carbsG: '', fatG: '' };
 
 function isValidMacro(value: string): boolean {
   const n = Number(value);
@@ -46,7 +37,7 @@ export function PhotoEstimateSheet({ loggedDate }: { loggedDate: string }) {
   const [image, setImage] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [note, setNote] = useState('');
-  const [macros, setMacros] = useState<Macros>(EMPTY_MACROS);
+  const [macros, setMacros] = useState<PhotoMacros>(EMPTY_MACROS);
   // Once we have an estimate the form flips from "estimate" to an editable macro preview.
   const [estimated, setEstimated] = useState(false);
 
@@ -102,11 +93,12 @@ export function PhotoEstimateSheet({ loggedDate }: { loggedDate: string }) {
     );
   }
 
-  const macrosValid = MACRO_FIELDS.every((f) => isValidMacro(macros[f]));
-  const canSave = estimated && name.trim() !== '' && macrosValid && !create.isPending;
+  const macrosValid = PHOTO_MACRO_FIELDS.every((f) => isValidMacro(macros[f]));
+  const canSave = estimated && name.trim() !== '' && macrosValid;
 
-  function save() {
-    if (!canSave || photoMeal === null) return;
+  function save(e: React.FormEvent) {
+    e.preventDefault();
+    if (!canSave || create.isPending || photoMeal === null) return;
     const input: CreateFoodLogInput = {
       type: 'custom',
       name: name.trim(),
@@ -124,127 +116,80 @@ export function PhotoEstimateSheet({ loggedDate }: { loggedDate: string }) {
   const error = estimate.error ?? create.error;
 
   return (
-    <Sheet open={open} onOpenChange={(next) => !next && closePhoto()}>
-      <SheetContent side="bottom" className="gap-0">
-        <SheetHeader>
-          <SheetTitle className="capitalize">
-            {t.photo.title(photoMeal ? t.meals[photoMeal] : null)}
-          </SheetTitle>
-          <SheetDescription>{t.photo.description}</SheetDescription>
-        </SheetHeader>
+    <FormSheet
+      open={open}
+      onClose={closePhoto}
+      title={t.photo.title(photoMeal ? t.meals[photoMeal] : null)}
+      description={t.photo.description}
+    >
+      <form onSubmit={save} className="grid gap-4 px-5 pt-4 pb-6 sm:px-6">
+        <PhotoEstimatePicker
+          image={image}
+          onPick={(e) => void onPickImage(e)}
+          onRemove={() => {
+            setImage(null);
+            setEstimated(false);
+          }}
+        />
 
-        <div className="grid gap-4 p-4">
-          <div className="flex flex-col items-center gap-2">
-            {image ? (
-              <div className="relative">
-                <img
-                  src={image}
-                  alt=""
-                  className="bg-muted size-32 rounded-lg border object-cover"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setImage(null);
-                    setEstimated(false);
-                  }}
-                  aria-label={t.common.removePhoto}
-                  className="bg-background absolute -top-2 -right-2 rounded-full border p-1 shadow"
-                >
-                  <X className="size-4" />
-                </button>
-              </div>
-            ) : null}
-            <Button
-              asChild
-              type="button"
-              variant={image ? 'ghost' : 'outline'}
-              className={image ? 'h-9' : 'h-11'}
-            >
-              <label>
-                <Camera className="size-4" />
-                {image ? t.common.changePhoto : t.photo.takePhoto}
-                <input
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  className="hidden"
-                  onChange={(e) => void onPickImage(e)}
-                />
-              </label>
-            </Button>
-          </div>
+        <label className="grid gap-1.5">
+          <span className={LABEL_CLASS}>{t.common.name}</span>
+          <Input
+            className={FIELD_CLASS}
+            placeholder={t.photo.namePlaceholder}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </label>
 
-          <div className="grid gap-2">
-            <Label htmlFor="photo-name">{t.common.name}</Label>
-            <Input
-              id="photo-name"
-              className="h-11"
-              placeholder={t.photo.namePlaceholder}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
+        <label className="grid gap-1.5">
+          <span className={LABEL_CLASS}>{t.photo.noteLabel}</span>
+          <textarea
+            rows={2}
+            className={TEXTAREA_CLASS}
+            placeholder={t.photo.notePlaceholder}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+          />
+        </label>
 
-          <div className="grid gap-2">
-            <Label htmlFor="photo-note">{t.photo.noteLabel}</Label>
-            <Textarea
-              id="photo-note"
-              rows={2}
-              placeholder={t.photo.notePlaceholder}
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
-          </div>
-
-          {estimated ? (
-            <>
-              <div className="grid grid-cols-2 gap-3">
-                {MACRO_FIELDS.map((f) => (
-                  <div key={f} className="grid gap-1.5">
-                    <Label htmlFor={`photo-${f}`}>{t.common.macroFields[f]}</Label>
-                    <Input
-                      id={`photo-${f}`}
-                      inputMode="decimal"
-                      className="h-11"
-                      value={macros[f]}
-                      onChange={(e) => setMacros((m) => ({ ...m, [f]: e.target.value }))}
-                    />
-                  </div>
-                ))}
-              </div>
-              <p className="text-muted-foreground text-xs">{t.photo.estimateHint}</p>
-            </>
-          ) : (
-            <Button
-              type="button"
-              className="h-11"
-              disabled={!image || estimate.isPending}
-              onClick={runEstimate}
-            >
+        {estimated ? (
+          <PhotoEstimateMacros
+            macros={macros}
+            onChange={(field, value) => setMacros((m) => ({ ...m, [field]: value }))}
+          />
+        ) : (
+          <button
+            type="button"
+            disabled={!image || estimate.isPending}
+            onClick={runEstimate}
+            className="bg-primary text-primary-foreground hover:bg-primary-hover disabled:bg-primary/50 inline-flex h-11 items-center justify-center gap-2 rounded-full text-[14px] font-semibold transition-colors disabled:pointer-events-none"
+          >
+            {estimate.isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
               <Sparkles className="size-4" />
-              {estimate.isPending ? t.photo.estimating : t.photo.estimateMacros}
-            </Button>
-          )}
+            )}
+            {estimate.isPending ? t.photo.estimating : t.photo.estimateMacros}
+          </button>
+        )}
 
-          {error ? (
-            <p role="alert" className="text-destructive text-sm">
-              {error.message}
-            </p>
-          ) : null}
+        {error ? (
+          <p role="alert" className="text-destructive text-[13px]">
+            {error.message}
+          </p>
+        ) : null}
 
-          <div className="flex gap-2">
-            {estimated ? (
-              <Button type="button" className="h-11 flex-1" disabled={!canSave} onClick={save}>
-                {create.isPending ? t.common.saving : t.photo.saveToDiary}
-              </Button>
-            ) : null}
-            <Button type="button" variant="outline" className="h-11" onClick={closePhoto}>
-              {t.common.cancel}
-            </Button>
-          </div>
-        </div>
-      </SheetContent>
-    </Sheet>
+        {estimated ? (
+          <FormSheetActions
+            submitLabel={t.photo.saveToDiary}
+            pendingLabel={t.common.saving}
+            isPending={create.isPending}
+            disabled={!canSave}
+            onCancel={closePhoto}
+          />
+        ) : null}
+      </form>
+    </FormSheet>
   );
 }
