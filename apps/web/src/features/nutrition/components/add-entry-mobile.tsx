@@ -51,7 +51,7 @@ export function AddEntryMobile({
   return (
     <div className="bg-background fixed inset-0 z-50 flex flex-col">
       <div className="flex-1 overflow-y-auto">
-        <div className="mx-auto flex w-full max-w-md flex-col gap-4 p-4">
+        <div className="mx-auto flex w-full max-w-md flex-col gap-4 p-3 min-[400px]:p-4">
           <div className="flex items-center justify-between gap-2">
             <button
               type="button"
@@ -145,7 +145,7 @@ export function AddEntryMobile({
         </div>
       </div>
 
-      <div className="bg-background/95 border-border sticky bottom-0 flex items-center gap-3 border-t px-4 py-3 backdrop-blur">
+      <div className="bg-background/95 border-border sticky bottom-0 flex items-center gap-3 border-t px-4 py-2.5 backdrop-blur">
         <div className="flex flex-col">
           <span className="text-muted-foreground text-[11px] font-semibold tracking-wide uppercase">
             {t.addEntry.mealTotalLabel(mealLabel)}
@@ -158,7 +158,7 @@ export function AddEntryMobile({
         <button
           type="button"
           onClick={closeAdd}
-          className="bg-primary text-primary-foreground h-[46px] flex-1 rounded-full text-sm font-semibold"
+          className="bg-primary text-primary-foreground h-10 flex-1 rounded-full text-sm font-semibold"
         >
           {t.common.done}
         </button>

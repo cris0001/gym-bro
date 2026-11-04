@@ -10,7 +10,10 @@ export function AddEntryListSkeleton({ dividerClassName }: { dividerClassName: s
       {[0, 1, 2, 3, 4].map((i) => (
         <div
           key={i}
-          className={cn('flex items-center gap-3 px-3.5 py-3', i > 0 && dividerClassName)}
+          className={cn(
+            'flex items-center gap-2.5 px-3 py-2.5 min-[400px]:gap-3 min-[400px]:px-3.5 min-[400px]:py-3',
+            i > 0 && dividerClassName,
+          )}
         >
           <Skeleton className="size-[38px] shrink-0 rounded-[10px]" />
           <div className="flex min-w-0 flex-1 flex-col gap-1.5">

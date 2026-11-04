@@ -22,10 +22,10 @@ export function AddEntryResultRow({
   const portionLabel = `${Number(portion.quantity.toFixed(2))} ${t.addEntry.unitShort[portion.unit]}`;
 
   return (
-    <div className="flex items-center gap-3 px-3.5 py-3">
+    <div className="flex items-center gap-2.5 px-3 py-2.5 min-[400px]:gap-3 min-[400px]:px-3.5 min-[400px]:py-3">
       <button
         type="button"
-        className="flex min-w-0 flex-1 items-center gap-3 text-left"
+        className="flex min-w-0 flex-1 items-center gap-2.5 text-left min-[400px]:gap-3"
         onClick={onEditPortion}
       >
         {row.imageUrl ? (
