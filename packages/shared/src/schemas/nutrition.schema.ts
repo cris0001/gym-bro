@@ -98,9 +98,13 @@ export const setNutritionTargetSchema = z.object({
 // in the input.
 // A food is always logged by grams (server-set unit); a recipe carries an explicit
 // unit so it can be logged by grams OR by servings. `meal` groups the entry.
+// `id` (optional, client-generated) makes the create idempotent: a retried request
+// with the same id returns the entry its first attempt created instead of a duplicate.
+const clientId = z.uuid().optional();
 export const createFoodLogSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('food'),
+    id: clientId,
     foodId: z.uuid(),
     quantity: positiveAmount,
     // Grams by default; 'servings' when the food has a serving size (server checks).
@@ -110,6 +114,7 @@ export const createFoodLogSchema = z.discriminatedUnion('type', [
   }),
   z.object({
     type: z.literal('recipe'),
+    id: clientId,
     recipeId: z.uuid(),
     quantity: positiveAmount,
     unit: z.enum(FOOD_LOG_UNITS),
@@ -121,6 +126,7 @@ export const createFoodLogSchema = z.discriminatedUnion('type', [
   // it with quantity 1 / unit 'servings'. `source` marks AI estimates for a diary badge.
   z.object({
     type: z.literal('custom'),
+    id: clientId,
     name: itemName,
     kcal: macroValue,
     proteinG: macroValue,

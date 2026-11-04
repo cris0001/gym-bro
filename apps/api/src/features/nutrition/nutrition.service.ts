@@ -45,6 +45,18 @@ function isUniqueViolation(error: unknown): boolean {
   return false;
 }
 
+// The constraint a Postgres error names (Drizzle wraps the driver error, so it may
+// sit on the cause).
+function violatedConstraint(error: unknown): string | undefined {
+  for (const value of [error, (error as { cause?: unknown } | null)?.cause]) {
+    if (typeof value === 'object' && value !== null && 'constraint' in value) {
+      const { constraint } = value;
+      if (typeof constraint === 'string') return constraint;
+    }
+  }
+  return undefined;
+}
+
 // --- Foods ---
 
 export async function listFoods(userId: string, search?: string) {
@@ -376,9 +388,32 @@ async function computeLogSnapshot(
 // to snapshot — it carries its own name + macro totals (typed or AI-estimated) and is
 // logged as-is at quantity 1 / unit 'servings', so editing its quantity later rescales
 // the whole estimate.
+// Idempotent when the client sends an `id`: a retry of a request whose first attempt
+// already landed (the response was lost) returns that entry instead of logging the
+// food twice. The pre-check covers the common case; two retries racing each other
+// both reach the insert, and the primary key lets exactly one win — the loser re-reads
+// and returns the winner's row. An id owned by ANOTHER user is a 409, never a leak.
 export async function createFoodLogEntry(userId: string, input: CreateFoodLogInput) {
+  if (input.id) {
+    const existing = await nutritionRepository.findFoodLogEntryById(userId, input.id);
+    if (existing) return existing;
+  }
+  try {
+    return await insertFoodLogEntry(userId, input);
+  } catch (error) {
+    if (input.id && isUniqueViolation(error) && violatedConstraint(error) === 'food_log_pkey') {
+      const existing = await nutritionRepository.findFoodLogEntryById(userId, input.id);
+      if (existing) return existing;
+      throw new ConflictError('This entry id is already in use');
+    }
+    throw error;
+  }
+}
+
+async function insertFoodLogEntry(userId: string, input: CreateFoodLogInput) {
   if (input.type === 'custom') {
     return nutritionRepository.createFoodLogEntry({
+      id: input.id,
       userId,
       loggedDate: input.loggedDate,
       meal: input.meal,
@@ -404,6 +439,7 @@ export async function createFoodLogEntry(userId: string, input: CreateFoodLogInp
     quantity: input.quantity,
   });
   return nutritionRepository.createFoodLogEntry({
+    id: input.id,
     userId,
     loggedDate: input.loggedDate,
     meal: input.meal,

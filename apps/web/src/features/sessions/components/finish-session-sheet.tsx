@@ -31,6 +31,7 @@ interface FinishSessionSheetProps {
 // implicit in array order on the server; client-side ids are dropped here.
 function buildPayload(draft: WorkoutDraft): CreateStrengthSessionInput {
   return {
+    ...(draft.clientId ? { id: draft.clientId } : {}),
     plannedSessionId: draft.plannedSessionId,
     workoutTemplateId: draft.workoutTemplateId,
     name: draft.name,

@@ -138,6 +138,8 @@ interface PerformanceInput {
 }
 
 interface CreateStrengthSessionData {
+  // Client-generated id for an idempotent create; omitted → the DB default.
+  id?: string | undefined;
   userId: string;
   plannedSessionId: string | null;
   workoutTemplateId: string | null;
@@ -151,6 +153,7 @@ interface CreateStrengthSessionData {
 }
 
 interface CreateActivitySessionData {
+  id?: string | undefined;
   userId: string;
   name: string;
   performedDate: string;
@@ -199,6 +202,7 @@ export async function createStrengthSession(
     const [session] = await tx
       .insert(workoutSessions)
       .values({
+        ...(data.id ? { id: data.id } : {}),
         userId: data.userId,
         plannedSessionId,
         workoutTemplateId: data.workoutTemplateId,
@@ -278,6 +282,7 @@ export async function createActivitySession(
     const [session] = await tx
       .insert(workoutSessions)
       .values({
+        ...(data.id ? { id: data.id } : {}),
         userId: data.userId,
         plannedSessionId: null,
         workoutTemplateId: null,

@@ -487,6 +487,8 @@ export type FoodLogEntryRow = ReturnType<typeof mapFoodLogRow>;
 // repository just persists the row. At most one of foodId / recipeId is set (both
 // null = a custom entry). `source` marks AI photo estimates.
 interface FoodLogInsert {
+  // Client-generated id for an idempotent create; omitted → the DB default.
+  id?: string | undefined;
   userId: string;
   loggedDate: string;
   meal: MealType;
@@ -506,6 +508,7 @@ export async function createFoodLogEntry(data: FoodLogInsert): Promise<FoodLogEn
   const [row] = await db
     .insert(foodLog)
     .values({
+      ...(data.id ? { id: data.id } : {}),
       userId: data.userId,
       loggedDate: data.loggedDate,
       meal: data.meal,
