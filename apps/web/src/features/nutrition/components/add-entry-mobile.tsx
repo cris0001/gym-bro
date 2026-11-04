@@ -3,6 +3,8 @@ import { Barcode, ChevronLeft, Plus, Search } from 'lucide-react';
 
 import type { MealType } from '@gym-bro/shared';
 
+import { useSheetBackClose } from '@/hooks/use-sheet-back-close';
+
 import type { UseAddEntry } from '../hooks/use-add-entry';
 import { useNutritionTranslation } from '../i18n';
 import { useDiaryUiStore } from '../stores/diary-ui.store';
@@ -25,6 +27,9 @@ export function AddEntryMobile({
 }) {
   const t = useNutritionTranslation();
   const closeAdd = useDiaryUiStore((s) => s.closeAdd);
+  // Not a Sheet (a fullscreen takeover), so wire the phone Back button up by hand —
+  // Back closes this view instead of navigating away from the diary.
+  useSheetBackClose(true, (open) => !open && closeAdd());
   const {
     query,
     setQuery,
