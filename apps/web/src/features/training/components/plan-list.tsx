@@ -37,7 +37,7 @@ export function PlanList() {
         title="No plans yet"
         description="Create a plan (e.g. PPL, Upper/Lower) to organize your workout templates."
         action={
-          <Button type="button" className="h-11 rounded-full px-5" onClick={openCreate}>
+          <Button type="button" className="h-10 rounded-full px-5" onClick={openCreate}>
             <Plus className="size-4" />
             New plan
           </Button>

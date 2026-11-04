@@ -26,7 +26,7 @@ export function WorkoutNotFound() {
         <p className="font-heading text-[20px] font-medium">{t.workoutDetail.notFound}</p>
         <Link
           to="/calendar"
-          className="border-border-strong bg-card text-primary hover:bg-muted inline-flex h-11 items-center rounded-full border px-6 text-[14px] font-semibold transition-colors"
+          className="border-border-strong bg-card text-primary hover:bg-muted inline-flex h-10 items-center rounded-full border px-6 text-[14px] font-semibold transition-colors"
         >
           {t.workoutDetail.backToCalendar}
         </Link>

@@ -163,7 +163,7 @@ export function PhotoEstimateSheet({ loggedDate }: { loggedDate: string }) {
             type="button"
             disabled={!image || estimate.isPending}
             onClick={runEstimate}
-            className="bg-primary text-primary-foreground hover:bg-primary-hover disabled:bg-primary/50 inline-flex h-11 items-center justify-center gap-2 rounded-full text-[14px] font-semibold transition-colors disabled:pointer-events-none"
+            className="bg-primary text-primary-foreground hover:bg-primary-hover disabled:bg-primary/50 inline-flex h-10 items-center justify-center gap-2 rounded-full text-[14px] font-semibold transition-colors disabled:pointer-events-none"
           >
             {estimate.isPending ? (
               <Loader2 className="size-4 animate-spin" />

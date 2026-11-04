@@ -236,7 +236,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
           <div className="grid grid-cols-[1fr_1.4fr] gap-2 xl:flex xl:flex-col-reverse">
             <button
               type="button"
-              className="border-border bg-card hover:bg-muted h-11 rounded-full border text-[14px] font-semibold text-subtle-foreground transition-colors"
+              className="border-border bg-card hover:bg-muted h-10 rounded-full border text-[14px] font-semibold text-subtle-foreground transition-colors"
               onClick={finish}
             >
               {t.common.cancel}
@@ -244,7 +244,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
             <button
               type="button"
               disabled={!canSave}
-              className="bg-primary text-primary-foreground hover:bg-primary-hover disabled:bg-primary/50 inline-flex h-11 items-center justify-center gap-2 rounded-full text-[14px] font-semibold transition-colors disabled:pointer-events-none"
+              className="bg-primary text-primary-foreground hover:bg-primary-hover disabled:bg-primary/50 inline-flex h-10 items-center justify-center gap-2 rounded-full text-[14px] font-semibold transition-colors disabled:pointer-events-none"
               onClick={save}
             >
               {isPending ? <Loader2 className="size-4 animate-spin" /> : null}

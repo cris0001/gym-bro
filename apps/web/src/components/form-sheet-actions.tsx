@@ -34,7 +34,7 @@ export function FormSheetActions({
         type="submit"
         disabled={isPending || disabled}
         className={cn(
-          'bg-primary text-primary-foreground hover:bg-primary-hover inline-flex h-11 w-full items-center justify-center gap-2 rounded-full px-6 text-[14px] font-semibold transition-colors sm:h-10 sm:w-auto sm:text-[13px]',
+          'bg-primary text-primary-foreground hover:bg-primary-hover inline-flex h-10 w-full items-center justify-center gap-2 rounded-full px-6 text-[14px] font-semibold transition-colors sm:h-10 sm:w-auto sm:text-[13px]',
           'disabled:bg-primary/60 disabled:pointer-events-none',
         )}
       >

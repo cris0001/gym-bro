@@ -66,7 +66,7 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
         title={t.foods.emptyTitle}
         description={t.foods.emptyDesc}
         action={
-          <Button type="button" className="h-11 rounded-full px-5" onClick={openCreate}>
+          <Button type="button" className="h-10 rounded-full px-5" onClick={openCreate}>
             <Plus className="size-4" />
             {t.foods.addFood}
           </Button>

@@ -46,7 +46,7 @@ export function ExerciseStatPicker({ value, onSelect }: ExerciseStatPickerProps)
         <Button
           variant="ghost"
           className={cn(
-            'h-11 w-full justify-between rounded-full font-medium',
+            'h-10 w-full justify-between rounded-full font-medium',
             value ? 'bg-accent text-primary' : 'bg-secondary text-muted-foreground',
           )}
         >

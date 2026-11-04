@@ -44,7 +44,7 @@ export function StravaConnectionCard({
         </div>
         <Button
           asChild
-          className="h-11 rounded-full bg-[#d15b28] px-5 text-white hover:bg-[#d15b28]/90 dark:bg-[#ff7a3d]"
+          className="h-10 rounded-full bg-[#d15b28] px-5 text-white hover:bg-[#d15b28]/90 dark:bg-[#ff7a3d]"
         >
           <a href={STRAVA_CONNECT_URL}>Connect Strava</a>
         </Button>
@@ -93,7 +93,7 @@ export function StravaConnectionCard({
       <div className="flex gap-2">
         <Button
           type="button"
-          className="h-11 flex-1 rounded-full bg-[#d15b28] text-white hover:bg-[#d15b28]/90 dark:bg-[#ff7a3d]"
+          className="h-10 flex-1 rounded-full bg-[#d15b28] text-white hover:bg-[#d15b28]/90 dark:bg-[#ff7a3d]"
           disabled={importActivities.isPending}
           onClick={() => importActivities.mutate()}
         >
@@ -103,7 +103,7 @@ export function StravaConnectionCard({
         <Button
           type="button"
           variant="ghost"
-          className="text-muted-foreground h-11 rounded-full px-4"
+          className="text-muted-foreground h-10 rounded-full px-4"
           disabled={disconnect.isPending}
           onClick={() => void onDisconnect()}
         >

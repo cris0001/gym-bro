@@ -112,7 +112,7 @@ function PlannedTodoCard({ session }: { session: PlannedSessionWithTemplate }) {
       {session.status === 'planned' && (
         <div className="flex items-center gap-2">
           <Button
-            className="h-11 flex-1 rounded-full"
+            className="h-10 flex-1 rounded-full"
             onClick={() => {
               void startFromTemplate({
                 templateId: session.template.id,
@@ -288,7 +288,7 @@ export function DayDetail({ date }: { date: string }) {
 
       <Button
         variant="ghost"
-        className="h-11 rounded-2xl border border-border bg-card font-semibold text-primary hover:bg-muted"
+        className="h-10 rounded-2xl border border-border bg-card font-semibold text-primary hover:bg-muted"
         onClick={() => setAssigning(true)}
       >
         <Plus className="size-4" />

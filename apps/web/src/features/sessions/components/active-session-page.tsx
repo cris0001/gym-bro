@@ -122,7 +122,7 @@ export function ActiveSessionPage() {
         />
         <Button
           variant="ghost"
-          className="text-muted-foreground h-11"
+          className="text-muted-foreground h-10"
           onClick={() => void startEmpty()}
         >
           {t.activeSession.startEmpty}

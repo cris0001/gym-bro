@@ -224,11 +224,11 @@ export function BodyMeasurementForm() {
         ) : null}
 
         <div className="flex gap-2">
-          <Button type="submit" className="h-11 flex-1" disabled={upsert.isPending}>
+          <Button type="submit" className="h-10 flex-1" disabled={upsert.isPending}>
             {upsert.isPending ? 'Saving…' : editing ? 'Save changes' : 'Add measurement'}
           </Button>
           {editing ? (
-            <Button type="button" variant="outline" className="h-11" onClick={clearEditing}>
+            <Button type="button" variant="outline" className="h-10" onClick={clearEditing}>
               Cancel
             </Button>
           ) : null}
