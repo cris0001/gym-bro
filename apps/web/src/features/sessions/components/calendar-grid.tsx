@@ -87,13 +87,13 @@ function countByDate(
   return map;
 }
 
-// Finished workout names per day (template snapshot for strength, entered name for
-// activity), in list order — shown as labels on the cell.
+// Finished workout labels per day, in list order — the template's short name when it
+// has one (so long names never overflow a cell), else the snapshotted/entered name.
 function namesByDate(workouts: WorkoutSessionListItem[]): Map<string, string[]> {
   const map = new Map<string, string[]>();
   for (const workout of workouts) {
     const existing = map.get(workout.performedDate) ?? [];
-    existing.push(workout.name);
+    existing.push(workout.templateShortName ?? workout.name);
     map.set(workout.performedDate, existing);
   }
   return map;
