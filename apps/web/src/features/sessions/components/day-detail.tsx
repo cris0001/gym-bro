@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { format, parseISO } from 'date-fns';
-import { ChevronLeft, ChevronRight, Dumbbell, Pencil, Play, Plus } from 'lucide-react';
+import { ChevronRight, Dumbbell, Pencil, Play, Plus } from 'lucide-react';
 import { useState } from 'react';
 
 import type { PlannedSessionWithTemplate } from '@gym-bro/shared';
@@ -156,6 +156,13 @@ function PlannedTodoCard({ session }: { session: PlannedSessionWithTemplate }) {
 // swaps the list for the assign form.
 export function DayDetail({ date }: { date: string }) {
   const [assigning, setAssigning] = useState(false);
+  // Picking another day closes the assign form — it belongs to the day it was opened
+  // on. Reset during render (not an effect) so the new day never flashes the form.
+  const [assigningDate, setAssigningDate] = useState(date);
+  if (assigningDate !== date) {
+    setAssigningDate(date);
+    setAssigning(false);
+  }
 
   const { data: planned = [] } = useQuery({
     ...plannedSessionsQueryOptions(date, date),
@@ -175,11 +182,7 @@ export function DayDetail({ date }: { date: string }) {
 
   if (assigning) {
     return (
-      <div className="flex flex-col">
-        <Button variant="ghost" size="sm" className="w-fit" onClick={() => setAssigning(false)}>
-          <ChevronLeft className="size-4" />
-          {t.dayDetail.back}
-        </Button>
+      <div className="flex flex-col p-4">
         <AssignTemplateForm date={date} onDone={() => setAssigning(false)} />
       </div>
     );
