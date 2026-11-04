@@ -78,7 +78,11 @@ export function CalendarDayCell({
         }
       }}
       className={cn(
-        'flex min-h-11 cursor-pointer flex-col items-center justify-start gap-1 rounded-lg p-1 text-sm transition-colors',
+        // min-w-0 lets labels truncate inside the grid track instead of widening the
+        // cell. The month cell is square with NO fixed min-height, so aspect-ratio's
+        // automatic minimum lets it grow taller when a day holds several sessions
+        // rather than spilling them into the next week's row.
+        'flex min-w-0 cursor-pointer flex-col items-center justify-start gap-1 rounded-lg p-1 text-sm transition-colors',
         tall ? 'min-h-24' : 'aspect-square',
         'focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2',
         !inverted && 'hover:bg-accent',
@@ -134,20 +138,29 @@ export function CalendarDayCell({
       {finished > 0 && (
         <span
           className={cn(
-            'mt-auto flex w-full min-w-0 flex-col items-center gap-0.5 text-[10px] leading-tight font-medium',
+            'mt-auto flex w-full min-w-0 flex-col items-stretch gap-0.5 text-[10px] leading-tight font-medium',
             inverted ? 'text-[#bfe0b3] dark:text-[#3f5c37]' : 'text-[#48653f] dark:text-[#8fae85]',
           )}
         >
+          {/* One row (a small pill) per session, so two sessions read as two distinct
+              entries instead of running into each other. */}
           {workoutNames.slice(0, 3).map((name, index) => (
-            <span key={index} className="max-w-full truncate">
+            <span
+              key={index}
+              className={cn(
+                'truncate rounded-[4px] px-0.5 py-px text-center',
+                inverted ? 'bg-white/10 dark:bg-black/10' : 'bg-[#48653f]/10 dark:bg-[#8fae85]/15',
+              )}
+            >
               {name}
             </span>
           ))}
           {workoutNames.length > 3 && (
             <span
-              className={
-                inverted ? 'text-[#fdf6f5]/60 dark:text-[#141113]/60' : 'text-muted-foreground'
-              }
+              className={cn(
+                'text-center',
+                inverted ? 'text-[#fdf6f5]/60 dark:text-[#141113]/60' : 'text-muted-foreground',
+              )}
             >
               +{workoutNames.length - 3}
             </span>
