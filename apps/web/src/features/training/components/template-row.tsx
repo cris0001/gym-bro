@@ -91,14 +91,17 @@ export function TemplateRow({ template, selected = false, variant = 'list' }: Te
         ) : null}
       </Link>
 
-      <button
-        type="button"
-        className="shrink-0 p-1.5 text-faint-foreground"
-        aria-label={`Edit ${template.name}`}
-        onClick={() => openEdit(template)}
-      >
-        <Pencil className="size-[14px]" />
-      </button>
+      {/* Desktop column: the template is edited from its Edit pill in the next column. */}
+      {variant === 'list' ? (
+        <button
+          type="button"
+          className="shrink-0 p-1.5 text-faint-foreground"
+          aria-label={`Edit ${template.name}`}
+          onClick={() => openEdit(template)}
+        >
+          <Pencil className="size-[14px]" />
+        </button>
+      ) : null}
       <DeleteIconButton
         aria-label={`Delete ${template.name}`}
         disabled={remove.isPending}

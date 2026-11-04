@@ -2,10 +2,8 @@ import { Star } from 'lucide-react';
 
 import { SkeletonList } from '@/components/skeletons';
 
-import { useDeletePlanFlow } from '../hooks/use-delete-plan-flow';
 import { usePlan } from '../hooks/use-plan';
 import { useSetActivePlan } from '../hooks/use-set-active-plan';
-import { usePlanUiStore } from '../stores/plan-ui.store';
 import { useTemplateUiStore } from '../stores/template-ui.store';
 import { TemplateList } from './template-list';
 
@@ -15,9 +13,10 @@ interface PlanTemplatesColumnProps {
   selectedTemplateId: string | null;
 }
 
-// Second column of the desktop plans workspace: the selected plan's header (edit,
-// set active), its templates as a drag-to-reorder list linking to /templates/$id
-// (the open one highlighted), "+ Add template", and Edit / Delete plan at the foot.
+// Second column of the desktop plans workspace: the selected plan's header (with Set as
+// active) and its templates as a drag-to-reorder list linking to /templates/$id, the
+// open one highlighted. Editing / deleting the plan itself sits on its row in the
+// first column, like every other row's actions.
 export function PlanTemplatesColumn({
   planId,
   isActive,
@@ -25,9 +24,7 @@ export function PlanTemplatesColumn({
 }: PlanTemplatesColumnProps) {
   const { data: plan, isPending } = usePlan(planId);
   const setActive = useSetActivePlan();
-  const openEdit = usePlanUiStore((s) => s.openEdit);
   const openCreateTemplate = useTemplateUiStore((s) => s.openCreate);
-  const { deletePlan, isPending: deleting } = useDeletePlanFlow();
 
   if (isPending || !plan) {
     return (
@@ -89,20 +86,6 @@ export function PlanTemplatesColumn({
           variant="column"
         />
       )}
-
-      <div className="border-border mt-auto flex gap-4 border-t border-dashed pt-3 text-[12.5px] font-semibold">
-        <button type="button" className="text-primary" onClick={() => openEdit(plan)}>
-          Edit plan
-        </button>
-        <button
-          type="button"
-          className="text-destructive disabled:opacity-50"
-          disabled={deleting}
-          onClick={() => void deletePlan(plan)}
-        >
-          Delete plan
-        </button>
-      </div>
     </div>
   );
 }
