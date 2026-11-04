@@ -20,5 +20,8 @@ export const useTemplateUiStore = create<TemplateUiState>((set) => ({
   planId: null,
   openCreate: (planId) => set({ open: true, editing: null, planId }),
   openEdit: (template) => set({ open: true, editing: template, planId: template.trainingPlanId }),
-  close: () => set({ open: false, editing: null, planId: null }),
+  // Only hides the sheet: the edited row stays until the next open (openCreate/openEdit
+  // replace it), so the close animation keeps showing the edit form instead of flashing
+  // the blank "add" variant for a frame.
+  close: () => set({ open: false }),
 }));

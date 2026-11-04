@@ -18,5 +18,8 @@ export const useExerciseUiStore = create<ExerciseUiState>((set) => ({
   editing: null,
   openCreate: () => set({ open: true, editing: null }),
   openEdit: (exercise) => set({ open: true, editing: exercise }),
-  close: () => set({ open: false, editing: null }),
+  // Only hides the sheet: the edited row stays until the next open (openCreate/openEdit
+  // replace it), so the close animation keeps showing the edit form instead of flashing
+  // the blank "add" variant for a frame.
+  close: () => set({ open: false }),
 }));
