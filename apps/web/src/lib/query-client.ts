@@ -2,6 +2,7 @@ import { MutationCache, QueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { ApiError } from '@/lib/api-client';
+import { PERSIST_MAX_AGE_MS } from '@/lib/query-persistence';
 
 // Retry budget: a few attempts for transient failures, then give up and show the
 // error (queries: the page's ErrorState with "Try again"; mutations: a toast).
@@ -31,6 +32,8 @@ function retryDelay(failureCount: number, error: unknown): number {
 
 // Single shared QueryClient. Defaults tuned for a personal app:
 // - staleTime 60s: data stays fresh briefly, avoiding refetch storms on navigation.
+// - gcTime = the persisted snapshot's max age, so unused queries stay in the cache
+//   (and therefore in the offline snapshot) instead of being dropped after 5 minutes.
 // - retry: the bounded, transient-only policy above (queries and mutations). With the
 //   default networkMode 'online', requests and pending retries pause while the device
 //   is offline and resume when it reconnects instead of burning the retry budget.
@@ -51,6 +54,7 @@ export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 60_000,
+      gcTime: PERSIST_MAX_AGE_MS,
       retry: (failureCount, error) => failureCount < MAX_QUERY_RETRIES && isRetryable(error),
       retryDelay,
       refetchOnWindowFocus: false,
