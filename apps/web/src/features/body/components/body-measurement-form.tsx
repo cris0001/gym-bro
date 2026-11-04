@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -14,18 +14,26 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { FIELD_CLASS, LABEL_CLASS, TEXTAREA_CLASS } from '@/lib/form-styles';
+import { cn } from '@/lib/utils';
 
 import type { BodyMeasurement, UpsertBodyMeasurementInput } from '@gym-bro/shared';
 
 import { useDeleteBodyMeasurement } from '../hooks/use-delete-body-measurement';
 import { useUpsertBodyMeasurement } from '../hooks/use-upsert-body-measurement';
+import { useBodyTranslation } from '../i18n';
 import { useBodyUiStore } from '../stores/body-ui.store';
+
+type BodyT = ReturnType<typeof useBodyTranslation>;
+
+// The app's form field at the compact 40px height (same as the Targets form).
+const FIELD = cn(FIELD_CLASS, 'bg-field-muted h-10');
 
 // An optional measurement field: kept as a string (empty = "not entered"), valid
 // when blank or a number in [0, max]. No Zod transform, so input/output types
 // match and FormField name inference stays happy across the mapped fields.
-const measurement = (max: number) =>
+// Built per locale so validation messages follow the UI language.
+const measurement = (max: number, t: BodyT) =>
   z
     .string()
     .trim()
@@ -33,34 +41,26 @@ const measurement = (max: number) =>
       if (v === '') return true;
       const n = Number(v);
       return Number.isFinite(n) && n >= 0 && n <= max;
-    }, `Enter a number 0–${max}`);
+    }, t.form.numberRange(max));
 
-const bodyFormSchema = z.object({
-  measuredDate: z.string().min(1, 'Date is required'),
-  weightKg: measurement(999.99),
-  bodyFatPct: measurement(100),
-  bicepsCm: measurement(999.99),
-  chestCm: measurement(999.99),
-  waistCm: measurement(999.99),
-  hipCm: measurement(999.99),
-  thighCm: measurement(999.99),
-  notes: z.string().max(500, 'Too long (max 500 characters)'),
-});
+const makeBodyFormSchema = (t: BodyT) =>
+  z.object({
+    measuredDate: z.string().min(1, t.form.dateRequired),
+    weightKg: measurement(999.99, t),
+    bodyFatPct: measurement(100, t),
+    bicepsCm: measurement(999.99, t),
+    chestCm: measurement(999.99, t),
+    waistCm: measurement(999.99, t),
+    hipCm: measurement(999.99, t),
+    thighCm: measurement(999.99, t),
+    notes: z.string().max(500, t.form.notesTooLong),
+  });
 
-type BodyFormValues = z.infer<typeof bodyFormSchema>;
+type BodyFormValues = z.infer<ReturnType<typeof makeBodyFormSchema>>;
 
-const PRIMARY = [
-  { name: 'weightKg', label: 'Weight (kg)' },
-  { name: 'bodyFatPct', label: 'Body fat (%)' },
-] as const;
-const ADVANCED = [
-  { name: 'bicepsCm', label: 'Biceps (cm)' },
-  { name: 'chestCm', label: 'Chest (cm)' },
-  { name: 'waistCm', label: 'Waist (cm)' },
-  { name: 'hipCm', label: 'Hip (cm)' },
-  { name: 'thighCm', label: 'Thigh (cm)' },
-] as const;
-const MEASUREMENT_KEYS = [...PRIMARY, ...ADVANCED].map((f) => f.name);
+const PRIMARY = ['weightKg', 'bodyFatPct'] as const;
+const ADVANCED = ['bicepsCm', 'chestCm', 'waistCm', 'hipCm', 'thighCm'] as const;
+const MEASUREMENT_KEYS = [...PRIMARY, ...ADVANCED];
 
 const numToStr = (n: number | null) => (n === null ? '' : String(n));
 
@@ -84,13 +84,15 @@ function toDefaults(editing: BodyMeasurement | null): BodyFormValues {
 }
 
 const hasAdvanced = (editing: BodyMeasurement | null) =>
-  !!editing && ADVANCED.some((f) => editing[f.name] !== null);
+  !!editing && ADVANCED.some((key) => editing[key] !== null);
 
 // The prominent quick-add / edit form. Weight + body fat are always shown; the
 // circumference fields sit behind "Show more". In create mode blank fields are
 // omitted so a same-day re-save merges (non-destructive); in edit mode a cleared
 // field is sent as null to actually clear it. At least one value is required.
 export function BodyMeasurementForm() {
+  const t = useBodyTranslation();
+  const schema = useMemo(() => makeBodyFormSchema(t), [t]);
   const editing = useBodyUiStore((s) => s.editing);
   const clearEditing = useBodyUiStore((s) => s.clearEditing);
   const upsert = useUpsertBodyMeasurement();
@@ -98,7 +100,7 @@ export function BodyMeasurementForm() {
   const [showMore, setShowMore] = useState(false);
 
   const form = useForm<BodyFormValues>({
-    resolver: zodResolver(bodyFormSchema),
+    resolver: zodResolver(schema),
     defaultValues: toDefaults(null),
   });
 
@@ -120,7 +122,7 @@ export function BodyMeasurementForm() {
       }
     }
     if (!hasAny) {
-      form.setError('root', { message: 'Enter at least one measurement' });
+      form.setError('root', { message: t.form.atLeastOne });
       return;
     }
     const input: UpsertBodyMeasurementInput = {
@@ -156,15 +158,15 @@ export function BodyMeasurementForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={(e) => void form.handleSubmit(onSubmit)(e)} className="grid gap-4">
+      <form onSubmit={(e) => void form.handleSubmit(onSubmit)(e)} className="grid gap-3">
         <FormField
           control={form.control}
           name="measuredDate"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Date</FormLabel>
+              <FormLabel className={LABEL_CLASS}>{t.form.date}</FormLabel>
               <FormControl>
-                <Input type="date" className="h-11" {...field} />
+                <Input type="date" className={cn(FIELD, 'max-w-[220px]')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -172,16 +174,16 @@ export function BodyMeasurementForm() {
         />
 
         <div className="grid grid-cols-2 gap-3">
-          {(showMore ? [...PRIMARY, ...ADVANCED] : PRIMARY).map((f) => (
+          {(showMore ? MEASUREMENT_KEYS : PRIMARY).map((key) => (
             <FormField
-              key={f.name}
+              key={key}
               control={form.control}
-              name={f.name}
+              name={key}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{f.label}</FormLabel>
+                  <FormLabel className={LABEL_CLASS}>{t.form.fields[key]}</FormLabel>
                   <FormControl>
-                    <Input inputMode="decimal" placeholder="—" className="h-11" {...field} />
+                    <Input inputMode="decimal" placeholder="—" className={FIELD} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -196,7 +198,7 @@ export function BodyMeasurementForm() {
           className="justify-self-start px-0"
           onClick={() => setShowMore((v) => !v)}
         >
-          {showMore ? 'Show less' : 'Show more'}
+          {showMore ? t.form.showLess : t.form.showMore}
         </Button>
 
         <FormField
@@ -204,11 +206,11 @@ export function BodyMeasurementForm() {
           name="notes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Notes</FormLabel>
+              <FormLabel className={LABEL_CLASS}>{t.form.notes}</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="How you felt, conditions, context… (optional)"
-                  className="min-h-16"
+                <textarea
+                  placeholder={t.form.notesPlaceholder}
+                  className={cn(TEXTAREA_CLASS, 'bg-field-muted min-h-16')}
                   {...field}
                 />
               </FormControl>
@@ -224,12 +226,17 @@ export function BodyMeasurementForm() {
         ) : null}
 
         <div className="flex gap-2">
-          <Button type="submit" className="h-10 flex-1" disabled={upsert.isPending}>
-            {upsert.isPending ? 'Saving…' : editing ? 'Save changes' : 'Add measurement'}
+          <Button type="submit" className="h-10 flex-1 rounded-full" disabled={upsert.isPending}>
+            {upsert.isPending ? t.form.saving : editing ? t.form.saveChanges : t.form.add}
           </Button>
           {editing ? (
-            <Button type="button" variant="outline" className="h-10" onClick={clearEditing}>
-              Cancel
+            <Button
+              type="button"
+              variant="outline"
+              className="h-10 rounded-full"
+              onClick={clearEditing}
+            >
+              {t.form.cancel}
             </Button>
           ) : null}
         </div>

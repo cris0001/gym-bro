@@ -9,30 +9,38 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import type { BodyMeasurement, NutritionTarget } from '@gym-bro/shared';
 
 import { useDeleteBodyMeasurement } from '../hooks/use-delete-body-measurement';
+import { seriesLabel, useBodyTranslation } from '../i18n';
 import { useBodyUiStore } from '../stores/body-ui.store';
 import { targetKcalForDate } from '../utils/trend-series';
+
+type BodyT = ReturnType<typeof useBodyTranslation>;
 
 // Shown only when a row is expanded (weight + calories are the always-visible
 // summary). Body fat first, then circumferences.
 type MeasureKey = 'bodyFatPct' | 'bicepsCm' | 'chestCm' | 'waistCm' | 'hipCm' | 'thighCm';
 
-const SECONDARY: { key: MeasureKey; fmt: (v: number) => string }[] = [
-  { key: 'bodyFatPct', fmt: (v) => `${v}% bf` },
-  { key: 'bicepsCm', fmt: (v) => `biceps ${v}cm` },
-  { key: 'chestCm', fmt: (v) => `chest ${v}cm` },
-  { key: 'waistCm', fmt: (v) => `waist ${v}cm` },
-  { key: 'hipCm', fmt: (v) => `hip ${v}cm` },
-  { key: 'thighCm', fmt: (v) => `thigh ${v}cm` },
+const SECONDARY: MeasureKey[] = [
+  'bodyFatPct',
+  'bicepsCm',
+  'chestCm',
+  'waistCm',
+  'hipCm',
+  'thighCm',
 ];
 
-function secondarySummary(entry: BodyMeasurement): string {
-  return SECONDARY.filter((d) => entry[d.key] !== null)
-    .map((d) => d.fmt(entry[d.key]!))
+// "18% bf · biceps 38 cm · waist 82 cm" — the expanded row's secondary measures.
+function secondarySummary(entry: BodyMeasurement, t: BodyT): string {
+  return SECONDARY.filter((key) => entry[key] !== null)
+    .map((key) =>
+      key === 'bodyFatPct'
+        ? `${entry[key]}% ${t.history.bodyFatShort}`
+        : `${(seriesLabel(t, key) ?? key).toLowerCase()} ${entry[key]} cm`,
+    )
     .join(' · ');
 }
 
 const hasMore = (entry: BodyMeasurement): boolean =>
-  entry.notes !== null || SECONDARY.some((d) => entry[d.key] !== null);
+  entry.notes !== null || SECONDARY.some((key) => entry[key] !== null);
 
 // Split into month buckets, preserving the newest-first order of both the months
 // and the rows within them.
@@ -58,6 +66,7 @@ function MeasurementRow({
   entry: BodyMeasurement;
   targets: NutritionTarget[];
 }) {
+  const t = useBodyTranslation();
   const openEdit = useBodyUiStore((s) => s.openEdit);
   const remove = useDeleteBodyMeasurement();
   const [expanded, setExpanded] = useState(false);
@@ -101,18 +110,18 @@ function MeasurementRow({
           variant="ghost"
           size="icon"
           className="size-9 shrink-0"
-          aria-label={`Edit ${entry.measuredDate}`}
+          aria-label={t.history.editAria(entry.measuredDate)}
           onClick={() => openEdit(entry)}
         >
           <Pencil className="size-4" />
         </Button>
         <Popover open={confirmOpen} onOpenChange={setConfirmOpen}>
           <PopoverTrigger asChild>
-            <DeleteIconButton aria-label={`Delete ${entry.measuredDate}`} />
+            <DeleteIconButton aria-label={t.history.deleteAria(entry.measuredDate)} />
           </PopoverTrigger>
           <PopoverContent align="end" className="w-60">
-            <p className="text-sm font-medium">Delete this entry?</p>
-            <p className="text-muted-foreground text-sm">This can’t be undone.</p>
+            <p className="text-sm font-medium">{t.history.deleteTitle}</p>
+            <p className="text-muted-foreground text-sm">{t.history.deleteBody}</p>
             <div className="mt-3 flex justify-end gap-2">
               <Button
                 type="button"
@@ -121,7 +130,7 @@ function MeasurementRow({
                 className="rounded-full border-border bg-field px-[18px] text-[13px] font-semibold"
                 onClick={() => setConfirmOpen(false)}
               >
-                Cancel
+                {t.history.cancel}
               </Button>
               {/* This popover is the confirm step, so it gets the solid delete fill. */}
               <Button
@@ -131,7 +140,7 @@ function MeasurementRow({
                 disabled={remove.isPending}
                 onClick={() => remove.mutate(entry.id, { onSuccess: () => setConfirmOpen(false) })}
               >
-                Delete
+                {t.history.delete}
               </Button>
             </div>
           </PopoverContent>
@@ -140,7 +149,7 @@ function MeasurementRow({
 
       {expanded && more ? (
         <div className="text-muted-foreground mt-1 flex flex-col gap-1 pl-6 text-xs">
-          {secondarySummary(entry) ? <span>{secondarySummary(entry)}</span> : null}
+          {secondarySummary(entry, t) ? <span>{secondarySummary(entry, t)}</span> : null}
           {entry.notes ? (
             <span className="break-words whitespace-pre-wrap">{entry.notes}</span>
           ) : null}
@@ -160,12 +169,13 @@ export function MeasurementList({
   entries: BodyMeasurement[];
   targets: NutritionTarget[];
 }) {
+  const t = useBodyTranslation();
   // Only the newest month is open by default; the rest collapse. `overrides` holds
   // groups the user has explicitly toggled, so their choice sticks per month.
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});
 
   if (entries.length === 0) {
-    return <p className="text-muted-foreground py-4 text-sm">No measurements in this range.</p>;
+    return <p className="text-muted-foreground py-4 text-sm">{t.history.empty}</p>;
   }
 
   return (

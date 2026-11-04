@@ -2,6 +2,8 @@ import { cn } from '@/lib/utils';
 
 import type { BodyMeasurement } from '@gym-bro/shared';
 
+import { useBodyTranslation } from '../i18n';
+
 // Weight summary derived from the entries (newest first). Null when no weight has
 // been logged — the trend chart already shows the empty state, so the panel just
 // hides.
@@ -38,6 +40,7 @@ function Stat({
 // Compact weight stats: latest, change since the previous entry, and the
 // all-time low/high.
 export function BodyStatsPanel({ entries }: { entries: BodyMeasurement[] }) {
+  const t = useBodyTranslation();
   const stats = weightStats(entries);
   if (!stats) return null;
 
@@ -55,10 +58,10 @@ export function BodyStatsPanel({ entries }: { entries: BodyMeasurement[] }) {
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-      <Stat label="Current" value={`${stats.latest} kg`} />
-      <Stat label="Change" value={sinceLast} valueClassName={sinceColor} />
-      <Stat label="Lowest" value={`${stats.min} kg`} />
-      <Stat label="Highest" value={`${stats.max} kg`} />
+      <Stat label={t.stats.current} value={`${stats.latest} kg`} />
+      <Stat label={t.stats.change} value={sinceLast} valueClassName={sinceColor} />
+      <Stat label={t.stats.lowest} value={`${stats.min} kg`} />
+      <Stat label={t.stats.highest} value={`${stats.max} kg`} />
     </div>
   );
 }

@@ -4,12 +4,15 @@ import { useState } from 'react';
 import { SkeletonList } from '@/components/skeletons';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { FIELD_CLASS } from '@/lib/form-styles';
 import { cn } from '@/lib/utils';
 
 import type { BodyMeasurement } from '@gym-bro/shared';
 
 import { useBodyMeasurements } from '../hooks/use-body-measurements';
 import { useTargetHistory } from '../hooks/use-target-history';
+import { useBodyTranslation } from '../i18n';
 import { useBodyUiStore } from '../stores/body-ui.store';
 import { BodyMeasurementForm } from './body-measurement-form';
 import { BodyStatsPanel } from './body-stats-panel';
@@ -18,13 +21,16 @@ import { MeasurementList } from './measurement-list';
 
 type Period = '1m' | '3m' | '6m' | '1y' | 'all';
 
-const PERIODS: { key: Period; label: string; months: number | null }[] = [
-  { key: '1m', label: '1M', months: 1 },
-  { key: '3m', label: '3M', months: 3 },
-  { key: '6m', label: '6M', months: 6 },
-  { key: '1y', label: '1Y', months: 12 },
-  { key: 'all', label: 'All', months: null },
+const PERIODS: { key: Period; months: number | null }[] = [
+  { key: '1m', months: 1 },
+  { key: '3m', months: 3 },
+  { key: '6m', months: 6 },
+  { key: '1y', months: 12 },
+  { key: 'all', months: null },
 ];
+
+// Inline date fields in the trends header: the app's field look at a compact height.
+const DATE_FIELD = cn(FIELD_CLASS, 'h-9 w-full min-w-0 px-2.5 text-[13px] md:text-[13px]');
 
 // Entries within the period (newest-first order preserved). The cutoff compares
 // 'YYYY-MM-DD' strings lexically, which matches chronological order.
@@ -47,6 +53,7 @@ function filterByRange(entries: BodyMeasurement[], from: string, to: string): Bo
 // a period selector that scopes both the chart and the history below it, and the
 // (period-filtered) measurement history. Mobile-first single column.
 export function BodyPage() {
+  const t = useBodyTranslation();
   const { data, isPending } = useBodyMeasurements();
   // Full target history (unfiltered): the chart step-holds each date's applicable
   // target, so a target set before the visible window still applies within it.
@@ -69,13 +76,13 @@ export function BodyPage() {
 
   return (
     <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-4 p-3 md:p-4">
-      <h1 className="font-heading text-[28px] leading-none font-medium">Body</h1>
+      <h1 className="font-heading text-[28px] leading-none font-medium">{t.title}</h1>
 
       <div className="grid gap-4 lg:grid-cols-[22rem_1fr] lg:items-start">
         <Card className="rounded-2xl">
           <CardHeader>
             <CardTitle className="font-heading text-lg">
-              {editing ? 'Edit measurement' : 'Add measurement'}
+              {editing ? t.form.editTitle : t.form.addTitle}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -85,7 +92,7 @@ export function BodyPage() {
 
         <Card className="rounded-2xl">
           <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-            <CardTitle className="font-heading text-lg">Trends</CardTitle>
+            <CardTitle className="font-heading text-lg">{t.trends.title}</CardTitle>
             <div className="bg-secondary flex rounded-full p-0.5">
               {PERIODS.map((p) => (
                 <button
@@ -99,7 +106,11 @@ export function BodyPage() {
                       : 'text-muted-foreground',
                   )}
                 >
-                  {p.label}
+                  {p.key === 'all'
+                    ? t.trends.all
+                    : p.key === '1y'
+                      ? t.trends.oneYear
+                      : p.key.toUpperCase()}
                 </button>
               ))}
             </div>
@@ -107,22 +118,22 @@ export function BodyPage() {
           <CardContent className="flex flex-col gap-4">
             <div className="flex items-end gap-2 text-sm">
               <label className="flex min-w-0 flex-1 flex-col gap-1">
-                <span className="text-muted-foreground text-xs">From</span>
-                <input
+                <span className="text-muted-foreground text-xs">{t.trends.from}</span>
+                <Input
                   type="date"
-                  aria-label="From date"
-                  className="border-input text-foreground h-9 w-full min-w-0 rounded-md border bg-background px-2 text-sm"
+                  aria-label={t.trends.fromAria}
+                  className={DATE_FIELD}
                   value={from}
                   max={to || undefined}
                   onChange={(e) => setFrom(e.target.value)}
                 />
               </label>
               <label className="flex min-w-0 flex-1 flex-col gap-1">
-                <span className="text-muted-foreground text-xs">To</span>
-                <input
+                <span className="text-muted-foreground text-xs">{t.trends.to}</span>
+                <Input
                   type="date"
-                  aria-label="To date"
-                  className="border-input text-foreground h-9 w-full min-w-0 rounded-md border bg-background px-2 text-sm"
+                  aria-label={t.trends.toAria}
+                  className={DATE_FIELD}
                   value={to}
                   min={from || undefined}
                   onChange={(e) => setTo(e.target.value)}
@@ -136,7 +147,7 @@ export function BodyPage() {
                   className="h-9 shrink-0"
                   onClick={() => selectPeriod(period)}
                 >
-                  Clear
+                  {t.trends.clear}
                 </Button>
               )}
             </div>
@@ -147,7 +158,7 @@ export function BodyPage() {
       </div>
 
       <section className="flex flex-col gap-2">
-        <h2 className="font-heading text-lg font-semibold">History</h2>
+        <h2 className="font-heading text-lg font-semibold">{t.history.title}</h2>
         <div className="bg-card rounded-2xl border px-4">
           {isPending ? (
             <SkeletonList rows={5} />
