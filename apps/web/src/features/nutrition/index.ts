@@ -13,3 +13,4 @@ export { useNutritionTranslation } from './i18n';
 // Composed by the dashboard (the cross-module aggregation view).
 export { useDailyFoodLog } from './hooks/use-daily-food-log';
 export { useCurrentTarget } from './hooks/use-current-target';
+export { registerFoodLogMutationDefaults } from './hooks/use-create-food-log-entry';

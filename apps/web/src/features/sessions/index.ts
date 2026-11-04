@@ -28,3 +28,5 @@ export { useCreateStrengthSession } from './hooks/use-create-strength-session';
 export { useCreateActivitySession } from './hooks/use-create-activity-session';
 export { useUpdateWorkoutSession } from './hooks/use-update-workout-session';
 export { useDeleteWorkoutSession } from './hooks/use-delete-workout-session';
+export { registerStrengthSessionMutationDefaults } from './hooks/use-create-strength-session';
+export { registerActivitySessionMutationDefaults } from './hooks/use-create-activity-session';

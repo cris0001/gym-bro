@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import type { MealType } from '@gym-bro/shared';
 
 import { useAddEntry } from '../hooks/use-add-entry';
+import { usePendingFoodLogEntries } from '../hooks/use-pending-food-log-entries';
 import { useNutritionTranslation } from '../i18n';
 import { useDiaryUiStore } from '../stores/diary-ui.store';
 import { defaultPortion } from '../utils/add-entry-list';
@@ -15,6 +16,7 @@ import { AddEntryOverlays } from './add-entry-overlays';
 import { AddEntryListSkeleton } from './add-entry-list-skeleton';
 import { AddEntryResultRow } from './add-entry-result-row';
 import { DiaryEntryRow } from './diary-entry-row';
+import { PendingFoodLogRow } from './pending-food-log-row';
 
 const fmt = (n: number): string => Math.round(n).toLocaleString('en-US');
 
@@ -28,6 +30,8 @@ const dashed = 'border-dashed border-border';
 export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal: MealType }) {
   const t = useNutritionTranslation();
   const closeAdd = useDiaryUiStore((s) => s.closeAdd);
+  // Adds still queued offline / retrying, listed with the synced ones until they land.
+  const pending = usePendingFoodLogEntries(loggedDate, meal);
   const state = useAddEntry(loggedDate);
   const {
     query,
@@ -164,11 +168,14 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
                   <span className="text-muted-foreground ml-0.5 text-[11px] font-normal">kcal</span>
                 </span>
               </div>
-              {mealEntries.length > 0 ? (
+              {mealEntries.length > 0 || pending.length > 0 ? (
                 <>
                   <ul className={cn('mt-2 flex flex-col divide-y divide-dashed', dashed)}>
                     {mealEntries.map((entry) => (
                       <DiaryEntryRow key={entry.id} entry={entry} showImage />
+                    ))}
+                    {pending.map((variables) => (
+                      <PendingFoodLogRow key={variables.id} variables={variables} />
                     ))}
                   </ul>
                   <p className="font-heading text-muted-foreground mt-3 text-[12px] italic">

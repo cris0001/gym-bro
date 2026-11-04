@@ -7,18 +7,23 @@ import type { FoodLogEntry, MealType } from '@gym-bro/shared';
 
 import { useNutritionTranslation } from '../i18n';
 import { useDiaryUiStore } from '../stores/diary-ui.store';
+import { usePendingFoodLogEntries } from '../hooks/use-pending-food-log-entries';
 import { DiaryEntryRow } from './diary-entry-row';
+import { PendingFoodLogRow } from './pending-food-log-row';
 
 interface MealSectionProps {
   meal: MealType;
   label: string;
+  loggedDate: string;
   entries: FoodLogEntry[];
 }
 
 // One meal's section of the diary: a header with the meal's kcal subtotal and add
 // actions (camera → photo estimate, plus → add sheet), then its entries separated by
 // dashed rules. An empty meal reads as a dashed-outline "nothing yet" card.
-export function MealSection({ meal, label, entries }: MealSectionProps) {
+export function MealSection({ meal, label, loggedDate, entries }: MealSectionProps) {
+  // Entries added offline / still retrying — shown under the synced ones until they land.
+  const pending = usePendingFoodLogEntries(loggedDate, meal);
   const t = useNutritionTranslation();
   const openAdd = useDiaryUiStore((s) => s.openAdd);
   const openPhoto = useDiaryUiStore((s) => s.openPhoto);
@@ -49,7 +54,7 @@ export function MealSection({ meal, label, entries }: MealSectionProps) {
     </div>
   );
 
-  if (entries.length === 0) {
+  if (entries.length === 0 && pending.length === 0) {
     return (
       <div className="bg-card flex items-center justify-between gap-2 rounded-2xl border border-dashed border-border-strong p-4">
         <div className="flex items-baseline gap-2">
@@ -75,6 +80,9 @@ export function MealSection({ meal, label, entries }: MealSectionProps) {
       <ul className="mt-1 flex flex-col divide-y divide-dashed divide-border-strong">
         {entries.map((entry) => (
           <DiaryEntryRow key={entry.id} entry={entry} />
+        ))}
+        {pending.map((variables) => (
+          <PendingFoodLogRow key={variables.id} variables={variables} />
         ))}
       </ul>
     </div>

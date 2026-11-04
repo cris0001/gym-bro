@@ -82,6 +82,12 @@ function recipeRow(
   };
 }
 
+// A portion as the short label the add pill and a pending diary row show ("120 g",
+// "1 serv"), with the unit abbreviations of the active locale.
+export function portionLabel(portion: Portion, unitShort: Record<FoodLogUnit, string>): string {
+  return `${Number(portion.quantity.toFixed(2))} ${unitShort[portion.unit]}`;
+}
+
 // The default portion to log on a one-tap "+": the portion this item was last logged at
 // (from the recent list), else one serving when it has one, else 100 g.
 export function defaultPortion(row: AddEntryRow): Portion {

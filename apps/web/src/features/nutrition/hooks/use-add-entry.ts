@@ -14,9 +14,15 @@ import type {
 } from '@gym-bro/shared';
 
 import { getRecentDiaryItems } from '../api/food-log';
+import { useNutritionTranslation } from '../i18n';
 import { useFoodUiStore } from '../stores/food-ui.store';
 import { useDiaryUiStore } from '../stores/diary-ui.store';
-import { type AddEntryRow, buildAddEntryList, type Portion } from '../utils/add-entry-list';
+import {
+  type AddEntryRow,
+  buildAddEntryList,
+  type Portion,
+  portionLabel,
+} from '../utils/add-entry-list';
 import { useCreateFoodLogEntry } from './use-create-food-log-entry';
 import { foodLogKeys, useDailyFoodLog } from './use-daily-food-log';
 import { useFoods } from './use-foods';
@@ -55,6 +61,7 @@ export interface UseAddEntry {
 const RECENT_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 
 export function useAddEntry(loggedDate: string): UseAddEntry {
+  const t = useNutritionTranslation();
   const addMeal = useDiaryUiStore((s) => s.addMeal);
   const openScanned = useFoodUiStore((s) => s.openScanned);
 
@@ -190,22 +197,33 @@ export function useAddEntry(loggedDate: string): UseAddEntry {
       row.kind === 'food'
         ? { type: 'food', foodId: row.id, ...base }
         : { type: 'recipe', recipeId: row.id, ...base };
-    create.mutate(input);
+    create.mutate({ ...input, preview: { name: row.name, portion: label(portion) } });
   }
 
-  // Scanning logs the product straight to this meal (added to your foods first if new).
-  const { handleEan } = useScanFlow((food) => {
+  // The short portion label a queued entry shows in the diary until it syncs.
+  function label(portion: Portion): string {
+    return portionLabel(portion, t.addEntry.unitShort);
+  }
+
+  // A freshly scanned / created food logged at its default portion.
+  function logDefaultPortion(food: { id: string; name: string; servingGrams: number | null }) {
     if (addMeal === null) return;
-    const hasServing = food.servingGrams !== null;
+    const portion: Portion =
+      food.servingGrams !== null
+        ? { unit: 'servings', quantity: 1 }
+        : { unit: 'grams', quantity: 100 };
     create.mutate({
       type: 'food',
       foodId: food.id,
-      quantity: hasServing ? 1 : 100,
-      unit: hasServing ? 'servings' : 'grams',
+      ...portion,
       meal: addMeal,
       loggedDate,
+      preview: { name: food.name, portion: label(portion) },
     });
-  });
+  }
+
+  // Scanning logs the product straight to this meal (added to your foods first if new).
+  const { handleEan } = useScanFlow(logDefaultPortion);
 
   // "Create a new food": open the food form seeded with the typed name; on save, log the
   // new product to this meal at its default portion.
@@ -223,18 +241,7 @@ export function useAddEntry(loggedDate: string): UseAddEntry {
         unitGrams: null,
         imageUrl: null,
       },
-      (food) => {
-        if (addMeal === null) return;
-        const hasServing = food.servingGrams !== null;
-        create.mutate({
-          type: 'food',
-          foodId: food.id,
-          quantity: hasServing ? 1 : 100,
-          unit: hasServing ? 'servings' : 'grams',
-          meal: addMeal,
-          loggedDate,
-        });
-      },
+      logDefaultPortion,
     );
   }
 
