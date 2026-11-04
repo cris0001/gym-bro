@@ -21,9 +21,14 @@ export function getRecentDiaryItems(meal: MealType): Promise<RecentDiaryItem[]> 
   return apiFetch<RecentDiaryItem[]>(`/api/food-log/recent?meal=${meal}`);
 }
 
-// POST /api/food-log — log a food or recipe (server snapshots the macros).
+// POST /api/food-log — log a food or recipe (server snapshots the macros). With a
+// client id the server dedupes on it, so the POST is safe to retry.
 export function createFoodLogEntry(input: CreateFoodLogInput): Promise<FoodLogEntry> {
-  return apiFetch<FoodLogEntry>('/api/food-log', { method: 'POST', body: JSON.stringify(input) });
+  return apiFetch<FoodLogEntry>('/api/food-log', {
+    method: 'POST',
+    body: JSON.stringify(input),
+    idempotent: input.id !== undefined,
+  });
 }
 
 // POST /api/food-log/estimate — estimate macros from a food photo (+ optional note).

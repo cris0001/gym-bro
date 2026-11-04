@@ -11,19 +11,22 @@ import type {
 } from '@gym-bro/shared';
 
 // POST /api/workout-sessions/strength — finish a strength workout (the whole
-// graph: performances + sets + tags, written atomically server-side).
+// graph: performances + sets + tags, written atomically server-side). With a client
+// id the server dedupes on it, so the POST is safe to retry.
 export function createStrengthSession(input: CreateStrengthSessionInput): Promise<WorkoutSession> {
   return apiFetch<WorkoutSession>('/api/workout-sessions/strength', {
     method: 'POST',
     body: JSON.stringify(input),
+    idempotent: input.id !== undefined,
   });
 }
 
-// POST /api/workout-sessions/activity — log an ad-hoc activity.
+// POST /api/workout-sessions/activity — log an ad-hoc activity (idempotent with an id).
 export function createActivitySession(input: CreateActivitySessionInput): Promise<WorkoutSession> {
   return apiFetch<WorkoutSession>('/api/workout-sessions/activity', {
     method: 'POST',
     body: JSON.stringify(input),
+    idempotent: input.id !== undefined,
   });
 }
 

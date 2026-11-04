@@ -46,6 +46,11 @@ export interface WorkoutDraft {
   // When this session began (ISO); drives the live elapsed-time chip. Persisted so the
   // timer survives a refresh. May be absent on drafts started before this field existed.
   startedAt?: string;
+  // A new workout's id, minted when it starts and sent on finish so the create is
+  // idempotent: retrying "Finish" — automatically or by tapping again after an error —
+  // can never log the same workout twice. Absent on edit drafts (they PUT by id) and
+  // on drafts persisted before this existed (those just finish non-idempotently).
+  clientId?: string;
   plannedSessionId: string | null;
   workoutTemplateId: string | null;
   performances: DraftPerformance[];
@@ -136,6 +141,7 @@ export const useWorkoutDraftStore = create<WorkoutDraftState>()(
         set({
           draft: {
             editingSessionId: null,
+            clientId: crypto.randomUUID(),
             name: input.name,
             performedDate: input.performedDate,
             startedAt: new Date().toISOString(),

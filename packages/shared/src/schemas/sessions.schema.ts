@@ -43,7 +43,11 @@ export const logPerformanceSchema = z.object({
 
 // Strength: based on a template (or ad-hoc), with ordered exercises + sets.
 // plannedSessionId links the calendar entry being fulfilled (omit for ad-hoc).
+// `id` (optional, client-generated) on the two create schemas makes finishing a
+// workout idempotent: a retry after a lost response returns the session the first
+// attempt created rather than logging the workout twice.
 export const createStrengthSessionSchema = z.object({
+  id: z.uuid().optional(),
   plannedSessionId: z.uuid().nullish(),
   workoutTemplateId: z.uuid().nullish(),
   name: sessionName,
@@ -59,6 +63,7 @@ export const createStrengthSessionSchema = z.object({
 // exercises + sets + tags). The template/planned links are fixed at creation, so
 // they're omitted here and preserved server-side.
 export const updateStrengthSessionSchema = createStrengthSessionSchema.omit({
+  id: true,
   plannedSessionId: true,
   workoutTemplateId: true,
 });
@@ -66,6 +71,7 @@ export const updateStrengthSessionSchema = createStrengthSessionSchema.omit({
 // Activity: a quick log (cardio/yoga/sports). Always ad-hoc — no template, no
 // exercises, no planned-session link.
 export const createActivitySessionSchema = z.object({
+  id: z.uuid().optional(),
   name: sessionName,
   performedDate: z.iso.date(),
   durationMinutes,

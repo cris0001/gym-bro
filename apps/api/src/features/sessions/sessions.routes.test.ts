@@ -25,6 +25,7 @@ const EXERCISE_ID = '11111111-1111-4111-8111-111111111111';
 const TAG_ID = '22222222-2222-4222-8222-222222222222';
 const SESSION_ID = '77777777-7777-4777-8777-777777777777';
 const PERF_ID = '88888888-8888-4888-8888-888888888888';
+const CLIENT_SESSION_ID = '99999999-9999-4999-8999-999999999999';
 
 function fakeTemplate(overrides: Partial<WorkoutTemplate> = {}): WorkoutTemplate {
   return {
@@ -354,6 +355,57 @@ describe('workout session routes', () => {
 
     expect(res.status).toBe(201);
     expect(body.data.sessionType).toBe('activity');
+  });
+
+  it('POST /api/workout-sessions/strength replayed with the same id returns the first session', async () => {
+    // A retry after a lost response: the session already exists for this user, so
+    // the stored one is returned and nothing is written again.
+    repo.findWorkoutSessionById.mockResolvedValue(fakeWorkoutSession({ id: CLIENT_SESSION_ID }));
+
+    const res = await request('POST', '/api/workout-sessions/strength', {
+      cookie: await authCookie(),
+      body: {
+        id: CLIENT_SESSION_ID,
+        name: 'Push',
+        performedDate: '2026-06-29',
+        performances: [
+          {
+            originalExerciseId: EXERCISE_ID,
+            actualExerciseId: EXERCISE_ID,
+            sets: [{ weight: 100, reps: 5 }],
+          },
+        ],
+      },
+    });
+    const body = (await res.json()) as { data: WorkoutSession };
+
+    expect(res.status).toBe(201);
+    expect(body.data.id).toBe(CLIENT_SESSION_ID);
+    expect(repo.createStrengthSession).not.toHaveBeenCalled();
+  });
+
+  it('POST /api/workout-sessions/activity racing a duplicate returns the winner, not an error', async () => {
+    // Both retries passed the pre-check; this one lost the PK race and re-reads.
+    repo.findWorkoutSessionById
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(
+        fakeWorkoutSession({ id: CLIENT_SESSION_ID, sessionType: 'activity' }),
+      );
+    repo.createActivitySession.mockRejectedValue(
+      Object.assign(new Error('duplicate key'), {
+        code: '23505',
+        constraint: 'workout_sessions_pkey',
+      }),
+    );
+
+    const res = await request('POST', '/api/workout-sessions/activity', {
+      cookie: await authCookie(),
+      body: { id: CLIENT_SESSION_ID, name: 'Run', performedDate: '2026-06-29' },
+    });
+    const body = (await res.json()) as { data: WorkoutSession };
+
+    expect(res.status).toBe(201);
+    expect(body.data.id).toBe(CLIENT_SESSION_ID);
   });
 
   it('GET /api/workout-sessions returns a page with totals and tags', async () => {

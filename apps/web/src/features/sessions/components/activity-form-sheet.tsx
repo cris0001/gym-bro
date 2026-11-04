@@ -46,8 +46,12 @@ export function ActivityFormSheet({ open, onClose }: ActivityFormSheetProps) {
   const [rating, setRating] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
   const [tagIds, setTagIds] = useState<string[]>([]);
+  // One id per filled-in form: re-tapping Save after an error (or an automatic retry)
+  // sends the same id, so the activity is logged once. A fresh form gets a new one.
+  const [clientId, setClientId] = useState(() => crypto.randomUUID());
 
   function reset() {
+    setClientId(crypto.randomUUID());
     setName('');
     setPerformedDate(today());
     setDurationMinutes(null);
@@ -72,6 +76,7 @@ export function ActivityFormSheet({ open, onClose }: ActivityFormSheetProps) {
     if (!trimmed) return;
     createMutation.mutate(
       {
+        id: clientId,
         name: trimmed,
         performedDate,
         durationMinutes,

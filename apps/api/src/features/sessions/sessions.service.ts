@@ -37,6 +37,44 @@ function isUniqueViolation(error: unknown): boolean {
   return false;
 }
 
+// The constraint a Postgres error names (Drizzle wraps the driver error, so it may
+// sit on the cause).
+function violatedConstraint(error: unknown): string | undefined {
+  for (const value of [error, (error as { cause?: unknown } | null)?.cause]) {
+    if (typeof value === 'object' && value !== null && 'constraint' in value) {
+      const { constraint } = value;
+      if (typeof constraint === 'string') return constraint;
+    }
+  }
+  return undefined;
+}
+
+// Idempotent session create for a client-generated `id`: a retry after a lost
+// response returns the session its first attempt created instead of logging the
+// workout twice. The pre-check covers the usual replay; for two retries racing, the
+// primary key lets one insert win (its transaction is all-or-nothing, so the loser
+// leaves nothing behind) and the loser re-reads the winner. Another user's id → 409.
+async function createSessionOnce(
+  userId: string,
+  id: string | undefined,
+  create: () => Promise<WorkoutSession>,
+): Promise<WorkoutSession> {
+  if (id) {
+    const existing = await sessionsRepository.findWorkoutSessionById(userId, id);
+    if (existing) return existing;
+  }
+  try {
+    return await create();
+  } catch (error) {
+    if (id && isUniqueViolation(error) && violatedConstraint(error) === 'workout_sessions_pkey') {
+      const existing = await sessionsRepository.findWorkoutSessionById(userId, id);
+      if (existing) return existing;
+      throw new ConflictError('This session id is already in use');
+    }
+    throw error;
+  }
+}
+
 // --- Planned sessions ---
 
 interface PlannedSessionWithTemplate extends PlannedSession {
@@ -184,28 +222,31 @@ export async function createStrengthSession(
   await assertExercisesOwned(userId, exerciseIds);
   await assertTagsOwned(userId, input.tagIds);
 
-  return sessionsRepository.createStrengthSession({
-    userId,
-    plannedSessionId: input.plannedSessionId ?? null,
-    workoutTemplateId: input.workoutTemplateId ?? null,
-    name: input.name,
-    performedDate: input.performedDate,
-    durationMinutes: input.durationMinutes ?? null,
-    rating: input.rating ?? null,
-    notes: input.notes ?? null,
-    performances: input.performances.map((performance) => ({
-      originalExerciseId: performance.originalExerciseId,
-      actualExerciseId: performance.actualExerciseId,
-      notes: performance.notes ?? null,
-      sets: performance.sets.map((set) => ({
-        weight: set.weight ?? null,
-        reps: set.reps ?? null,
-        rir: set.rir ?? null,
-        isTopSet: set.isTopSet ?? false,
+  return createSessionOnce(userId, input.id, () =>
+    sessionsRepository.createStrengthSession({
+      id: input.id,
+      userId,
+      plannedSessionId: input.plannedSessionId ?? null,
+      workoutTemplateId: input.workoutTemplateId ?? null,
+      name: input.name,
+      performedDate: input.performedDate,
+      durationMinutes: input.durationMinutes ?? null,
+      rating: input.rating ?? null,
+      notes: input.notes ?? null,
+      performances: input.performances.map((performance) => ({
+        originalExerciseId: performance.originalExerciseId,
+        actualExerciseId: performance.actualExerciseId,
+        notes: performance.notes ?? null,
+        sets: performance.sets.map((set) => ({
+          weight: set.weight ?? null,
+          reps: set.reps ?? null,
+          rir: set.rir ?? null,
+          isTopSet: set.isTopSet ?? false,
+        })),
       })),
-    })),
-    tagIds: input.tagIds,
-  });
+      tagIds: input.tagIds,
+    }),
+  );
 }
 
 export async function createActivitySession(
@@ -213,15 +254,18 @@ export async function createActivitySession(
   input: CreateActivitySessionInput,
 ): Promise<WorkoutSession> {
   await assertTagsOwned(userId, input.tagIds);
-  return sessionsRepository.createActivitySession({
-    userId,
-    name: input.name,
-    performedDate: input.performedDate,
-    durationMinutes: input.durationMinutes ?? null,
-    rating: input.rating ?? null,
-    notes: input.notes ?? null,
-    tagIds: input.tagIds,
-  });
+  return createSessionOnce(userId, input.id, () =>
+    sessionsRepository.createActivitySession({
+      id: input.id,
+      userId,
+      name: input.name,
+      performedDate: input.performedDate,
+      durationMinutes: input.durationMinutes ?? null,
+      rating: input.rating ?? null,
+      notes: input.notes ?? null,
+      tagIds: input.tagIds,
+    }),
+  );
 }
 
 // One page of history with each session's tags attached.

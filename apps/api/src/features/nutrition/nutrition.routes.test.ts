@@ -400,6 +400,9 @@ describe('recipe read/update/delete routes', () => {
 
 const LOG_ID = '66666666-6666-4666-8666-666666666666';
 
+// A client-generated id for the idempotent-create tests.
+const CLIENT_ID = '99999999-9999-4999-8999-999999999999';
+
 function fakeLogEntry(overrides: Partial<FoodLogEntryRow> = {}): FoodLogEntryRow {
   return {
     id: LOG_ID,
@@ -697,6 +700,56 @@ describe('food-log create route (snapshot)', () => {
       fatG: 42,
       source: 'ai',
     });
+  });
+
+  it('POST /api/food-log replayed with the same client id returns the first entry, no duplicate', async () => {
+    const entry = fakeLogEntry({ id: CLIENT_ID });
+    repo.findFoodLogEntryById.mockResolvedValue(entry);
+
+    const res = await request('POST', '/api/food-log', {
+      cookie: await authCookie(),
+      body: {
+        type: 'food',
+        id: CLIENT_ID,
+        foodId: FOOD_ID,
+        quantity: 200,
+        meal: 'breakfast',
+        loggedDate: '2026-06-29',
+      },
+    });
+    const body = (await res.json()) as { data: FoodLogEntryRow };
+
+    expect(res.status).toBe(201);
+    expect(body.data.id).toBe(CLIENT_ID);
+    expect(repo.findFoodLogEntryById).toHaveBeenCalledWith('user-1', CLIENT_ID);
+    expect(repo.createFoodLogEntry).not.toHaveBeenCalled();
+  });
+
+  it('POST /api/food-log with a client id owned by another user returns 409', async () => {
+    // Not this user's entry (scoped lookup misses), and the insert hits the PK.
+    repo.findFoodLogEntryById.mockResolvedValue(undefined);
+    repo.createFoodLogEntry.mockRejectedValue(
+      Object.assign(new Error('duplicate key'), { code: '23505', constraint: 'food_log_pkey' }),
+    );
+
+    const res = await request('POST', '/api/food-log', {
+      cookie: await authCookie(),
+      body: {
+        type: 'custom',
+        id: CLIENT_ID,
+        name: 'Kebab',
+        kcal: 780,
+        proteinG: 35,
+        carbsG: 60,
+        fatG: 42,
+        meal: 'lunch',
+        loggedDate: '2026-06-29',
+      },
+    });
+    const body = (await res.json()) as { error: { code: string } };
+
+    expect(res.status).toBe(409);
+    expect(body.error.code).toBe('CONFLICT');
   });
 
   it('POST /api/food-log for a missing/inactive food returns 400', async () => {
