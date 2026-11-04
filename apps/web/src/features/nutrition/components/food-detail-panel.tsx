@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+
 import { useNutritionTranslation } from '../i18n';
 import { useFoodUiStore } from '../stores/food-ui.store';
 import { FoodForm } from './food-form';
@@ -11,6 +13,9 @@ export function FoodDetailPanel() {
   const editing = useFoodUiStore((s) => s.editing);
   const prefill = useFoodUiStore((s) => s.prefill);
   const close = useFoodUiStore((s) => s.close);
+  // Leaving Foods clears the selection (the store is global): otherwise the row stays
+  // selected on return, and the recipe builder's FoodSheet opens with that food.
+  useEffect(() => close, [close]);
 
   return (
     <div className="sticky top-4 overflow-hidden rounded-[20px] border border-border bg-card">

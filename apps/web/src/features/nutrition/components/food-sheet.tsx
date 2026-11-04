@@ -24,6 +24,11 @@ export function FoodSheet() {
   const { handleEan } = useScanFlow();
   const [mode, setMode] = useState<FoodAddMode>('manual');
 
+  // The food UI store is global, so state left behind when this host goes away (a
+  // page change, the diary add view closing) would reopen the sheet on the next page
+  // that mounts one (e.g. the recipe builder). Reset it on unmount.
+  useEffect(() => close, [close]);
+
   // Every fresh open starts on Manual.
   useEffect(() => {
     if (!open) setMode('manual');
