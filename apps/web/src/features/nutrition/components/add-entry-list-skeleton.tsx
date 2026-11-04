@@ -2,7 +2,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 // Placeholder rows for the add-entry results list while its data first loads. Same
-// footprint as AddEntryResultRow (thumb, two text lines, round "+"), so the real list
+// footprint as AddEntryResultRow (thumb, two text lines, split add pill), so the real list
 // replaces it in place instead of shifting the layout.
 export function AddEntryListSkeleton({ dividerClassName }: { dividerClassName: string }) {
   return (
@@ -17,7 +17,7 @@ export function AddEntryListSkeleton({ dividerClassName }: { dividerClassName: s
             <Skeleton className="h-3.5 w-2/5" />
             <Skeleton className="h-3 w-4/5" />
           </div>
-          <Skeleton className="size-[34px] shrink-0 rounded-full" />
+          <Skeleton className="h-[34px] w-[92px] shrink-0 rounded-full" />
         </div>
       ))}
     </div>

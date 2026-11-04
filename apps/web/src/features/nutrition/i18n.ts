@@ -73,8 +73,9 @@ export const useNutritionTranslation = createFeatureTranslation({
       nothingAdded: 'Nothing added yet.',
       dayAfter: 'Day after adding',
       noTargetHint: (kcal: string) => `${kcal} kcal today · set a daily target to see progress.`,
-      recent: 'Recent',
-      addItemAria: (name: string) => `Add ${name}`,
+      addItemAria: (name: string, portion: string) => `Add ${name}, ${portion}`,
+      choosePortionAria: (name: string) => `Choose a portion of ${name}`,
+      unitShort: { grams: 'g', servings: 'serv', units: 'pcs' },
     },
     portion: {
       portion: 'Portion',
@@ -284,8 +285,9 @@ export const useNutritionTranslation = createFeatureTranslation({
       nothingAdded: 'Nic jeszcze nie dodano.',
       dayAfter: 'Dzień po dodaniu',
       noTargetHint: (kcal: string) => `${kcal} kcal dziś · ustaw dzienny cel, aby widzieć postęp.`,
-      recent: 'Ostatnie',
-      addItemAria: (name: string) => `Dodaj ${name}`,
+      addItemAria: (name: string, portion: string) => `Dodaj ${name}, ${portion}`,
+      choosePortionAria: (name: string) => `Wybierz porcję: ${name}`,
+      unitShort: { grams: 'g', servings: 'porc.', units: 'szt.' },
     },
     portion: {
       portion: 'Porcja',
