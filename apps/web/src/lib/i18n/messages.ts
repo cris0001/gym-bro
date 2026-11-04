@@ -25,6 +25,13 @@ const en = {
     logout: 'Sign out',
     loggingOut: 'Signing out…',
   },
+  // Transport-level failures raised by apiFetch (no API envelope to read a message
+  // from), plus the offline banner.
+  network: {
+    networkError: 'No connection to the server. Check your internet and try again.',
+    timeout: 'The server took too long to respond. Try again.',
+    offline: 'You’re offline — changes will sync when you’re back online.',
+  },
 };
 
 export type Messages = typeof en;
@@ -50,6 +57,11 @@ const pl: Messages = {
   common: {
     logout: 'Wyloguj',
     loggingOut: 'Wylogowywanie…',
+  },
+  network: {
+    networkError: 'Brak połączenia z serwerem. Sprawdź internet i spróbuj ponownie.',
+    timeout: 'Serwer zbyt długo nie odpowiada. Spróbuj ponownie.',
+    offline: 'Jesteś offline — zmiany zapiszą się po powrocie połączenia.',
   },
 };
 
