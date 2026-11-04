@@ -1,4 +1,4 @@
-import { Plus, Sparkles } from 'lucide-react';
+import { Plus, WandSparkles } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
@@ -34,7 +34,7 @@ export function MealSection({ meal, label, entries }: MealSectionProps) {
         aria-label={t.addEntry.addFromPhoto(label)}
         onClick={() => openPhoto(meal)}
       >
-        <Sparkles className="size-5" />
+        <WandSparkles className="size-5" />
       </Button>
       <Button
         type="button"

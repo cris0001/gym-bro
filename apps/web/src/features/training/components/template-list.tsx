@@ -53,7 +53,7 @@ export function TemplateList({
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
       <SortableContext items={templates.map((t) => t.id)} strategy={verticalListSortingStrategy}>
-        <ul className={variant === 'column' ? 'flex flex-col gap-1' : 'flex flex-col'}>
+        <ul className={variant === 'column' ? 'flex flex-col gap-1.5' : 'flex flex-col'}>
           {templates.map((template) => (
             <TemplateRow
               key={template.id}
