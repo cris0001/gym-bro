@@ -17,7 +17,7 @@ export function AddEntryListSkeleton({ dividerClassName }: { dividerClassName: s
             <Skeleton className="h-3.5 w-2/5" />
             <Skeleton className="h-3 w-4/5" />
           </div>
-          <Skeleton className="h-[34px] w-[92px] shrink-0 rounded-full" />
+          <Skeleton className="h-[30px] w-[82px] shrink-0 rounded-full" />
         </div>
       ))}
     </div>
