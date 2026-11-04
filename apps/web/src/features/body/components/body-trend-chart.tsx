@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 
 import type { BodyMeasurement, NutritionTarget } from '@gym-bro/shared';
 
+import { seriesLabel, useBodyTranslation } from '../i18n';
 import { buildTrendData, CALORIES_SERIES, type SeriesDef } from '../utils/trend-series';
 
 // On by default: body weight + target calories.
@@ -32,8 +33,13 @@ export function BodyTrendChart({
   entries: BodyMeasurement[];
   targets: NutritionTarget[];
 }) {
+  const t = useBodyTranslation();
   const { rows, availableMeasures, hasCalories } = buildTrendData(entries, targets);
-  const selectable: SeriesDef[] = [...availableMeasures, ...(hasCalories ? [CALORIES_SERIES] : [])];
+  // Series labels follow the UI language (the defs keep English as a fallback).
+  const selectable: SeriesDef[] = [
+    ...availableMeasures,
+    ...(hasCalories ? [CALORIES_SERIES] : []),
+  ].map((s) => ({ ...s, label: seriesLabel(t, s.key) ?? s.label }));
 
   const [selected, setSelected] = useState<Set<string>>(() => new Set(DEFAULT_SELECTED));
   const [showMa7, setShowMa7] = useState(false);
@@ -42,7 +48,7 @@ export function BodyTrendChart({
   if (selectable.length === 0) {
     return (
       <p className="text-muted-foreground flex h-64 items-center justify-center text-sm">
-        Log measurements to see trends.
+        {t.trends.empty}
       </p>
     );
   }
@@ -100,8 +106,8 @@ export function BodyTrendChart({
       <div className="flex flex-wrap gap-1">
         {(
           [
-            ['7-day avg', showMa7, setShowMa7],
-            ['30-day avg', showMa30, setShowMa30],
+            [t.trends.ma7, showMa7, setShowMa7],
+            [t.trends.ma30, showMa30, setShowMa30],
           ] as const
         ).map(([label, value, set]) => (
           <Button
@@ -151,10 +157,10 @@ export function BodyTrendChart({
                 color: 'var(--card-foreground)',
               }}
               labelFormatter={(label) => format(parseISO(String(label)), 'PP')}
-              formatter={(value, name) => {
+              formatter={(value, name, item) => {
                 if (value === null || value === undefined) return ['—', name];
                 const n = Number(value);
-                return [name === 'Calories' ? `${Math.round(n)} kcal` : n.toFixed(1), name];
+                return [item.dataKey === 'kcal' ? `${Math.round(n)} kcal` : n.toFixed(1), name];
               }}
             />
             <Legend />
@@ -177,7 +183,7 @@ export function BodyTrendChart({
                 <Line
                   key={`${s.key}-ma7`}
                   yAxisId="left"
-                  name={`${s.label} 7d`}
+                  name={`${s.label} ${t.trends.ma7Suffix}`}
                   type="monotone"
                   dataKey={`${s.key}__ma7`}
                   stroke={s.color}
@@ -192,7 +198,7 @@ export function BodyTrendChart({
                 <Line
                   key={`${s.key}-ma30`}
                   yAxisId="left"
-                  name={`${s.label} 30d`}
+                  name={`${s.label} ${t.trends.ma30Suffix}`}
                   type="monotone"
                   dataKey={`${s.key}__ma30`}
                   stroke={s.color}
@@ -205,7 +211,7 @@ export function BodyTrendChart({
             {caloriesOn && (
               <Line
                 yAxisId="right"
-                name="Calories"
+                name={t.series.kcal}
                 type="stepAfter"
                 dataKey="kcal"
                 stroke={CALORIES_SERIES.color}
