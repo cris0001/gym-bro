@@ -58,7 +58,7 @@ export function CalendarDayCell({
     : inverted
       ? 'bg-foreground text-background'
       : finished > 0
-        ? 'bg-[#e8efe4] dark:bg-[#2f3a2b]'
+        ? 'bg-[#e8efe4] dark:bg-[#3b5235]'
         : stravaTypes.length > 0
           ? 'bg-[#fbe3d4] dark:bg-[#45291b]'
           : planned.length > 0
@@ -139,7 +139,7 @@ export function CalendarDayCell({
         <span
           className={cn(
             'mt-auto flex w-full min-w-0 flex-col items-stretch gap-0.5 text-[10px] leading-tight font-medium',
-            inverted ? 'text-[#bfe0b3] dark:text-[#3f5c37]' : 'text-[#48653f] dark:text-[#8fae85]',
+            inverted ? 'text-[#bfe0b3] dark:text-[#3f5c37]' : 'text-[#48653f] dark:text-[#c3dcb8]',
           )}
         >
           {/* One row (a small pill) per session, so two sessions read as two distinct
@@ -149,7 +149,7 @@ export function CalendarDayCell({
               key={index}
               className={cn(
                 'truncate rounded-[4px] px-0.5 py-px text-center',
-                inverted ? 'bg-white/10 dark:bg-black/10' : 'bg-[#48653f]/10 dark:bg-[#8fae85]/15',
+                inverted ? 'bg-white/10 dark:bg-black/10' : 'bg-[#48653f]/10 dark:bg-[#c3dcb8]/15',
               )}
             >
               {name}
