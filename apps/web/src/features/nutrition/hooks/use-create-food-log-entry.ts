@@ -10,7 +10,17 @@ export function useCreateFoodLogEntry() {
   return useMutation({
     mutationFn: (input: CreateFoodLogInput) => createFoodLogEntry(input),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: foodLogKeys.all });
+      // Refresh the diary days now, but only MARK the recent lists stale: refetching
+      // them while the add view is open is wasted (its order is frozen anyway). The
+      // add view refetches stale ones in the background when it closes.
+      void queryClient.invalidateQueries({
+        queryKey: foodLogKeys.all,
+        predicate: (query) => query.queryKey[2] !== 'recent',
+      });
+      void queryClient.invalidateQueries({
+        queryKey: foodLogKeys.recentAll,
+        refetchType: 'none',
+      });
     },
   });
 }
