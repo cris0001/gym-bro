@@ -134,7 +134,6 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
                     <AddEntryResultRow
                       row={row}
                       disabled={isAdding}
-                      badgeTint
                       onAdd={() => logPortion(row, defaultPortion(row))}
                       onEditPortion={() => setPortionRow(row)}
                     />
