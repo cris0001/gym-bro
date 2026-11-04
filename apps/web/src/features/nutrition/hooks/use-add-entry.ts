@@ -52,6 +52,14 @@ export function useAddEntry(loggedDate: string): UseAddEntry {
   const openScanned = useFoodUiStore((s) => s.openScanned);
 
   const [query, setQuery] = useState('');
+  // This hook outlives the add view (its host stays mounted while closed), so reset the
+  // search whenever the view closes or switches meal — reopening starts with an empty
+  // box. Adjusted during render rather than in an effect to avoid a stale-query flash.
+  const [queryMeal, setQueryMeal] = useState(addMeal);
+  if (queryMeal !== addMeal) {
+    setQueryMeal(addMeal);
+    setQuery('');
+  }
   const [portionRow, setPortionRow] = useState<AddEntryRow | null>(null);
   const [scanning, setScanning] = useState(false);
   // Scanning needs a camera — a touch device. Hide it on desktop (fine pointer).
