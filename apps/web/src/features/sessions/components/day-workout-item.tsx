@@ -37,9 +37,6 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
-// Long workouts collapse their exercise list behind a "+ N more" toggle.
-const EXERCISE_PREVIEW = 4;
-
 // One finished workout in the calendar day panel: a "✓ Finished" header with the serif
 // name, rating and (once expanded) its totals, notes, and per-exercise set chips, plus
 // Edit / Open / Delete. The full detail is fetched only when expanded; `defaultExpanded`
@@ -52,7 +49,6 @@ export function DayWorkoutItem({
   defaultExpanded?: boolean;
 }) {
   const [expanded, setExpanded] = useState(defaultExpanded);
-  const [showAll, setShowAll] = useState(false);
   const { data: detail, isLoading } = useWorkoutSession(workout.id, expanded);
   const editWorkout = useEditWorkout();
   const remove = useDeleteWorkoutSession();
@@ -71,8 +67,6 @@ export function DayWorkoutItem({
 
   const totals = detail ? workoutTotals(detail) : null;
   const performances = detail?.performances ?? [];
-  const visible = showAll ? performances : performances.slice(0, EXERCISE_PREVIEW);
-  const hiddenCount = performances.length - visible.length;
 
   return (
     <div className="bg-card overflow-hidden rounded-2xl border">
@@ -133,7 +127,8 @@ export function DayWorkoutItem({
 
               {detail.notes !== null && <WorkoutNote note={detail.notes} />}
 
-              {visible.map((performance) => {
+              {/* Every exercise, always — no "+ N more" collapse. */}
+              {performances.map((performance) => {
                 const topSet = performance.sets.find((s) => s.isTopSet && s.weight !== null);
                 return (
                   <div key={performance.id} className="flex flex-col gap-1.5">
@@ -147,11 +142,7 @@ export function DayWorkoutItem({
                         </span>
                       )}
                     </div>
-                    {performance.notes !== null && (
-                      <p className="text-subtle-foreground text-[12px] break-words whitespace-pre-line">
-                        {performance.notes}
-                      </p>
-                    )}
+                    {performance.notes !== null && <WorkoutNote note={performance.notes} compact />}
                     <div className="flex flex-wrap gap-1.5">
                       {performance.sets.map((set) => (
                         <span
@@ -170,17 +161,6 @@ export function DayWorkoutItem({
                   </div>
                 );
               })}
-
-              {hiddenCount > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setShowAll(true)}
-                  className="text-muted-foreground flex items-center gap-1 self-start text-xs font-medium"
-                >
-                  {t.dayWorkout.moreExercises(hiddenCount)}
-                  <ChevronDown className="size-3.5" />
-                </button>
-              )}
 
               <div className="flex items-center gap-2 border-t border-border pt-3">
                 <Button asChild className="h-11 flex-1 rounded-full">

@@ -124,7 +124,6 @@ export const useSessionsTranslation = createFeatureTranslation({
       move: 'Move',
       nothingThisDay: 'Nothing on this day.',
       nothingElse: 'Nothing else this day.',
-      back: 'Back',
       addSession: 'Add session',
       sheetDescription: 'Planned and finished sessions for this day.',
     },
@@ -132,7 +131,6 @@ export const useSessionsTranslation = createFeatureTranslation({
       finished: 'Finished',
       sets: (n: number) => `${n} sets`,
       top: (weight: number | string) => `Top ${weight} kg`,
-      moreExercises: (n: number) => `+ ${n} more exercise${n === 1 ? '' : 's'}`,
       open: 'Open',
     },
     finish: {
@@ -166,6 +164,9 @@ export const useSessionsTranslation = createFeatureTranslation({
       noTemplates: 'This plan has no templates yet.',
       assigning: 'Assigning…',
       assign: 'Assign',
+      title: 'Add session',
+      subtitle: 'Pick a template to plan for this day',
+      cancel: 'Cancel',
     },
     startWorkout: {
       loadingPlans: 'Loading plans…',
@@ -315,7 +316,6 @@ export const useSessionsTranslation = createFeatureTranslation({
       move: 'Przenieś',
       nothingThisDay: 'Nic w tym dniu.',
       nothingElse: 'Nic więcej w tym dniu.',
-      back: 'Wstecz',
       addSession: 'Dodaj sesję',
       sheetDescription: 'Zaplanowane i ukończone sesje na ten dzień.',
     },
@@ -323,7 +323,6 @@ export const useSessionsTranslation = createFeatureTranslation({
       finished: 'Ukończone',
       sets: (n: number) => `${n} ${n === 1 ? 'seria' : 'serii'}`,
       top: (weight: number | string) => `Maks. ${weight} kg`,
-      moreExercises: (n: number) => `+ jeszcze ${n} ${n === 1 ? 'ćwiczenie' : 'ćwiczeń'}`,
       open: 'Otwórz',
     },
     finish: {
@@ -357,6 +356,9 @@ export const useSessionsTranslation = createFeatureTranslation({
       noTemplates: 'Ten plan nie ma jeszcze szablonów.',
       assigning: 'Przypisywanie…',
       assign: 'Przypisz',
+      title: 'Dodaj sesję',
+      subtitle: 'Wybierz szablon do zaplanowania na ten dzień',
+      cancel: 'Anuluj',
     },
     startWorkout: {
       loadingPlans: 'Ładowanie planów…',
