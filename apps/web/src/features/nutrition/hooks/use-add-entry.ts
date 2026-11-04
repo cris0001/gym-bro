@@ -109,10 +109,21 @@ export function useAddEntry(loggedDate: string): UseAddEntry {
       return;
     }
     if (frozenRecent?.meal === addMeal) return;
-    if (recentQuery.data !== undefined) {
-      setFrozenRecent({ meal: addMeal, items: recentQuery.data });
+    // Never hold the list hostage to the recents request: if it failed, or is paused
+    // because the phone is offline, show the plain dictionary without recent rows
+    // rather than an empty list you can't add from.
+    const unavailable = recentQuery.isError || recentQuery.fetchStatus === 'paused';
+    if (recentQuery.data !== undefined || unavailable) {
+      setFrozenRecent({ meal: addMeal, items: recentQuery.data ?? [] });
     }
-  }, [addMeal, frozenRecent, recentQuery.data, queryClient]);
+  }, [
+    addMeal,
+    frozenRecent,
+    recentQuery.data,
+    recentQuery.isError,
+    recentQuery.fetchStatus,
+    queryClient,
+  ]);
 
   // Until this meal's snapshot exists (first-ever open, nothing cached yet) the browse
   // list stays empty rather than rendering without the recent rows and reshuffling.
