@@ -30,7 +30,7 @@ const en = {
   network: {
     networkError: 'No connection to the server. Check your internet and try again.',
     timeout: 'The server took too long to respond. Try again.',
-    offline: 'Offline — changes will sync once you’re back.',
+    offline: 'Offline — new entries will sync once you’re back.',
   },
 };
 
@@ -61,7 +61,7 @@ const pl: Messages = {
   network: {
     networkError: 'Brak połączenia z serwerem. Sprawdź internet i spróbuj ponownie.',
     timeout: 'Serwer zbyt długo nie odpowiada. Spróbuj ponownie.',
-    offline: 'Offline — zmiany wyślą się po powrocie sieci.',
+    offline: 'Offline — wpisy wyślą się po powrocie sieci.',
   },
 };
 
