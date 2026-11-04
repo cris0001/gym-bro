@@ -1,4 +1,4 @@
-import { Plus } from 'lucide-react';
+import { Plus, Sparkles } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
@@ -7,7 +7,6 @@ import type { FoodLogEntry, MealType } from '@gym-bro/shared';
 
 import { useNutritionTranslation } from '../i18n';
 import { useDiaryUiStore } from '../stores/diary-ui.store';
-import { AiCameraIcon } from './ai-camera-icon';
 import { DiaryEntryRow } from './diary-entry-row';
 
 interface MealSectionProps {
@@ -35,7 +34,7 @@ export function MealSection({ meal, label, entries }: MealSectionProps) {
         aria-label={t.addEntry.addFromPhoto(label)}
         onClick={() => openPhoto(meal)}
       >
-        <AiCameraIcon />
+        <Sparkles className="size-5" />
       </Button>
       <Button
         type="button"
