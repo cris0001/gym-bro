@@ -6,6 +6,7 @@ import { SectionTabs } from '@/components/nav/section-tabs';
 import { SidebarNav } from '@/components/nav/sidebar-nav';
 import { LanguageToggle } from '@/components/language-toggle';
 import { PalettePicker } from '@/components/palette-picker';
+import { OfflineBanner } from '@/components/offline-banner';
 import { ThemeToggle } from '@/components/theme-toggle';
 import {
   LogoutButton,
@@ -58,6 +59,7 @@ function AppLayout() {
             <LogoutButton />
           </div>
         </header>
+        <OfflineBanner />
         <SectionTabs />
         {/* Muted canvas so cards lift off the background. The grid tracks let each
             page choose its desktop placement: wide pages sit in the left-of-center
