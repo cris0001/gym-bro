@@ -12,6 +12,7 @@ import { useDiaryUiStore } from '../stores/diary-ui.store';
 import { defaultPortion } from '../utils/add-entry-list';
 import { MACRO_BAR, type MacroKey } from '../utils/macro-colors';
 import { AddEntryOverlays } from './add-entry-overlays';
+import { AddEntryListSkeleton } from './add-entry-list-skeleton';
 import { AddEntryResultRow } from './add-entry-result-row';
 import { DiaryEntryRow } from './diary-entry-row';
 
@@ -33,6 +34,7 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
     setQuery,
     rows,
     isAdding,
+    isListLoading,
     canScan,
     setScanning,
     setPortionRow,
@@ -121,17 +123,24 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
                 <span className={microLabel}>{t.addEntry.allFoodsRecipes}</span>
                 <span className="text-muted-foreground text-[11px]">{t.addEntry.recentFirst}</span>
               </div>
-              {rows.map((row, i) => (
-                <div key={`${row.kind}-${row.id}`} className={i > 0 ? cn('border-t', dashed) : ''}>
-                  <AddEntryResultRow
-                    row={row}
-                    disabled={isAdding}
-                    badgeTint
-                    onAdd={() => logPortion(row, defaultPortion(row))}
-                    onEditPortion={() => setPortionRow(row)}
-                  />
-                </div>
-              ))}
+              {isListLoading ? (
+                <AddEntryListSkeleton dividerClassName={cn('border-t', dashed)} />
+              ) : (
+                rows.map((row, i) => (
+                  <div
+                    key={`${row.kind}-${row.id}`}
+                    className={i > 0 ? cn('border-t', dashed) : ''}
+                  >
+                    <AddEntryResultRow
+                      row={row}
+                      disabled={isAdding}
+                      badgeTint
+                      onAdd={() => logPortion(row, defaultPortion(row))}
+                      onEditPortion={() => setPortionRow(row)}
+                    />
+                  </div>
+                ))
+              )}
               <button
                 type="button"
                 onClick={createNewFood}
