@@ -51,7 +51,8 @@ const MACRO_FIELDS = [
 
 // In a card the fields sit on parchment rather than the card's own white.
 const PANEL_BG = 'bg-field-muted';
-const FIELD = cn(FIELD_CLASS, PANEL_BG);
+// Compact (40px) fields: this is a settings form, not a gym-floor input.
+const FIELD = cn(FIELD_CLASS, PANEL_BG, 'h-10');
 
 interface TargetsFormProps {
   current: NutritionTarget | null;
@@ -113,7 +114,7 @@ export function TargetsForm({ current, editing, onDone }: TargetsFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={(e) => void form.handleSubmit(onSubmit)(e)} className="grid gap-4">
+      <form onSubmit={(e) => void form.handleSubmit(onSubmit)(e)} className="grid gap-3">
         <FormField
           control={form.control}
           name="effectiveDate"
@@ -147,7 +148,7 @@ export function TargetsForm({ current, editing, onDone }: TargetsFormProps) {
                   placeholder="0"
                   className={cn(
                     FIELD,
-                    'font-heading h-14 px-4 text-[24px] font-semibold md:text-[24px]',
+                    'font-heading h-11 text-[18px] font-semibold md:text-[18px]',
                   )}
                   {...field}
                 />
@@ -173,7 +174,11 @@ export function TargetsForm({ current, editing, onDone }: TargetsFormProps) {
                     <Input
                       inputMode="decimal"
                       placeholder="0"
-                      className={cn(NUMBER_FIELD_CLASS, PANEL_BG)}
+                      className={cn(
+                        NUMBER_FIELD_CLASS,
+                        PANEL_BG,
+                        'h-10 text-[15px] md:text-[15px]',
+                      )}
                       {...f}
                     />
                   </FormControl>
@@ -187,12 +192,12 @@ export function TargetsForm({ current, editing, onDone }: TargetsFormProps) {
         {/* Where the calories come from: a proportion bar + the same split as text. */}
         {split ? (
           <div className="grid gap-2">
-            <div className="flex h-2.5 gap-0.5 overflow-hidden rounded-full">
+            <div className="flex h-2 gap-0.5 overflow-hidden rounded-full">
               <span className="bg-[#8d4a5e]" style={{ flexGrow: split.p, flexBasis: 0 }} />
               <span className="bg-[#d9a441]" style={{ flexGrow: split.c, flexBasis: 0 }} />
               <span className="bg-[#5a7a52]" style={{ flexGrow: split.f, flexBasis: 0 }} />
             </div>
-            <p className="font-heading text-muted-foreground text-[13px] italic">
+            <p className="font-heading text-muted-foreground text-[12.5px] italic">
               {t.targets.split(split.p, split.c, split.f)}
             </p>
           </div>
@@ -211,7 +216,7 @@ export function TargetsForm({ current, editing, onDone }: TargetsFormProps) {
           <button
             type="submit"
             disabled={setTarget.isPending}
-            className="bg-primary text-primary-foreground hover:bg-primary-hover disabled:bg-primary/60 inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-full text-[14.5px] font-semibold transition-colors disabled:pointer-events-none"
+            className="bg-primary text-primary-foreground hover:bg-primary-hover disabled:bg-primary/60 inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-full text-[13.5px] font-semibold transition-colors disabled:pointer-events-none"
           >
             {setTarget.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
             {setTarget.isPending
@@ -223,7 +228,7 @@ export function TargetsForm({ current, editing, onDone }: TargetsFormProps) {
           {editing ? (
             <button
               type="button"
-              className="border-border bg-card hover:bg-muted h-12 rounded-full border px-6 text-[14px] font-semibold text-subtle-foreground transition-colors"
+              className="border-border bg-card hover:bg-muted h-10 rounded-full border px-5 text-[13.5px] font-semibold text-subtle-foreground transition-colors"
               onClick={() => onDone?.()}
             >
               {t.common.cancel}

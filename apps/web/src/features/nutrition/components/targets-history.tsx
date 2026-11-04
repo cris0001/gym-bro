@@ -33,7 +33,7 @@ export function TargetsHistory({ onEdit }: { onEdit: (target: NutritionTarget) =
       {ordered.map((target, index) => {
         const current = index === 0;
         return (
-          <li key={target.id} className="flex items-center gap-3 py-3.5">
+          <li key={target.id} className="flex items-center gap-3 py-2.5">
             <span
               aria-hidden
               className={cn(
@@ -43,7 +43,7 @@ export function TargetsHistory({ onEdit }: { onEdit: (target: NutritionTarget) =
             />
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <p className="font-heading text-[19px] leading-tight font-semibold">
+                <p className="font-heading text-[16px] leading-tight font-semibold">
                   {fmt(target.kcal)} kcal
                 </p>
                 {current ? (
@@ -52,7 +52,7 @@ export function TargetsHistory({ onEdit }: { onEdit: (target: NutritionTarget) =
                   </span>
                 ) : null}
               </div>
-              <p className="text-muted-foreground mt-0.5 text-[12px]">
+              <p className="text-muted-foreground mt-0.5 text-[11.5px]">
                 {t.targets.since(format(parseISO(target.effectiveDate), 'PP'))} · {short.protein}{' '}
                 {Math.round(target.proteinG)} · {short.carbs} {Math.round(target.carbsG)} ·{' '}
                 {short.fat} {Math.round(target.fatG)}
