@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useMediaQuery } from '@/hooks/use-media-query';
 
-import { sumMacros } from '@gym-bro/shared';
+import { MEAL_TYPES, sumMacros } from '@gym-bro/shared';
 import type {
   CreateFoodLogInput,
   FoodLogEntry,
@@ -13,6 +13,7 @@ import type {
   RecentDiaryItem,
 } from '@gym-bro/shared';
 
+import { getRecentDiaryItems } from '../api/food-log';
 import { useFoodUiStore } from '../stores/food-ui.store';
 import { useDiaryUiStore } from '../stores/diary-ui.store';
 import { type AddEntryRow, buildAddEntryList, type Portion } from '../utils/add-entry-list';
@@ -34,6 +35,9 @@ export interface UseAddEntry {
   setQuery: (value: string) => void;
   rows: AddEntryRow[];
   isAdding: boolean;
+  // True until everything the browse list is built from has arrived (first open only)
+  // — the view shows a skeleton then, instead of a list that fills in and reshuffles.
+  isListLoading: boolean;
   canScan: boolean;
   scanning: boolean;
   setScanning: (value: boolean) => void;
@@ -47,6 +51,8 @@ export interface UseAddEntry {
   createNewFood: () => void;
   handleEan: (ean: string) => Promise<ScanOutcome>;
 }
+
+const RECENT_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 
 export function useAddEntry(loggedDate: string): UseAddEntry {
   const addMeal = useDiaryUiStore((s) => s.addMeal);
@@ -67,8 +73,10 @@ export function useAddEntry(loggedDate: string): UseAddEntry {
   const canScan = useMediaQuery('(pointer: coarse)');
 
   const create = useCreateFoodLogEntry();
-  const { data: foods = [] } = useFoods('');
-  const { data: recipes = [] } = useRecipes();
+  const foodsQuery = useFoods('');
+  const recipesQuery = useRecipes();
+  const foods = useMemo(() => foodsQuery.data ?? [], [foodsQuery.data]);
+  const recipes = useMemo(() => recipesQuery.data ?? [], [recipesQuery.data]);
   const recentQuery = useRecentDiaryItems(addMeal);
   const { data: dayLog } = useDailyFoodLog(loggedDate);
   const target = useTargetForDate(loggedDate);
@@ -81,6 +89,37 @@ export function useAddEntry(loggedDate: string): UseAddEntry {
   // stale, and on Done a stale list is refetched in the background, so the next open
   // already shows the current order.
   const queryClient = useQueryClient();
+
+  // Every 12 h at most, refresh all meals' recents in the background — when the diary
+  // mounts and when the app returns to the foreground — so entries logged on another
+  // device show up without opening each meal. prefetchQuery is a no-op while the cached
+  // list is younger than 12 h. It never reorders an open view (that order is frozen),
+  // and identical data keeps the same reference, so nothing re-renders.
+  useEffect(() => {
+    const refreshOld = () => {
+      if (document.visibilityState !== 'visible') return;
+      for (const meal of MEAL_TYPES) {
+        void queryClient.prefetchQuery({
+          queryKey: foodLogKeys.recent(meal),
+          queryFn: () => getRecentDiaryItems(meal),
+          staleTime: RECENT_MAX_AGE_MS,
+        });
+      }
+    };
+    refreshOld();
+    document.addEventListener('visibilitychange', refreshOld);
+    return () => {
+      document.removeEventListener('visibilitychange', refreshOld);
+      // The desktop add view is its own instance that unmounts on Done (so the
+      // close-refetch below never sees it close) — catch any list it left stale.
+      void queryClient.refetchQueries({
+        queryKey: foodLogKeys.recentAll,
+        type: 'all',
+        stale: true,
+      });
+    };
+  }, [queryClient]);
+
   const [frozenRecent, setFrozenRecent] = useState<{
     meal: MealType;
     items: RecentDiaryItem[];
@@ -117,10 +156,15 @@ export function useAddEntry(loggedDate: string): UseAddEntry {
     queryClient,
   ]);
 
-  // Until this meal's snapshot exists (first-ever open, nothing cached yet) the browse
-  // list stays empty rather than rendering without the recent rows and reshuffling.
+  // Until this meal's snapshot AND the food/recipe dictionaries exist (first open,
+  // nothing cached yet) the view shows a skeleton — rendering a partial list would
+  // reshuffle as each piece arrives (e.g. recent recipes jumping to the top).
   const recentReady = frozenRecent?.meal === addMeal;
   const recent = recentReady ? frozenRecent.items : [];
+  const sourcesReady = foodsQuery.data !== undefined && recipesQuery.data !== undefined;
+  // A failed/offline dictionary fetch shouldn't skeleton forever either.
+  const sourcesUnavailable = foodsQuery.isError || recipesQuery.isError;
+  const isListLoading = !(recentReady && sourcesReady) && !sourcesUnavailable;
 
   // Newest first: the day read is oldest→newest, so reverse the meal's entries so a
   // just-logged item shows at the top. Order doesn't affect the total.
@@ -134,8 +178,8 @@ export function useAddEntry(loggedDate: string): UseAddEntry {
   const dayTotals = sumMacros(dayLog?.entries ?? []);
 
   const rows = useMemo(
-    () => (recentReady || query.trim() ? buildAddEntryList(foods, recipes, recent, query) : []),
-    [foods, recipes, recent, query, recentReady],
+    () => (isListLoading ? [] : buildAddEntryList(foods, recipes, recent, query)),
+    [foods, recipes, recent, query, isListLoading],
   );
 
   // Log a source at a portion (one-tap default, or the portion editor's choice).
@@ -200,6 +244,7 @@ export function useAddEntry(loggedDate: string): UseAddEntry {
     setQuery,
     rows,
     isAdding: create.isPending,
+    isListLoading,
     canScan,
     scanning,
     setScanning,

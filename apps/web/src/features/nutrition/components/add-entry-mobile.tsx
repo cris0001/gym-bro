@@ -9,6 +9,7 @@ import type { UseAddEntry } from '../hooks/use-add-entry';
 import { useNutritionTranslation } from '../i18n';
 import { useDiaryUiStore } from '../stores/diary-ui.store';
 import { defaultPortion } from '../utils/add-entry-list';
+import { AddEntryListSkeleton } from './add-entry-list-skeleton';
 import { AddEntryResultRow } from './add-entry-result-row';
 import { DiaryEntryRow } from './diary-entry-row';
 
@@ -35,6 +36,7 @@ export function AddEntryMobile({
     setQuery,
     rows,
     isAdding,
+    isListLoading,
     canScan,
     setScanning,
     setPortionRow,
@@ -92,19 +94,25 @@ export function AddEntryMobile({
             {/* Capped height with its own scroll so the "Added" list and the total bar
                 stay in view without scrolling past the whole dictionary. */}
             <div className="max-h-[42vh] overflow-y-auto">
-              {rows.map((row, i) => (
-                <div
-                  key={`${row.kind}-${row.id}`}
-                  className={i > 0 ? 'border-t border-dashed border-border-strong' : ''}
-                >
-                  <AddEntryResultRow
-                    row={row}
-                    disabled={isAdding}
-                    onAdd={() => logPortion(row, defaultPortion(row))}
-                    onEditPortion={() => setPortionRow(row)}
-                  />
-                </div>
-              ))}
+              {isListLoading ? (
+                <AddEntryListSkeleton
+                  dividerClassName={'border-t border-dashed border-border-strong'}
+                />
+              ) : (
+                rows.map((row, i) => (
+                  <div
+                    key={`${row.kind}-${row.id}`}
+                    className={i > 0 ? 'border-t border-dashed border-border-strong' : ''}
+                  >
+                    <AddEntryResultRow
+                      row={row}
+                      disabled={isAdding}
+                      onAdd={() => logPortion(row, defaultPortion(row))}
+                      onEditPortion={() => setPortionRow(row)}
+                    />
+                  </div>
+                ))
+              )}
             </div>
             <button
               type="button"
