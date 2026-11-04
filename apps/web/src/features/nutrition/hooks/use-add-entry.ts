@@ -1,8 +1,9 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 
 import { useMediaQuery } from '@/hooks/use-media-query';
 
-import { sumMacros } from '@gym-bro/shared';
+import { MEAL_TYPES, sumMacros } from '@gym-bro/shared';
 import type {
   CreateFoodLogInput,
   FoodLogEntry,
@@ -12,11 +13,12 @@ import type {
   RecentDiaryItem,
 } from '@gym-bro/shared';
 
+import { getRecentDiaryItems } from '../api/food-log';
 import { useFoodUiStore } from '../stores/food-ui.store';
 import { useDiaryUiStore } from '../stores/diary-ui.store';
 import { type AddEntryRow, buildAddEntryList, type Portion } from '../utils/add-entry-list';
 import { useCreateFoodLogEntry } from './use-create-food-log-entry';
-import { useDailyFoodLog } from './use-daily-food-log';
+import { foodLogKeys, useDailyFoodLog } from './use-daily-food-log';
 import { useFoods } from './use-foods';
 import { useRecentDiaryItems } from './use-recent-diary-items';
 import { useRecipes } from './use-recipes';
@@ -72,29 +74,50 @@ export function useAddEntry(loggedDate: string): UseAddEntry {
   const { data: dayLog } = useDailyFoodLog(loggedDate);
   const target = useTargetForDate(loggedDate);
 
-  // Freeze the recency ORDER for the lifetime of this meal's add view. Two bugs this
-  // fixes: (1) logging an item invalidates the recent query, which re-sorted it to the
-  // top and shifted the list under your finger — a second quick tap then re-added the
-  // same item; (2) reopening a meal briefly showed a stale cached order before the
-  // refetch settled. We snapshot only FRESH (non-stale) recent data, once per meal open,
-  // and render from that snapshot, so adds and background refetches no longer reorder.
+  // Freeze the recency ORDER for the lifetime of this meal's add view, so logging an
+  // item (which invalidates the recent query and re-sorts it to the top) or a background
+  // refetch never shifts the list under your finger — a second quick tap would then
+  // re-add the wrong item. The snapshot is taken from whatever is cached, even if it's
+  // stale: waiting for a fresh refetch meant the list first rendered without the recent
+  // rows and then jumped when they arrived. Instead the cache is kept warm off-screen —
+  // every meal is prefetched when the diary mounts, and the closed meal is refetched in
+  // the background on Done — so the cached order is already current when you reopen.
+  const queryClient = useQueryClient();
   const [frozenRecent, setFrozenRecent] = useState<{
     meal: MealType;
     items: RecentDiaryItem[];
   } | null>(null);
 
   useEffect(() => {
+    for (const meal of MEAL_TYPES) {
+      void queryClient.prefetchQuery({
+        queryKey: foodLogKeys.recent(meal),
+        queryFn: () => getRecentDiaryItems(meal),
+      });
+    }
+  }, [queryClient]);
+
+  useEffect(() => {
     if (addMeal === null) {
-      if (frozenRecent !== null) setFrozenRecent(null);
+      if (frozenRecent !== null) {
+        setFrozenRecent(null);
+        void queryClient.refetchQueries({
+          queryKey: foodLogKeys.recent(frozenRecent.meal),
+          type: 'all',
+        });
+      }
       return;
     }
     if (frozenRecent?.meal === addMeal) return;
-    if (recentQuery.data !== undefined && !recentQuery.isStale) {
+    if (recentQuery.data !== undefined) {
       setFrozenRecent({ meal: addMeal, items: recentQuery.data });
     }
-  }, [addMeal, frozenRecent, recentQuery.data, recentQuery.isStale]);
+  }, [addMeal, frozenRecent, recentQuery.data, queryClient]);
 
-  const recent = frozenRecent?.meal === addMeal ? frozenRecent.items : [];
+  // Until this meal's snapshot exists (first-ever open, nothing cached yet) the browse
+  // list stays empty rather than rendering without the recent rows and reshuffling.
+  const recentReady = frozenRecent?.meal === addMeal;
+  const recent = recentReady ? frozenRecent.items : [];
 
   // Newest first: the day read is oldest→newest, so reverse the meal's entries so a
   // just-logged item shows at the top. Order doesn't affect the total.
@@ -108,8 +131,8 @@ export function useAddEntry(loggedDate: string): UseAddEntry {
   const dayTotals = sumMacros(dayLog?.entries ?? []);
 
   const rows = useMemo(
-    () => buildAddEntryList(foods, recipes, recent, query),
-    [foods, recipes, recent, query],
+    () => (recentReady || query.trim() ? buildAddEntryList(foods, recipes, recent, query) : []),
+    [foods, recipes, recent, query, recentReady],
   );
 
   // Log a source at a portion (one-tap default, or the portion editor's choice).
