@@ -22,11 +22,12 @@ import { TemplateRow } from './template-row';
 interface TemplateListProps {
   planId: string;
   templates: WorkoutTemplate[];
+  selectedId?: string | null;
 }
 
 // Drag-to-reorder list of a plan's templates. The 8px activation distance keeps
 // taps and scrolls from starting a drag; reorder fires the optimistic mutation.
-export function TemplateList({ planId, templates }: TemplateListProps) {
+export function TemplateList({ planId, templates, selectedId }: TemplateListProps) {
   const reorder = useReorderTemplates();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -48,7 +49,11 @@ export function TemplateList({ planId, templates }: TemplateListProps) {
       <SortableContext items={templates.map((t) => t.id)} strategy={verticalListSortingStrategy}>
         <ul className="flex flex-col">
           {templates.map((template) => (
-            <TemplateRow key={template.id} template={template} />
+            <TemplateRow
+              key={template.id}
+              template={template}
+              selected={template.id === selectedId}
+            />
           ))}
         </ul>
       </SortableContext>

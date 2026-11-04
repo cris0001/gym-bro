@@ -14,11 +14,13 @@ import { useTemplateUiStore } from '../stores/template-ui.store';
 
 interface TemplateRowProps {
   template: WorkoutTemplate;
+  // Desktop workspace: the template whose exercises are open in the next column.
+  selected?: boolean;
 }
 
 // One sortable template row. The grip is the only drag affordance (so taps and
 // list scrolling on touch don't start a drag); edit/delete sit on the right.
-export function TemplateRow({ template }: TemplateRowProps) {
+export function TemplateRow({ template, selected = false }: TemplateRowProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: template.id,
   });
@@ -42,6 +44,7 @@ export function TemplateRow({ template }: TemplateRowProps) {
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(
         'flex items-center gap-2.5 border-t border-dashed border-border bg-card py-[11px] first:border-t-0',
+        selected && 'bg-accent -mx-2 rounded-xl border-transparent px-2',
         isDragging && 'opacity-50',
       )}
     >
@@ -60,7 +63,14 @@ export function TemplateRow({ template }: TemplateRowProps) {
         params={{ templateId: template.id }}
         className="min-w-0 flex-1"
       >
-        <p className="truncate text-[13.5px] font-semibold">{template.name}</p>
+        <p className="flex min-w-0 items-center gap-1.5 text-[13.5px] font-semibold">
+          <span className="truncate">{template.name}</span>
+          {template.shortName ? (
+            <span className="bg-muted text-subtle-foreground shrink-0 rounded-md px-1.5 py-px text-[10px] font-bold">
+              {template.shortName}
+            </span>
+          ) : null}
+        </p>
         {template.description ? (
           <p className="text-muted-foreground truncate text-[11.5px]">{template.description}</p>
         ) : null}
