@@ -61,7 +61,7 @@ export function FoodCombobox({
             <span className="truncate">{triggerLabel}</span>
           </button>
         ) : (
-          <Button variant="outline" className="h-11 w-full justify-between font-normal">
+          <Button variant="outline" className="h-10 w-full justify-between font-normal">
             <span className={cn('truncate', !selectedName && 'text-muted-foreground')}>
               {selectedName ?? triggerLabel}
             </span>

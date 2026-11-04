@@ -72,7 +72,7 @@ export function DashboardPage() {
           </h1>
         </div>
         <div className="flex items-center gap-3">
-          <Button asChild className="hidden h-11 rounded-full px-5 lg:inline-flex">
+          <Button asChild className="hidden h-10 rounded-full px-5 lg:inline-flex">
             <Link to="/session">
               <Play className="size-4" />
               {t.startWorkout}

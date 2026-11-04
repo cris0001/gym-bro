@@ -63,14 +63,14 @@ export function RecipeList({ selectedId = null, onSelect }: RecipeListProps) {
             onSelect ? (
               <Button
                 type="button"
-                className="h-11 rounded-full px-5"
+                className="h-10 rounded-full px-5"
                 onClick={() => onSelect('new')}
               >
                 <Plus className="size-4" />
                 {t.recipes.newRecipe}
               </Button>
             ) : (
-              <Button asChild className="h-11 rounded-full px-5">
+              <Button asChild className="h-10 rounded-full px-5">
                 <Link to="/recipes/new">
                   <Plus className="size-4" />
                   {t.recipes.newRecipe}

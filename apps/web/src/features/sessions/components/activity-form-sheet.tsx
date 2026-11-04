@@ -189,7 +189,7 @@ export function ActivityFormSheet({ open, onClose }: ActivityFormSheetProps) {
           )}
 
           <Button
-            className="h-11"
+            className="h-10"
             disabled={name.trim().length === 0 || createMutation.isPending}
             onClick={handleSave}
           >

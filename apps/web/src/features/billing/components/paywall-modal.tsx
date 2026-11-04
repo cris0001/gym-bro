@@ -38,7 +38,7 @@ export function PaywallModal({ expiresAt, onRenew, onSignOut }: PaywallModalProp
             {t.expiredOn(format(parseISO(expiresAt), 'PP'))}
           </p>
         ) : null}
-        <Button onClick={onRenew} className="mt-5 h-11 w-full rounded-full">
+        <Button onClick={onRenew} className="mt-5 h-10 w-full rounded-full">
           {t.renew}
         </Button>
         <button

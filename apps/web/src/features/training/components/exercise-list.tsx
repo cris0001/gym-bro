@@ -51,7 +51,7 @@ export function ExerciseList({ category, search }: ExerciseListProps) {
         title={category ? `No ${category} exercises yet` : 'No exercises yet'}
         description="Add exercises to your library to start building workout templates."
         action={
-          <Button type="button" className="h-11" onClick={openCreate}>
+          <Button type="button" className="h-10" onClick={openCreate}>
             <Plus className="size-4" />
             Add exercise
           </Button>

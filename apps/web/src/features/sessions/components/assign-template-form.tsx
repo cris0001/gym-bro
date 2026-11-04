@@ -125,7 +125,7 @@ export function AssignTemplateForm({ date, onDone }: AssignTemplateFormProps) {
 
       <div className="flex items-center gap-2">
         <Button
-          className="h-11 flex-1 rounded-full"
+          className="h-10 flex-1 rounded-full"
           onClick={handleAssign}
           disabled={!templateId || createMutation.isPending}
         >
@@ -133,7 +133,7 @@ export function AssignTemplateForm({ date, onDone }: AssignTemplateFormProps) {
         </Button>
         <Button
           variant="ghost"
-          className="text-muted-foreground h-11 rounded-full px-4"
+          className="text-muted-foreground h-10 rounded-full px-4"
           onClick={onDone}
         >
           {t.assign.cancel}

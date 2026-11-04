@@ -85,7 +85,7 @@ export function RecipePhoto({ imageUrl, onPick, onRemove, variant, className }: 
         )}
         {removeButton}
       </div>
-      <label className="border-border bg-card text-primary hover:bg-muted flex h-11 cursor-pointer items-center justify-center rounded-full border text-[14px] font-semibold transition-colors">
+      <label className="border-border bg-card text-primary hover:bg-muted flex h-10 cursor-pointer items-center justify-center rounded-full border text-[14px] font-semibold transition-colors">
         {imageUrl ? t.common.changePhoto : t.common.addPhoto}
         <FileInput onPick={onPick} />
       </label>
