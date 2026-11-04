@@ -1,20 +1,27 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { type QueryClient, useMutation } from '@tanstack/react-query';
 
-import type { CreateActivitySessionInput } from '@gym-bro/shared';
+import type { CreateActivitySessionInput, WorkoutSession } from '@gym-bro/shared';
 
 import { createActivitySession } from '../api/workout-sessions';
 import { workoutSessionKeys } from './use-workout-sessions';
 
-// Logs an ad-hoc activity, then refreshes history. Activities have no planned
-// link, so the calendar is unaffected.
-export function useCreateActivitySession() {
-  const queryClient = useQueryClient();
-  return useMutation({
+export const CREATE_ACTIVITY_SESSION_KEY = ['workout-sessions', 'create-activity'] as const;
+
+// Registered on the QueryClient so an activity logged offline is sent when the
+// connection returns, even after a restart. Activities have no planned link, so only
+// history and stats (the rating-trend chart) need refreshing.
+export function registerActivitySessionMutationDefaults(queryClient: QueryClient) {
+  queryClient.setMutationDefaults(CREATE_ACTIVITY_SESSION_KEY, {
     mutationFn: (input: CreateActivitySessionInput) => createActivitySession(input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: workoutSessionKeys.lists() });
-      // Stats feature's root key — an activity's rating feeds the rating-trend chart.
       void queryClient.invalidateQueries({ queryKey: ['stats'] });
     },
+  });
+}
+
+export function useCreateActivitySession() {
+  return useMutation<WorkoutSession, Error, CreateActivitySessionInput>({
+    mutationKey: CREATE_ACTIVITY_SESSION_KEY,
   });
 }

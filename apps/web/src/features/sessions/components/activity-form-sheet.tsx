@@ -192,13 +192,23 @@ export function ActivityFormSheet({ open, onClose }: ActivityFormSheetProps) {
           {createMutation.isError && (
             <p className="text-destructive text-sm">{createMutation.error.message}</p>
           )}
+          {/* Saved offline: queued + persisted, sent when the connection returns. */}
+          {createMutation.isPaused && (
+            <p role="status" className="text-muted-foreground text-sm">
+              {t.common.queuedOffline}
+            </p>
+          )}
 
           <Button
             className="h-10"
             disabled={name.trim().length === 0 || createMutation.isPending}
             onClick={handleSave}
           >
-            {createMutation.isPending ? t.common.saving : t.activity.save}
+            {createMutation.isPaused
+              ? t.common.waitingForConnection
+              : createMutation.isPending
+                ? t.common.saving
+                : t.activity.save}
           </Button>
         </div>
       </SheetContent>

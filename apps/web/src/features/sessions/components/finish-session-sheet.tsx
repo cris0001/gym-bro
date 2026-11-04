@@ -97,6 +97,9 @@ export function FinishSessionSheet({ open, onClose }: FinishSessionSheetProps) {
 
   const isEditing = draft.editingSessionId !== null;
   const isPending = createMutation.isPending || updateMutation.isPending;
+  // Finished while offline: the write is queued (and persisted), so say so and let the
+  // sheet close instead of spinning — the draft stays until the workout actually syncs.
+  const queuedOffline = createMutation.isPaused;
   const mutationError = createMutation.error ?? updateMutation.error;
 
   const validationError =
@@ -223,13 +226,24 @@ export function FinishSessionSheet({ open, onClose }: FinishSessionSheetProps) {
 
           {validationError && <p className="text-destructive text-sm">{validationError}</p>}
           {mutationError && <p className="text-destructive text-sm">{mutationError.message}</p>}
+          {queuedOffline && (
+            <p role="status" className="text-muted-foreground text-sm">
+              {t.common.queuedOffline}
+            </p>
+          )}
 
           <Button
             className="h-12 rounded-full"
             disabled={validationError !== null || isPending}
             onClick={handleFinish}
           >
-            {isPending ? t.common.saving : isEditing ? t.finish.editTitle : t.finish.title}
+            {queuedOffline
+              ? t.common.waitingForConnection
+              : isPending
+                ? t.common.saving
+                : isEditing
+                  ? t.finish.editTitle
+                  : t.finish.title}
           </Button>
         </div>
       </SheetContent>

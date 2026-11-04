@@ -19,6 +19,9 @@ export const useSessionsTranslation = createFeatureTranslation({
       delete: 'Delete',
       loading: 'Loading…',
       saving: 'Saving…',
+      waitingForConnection: 'Waiting for connection…',
+      queuedOffline:
+        'Saved on this device — it’ll be sent automatically when you’re back online. You can close this.',
       optional: 'Optional',
       workoutDeleted: 'Workout deleted',
       activeWorkoutBlock: 'You already have an active workout — finish or discard it first.',
@@ -210,6 +213,9 @@ export const useSessionsTranslation = createFeatureTranslation({
       delete: 'Usuń',
       loading: 'Ładowanie…',
       saving: 'Zapisywanie…',
+      waitingForConnection: 'Czekam na połączenie…',
+      queuedOffline:
+        'Zapisano na tym urządzeniu — wyśle się samo po powrocie sieci. Możesz to zamknąć.',
       optional: 'Opcjonalnie',
       workoutDeleted: 'Trening usunięty',
       activeWorkoutBlock: 'Masz już aktywny trening — najpierw go zakończ lub odrzuć.',

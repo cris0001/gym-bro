@@ -110,7 +110,10 @@ export function PhotoEstimateSheet({ loggedDate }: { loggedDate: string }) {
       meal: photoMeal,
       loggedDate,
     };
-    create.mutate(input, { onSuccess: closePhoto });
+    create.mutate(
+      { ...input, preview: { name: input.name, portion: `${Math.round(input.kcal)} kcal` } },
+      { onSuccess: closePhoto },
+    );
   }
 
   const error = estimate.error ?? create.error;

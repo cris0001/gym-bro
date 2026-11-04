@@ -1,7 +1,11 @@
 import { Pencil, Plus } from 'lucide-react';
 
 import { useNutritionTranslation } from '../i18n';
-import { type AddEntryRow, defaultPortion } from '../utils/add-entry-list';
+import {
+  type AddEntryRow,
+  defaultPortion,
+  portionLabel as formatPortion,
+} from '../utils/add-entry-list';
 
 // One row of the results list: photo, name, meta line, and a split pill — the left half
 // logs the portion it names (the one this item was last logged at, else its default),
@@ -18,8 +22,7 @@ export function AddEntryResultRow({
   disabled?: boolean;
 }) {
   const t = useNutritionTranslation();
-  const portion = defaultPortion(row);
-  const portionLabel = `${Number(portion.quantity.toFixed(2))} ${t.addEntry.unitShort[portion.unit]}`;
+  const portionLabel = formatPortion(defaultPortion(row), t.addEntry.unitShort);
 
   return (
     <div className="flex items-center gap-2.5 px-3 py-2.5 min-[400px]:gap-3 min-[400px]:px-3.5 min-[400px]:py-3">

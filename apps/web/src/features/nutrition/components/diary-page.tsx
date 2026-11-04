@@ -104,6 +104,7 @@ export function DiaryPage() {
               key={meal}
               meal={meal}
               label={t.meals[meal]}
+              loggedDate={date}
               entries={entries.filter((entry) => entry.meal === meal)}
             />
           ))}

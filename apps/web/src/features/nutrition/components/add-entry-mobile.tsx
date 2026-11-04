@@ -6,12 +6,14 @@ import type { MealType } from '@gym-bro/shared';
 import { useSheetBackClose } from '@/hooks/use-sheet-back-close';
 
 import type { UseAddEntry } from '../hooks/use-add-entry';
+import { usePendingFoodLogEntries } from '../hooks/use-pending-food-log-entries';
 import { useNutritionTranslation } from '../i18n';
 import { useDiaryUiStore } from '../stores/diary-ui.store';
 import { defaultPortion } from '../utils/add-entry-list';
 import { AddEntryListSkeleton } from './add-entry-list-skeleton';
 import { AddEntryResultRow } from './add-entry-result-row';
 import { DiaryEntryRow } from './diary-entry-row';
+import { PendingFoodLogRow } from './pending-food-log-row';
 
 // Mobile "Add to {meal}" view: a fullscreen takeover with an inline results list under a
 // search box, added items + running meal total below, and a sticky "Done" bar. One tap
@@ -28,6 +30,8 @@ export function AddEntryMobile({
 }) {
   const t = useNutritionTranslation();
   const closeAdd = useDiaryUiStore((s) => s.closeAdd);
+  // Adds still queued offline / retrying, listed with the synced ones until they land.
+  const pending = usePendingFoodLogEntries(loggedDate, meal);
   // Not a Sheet (a fullscreen takeover), so wire the phone Back button up by hand —
   // Back closes this view instead of navigating away from the diary.
   useSheetBackClose(true, (open) => !open && closeAdd());
@@ -124,7 +128,7 @@ export function AddEntryMobile({
             </button>
           </div>
 
-          {mealEntries.length > 0 ? (
+          {mealEntries.length > 0 || pending.length > 0 ? (
             <div className="flex flex-col gap-2">
               <div className="flex items-baseline justify-between">
                 <span className="text-muted-foreground text-[11px] font-semibold tracking-wide uppercase">
@@ -138,6 +142,9 @@ export function AddEntryMobile({
               <ul className="border-border bg-card flex flex-col divide-y divide-dashed divide-border-strong rounded-[18px] border px-4">
                 {mealEntries.map((entry) => (
                   <DiaryEntryRow key={entry.id} entry={entry} showImage />
+                ))}
+                {pending.map((variables) => (
+                  <PendingFoodLogRow key={variables.id} variables={variables} />
                 ))}
               </ul>
             </div>
