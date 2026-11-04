@@ -9,7 +9,8 @@ import { getDailyFoodLog } from '../api/food-log';
 export const foodLogKeys = {
   all: ['nutrition', 'food-log'] as const,
   day: (date: string) => [...foodLogKeys.all, date] as const,
-  recent: (meal: string) => [...foodLogKeys.all, 'recent', meal] as const,
+  recentAll: ['nutrition', 'food-log', 'recent'] as const,
+  recent: (meal: string) => [...foodLogKeys.recentAll, meal] as const,
 };
 
 export function dailyFoodLogQueryOptions(date: string) {
