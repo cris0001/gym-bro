@@ -1,4 +1,4 @@
-import { ChevronRight, Dumbbell, Plus } from 'lucide-react';
+import { Dumbbell, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { DeleteIconButton } from '@/components/delete-icon-button';
@@ -103,7 +103,6 @@ export function ExerciseList({ category, search }: ExerciseListProps) {
               </span>
               <span className="text-muted-foreground block text-xs">{exercise.category}</span>
             </span>
-            <ChevronRight className="text-muted-foreground hidden size-4 shrink-0 md:block" />
           </button>
           <DeleteIconButton
             className="mr-2 hidden transition-[opacity,background-color,color] group-hover:opacity-100 focus-visible:opacity-100 md:inline-flex md:opacity-0"

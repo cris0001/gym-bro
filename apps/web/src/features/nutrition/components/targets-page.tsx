@@ -7,7 +7,7 @@ import { useNutritionTranslation } from '../i18n';
 import { TargetsForm } from './targets-form';
 import { TargetsHistory } from './targets-history';
 
-const CARD = 'rounded-[20px] border border-border bg-card p-5 md:p-6';
+const CARD = 'rounded-[20px] border border-border bg-card p-4 md:p-5';
 
 // Targets settings: set the current daily target or back-fill/edit a dated entry,
 // and review the history of past targets. Editing state is owned here and shared by
@@ -23,9 +23,9 @@ export function TargetsPage() {
         {t.targets.title}
       </h1>
 
-      <div className="grid gap-4 lg:grid-cols-2 lg:items-start lg:gap-6">
+      <div className="grid gap-3 lg:grid-cols-2 lg:items-start lg:gap-5">
         <section className={CARD}>
-          <h2 className="font-heading mb-4 text-[20px] font-semibold">
+          <h2 className="font-heading mb-3 text-[17px] font-semibold">
             {editing ? t.targets.editTarget : t.targets.dailyTarget}
           </h2>
           {isPending ? (
@@ -41,7 +41,7 @@ export function TargetsPage() {
         </section>
 
         <section className={CARD}>
-          <h2 className="font-heading mb-2 text-[20px] font-semibold">{t.targets.history}</h2>
+          <h2 className="font-heading mb-1 text-[17px] font-semibold">{t.targets.history}</h2>
           <TargetsHistory onEdit={setEditing} />
         </section>
       </div>
