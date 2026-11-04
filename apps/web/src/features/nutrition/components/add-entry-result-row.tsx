@@ -47,25 +47,25 @@ export function AddEntryResultRow({
         </span>
       </button>
 
-      <div className="bg-accent text-primary flex h-[34px] shrink-0 items-stretch overflow-hidden rounded-full">
+      <div className="bg-accent text-primary flex h-[30px] shrink-0 items-stretch overflow-hidden rounded-full">
         <button
           type="button"
           aria-label={t.addEntry.addItemAria(row.name, portionLabel)}
-          className="hover:bg-primary/10 flex items-center gap-1 pr-2.5 pl-3 text-[12.5px] font-bold whitespace-nowrap transition-colors disabled:opacity-50"
+          className="hover:bg-primary/10 flex items-center gap-[3px] pr-2 pl-2.5 text-[12px] font-bold whitespace-nowrap transition-colors disabled:opacity-50"
           disabled={disabled}
           onClick={onAdd}
         >
-          <Plus className="size-[13px]" strokeWidth={2.6} />
+          <Plus className="size-3" strokeWidth={2.6} />
           {portionLabel}
         </button>
-        <span aria-hidden className="bg-primary/20 my-2 w-px" />
+        <span aria-hidden className="bg-primary/20 my-[7px] w-px" />
         <button
           type="button"
           aria-label={t.addEntry.choosePortionAria(row.name)}
-          className="hover:bg-primary/10 flex items-center pr-[11px] pl-[9px] transition-colors"
+          className="hover:bg-primary/10 flex items-center pr-[9px] pl-[7px] transition-colors"
           onClick={onEditPortion}
         >
-          <Pencil className="size-3.5" />
+          <Pencil className="size-[13px]" />
         </button>
       </div>
     </div>
