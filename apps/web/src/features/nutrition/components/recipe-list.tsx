@@ -126,8 +126,19 @@ export function RecipeList({ selectedId = null, onSelect }: RecipeListProps) {
                 <span className="text-muted-foreground">{t.recipes.perServingSuffix}</span>
               </span>
               {recipe.ingredientNames.length > 0 ? (
+                // Dot-separated (not commas) so multi-word ingredient names don't run
+                // together into one blur of text.
                 <span className="text-muted-foreground mt-1 line-clamp-2 block text-[12.5px] leading-snug">
-                  {recipe.ingredientNames.join(', ')}
+                  {recipe.ingredientNames.map((name, i) => (
+                    <span key={i}>
+                      {i > 0 && (
+                        <span aria-hidden className="text-primary/60 mx-1.5 font-bold">
+                          •
+                        </span>
+                      )}
+                      {name}
+                    </span>
+                  ))}
                 </span>
               ) : null}
             </span>

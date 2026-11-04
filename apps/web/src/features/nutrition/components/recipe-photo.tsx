@@ -49,7 +49,7 @@ export function RecipePhoto({ imageUrl, onPick, onRemove, variant, className }: 
             'flex size-full cursor-pointer flex-col items-center justify-center gap-1 overflow-hidden rounded-2xl',
             imageUrl
               ? ''
-              : 'text-muted-foreground border-[1.5px] border-dashed border-border-strong',
+              : 'bg-card text-muted-foreground border-[1.5px] border-dashed border-border-strong',
           )}
         >
           {imageUrl ? (
