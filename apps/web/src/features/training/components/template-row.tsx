@@ -17,8 +17,8 @@ interface TemplateRowProps {
   // Desktop workspace: the template whose exercises are open in the next column.
   selected?: boolean;
   // 'list' (mobile plan page): dashed-divider rows on the card. 'column' (desktop
-  // workspace): separate rounded rows on the tinted column; the open one is a lifted
-  // card with a chevron pointing at its exercises.
+  // workspace): each template its own bordered card on the tinted column; the open one
+  // gets an accent border, a lift and a chevron pointing at its exercises.
   variant?: 'list' | 'column';
 }
 
@@ -53,8 +53,8 @@ export function TemplateRow({ template, selected = false, variant = 'list' }: Te
           : 'rounded-xl border px-2 py-2.5 transition-colors',
         variant === 'column' &&
           (selected
-            ? 'border-border bg-card shadow-[0_1px_2px_rgb(43_33_38/0.06)]'
-            : 'hover:bg-card/70 border-transparent'),
+            ? 'border-primary/45 bg-card shadow-[0_1px_3px_rgb(43_33_38/0.08)]'
+            : 'border-border bg-card/70 hover:bg-card'),
         isDragging && 'opacity-50',
       )}
     >
