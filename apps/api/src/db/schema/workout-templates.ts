@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { integer, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { check, integer, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 
 import { trainingPlans } from './training-plans';
 import { users } from './users';
@@ -20,6 +20,9 @@ export const workoutTemplates = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     name: text('name').notNull(),
+    // Optional ≤5-char abbreviation shown in tight spots (calendar cells), so a long
+    // template name never overflows a day. Null → the UI falls back to the name.
+    shortName: text('short_name'),
     description: text('description'),
     position: integer('position').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -33,6 +36,10 @@ export const workoutTemplates = pgTable(
     uniqueIndex('workout_templates_plan_name_unique').on(
       table.trainingPlanId,
       sql`lower(${table.name})`,
+    ),
+    check(
+      'workout_templates_short_name_length',
+      sql`char_length(${table.shortName}) between 1 and 5`,
     ),
   ],
 );

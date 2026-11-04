@@ -1,4 +1,4 @@
-import { and, between, count, desc, eq, inArray, lt } from 'drizzle-orm';
+import { and, between, count, desc, eq, getTableColumns, inArray, lt } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 
 import { db } from '../../db/client';
@@ -26,6 +26,7 @@ interface PlannedSessionUpdate {
 // lookup per entry). scheduledDate is a 'YYYY-MM-DD' string.
 export interface PlannedSessionWithTemplateRow extends PlannedSession {
   templateName: string;
+  templateShortName: string | null;
   // The workout that fulfilled this entry (null unless completed), so the calendar
   // can link to it in history.
   workoutSessionId: string | null;
@@ -50,6 +51,7 @@ export async function listPlannedSessionsByRange(
       createdAt: plannedSessions.createdAt,
       updatedAt: plannedSessions.updatedAt,
       templateName: workoutTemplates.name,
+      templateShortName: workoutTemplates.shortName,
       workoutSessionId: workoutSessions.id,
     })
     .from(plannedSessions)
@@ -340,10 +342,11 @@ export async function listWorkoutSessionsPage(
   offset: number,
   from?: string,
   to?: string,
-): Promise<WorkoutSession[]> {
+): Promise<(WorkoutSession & { templateShortName: string | null })[]> {
   return db
-    .select()
+    .select({ ...getTableColumns(workoutSessions), templateShortName: workoutTemplates.shortName })
     .from(workoutSessions)
+    .leftJoin(workoutTemplates, eq(workoutSessions.workoutTemplateId, workoutTemplates.id))
     .where(
       and(
         eq(workoutSessions.userId, userId),

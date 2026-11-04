@@ -40,7 +40,7 @@ function isUniqueViolation(error: unknown): boolean {
 // --- Planned sessions ---
 
 interface PlannedSessionWithTemplate extends PlannedSession {
-  template: Pick<WorkoutTemplate, 'id' | 'name'>;
+  template: Pick<WorkoutTemplate, 'id' | 'name' | 'shortName'>;
   workoutSessionId: string | null;
 }
 
@@ -53,9 +53,9 @@ export async function listPlannedSessions(
     throw new ValidationError('"to" must be on or after "from"');
   }
   const rows = await sessionsRepository.listPlannedSessionsByRange(userId, range.from, range.to);
-  return rows.map(({ templateName, ...planned }) => ({
+  return rows.map(({ templateName, templateShortName, ...planned }) => ({
     ...planned,
-    template: { id: planned.workoutTemplateId, name: templateName },
+    template: { id: planned.workoutTemplateId, name: templateName, shortName: templateShortName },
   }));
 }
 

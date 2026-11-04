@@ -5,6 +5,7 @@ import { FormSheetActions } from '@/components/form-sheet-actions';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -37,6 +38,7 @@ export function TemplateForm({ editing, planId, onSuccess, onCancel }: TemplateF
     resolver: zodResolver(createTemplateSchema),
     defaultValues: {
       name: editing?.name ?? '',
+      shortName: editing?.shortName ?? null,
       description: editing?.description ?? '',
     },
   });
@@ -50,6 +52,7 @@ export function TemplateForm({ editing, planId, onSuccess, onCancel }: TemplateF
     const description = values.description ?? '';
     const input: CreateTemplateInput = {
       name: values.name,
+      shortName: values.shortName ?? null,
       description: description.length > 0 ? description : null,
     };
     if (editing) {
@@ -74,6 +77,38 @@ export function TemplateForm({ editing, planId, onSuccess, onCancel }: TemplateF
               <FormControl>
                 <Input placeholder="e.g. Push" className={FIELD_CLASS} {...field} />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="shortName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className={LABEL_CLASS}>
+                Short name <OptionalHint />
+              </FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="e.g. PSH"
+                  maxLength={5}
+                  autoCapitalize="characters"
+                  className={FIELD_CLASS}
+                  value={field.value ?? ''}
+                  // Empty → null so a blank box clears the abbreviation instead of
+                  // failing the 1–5 character rule.
+                  onChange={(e) => field.onChange(e.target.value === '' ? null : e.target.value)}
+                  onBlur={field.onBlur}
+                  name={field.name}
+                  ref={field.ref}
+                />
+              </FormControl>
+              <FormDescription className="text-[12px]">
+                Up to 5 characters, shown on the calendar instead of the full name. Leave empty to
+                use the name.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

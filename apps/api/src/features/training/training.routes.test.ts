@@ -60,6 +60,7 @@ function fakeTemplate(overrides: Partial<WorkoutTemplate> = {}): WorkoutTemplate
     trainingPlanId: fakePlan().id,
     userId: 'user-1',
     name: 'Push',
+    shortName: null,
     description: null,
     position: 0,
     createdAt: new Date('2026-01-01T00:00:00Z'),
