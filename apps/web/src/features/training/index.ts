@@ -6,6 +6,7 @@ export { TagsPage } from './components/tags-page';
 export { PlansPage } from './components/plans-page';
 export { PlanDetail } from './components/plan-detail';
 export { TemplateBuilder } from './components/template-builder';
+export { PlansWorkspace } from './components/plans-workspace';
 
 export { useExercises, exercisesQueryOptions, exerciseKeys } from './hooks/use-exercises';
 export { useCreateExercise } from './hooks/use-create-exercise';

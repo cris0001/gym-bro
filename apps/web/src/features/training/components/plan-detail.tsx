@@ -1,17 +1,13 @@
-import { Link, useNavigate } from '@tanstack/react-router';
+import { Link } from '@tanstack/react-router';
 import { ChevronLeft, Star } from 'lucide-react';
-import { toast } from 'sonner';
 
 import { DeleteButton } from '@/components/delete-button';
 import { ErrorState } from '@/components/error-state';
 import { SkeletonList } from '@/components/skeletons';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useConfirm } from '@/stores/confirm.store';
-
-import type { PlanWithTemplates } from '@gym-bro/shared';
 
 import { useActivePlan } from '../hooks/use-active-plan';
-import { useDeletePlan } from '../hooks/use-delete-plan';
+import { useDeletePlanFlow } from '../hooks/use-delete-plan-flow';
 import { usePlan } from '../hooks/use-plan';
 import { useSetActivePlan } from '../hooks/use-set-active-plan';
 import { usePlanUiStore } from '../stores/plan-ui.store';
@@ -32,9 +28,7 @@ export function PlanDetail({ planId }: PlanDetailProps) {
   const setActive = useSetActivePlan();
   const openEdit = usePlanUiStore((s) => s.openEdit);
   const openCreateTemplate = useTemplateUiStore((s) => s.openCreate);
-  const remove = useDeletePlan();
-  const confirm = useConfirm();
-  const navigate = useNavigate();
+  const { deletePlan, isPending: deleting } = useDeletePlanFlow();
 
   if (isPending) {
     return (
@@ -48,23 +42,6 @@ export function PlanDetail({ planId }: PlanDetailProps) {
 
   if (isError) {
     return <ErrorState message={error.message} onRetry={() => void refetch()} />;
-  }
-
-  async function onDelete(target: PlanWithTemplates) {
-    const ok = await confirm({
-      title: `Delete "${target.name}"?`,
-      description: 'This also removes all of its templates.',
-      confirmText: 'Delete',
-      destructive: true,
-    });
-    if (ok) {
-      remove.mutate(target.id, {
-        onSuccess: () => {
-          toast.success('Plan deleted');
-          void navigate({ to: '/plans' });
-        },
-      });
-    }
   }
 
   return (
@@ -151,8 +128,8 @@ export function PlanDetail({ planId }: PlanDetailProps) {
 
       <DeleteButton
         className="self-center"
-        disabled={remove.isPending}
-        onClick={() => void onDelete(plan)}
+        disabled={deleting}
+        onClick={() => void deletePlan(plan)}
       >
         Delete plan
       </DeleteButton>
