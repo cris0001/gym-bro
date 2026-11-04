@@ -38,6 +38,9 @@ export interface WorkoutDraft {
   // Set when editing a finished session (the graph is PUT back on save); null for
   // a brand-new workout (POSTed on finish).
   editingSessionId: string | null;
+  // Edit only: the in-app URL the edit was opened from (calendar, history detail…),
+  // so Cancel / Save return there. Optional — absent on older persisted drafts.
+  returnTo?: string;
   name: string;
   performedDate: string;
   // When this session began (ISO); drives the live elapsed-time chip. Persisted so the
@@ -72,7 +75,7 @@ export interface StartDraftInput {
 interface WorkoutDraftState {
   draft: WorkoutDraft | null;
   start: (input: StartDraftInput) => void;
-  loadForEdit: (detail: WorkoutSessionDetail) => void;
+  loadForEdit: (detail: WorkoutSessionDetail, returnTo: string) => void;
   discard: () => void;
   setName: (name: string) => void;
   setPerformedDate: (performedDate: string) => void;
@@ -154,10 +157,11 @@ export const useWorkoutDraftStore = create<WorkoutDraftState>()(
           },
         }),
 
-      loadForEdit: (detail) =>
+      loadForEdit: (detail, returnTo) =>
         set({
           draft: {
             editingSessionId: detail.id,
+            returnTo,
             name: detail.name,
             performedDate: detail.performedDate,
             plannedSessionId: detail.plannedSessionId,

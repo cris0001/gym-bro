@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { useConfirm } from '@/stores/confirm.store';
 
 import { useSessionsTranslation } from '../i18n';
+import { useLeaveEdit } from '../hooks/use-leave-edit';
 import { usePlannedSessions } from '../hooks/use-planned-sessions';
 import { useStartWorkout } from '../hooks/use-start-workout';
 import { useWorkoutDraftStore } from '../stores/workout-draft.store';
@@ -42,6 +43,7 @@ export function ActiveSessionPage() {
   const { startFromTemplate, startEmpty } = useStartWorkout();
   const confirm = useConfirm();
   const navigate = useNavigate();
+  const leaveEdit = useLeaveEdit();
   const t = useSessionsTranslation();
 
   const todayIso = format(new Date(), 'yyyy-MM-dd');
@@ -142,7 +144,10 @@ export function ActiveSessionPage() {
       confirmText: isEditing ? dc.stopConfirm : dc.discardConfirm,
       destructive: true,
     });
-    if (ok) discard();
+    if (!ok || !draft) return;
+    // `draft` is this render's snapshot, so it still holds returnTo after discard().
+    discard();
+    leaveEdit(draft);
   }
 
   // Opens the hidden date field's native picker (falls back to focusing it).
