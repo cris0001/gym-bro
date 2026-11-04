@@ -1,13 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { format, parseISO } from 'date-fns';
-import { ChevronRight, Dumbbell, Pencil, Play, Plus } from 'lucide-react';
+import { ChevronRight, Dumbbell, Play, Plus } from 'lucide-react';
 import { useState } from 'react';
 
 import type { PlannedSessionWithTemplate } from '@gym-bro/shared';
 
 import { DeleteIconButton } from '@/components/delete-icon-button';
-import { EDIT_ICON_BUTTON_CLASS } from '@/components/edit-icon-button';
 import { Button } from '@/components/ui/button';
 import { RouteMap, stravaActivityIcon, useStravaSessions } from '@/features/strava';
 import { useTemplate } from '@/features/training';
@@ -17,7 +16,6 @@ import { useSessionsTranslation } from '../i18n';
 import { useDeletePlannedSession } from '../hooks/use-delete-planned-session';
 import { plannedSessionsQueryOptions } from '../hooks/use-planned-sessions';
 import { useStartWorkout } from '../hooks/use-start-workout';
-import { useUpdatePlannedSession } from '../hooks/use-update-planned-session';
 import { workoutsInRangeQueryOptions } from '../hooks/use-workouts-in-range';
 import { AssignTemplateForm } from './assign-template-form';
 import { DayWorkoutItem } from './day-workout-item';
@@ -47,12 +45,11 @@ function targetLabel(
 }
 
 // One planned to-do: the template with a tint icon, its exercises (name · sets × reps),
-// and Start / Move (reschedule via a native date picker) pills. Delete stays as a quiet
+// and a Start pill (reschedule by dragging its calendar marker). Delete stays as a quiet
 // icon. The template's exercises are fetched on demand.
 function PlannedTodoCard({ session }: { session: PlannedSessionWithTemplate }) {
   const { data: template } = useTemplate(session.template.id);
   const deleteMutation = useDeletePlannedSession();
-  const updateMutation = useUpdatePlannedSession();
   const { startFromTemplate } = useStartWorkout();
   const t = useSessionsTranslation();
 
@@ -125,20 +122,6 @@ function PlannedTodoCard({ session }: { session: PlannedSessionWithTemplate }) {
             <Play className="size-4" />
             {t.common.startWorkout}
           </Button>
-          {/* Pencil reschedules via a native date picker (spec: no calendar icon,
-              the pencil is the date-change action). */}
-          <label className={EDIT_ICON_BUTTON_CLASS} aria-label={t.dayDetail.changeDateAria}>
-            <Pencil className="size-[15px]" strokeWidth={2} />
-            <input
-              type="date"
-              className="sr-only"
-              value={session.scheduledDate}
-              onChange={(e) =>
-                e.target.value &&
-                updateMutation.mutate({ id: session.id, input: { scheduledDate: e.target.value } })
-              }
-            />
-          </label>
           <DeleteIconButton
             aria-label={t.dayDetail.deletePlannedAria}
             onClick={() => deleteMutation.mutate(session.id)}
@@ -151,9 +134,9 @@ function PlannedTodoCard({ session }: { session: PlannedSessionWithTemplate }) {
 }
 
 // The body for a single calendar day, shared by the mobile sheet and the desktop side
-// panel. Shows the day's still-to-do planned sessions (with their exercises + Start/
-// Move), its finished workouts, and any Strava activities. An "Add session" toggle
-// swaps the list for the assign form.
+// panel. Shows the day's still-to-do planned sessions (with their exercises + Start),
+// its finished workouts, and any Strava activities. An "Add session" toggle swaps the
+// list for the assign form.
 export function DayDetail({ date }: { date: string }) {
   const [assigning, setAssigning] = useState(false);
   // Picking another day closes the assign form — it belongs to the day it was opened

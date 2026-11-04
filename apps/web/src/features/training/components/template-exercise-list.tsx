@@ -22,12 +22,17 @@ import { TemplateExerciseRow } from './template-exercise-row';
 interface TemplateExerciseListProps {
   templateId: string;
   templateExercises: TemplateExerciseWithExercise[];
+  variant?: 'list' | 'table';
 }
 
 // Drag-to-reorder list of a template's exercises. The 8px activation distance
 // keeps taps and scrolls from starting a drag; reorder fires the optimistic
 // mutation.
-export function TemplateExerciseList({ templateId, templateExercises }: TemplateExerciseListProps) {
+export function TemplateExerciseList({
+  templateId,
+  templateExercises,
+  variant = 'list',
+}: TemplateExerciseListProps) {
   const reorder = useReorderTemplateExercises();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -52,7 +57,11 @@ export function TemplateExerciseList({ templateId, templateExercises }: Template
       >
         <ul className="flex flex-col">
           {templateExercises.map((templateExercise) => (
-            <TemplateExerciseRow key={templateExercise.id} templateExercise={templateExercise} />
+            <TemplateExerciseRow
+              key={templateExercise.id}
+              templateExercise={templateExercise}
+              variant={variant}
+            />
           ))}
         </ul>
       </SortableContext>

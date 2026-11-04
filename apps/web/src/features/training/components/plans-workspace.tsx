@@ -74,7 +74,7 @@ export function PlansWorkspace({ planId, templateId }: PlansWorkspaceProps) {
         )}
         <div className="min-w-0 p-5">
           {templateId && template ? (
-            <TemplateExercisesPanel template={template} />
+            <TemplateExercisesPanel template={template} variant="column" />
           ) : (
             <p className="font-heading text-muted-foreground flex h-full items-center justify-center text-[14px] italic">
               {templateId ? 'Loading…' : 'Pick a template to see its exercises'}

@@ -31,14 +31,14 @@ export function PlanTemplatesColumn({
 
   if (isPending || !plan) {
     return (
-      <div className="border-border border-r p-4">
+      <div className="border-border bg-background/60 border-r p-4">
         <SkeletonList rows={3} avatar={false} />
       </div>
     );
   }
 
   return (
-    <div className="border-border flex flex-col gap-3 border-r p-4">
+    <div className="border-border bg-background/60 flex flex-col gap-3 border-r p-4">
       <header className="flex flex-col gap-1">
         <h2 className="font-heading text-[20px] leading-tight font-semibold break-words">
           {plan.name}
@@ -82,7 +82,12 @@ export function PlanTemplatesColumn({
       {plan.templates.length === 0 ? (
         <p className="text-muted-foreground text-[13px]">No templates yet.</p>
       ) : (
-        <TemplateList planId={plan.id} templates={plan.templates} selectedId={selectedTemplateId} />
+        <TemplateList
+          planId={plan.id}
+          templates={plan.templates}
+          selectedId={selectedTemplateId}
+          variant="column"
+        />
       )}
 
       <div className="border-border mt-auto flex gap-4 border-t border-dashed pt-3 text-[12.5px] font-semibold">
