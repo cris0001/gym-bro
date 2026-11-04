@@ -1,4 +1,3 @@
-import { useNavigate } from '@tanstack/react-router';
 import { Star } from 'lucide-react';
 import { useEffect } from 'react';
 
@@ -20,6 +19,7 @@ import { useSessionsTranslation } from '../i18n';
 import type { WorkoutDraft } from '../stores/workout-draft.store';
 import { useWorkoutDraftStore } from '../stores/workout-draft.store';
 import { useCreateStrengthSession } from '../hooks/use-create-strength-session';
+import { useLeaveEdit } from '../hooks/use-leave-edit';
 import { useUpdateStrengthSession } from '../hooks/use-update-strength-session';
 
 interface FinishSessionSheetProps {
@@ -76,7 +76,7 @@ export function FinishSessionSheet({ open, onClose }: FinishSessionSheetProps) {
   const discard = useWorkoutDraftStore((s) => s.discard);
   const createMutation = useCreateStrengthSession();
   const updateMutation = useUpdateStrengthSession();
-  const navigate = useNavigate();
+  const leaveEdit = useLeaveEdit();
   const t = useSessionsTranslation();
 
   // Prefill the duration from the live timer each time the sheet opens on a new
@@ -124,7 +124,8 @@ export function FinishSessionSheet({ open, onClose }: FinishSessionSheetProps) {
           onSuccess: () => {
             discard();
             onClose();
-            void navigate({ to: '/history/$sessionId', params: { sessionId: editingId } });
+            // Back to wherever the edit was opened from (calendar, history detail…).
+            leaveEdit(draft);
           },
         },
       );

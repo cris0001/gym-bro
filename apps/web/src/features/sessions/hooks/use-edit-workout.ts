@@ -1,4 +1,4 @@
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { toast } from 'sonner';
 
 import type { WorkoutSessionDetail } from '@gym-bro/shared';
@@ -13,6 +13,8 @@ import { useWorkoutDraftStore } from '../stores/workout-draft.store';
 // localStorage; otherwise the guard would silently swallow the tap on mobile.
 export function useEditWorkout() {
   const navigate = useNavigate();
+  // Where Edit was tapped — Cancel / Save come back here (see useLeaveEdit).
+  const currentHref = useRouterState({ select: (s) => s.location.href });
   const loadForEdit = useWorkoutDraftStore((s) => s.loadForEdit);
   const liveWorkout = useWorkoutDraftStore(
     (s) => s.draft !== null && s.draft.editingSessionId === null,
@@ -25,7 +27,7 @@ export function useEditWorkout() {
       void navigate({ to: '/session' });
       return;
     }
-    loadForEdit(detail);
+    loadForEdit(detail, currentHref);
     void navigate({ to: '/session' });
   };
 }
