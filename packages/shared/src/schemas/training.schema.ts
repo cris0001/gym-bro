@@ -30,6 +30,8 @@ export const updatePlanSchema = createPlanSchema.partial();
 
 export const createTemplateSchema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(100, 'Name is too long'),
+  // Calendar abbreviation; nullish so it can be omitted or cleared with null.
+  shortName: z.string().trim().min(1).max(5, 'Max 5 characters').nullish(),
   description: z.string().trim().max(500, 'Description is too long').nullish(),
 });
 

@@ -32,6 +32,7 @@ function fakeTemplate(overrides: Partial<WorkoutTemplate> = {}): WorkoutTemplate
     trainingPlanId: '33333333-3333-4333-8333-333333333333',
     userId: 'user-1',
     name: 'Push',
+    shortName: null,
     description: null,
     position: 0,
     createdAt: new Date('2026-01-01T00:00:00Z'),
@@ -155,6 +156,7 @@ describe('planned session routes', () => {
     const row: PlannedSessionWithTemplateRow = {
       ...fakePlanned(),
       templateName: 'Push',
+      templateShortName: 'P',
       workoutSessionId: null,
     };
     repo.listPlannedSessionsByRange.mockResolvedValue([row]);
@@ -163,11 +165,11 @@ describe('planned session routes', () => {
       cookie: await authCookie(),
     });
     const body = (await res.json()) as {
-      data: { id: string; template: { id: string; name: string } }[];
+      data: { id: string; template: { id: string; name: string; shortName: string | null } }[];
     };
 
     expect(res.status).toBe(200);
-    expect(body.data[0]?.template).toEqual({ id: TEMPLATE_ID, name: 'Push' });
+    expect(body.data[0]?.template).toEqual({ id: TEMPLATE_ID, name: 'Push', shortName: 'P' });
     expect(repo.listPlannedSessionsByRange).toHaveBeenCalledWith(
       'user-1',
       '2026-06-01',
@@ -355,7 +357,9 @@ describe('workout session routes', () => {
   });
 
   it('GET /api/workout-sessions returns a page with totals and tags', async () => {
-    repo.listWorkoutSessionsPage.mockResolvedValue([fakeWorkoutSession()]);
+    repo.listWorkoutSessionsPage.mockResolvedValue([
+      { ...fakeWorkoutSession(), templateShortName: null },
+    ]);
     repo.countWorkoutSessions.mockResolvedValue(1);
     repo.listTagsForSessions.mockResolvedValue([
       { workoutSessionId: SESSION_ID, id: TAG_ID, name: 'PR', color: '#22c55e', isActive: true },

@@ -1,0 +1,2 @@
+ALTER TABLE "workout_templates" ADD COLUMN "short_name" text;--> statement-breakpoint
+ALTER TABLE "workout_templates" ADD CONSTRAINT "workout_templates_short_name_length" CHECK (char_length("workout_templates"."short_name") between 1 and 5);

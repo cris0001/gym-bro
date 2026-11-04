@@ -57,6 +57,7 @@ export interface WorkoutTemplate {
   trainingPlanId: string;
   userId: string;
   name: string;
+  shortName: string | null;
   description: string | null;
   position: number;
   createdAt: string;

@@ -113,6 +113,9 @@ export interface WorkoutSessionDetail extends WorkoutSession {
 
 // History list item — a session with just its tags (no performances/sets).
 export interface WorkoutSessionListItem extends WorkoutSession {
+  // The source template's current abbreviation (null for activities, templates
+  // without one, or a deleted template) — the calendar shows it instead of the name.
+  templateShortName: string | null;
   tags: Pick<WorkoutTag, 'id' | 'name' | 'color' | 'isActive'>[];
 }
 
@@ -126,7 +129,7 @@ export interface WorkoutHistoryPage {
 // the id of the workout that fulfilled it (null unless completed) so the calendar
 // can deep-link into history.
 export interface PlannedSessionWithTemplate extends PlannedSession {
-  template: Pick<WorkoutTemplate, 'id' | 'name'>;
+  template: Pick<WorkoutTemplate, 'id' | 'name' | 'shortName'>;
   workoutSessionId: string | null;
 }
 
