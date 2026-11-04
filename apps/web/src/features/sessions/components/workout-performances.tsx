@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { useSessionsTranslation } from '../i18n';
 import { formatVolume, performanceVolume } from '../utils/workout-totals';
 import { ExerciseHistoryPanel } from './exercise-history-panel';
+import { WorkoutNote } from './workout-note';
 
 const cell = (value: number | null): string => (value === null ? '—' : String(value));
 const COLS = 'grid grid-cols-3 text-center';
@@ -56,11 +57,7 @@ export function WorkoutPerformances({
               </span>
             </div>
 
-            {performance.notes !== null && (
-              <p className="text-subtle-foreground text-[12.5px] break-words whitespace-pre-line">
-                {performance.notes}
-              </p>
-            )}
+            {performance.notes !== null && <WorkoutNote note={performance.notes} compact />}
 
             <div className="border-border border-t pt-2">
               <div
