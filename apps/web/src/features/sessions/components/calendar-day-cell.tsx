@@ -142,16 +142,10 @@ export function CalendarDayCell({
             inverted ? 'text-[#bfe0b3] dark:text-[#3f5c37]' : 'text-[#48653f] dark:text-[#c3dcb8]',
           )}
         >
-          {/* One row (a small pill) per session, so two sessions read as two distinct
-              entries instead of running into each other. */}
+          {/* One row per session, so two sessions read as two distinct entries
+              instead of running into each other. */}
           {workoutNames.slice(0, 3).map((name, index) => (
-            <span
-              key={index}
-              className={cn(
-                'truncate rounded-[4px] px-0.5 py-px text-center',
-                inverted ? 'bg-white/10 dark:bg-black/10' : 'bg-[#48653f]/10 dark:bg-[#c3dcb8]/15',
-              )}
-            >
+            <span key={index} className="truncate text-center">
               {name}
             </span>
           ))}

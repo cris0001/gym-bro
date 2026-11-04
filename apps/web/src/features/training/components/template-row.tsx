@@ -1,7 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Link } from '@tanstack/react-router';
-import { GripVertical, Pencil } from 'lucide-react';
+import { ChevronRight, GripVertical, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { DeleteIconButton } from '@/components/delete-icon-button';
@@ -16,11 +16,15 @@ interface TemplateRowProps {
   template: WorkoutTemplate;
   // Desktop workspace: the template whose exercises are open in the next column.
   selected?: boolean;
+  // 'list' (mobile plan page): dashed-divider rows on the card. 'column' (desktop
+  // workspace): separate rounded rows on the tinted column; the open one is a lifted
+  // card with a chevron pointing at its exercises.
+  variant?: 'list' | 'column';
 }
 
 // One sortable template row. The grip is the only drag affordance (so taps and
 // list scrolling on touch don't start a drag); edit/delete sit on the right.
-export function TemplateRow({ template, selected = false }: TemplateRowProps) {
+export function TemplateRow({ template, selected = false, variant = 'list' }: TemplateRowProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: template.id,
   });
@@ -43,8 +47,14 @@ export function TemplateRow({ template, selected = false }: TemplateRowProps) {
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(
-        'flex items-center gap-2.5 border-t border-dashed border-border bg-card py-[11px] first:border-t-0',
-        selected && 'bg-accent -mx-2 rounded-xl border-transparent px-2',
+        'flex items-center gap-2.5',
+        variant === 'list'
+          ? 'border-t border-dashed border-border bg-card py-[11px] first:border-t-0'
+          : 'rounded-xl border px-2 py-2.5 transition-colors',
+        variant === 'column' &&
+          (selected
+            ? 'border-border bg-card shadow-[0_1px_2px_rgb(43_33_38/0.06)]'
+            : 'hover:bg-card/70 border-transparent'),
         isDragging && 'opacity-50',
       )}
     >
@@ -66,7 +76,12 @@ export function TemplateRow({ template, selected = false }: TemplateRowProps) {
         <p className="flex min-w-0 items-center gap-1.5 text-[13.5px] font-semibold">
           <span className="truncate">{template.name}</span>
           {template.shortName ? (
-            <span className="bg-muted text-subtle-foreground shrink-0 rounded-md px-1.5 py-px text-[10px] font-bold">
+            <span
+              className={cn(
+                'shrink-0 rounded-md px-1.5 py-px text-[10px] font-bold',
+                selected ? 'bg-accent text-accent-foreground' : 'bg-muted text-subtle-foreground',
+              )}
+            >
               {template.shortName}
             </span>
           ) : null}
@@ -89,6 +104,9 @@ export function TemplateRow({ template, selected = false }: TemplateRowProps) {
         disabled={remove.isPending}
         onClick={() => void onDelete()}
       />
+      {variant === 'column' && selected ? (
+        <ChevronRight className="text-primary size-4 shrink-0" />
+      ) : null}
     </li>
   );
 }

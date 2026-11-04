@@ -23,11 +23,17 @@ interface TemplateListProps {
   planId: string;
   templates: WorkoutTemplate[];
   selectedId?: string | null;
+  variant?: 'list' | 'column';
 }
 
 // Drag-to-reorder list of a plan's templates. The 8px activation distance keeps
 // taps and scrolls from starting a drag; reorder fires the optimistic mutation.
-export function TemplateList({ planId, templates, selectedId }: TemplateListProps) {
+export function TemplateList({
+  planId,
+  templates,
+  selectedId,
+  variant = 'list',
+}: TemplateListProps) {
   const reorder = useReorderTemplates();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -47,12 +53,13 @@ export function TemplateList({ planId, templates, selectedId }: TemplateListProp
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
       <SortableContext items={templates.map((t) => t.id)} strategy={verticalListSortingStrategy}>
-        <ul className="flex flex-col">
+        <ul className={variant === 'column' ? 'flex flex-col gap-1' : 'flex flex-col'}>
           {templates.map((template) => (
             <TemplateRow
               key={template.id}
               template={template}
               selected={template.id === selectedId}
+              variant={variant}
             />
           ))}
         </ul>

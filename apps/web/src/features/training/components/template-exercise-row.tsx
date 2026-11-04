@@ -26,11 +26,27 @@ function formatTargets(te: TemplateExerciseWithExercise): string {
   return parts.join(' · ');
 }
 
-interface TemplateExerciseRowProps {
-  templateExercise: TemplateExerciseWithExercise;
+// The desktop table's Target cell: "3 × 6–10", "3 sets", "8–12 reps", or "—".
+function compactTarget(te: TemplateExerciseWithExercise): string {
+  const min = te.targetRepsMin;
+  const max = te.targetRepsMax;
+  const reps = min != null && max != null && min !== max ? `${min}–${max}` : (min ?? max);
+  if (te.targetSets != null && reps != null) return `${te.targetSets} × ${reps}`;
+  if (te.targetSets != null) return `${te.targetSets} sets`;
+  if (reps != null) return `${reps} reps`;
+  return '—';
 }
 
-export function TemplateExerciseRow({ templateExercise }: TemplateExerciseRowProps) {
+interface TemplateExerciseRowProps {
+  templateExercise: TemplateExerciseWithExercise;
+  // 'table' (desktop workspace): targets move into their own serif Target column.
+  variant?: 'list' | 'table';
+}
+
+export function TemplateExerciseRow({
+  templateExercise,
+  variant = 'list',
+}: TemplateExerciseRowProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: templateExercise.id,
   });
@@ -40,7 +56,7 @@ export function TemplateExerciseRow({ templateExercise }: TemplateExerciseRowPro
 
   const { exercise } = templateExercise;
   const targets = formatTargets(templateExercise);
-  const meta = [exercise.category, targets].filter(Boolean).join(' · ');
+  const meta = [exercise.category, variant === 'list' ? targets : ''].filter(Boolean).join(' · ');
 
   async function onDelete() {
     const ok = await confirm({
@@ -90,6 +106,12 @@ export function TemplateExerciseRow({ templateExercise }: TemplateExerciseRowPro
           </p>
         ) : null}
       </div>
+
+      {variant === 'table' ? (
+        <span className="font-heading w-24 shrink-0 text-[15px] font-semibold">
+          {compactTarget(templateExercise)}
+        </span>
+      ) : null}
 
       <button
         type="button"
