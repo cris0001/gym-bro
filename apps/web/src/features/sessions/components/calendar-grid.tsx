@@ -8,16 +8,7 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from '@dnd-kit/core';
-import {
-  eachDayOfInterval,
-  endOfMonth,
-  endOfWeek,
-  format,
-  isSameMonth,
-  isToday,
-  startOfMonth,
-  startOfWeek,
-} from 'date-fns';
+import { eachDayOfInterval, format, isSameMonth, isToday } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 
@@ -36,6 +27,7 @@ import { usePlannedSessions } from '../hooks/use-planned-sessions';
 import { useUpdatePlannedSession } from '../hooks/use-update-planned-session';
 import { useWorkoutsInRange } from '../hooks/use-workouts-in-range';
 import { useCalendarUiStore } from '../stores/calendar-ui.store';
+import { calendarRange } from '../utils/calendar-range';
 import { CalendarDayCell } from './calendar-day-cell';
 
 const ISO = 'yyyy-MM-dd';
@@ -123,21 +115,17 @@ export function CalendarGrid() {
   const t = useSessionsTranslation();
 
   const isWeek = viewMode === 'week';
-  // Month spans whole weeks (bleeding into adjacent months); week is the single
-  // week around the anchor. Either way we query the full visible window.
-  const gridStart = isWeek
-    ? startOfWeek(anchor, { weekStartsOn: 1 })
-    : startOfWeek(startOfMonth(anchor), { weekStartsOn: 1 });
-  const gridEnd = isWeek
-    ? endOfWeek(anchor, { weekStartsOn: 1 })
-    : endOfWeek(endOfMonth(anchor), { weekStartsOn: 1 });
+  // The full visible window — the day detail reads the same one from the cache.
+  const {
+    start: gridStart,
+    end: gridEnd,
+    from: fromIso,
+    to: toIso,
+  } = calendarRange(anchor, viewMode);
   const days = eachDayOfInterval({ start: gridStart, end: gridEnd });
   const label = isWeek
     ? `${format(gridStart, 'MMM d')} – ${format(gridEnd, 'MMM d')}`
     : format(anchor, 'MMMM yyyy');
-
-  const fromIso = format(gridStart, ISO);
-  const toIso = format(gridEnd, ISO);
   const { data: sessions = [] } = usePlannedSessions(fromIso, toIso);
   // Only still-to-do plans get an accent marker; completed/skipped ones are shown
   // via their finished workout (green) or not at all.

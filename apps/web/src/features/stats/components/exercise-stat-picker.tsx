@@ -11,6 +11,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 import { useStatExercises } from '../hooks/use-stats';
@@ -40,13 +41,19 @@ export function ExerciseStatPicker({ value, onSelect }: ExerciseStatPickerProps)
     setOpen(false);
   }
 
+  // Until the logged exercises arrive the picker has nothing to offer — hold its
+  // place with a skeleton the trigger's exact size.
+  if (isPending) {
+    return <Skeleton className="h-10 w-full rounded-md" />;
+  }
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
           className={cn(
-            'h-10 w-full justify-between rounded-full font-medium',
+            'h-10 w-full justify-between rounded-md font-medium',
             value ? 'bg-accent text-primary' : 'bg-secondary text-muted-foreground',
           )}
         >

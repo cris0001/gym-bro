@@ -111,6 +111,9 @@ export function ExerciseProgressChart({ exerciseId, range }: ExerciseProgressCha
               />
               <YAxis
                 domain={weightDomain ?? ['auto', 'auto']}
+                // The floor is clamped to 0 kg, so bodyweight points (plotted at 0)
+                // would sit right on the axis line — lift the plot off it a little.
+                padding={{ bottom: 14 }}
                 tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
                 width={44}
               />

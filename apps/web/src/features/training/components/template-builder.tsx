@@ -1,11 +1,11 @@
 import { Link } from '@tanstack/react-router';
 import { ChevronLeft } from 'lucide-react';
 
-import { SkeletonList } from '@/components/skeletons';
 import { Skeleton } from '@/components/ui/skeleton';
 
 import { useTemplate } from '../hooks/use-template';
 import { TemplateExercisesPanel } from './template-exercises-panel';
+import { TemplateExercisesPanelSkeleton } from './template-exercises-panel-skeleton';
 
 interface TemplateBuilderProps {
   templateId: string;
@@ -20,11 +20,10 @@ export function TemplateBuilder({ templateId }: TemplateBuilderProps) {
   if (isPending) {
     return (
       <div className="mx-auto lg:col-span-3 flex w-full max-w-2xl flex-col gap-[14px] px-5 py-5">
-        <Skeleton className="h-4 w-16" />
-        <Skeleton className="h-7 w-1/2" />
-        <div className="border-border bg-card rounded-[20px] border px-[18px] py-4">
-          <SkeletonList rows={4} />
+        <div className="flex h-5 items-center">
+          <Skeleton className="h-3.5 w-12" />
         </div>
+        <TemplateExercisesPanelSkeleton variant="page" />
       </div>
     );
   }

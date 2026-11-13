@@ -1,10 +1,9 @@
 import { Star } from 'lucide-react';
 
-import { SkeletonList } from '@/components/skeletons';
-
 import { usePlan } from '../hooks/use-plan';
 import { useSetActivePlan } from '../hooks/use-set-active-plan';
 import { useTemplateUiStore } from '../stores/template-ui.store';
+import { PlanTemplatesColumnSkeleton } from './plan-templates-column-skeleton';
 import { TemplateList } from './template-list';
 
 interface PlanTemplatesColumnProps {
@@ -27,11 +26,7 @@ export function PlanTemplatesColumn({
   const openCreateTemplate = useTemplateUiStore((s) => s.openCreate);
 
   if (isPending || !plan) {
-    return (
-      <div className="border-border bg-background/60 border-r p-4">
-        <SkeletonList rows={3} avatar={false} />
-      </div>
-    );
+    return <PlanTemplatesColumnSkeleton />;
   }
 
   return (

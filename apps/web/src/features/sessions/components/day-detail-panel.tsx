@@ -1,12 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
 import { addDays, format, parseISO, subDays } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-import { useStravaSessions } from '@/features/strava';
-
 import { useSessionsTranslation } from '../i18n';
-import { plannedSessionsQueryOptions } from '../hooks/use-planned-sessions';
-import { workoutsInRangeQueryOptions } from '../hooks/use-workouts-in-range';
+import { useCalendarDay } from '../hooks/use-calendar-day';
 import { useCalendarUiStore } from '../stores/calendar-ui.store';
 import { DayDetail } from './day-detail';
 
@@ -16,20 +12,11 @@ const ISO = 'yyyy-MM-dd';
 // then a Strava import, then a still-planned session. Null when the day is empty.
 function useDayStatus(date: string, isToday: boolean): { label: string; color: string } | null {
   const t = useSessionsTranslation();
-  const { data: planned = [] } = useQuery({
-    ...plannedSessionsQueryOptions(date, date),
-    enabled: date !== '',
-  });
-  const { data: workoutsPage } = useQuery({
-    ...workoutsInRangeQueryOptions(date, date),
-    enabled: date !== '',
-  });
-  const { data: stravaSessions = [] } = useStravaSessions(date || undefined, date || undefined);
+  const { planned, workouts, strava } = useCalendarDay(date);
 
   if (isToday) return { label: t.common.today, color: 'var(--primary)' };
-  if ((workoutsPage?.items.length ?? 0) > 0)
-    return { label: t.dayWorkout.finished, color: '#5a7a52' };
-  if (stravaSessions.length > 0) return { label: t.calendar.strava, color: '#d15b28' };
+  if (workouts.length > 0) return { label: t.dayWorkout.finished, color: '#5a7a52' };
+  if (strava.length > 0) return { label: t.calendar.strava, color: '#d15b28' };
   if (planned.some((s) => s.status !== 'completed'))
     return { label: t.calendar.planned, color: 'var(--primary)' };
   return null;

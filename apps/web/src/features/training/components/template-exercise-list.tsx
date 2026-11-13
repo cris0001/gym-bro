@@ -55,7 +55,7 @@ export function TemplateExerciseList({
         items={templateExercises.map((e) => e.id)}
         strategy={verticalListSortingStrategy}
       >
-        <ul className="flex flex-col">
+        <ul className={variant === 'table' ? 'flex flex-col gap-1.5' : 'flex flex-col'}>
           {templateExercises.map((templateExercise) => (
             <TemplateExerciseRow
               key={templateExercise.id}

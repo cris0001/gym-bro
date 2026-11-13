@@ -78,7 +78,12 @@ export function TemplateExerciseRow({
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(
-        'flex items-center gap-2.5 border-t border-dashed border-border bg-card py-[11px] first:border-t-0',
+        'flex items-center gap-2.5',
+        // List: dashed dividers in one card. Table (desktop workspace): each row its
+        // own small card, matching the template rows in the middle column.
+        variant === 'list'
+          ? 'border-t border-dashed border-border bg-card py-[11px] first:border-t-0'
+          : 'border-border bg-card/70 hover:bg-card rounded-xl border px-2 py-2.5 transition-colors',
         isDragging && 'opacity-50',
       )}
     >
@@ -108,7 +113,8 @@ export function TemplateExerciseRow({
       </div>
 
       {variant === 'table' ? (
-        <span className="font-heading w-24 shrink-0 text-[15px] font-semibold">
+        // Hidden under 1250px: the column is narrow there and would truncate names.
+        <span className="font-heading hidden w-24 shrink-0 text-[15px] font-semibold min-[1250px]:block">
           {compactTarget(templateExercise)}
         </span>
       ) : null}

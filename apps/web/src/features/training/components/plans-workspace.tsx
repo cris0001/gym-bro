@@ -1,19 +1,22 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ClipboardList, Plus } from 'lucide-react';
+import { useEffect } from 'react';
 
 import { EmptyState } from '@/components/empty-state';
 import { ErrorState } from '@/components/error-state';
-import { SkeletonList } from '@/components/skeletons';
 import { Button } from '@/components/ui/button';
 
 import { useActivePlan } from '../hooks/use-active-plan';
+import { planQueryOptions } from '../hooks/use-plan';
 import { usePlans } from '../hooks/use-plans';
 import { templateQueryOptions } from '../hooks/use-template';
 import { usePlanUiStore } from '../stores/plan-ui.store';
 import { PlanSheet } from './plan-sheet';
 import { PlanTemplatesColumn } from './plan-templates-column';
 import { PlansColumn } from './plans-column';
+import { PlansWorkspaceSkeleton } from './plans-workspace-skeleton';
 import { TemplateExercisesPanel } from './template-exercises-panel';
+import { TemplateExercisesPanelSkeleton } from './template-exercises-panel-skeleton';
 import { TemplateSheet } from './template-sheet';
 
 interface PlansWorkspaceProps {
@@ -36,15 +39,34 @@ export function PlansWorkspace({ planId, templateId }: PlansWorkspaceProps) {
   });
   const openCreate = usePlanUiStore((s) => s.openCreate);
 
-  // A template URL selects its own plan (nothing until it loads, so the active plan
-  // doesn't flash first); a plan URL selects that plan; bare /plans → active, else first.
-  const selectedPlanId = templateId
+  // A template URL selects its own plan; a plan URL selects that plan; bare /plans →
+  // active, else first.
+  const resolvedPlanId = templateId
     ? (template?.trainingPlanId ?? null)
     : (planId ?? activePlan?.id ?? plans?.[0]?.id ?? null);
+  // While a newly picked template loads its plan is unknown, but it was picked from
+  // the plan already on screen — keep that column (remembered in the UI store, since
+  // the route change remounts this component) so only the right panel shows a
+  // skeleton. On a cold /templates/$id load there's nothing remembered, so nothing
+  // shows until it resolves (no flash of the active plan).
+  const workspacePlanId = usePlanUiStore((s) => s.workspacePlanId);
+  const setWorkspacePlanId = usePlanUiStore((s) => s.setWorkspacePlanId);
+  useEffect(() => {
+    if (resolvedPlanId !== null) setWorkspacePlanId(resolvedPlanId);
+  }, [resolvedPlanId, setWorkspacePlanId]);
+  // Only if that plan (cached) actually holds the template being opened — a template
+  // reached from elsewhere (e.g. the calendar) must not flash an unrelated plan.
+  const queryClient = useQueryClient();
+  const rememberedPlan = workspacePlanId
+    ? queryClient.getQueryData(planQueryOptions(workspacePlanId).queryKey)
+    : undefined;
+  const keepRemembered =
+    templateId !== undefined && rememberedPlan?.templates.some((tpl) => tpl.id === templateId);
+  const selectedPlanId = resolvedPlanId ?? (keepRemembered ? workspacePlanId : null);
 
   let body;
   if (isPending) {
-    body = <SkeletonList rows={4} />;
+    body = <PlansWorkspaceSkeleton />;
   } else if (isError) {
     body = <ErrorState message={error.message} onRetry={() => void refetch()} />;
   } else if (plans.length === 0) {
@@ -75,9 +97,11 @@ export function PlansWorkspace({ planId, templateId }: PlansWorkspaceProps) {
         <div className="min-w-0 p-5">
           {templateId && template ? (
             <TemplateExercisesPanel template={template} variant="column" />
+          ) : templateId ? (
+            <TemplateExercisesPanelSkeleton />
           ) : (
             <p className="font-heading text-muted-foreground flex h-full items-center justify-center text-[14px] italic">
-              {templateId ? 'Loading…' : 'Pick a template to see its exercises'}
+              Pick a template to see its exercises
             </p>
           )}
         </div>

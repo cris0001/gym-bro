@@ -125,7 +125,7 @@ export function DayWorkoutItem({
             <>
               <WorkoutTagPills tags={detail.tags} />
 
-              {detail.notes !== null && <WorkoutNote note={detail.notes} />}
+              {detail.notes !== null && <WorkoutNote note={detail.notes} variant="plain" />}
 
               {/* Every exercise, always — no "+ N more" collapse. */}
               {performances.map((performance) => {
@@ -142,7 +142,6 @@ export function DayWorkoutItem({
                         </span>
                       )}
                     </div>
-                    {performance.notes !== null && <WorkoutNote note={performance.notes} compact />}
                     <div className="flex flex-wrap gap-1.5">
                       {performance.sets.map((set) => (
                         <span
@@ -158,6 +157,9 @@ export function DayWorkoutItem({
                         </span>
                       ))}
                     </div>
+                    {performance.notes !== null && (
+                      <WorkoutNote note={performance.notes} compact variant="plain" />
+                    )}
                   </div>
                 );
               })}

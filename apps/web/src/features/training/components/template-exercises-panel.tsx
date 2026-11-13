@@ -68,11 +68,12 @@ export function TemplateExercisesPanel({
         className={cn(!isColumn && 'border-border bg-card rounded-[20px] border px-[18px] py-4')}
       >
         {isColumn ? (
-          // Aligned with the rows: grip (≈36px) | name | 96px target | edit + delete.
-          <div className="text-muted-foreground flex items-center gap-2.5 pb-1.5 text-[10.5px] font-bold tracking-[0.08em] uppercase">
+          // Aligned with the card rows (1px border + 8px padding): grip | name | 96px
+          // target (1250px+ only, like the rows) | edit + delete.
+          <div className="text-muted-foreground flex items-center gap-2.5 px-[9px] pb-1.5 text-[10.5px] font-bold tracking-[0.08em] uppercase">
             <span className="w-[23px] shrink-0" />
             <span className="flex-1">Exercise</span>
-            <span className="w-24 shrink-0">Target</span>
+            <span className="hidden w-24 shrink-0 min-[1250px]:block">Target</span>
             <span className="w-[74px] shrink-0" />
           </div>
         ) : (

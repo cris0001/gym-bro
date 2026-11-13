@@ -1,4 +1,4 @@
-import { Pencil, Plus, Tag } from 'lucide-react';
+import { Plus, Tag } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { DeleteIconButton } from '@/components/delete-icon-button';
@@ -13,8 +13,8 @@ import { useDeleteTag } from '../hooks/use-delete-tag';
 import { useTags } from '../hooks/use-tags';
 import { useTagUiStore } from '../stores/tag-ui.store';
 
-// The workout-tag list: read state via TanStack Query, edit through the UI
-// store's Sheet, delete with a confirm. Add is owned by the page header.
+// The workout-tag list: read state via TanStack Query, tap a row to edit it in the
+// UI store's Sheet, delete with a confirm. Add is owned by the page header.
 export function TagList() {
   const { data: tags, isPending, isError, error, refetch } = useTags();
   const openEdit = useTagUiStore((s) => s.openEdit);
@@ -61,24 +61,23 @@ export function TagList() {
       {tags.map((tag) => (
         <li
           key={tag.id}
-          className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/50"
+          className="flex items-center gap-3 py-1 pr-4 transition-colors hover:bg-muted/50"
         >
-          <span
-            className="size-4 shrink-0 rounded-full border"
-            style={{ backgroundColor: tag.color }}
-            aria-hidden
-          />
-          <p className="min-w-0 flex-1 truncate font-semibold">{tag.name}</p>
-          <Button
+          {/* The whole row body opens the edit sheet; only delete stays a separate
+              control. */}
+          <button
             type="button"
-            variant="ghost"
-            size="icon"
-            className="size-11 shrink-0"
+            className="flex min-h-11 min-w-0 flex-1 cursor-pointer items-center gap-3 py-2 pl-4 text-left"
             aria-label={`Edit ${tag.name}`}
             onClick={() => openEdit(tag)}
           >
-            <Pencil className="size-4" />
-          </Button>
+            <span
+              className="size-4 shrink-0 rounded-full border"
+              style={{ backgroundColor: tag.color }}
+              aria-hidden
+            />
+            <span className="min-w-0 flex-1 truncate font-semibold">{tag.name}</span>
+          </button>
           <DeleteIconButton
             aria-label={`Delete ${tag.name}`}
             disabled={remove.isPending}

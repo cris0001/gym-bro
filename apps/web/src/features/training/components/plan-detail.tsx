@@ -3,7 +3,6 @@ import { ChevronLeft, Star } from 'lucide-react';
 
 import { DeleteButton } from '@/components/delete-button';
 import { ErrorState } from '@/components/error-state';
-import { SkeletonList } from '@/components/skeletons';
 import { Skeleton } from '@/components/ui/skeleton';
 
 import { useActivePlan } from '../hooks/use-active-plan';
@@ -13,6 +12,7 @@ import { useSetActivePlan } from '../hooks/use-set-active-plan';
 import { usePlanUiStore } from '../stores/plan-ui.store';
 import { useTemplateUiStore } from '../stores/template-ui.store';
 import { PlanSheet } from './plan-sheet';
+import { TemplateRowsSkeleton } from './template-rows-skeleton';
 import { TemplateList } from './template-list';
 import { TemplateSheet } from './template-sheet';
 
@@ -30,12 +30,33 @@ export function PlanDetail({ planId }: PlanDetailProps) {
   const openCreateTemplate = useTemplateUiStore((s) => s.openCreate);
   const { deletePlan, isPending: deleting } = useDeletePlanFlow();
 
+  // Same container, gaps and blocks as the loaded page below: back link, title +
+  // Edit pill, the active line, then the Templates card.
   if (isPending) {
     return (
-      <div className="mx-auto lg:col-span-3 flex w-full max-w-2xl flex-col gap-4 p-3 md:p-4">
-        <Skeleton className="h-8 w-1/2" />
-        <Skeleton className="h-4 w-2/3" />
-        <SkeletonList rows={3} />
+      <div
+        aria-hidden
+        className="mx-auto lg:col-span-3 flex w-full max-w-2xl flex-col gap-[14px] px-5 py-5"
+      >
+        <div className="flex h-5 items-center">
+          <Skeleton className="h-3.5 w-14" />
+        </div>
+        <div className="flex flex-col gap-2.5">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex h-[39px] flex-1 items-center">
+              <Skeleton className="h-7 w-1/2" />
+            </div>
+            <Skeleton className="h-9 w-[62px] shrink-0 rounded-full" />
+          </div>
+          <Skeleton className="h-9 w-44 rounded-full" />
+        </div>
+        <div className="border-border bg-card rounded-[20px] border px-[18px] py-4">
+          <span className="text-muted-foreground text-[11px] font-bold tracking-[0.08em] uppercase">
+            Templates
+          </span>
+          <TemplateRowsSkeleton rows={3} variant="list" />
+        </div>
+        <Skeleton className="h-[41px] w-full rounded-[18px]" />
       </div>
     );
   }

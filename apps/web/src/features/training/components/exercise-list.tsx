@@ -4,7 +4,6 @@ import { toast } from 'sonner';
 import { DeleteIconButton } from '@/components/delete-icon-button';
 import { EmptyState } from '@/components/empty-state';
 import { ErrorState } from '@/components/error-state';
-import { SkeletonList } from '@/components/skeletons';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/stores/confirm.store';
 import type { Exercise, ExerciseCategory } from '@gym-bro/shared';
@@ -13,6 +12,7 @@ import { useDeleteExercise } from '../hooks/use-delete-exercise';
 import { useExercises } from '../hooks/use-exercises';
 import { useExerciseUiStore } from '../stores/exercise-ui.store';
 import { CategoryIcon } from '../utils/category-icon';
+import { ExerciseListSkeleton } from './exercise-list-skeleton';
 
 interface ExerciseListProps {
   // null = all categories.
@@ -37,7 +37,7 @@ export function ExerciseList({ category, search }: ExerciseListProps) {
   const confirm = useConfirm();
 
   if (isPending) {
-    return <SkeletonList />;
+    return <ExerciseListSkeleton withIcon={category === null} />;
   }
 
   if (isError) {

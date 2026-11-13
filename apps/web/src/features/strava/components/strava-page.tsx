@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 
 import type { StravaSessionItem } from '@gym-bro/shared';
 
-import { SkeletonChart, SkeletonList } from '@/components/skeletons';
 import { EmptyState } from '@/components/empty-state';
 import { ErrorState } from '@/components/error-state';
 
@@ -12,6 +11,8 @@ import { useStravaSessions } from '../hooks/use-strava-sessions';
 import { useStravaStatus } from '../hooks/use-strava-status';
 import { StravaActivityRow } from './strava-activity-row';
 import { StravaConnectionCard } from './strava-connection-card';
+import { StravaConnectionCardSkeleton } from './strava-connection-card-skeleton';
+import { StravaContentSkeleton } from './strava-content-skeleton';
 import { StravaSummary } from './strava-summary';
 
 // Group activities (already newest-first) into month buckets, preserving order.
@@ -60,6 +61,17 @@ export function StravaPage({ initialActivityId }: { initialActivityId?: string |
     <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-4 p-3 md:p-4">
       <h1 className="font-heading text-[28px] leading-none font-medium">Strava</h1>
 
+      {/* Before the status arrives, assume the connected layout (the common case) so
+          the page has its shape rather than a bare title. */}
+      {status === undefined && (
+        <div className="lg:grid lg:grid-cols-[1fr_18rem] lg:items-start lg:gap-6">
+          <StravaConnectionCardSkeleton className="mb-4 lg:order-2 lg:mb-0" />
+          <div className="lg:order-1">
+            <StravaContentSkeleton />
+          </div>
+        </div>
+      )}
+
       {status && !status.connected && <StravaConnectionCard status={status} />}
 
       {status?.connected && (
@@ -72,10 +84,7 @@ export function StravaPage({ initialActivityId }: { initialActivityId?: string |
 
           <div className="lg:order-1 flex flex-col gap-4">
             {isPending ? (
-              <div className="flex flex-col gap-4">
-                <SkeletonChart />
-                <SkeletonList avatar rows={5} />
-              </div>
+              <StravaContentSkeleton />
             ) : isError ? (
               <ErrorState message="Couldn't load your activities." onRetry={() => void refetch()} />
             ) : sessions.length === 0 ? (

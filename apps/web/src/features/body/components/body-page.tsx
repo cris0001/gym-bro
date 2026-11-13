@@ -1,7 +1,6 @@
 import { format, subMonths } from 'date-fns';
 import { useState } from 'react';
 
-import { SkeletonList } from '@/components/skeletons';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -17,7 +16,9 @@ import { useBodyUiStore } from '../stores/body-ui.store';
 import { BodyMeasurementForm } from './body-measurement-form';
 import { BodyStatsPanel } from './body-stats-panel';
 import { BodyTrendChart } from './body-trend-chart';
+import { BodyTrendsSkeleton } from './body-trends-skeleton';
 import { MeasurementList } from './measurement-list';
+import { MeasurementListSkeleton } from './measurement-list-skeleton';
 
 type Period = '1m' | '3m' | '6m' | '1y' | 'all';
 
@@ -151,8 +152,16 @@ export function BodyPage() {
                 </Button>
               )}
             </div>
-            <BodyStatsPanel entries={filtered} />
-            <BodyTrendChart entries={filtered} targets={targets ?? []} />
+            {/* While the history loads the stats/chart would read as "no data" —
+                show their shape instead. */}
+            {isPending ? (
+              <BodyTrendsSkeleton />
+            ) : (
+              <>
+                <BodyStatsPanel entries={filtered} />
+                <BodyTrendChart entries={filtered} targets={targets ?? []} />
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -161,7 +170,7 @@ export function BodyPage() {
         <h2 className="font-heading text-lg font-semibold">{t.history.title}</h2>
         <div className="bg-card rounded-2xl border px-4">
           {isPending ? (
-            <SkeletonList rows={5} />
+            <MeasurementListSkeleton />
           ) : (
             <MeasurementList entries={filtered} targets={targets ?? []} />
           )}

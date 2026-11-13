@@ -4,16 +4,16 @@ import { ClipboardList, Plus } from 'lucide-react';
 
 import { EmptyState } from '@/components/empty-state';
 import { ErrorState } from '@/components/error-state';
-import { SkeletonList } from '@/components/skeletons';
 import { Button } from '@/components/ui/button';
 
 import { useActivePlan } from '../hooks/use-active-plan';
 import { usePlans } from '../hooks/use-plans';
 import { useSetActivePlan } from '../hooks/use-set-active-plan';
 import { usePlanUiStore } from '../stores/plan-ui.store';
+import { PlanCardsSkeleton } from './plan-cards-skeleton';
 
 // The plans grid: every plan is an equal card (active first, marked with a badge),
-// linking to its detail page for templates and edit/delete. "Set active" flips the
+// the whole card linking to its detail page for templates and edit/delete. "Set active" flips the
 // active plan inline. One column on phones, up to three on desktop. Create lives in
 // the page header.
 export function PlanList() {
@@ -23,7 +23,7 @@ export function PlanList() {
   const openCreate = usePlanUiStore((s) => s.openCreate);
 
   if (isPending) {
-    return <SkeletonList />;
+    return <PlanCardsSkeleton />;
   }
 
   if (isError) {
@@ -57,15 +57,18 @@ export function PlanList() {
       {ordered.map((plan) => {
         const isActive = plan.id === activePlan?.id;
         return (
+          // The whole card opens the plan: the name link's ::after stretches over the
+          // card (a "stretched link"), so it stays one real <a> — no button nested
+          // inside it — while "Set active" sits above it and keeps its own click.
           <div
             key={plan.id}
-            className="bg-card flex flex-col gap-2 rounded-2xl border p-4 lg:min-h-[150px] lg:gap-3 lg:p-5"
+            className="bg-card hover:border-border-strong hover:bg-muted/40 relative flex flex-col gap-2 rounded-2xl border p-4 transition-colors has-[a:focus-visible]:ring-3 has-[a:focus-visible]:ring-ring/50 lg:min-h-[150px] lg:gap-3 lg:p-5"
           >
             <div className="flex items-start justify-between gap-2">
               <Link
                 to="/plans/$planId"
                 params={{ planId: plan.id }}
-                className="font-heading min-w-0 flex-1 truncate text-lg font-semibold hover:underline lg:text-xl"
+                className="font-heading min-w-0 flex-1 truncate text-lg font-semibold outline-none after:absolute after:inset-0 after:rounded-2xl lg:text-xl"
               >
                 {plan.name}
               </Link>
@@ -76,7 +79,7 @@ export function PlanList() {
               ) : (
                 <button
                   type="button"
-                  className="text-primary shrink-0 text-xs font-semibold disabled:opacity-50"
+                  className="text-primary relative z-10 -my-2 shrink-0 cursor-pointer px-1 py-2 text-xs font-semibold disabled:opacity-50"
                   disabled={setActive.isPending}
                   onClick={() => setActive.mutate(plan.id)}
                 >

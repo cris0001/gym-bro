@@ -4,5 +4,5 @@
 export { RouteMap } from './components/route-map';
 export { StravaPage } from './components/strava-page';
 export { StravaSection } from './components/strava-section';
-export { useStravaSessions } from './hooks/use-strava-sessions';
+export { useStravaSessions, stravaSessionsQueryOptions } from './hooks/use-strava-sessions';
 export { stravaActivityIcon } from './utils/activity-icon';

@@ -5,13 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import type { StatsRange } from '../api/stats';
 import { ExerciseProgressChart } from './exercise-progress-chart';
 import { ExerciseStatPicker } from './exercise-stat-picker';
-import { RatingTrendChart } from './rating-trend-chart';
+import { RatingSummaryCard } from './rating-summary';
 import { StatsDateRange } from './stats-date-range';
 
 import type { StatExercise } from '@gym-bro/shared';
 
 // Training stats: per-exercise progress (top set vs normal set — weight + reps,
-// over a selectable date window) and the workout rating trend. Side by side on
+// over a selectable date window) and a workout rating summary. Side by side on
 // desktop, stacked on mobile. The selected exercise and window live here so the
 // picker, range control, and chart stay in sync.
 export function StatsPage() {
@@ -41,11 +41,11 @@ export function StatsPage() {
           <CardHeader>
             <CardTitle className="font-heading text-lg">Workout ratings</CardTitle>
             <CardDescription className="font-heading text-[13px] italic">
-              How you rated your sessions over time.
+              How you rate your sessions.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <RatingTrendChart />
+            <RatingSummaryCard />
           </CardContent>
         </Card>
       </div>

@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { format, parseISO } from 'date-fns';
 import { ChevronRight, Dumbbell, Play, Plus } from 'lucide-react';
@@ -8,16 +7,16 @@ import type { PlannedSessionWithTemplate } from '@gym-bro/shared';
 
 import { DeleteIconButton } from '@/components/delete-icon-button';
 import { Button } from '@/components/ui/button';
-import { RouteMap, stravaActivityIcon, useStravaSessions } from '@/features/strava';
+import { RouteMap, stravaActivityIcon } from '@/features/strava';
 import { useTemplate } from '@/features/training';
 import { cn } from '@/lib/utils';
 
 import { useSessionsTranslation } from '../i18n';
+import { useCalendarDay } from '../hooks/use-calendar-day';
 import { useDeletePlannedSession } from '../hooks/use-delete-planned-session';
-import { plannedSessionsQueryOptions } from '../hooks/use-planned-sessions';
 import { useStartWorkout } from '../hooks/use-start-workout';
-import { workoutsInRangeQueryOptions } from '../hooks/use-workouts-in-range';
 import { AssignTemplateForm } from './assign-template-form';
+import { DayDetailSkeleton } from './day-detail-skeleton';
 import { DayWorkoutItem } from './day-workout-item';
 
 // A target rep count for one template exercise: a range, a single number, or AMRAP
@@ -147,21 +146,16 @@ export function DayDetail({ date }: { date: string }) {
     setAssigning(false);
   }
 
-  const { data: planned = [] } = useQuery({
-    ...plannedSessionsQueryOptions(date, date),
-    enabled: date !== '',
-  });
-  const { data: workoutsPage } = useQuery({
-    ...workoutsInRangeQueryOptions(date, date),
-    enabled: date !== '',
-  });
-  const { data: stravaSessions = [] } = useStravaSessions(date || undefined, date || undefined);
+  const { planned, workouts, strava: stravaSessions, isLoading } = useCalendarDay(date);
   const navigate = useNavigate();
   const t = useSessionsTranslation();
 
   const todos = planned.filter((session) => session.status !== 'completed');
-  const workouts = workoutsPage?.items ?? [];
   const nothingElse = workouts.length === 0 && stravaSessions.length === 0;
+
+  if (isLoading && !assigning) {
+    return <DayDetailSkeleton />;
+  }
 
   if (assigning) {
     return (
