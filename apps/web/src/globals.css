@@ -3,6 +3,7 @@
 @import 'shadcn/tailwind.css';
 @import '@fontsource-variable/geist';
 @import '@fontsource-variable/newsreader';
+@import '@fontsource/caveat-brush';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -22,6 +23,9 @@
   --font-heading: 'Newsreader Variable', serif;
 
   --font-sans: 'Geist Variable', sans-serif;
+
+  /* Caveat Brush: the Lift4Me wordmark only (the brand logo's face), never body text. */
+  --font-brand: 'Caveat Brush', cursive;
 
   --color-sidebar-ring: var(--sidebar-ring);
 

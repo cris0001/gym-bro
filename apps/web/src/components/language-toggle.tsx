@@ -1,8 +1,10 @@
 import { cn } from '@/lib/utils';
 import { LOCALES, useLocaleStore } from '@/stores/locale.store';
 
-// A compact EN/PL segmented switch for the UI language. Reads and writes the
-// persisted locale store; the selection applies app-wide immediately.
+import { FlagIcon } from './flag-icon';
+
+// A compact EN/PL segmented switch for the UI language, each option with its flag.
+// Reads and writes the persisted locale store; the selection applies app-wide at once.
 export function LanguageToggle({ className }: { className?: string }) {
   const locale = useLocaleStore((s) => s.locale);
   const setLocale = useLocaleStore((s) => s.setLocale);
@@ -16,10 +18,11 @@ export function LanguageToggle({ className }: { className?: string }) {
           aria-pressed={locale === code}
           onClick={() => setLocale(code)}
           className={cn(
-            'rounded-full px-2.5 py-1 text-xs font-semibold transition-colors',
-            locale === code ? 'bg-card text-foreground' : 'text-muted-foreground',
+            'inline-flex h-7 cursor-pointer items-center gap-1 rounded-full px-2.5 text-[11.5px] font-semibold transition-colors',
+            locale === code ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground',
           )}
         >
+          <FlagIcon locale={code} />
           {label}
         </button>
       ))}

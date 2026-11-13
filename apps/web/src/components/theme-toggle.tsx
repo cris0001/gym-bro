@@ -1,45 +1,37 @@
 import { Monitor, Moon, Sun } from 'lucide-react';
-import { useEffect } from 'react';
 
-import { Button } from '@/components/ui/button';
-import { applyTheme, systemPrefersDark, useThemeStore, type Theme } from '@/stores/theme.store';
+import { cn } from '@/lib/utils';
+import { useThemeStore, type Theme } from '@/stores/theme.store';
 
-// Cycle order (system → light → dark → …) and the icon/label per mode.
-const NEXT: Record<Theme, Theme> = { system: 'light', light: 'dark', dark: 'system' };
-const ICON = { system: Monitor, light: Sun, dark: Moon } as const;
-const LABEL = { system: 'System theme', light: 'Light theme', dark: 'Dark theme' } as const;
+const OPTIONS: { value: Theme; label: string; Icon: typeof Sun }[] = [
+  { value: 'light', label: 'Light', Icon: Sun },
+  { value: 'dark', label: 'Dark', Icon: Moon },
+  { value: 'system', label: 'System', Icon: Monitor },
+];
 
-// A single icon button that cycles theme (system → light → dark). Keeps the <html>
-// `.dark` class in sync when the OS theme changes while in 'system' mode. Mount once
-// in the app chrome (header + sidebar share the same store).
-export function ThemeToggle() {
+// Light / dark / system as a segmented control (Settings → Appearance). The OS-change
+// listener for 'system' lives in useSystemThemeSync, mounted by the app shell.
+export function ThemeToggle({ className }: { className?: string }) {
   const theme = useThemeStore((s) => s.theme);
   const setTheme = useThemeStore((s) => s.setTheme);
 
-  // Re-apply on OS change while following the system setting.
-  useEffect(() => {
-    if (theme !== 'system') return;
-    const media = window.matchMedia('(prefers-color-scheme: dark)');
-    const onChange = () => applyTheme('system');
-    media.addEventListener('change', onChange);
-    return () => media.removeEventListener('change', onChange);
-  }, [theme]);
-
-  const Icon = ICON[theme];
-  const resolved = theme === 'system' ? (systemPrefersDark() ? 'dark' : 'light') : theme;
-
   return (
-    <Button
-      type="button"
-      variant="ghost"
-      size="icon"
-      className="size-9"
-      aria-label={`${LABEL[theme]} (tap to change)`}
-      title={LABEL[theme]}
-      onClick={() => setTheme(NEXT[theme])}
-      data-resolved={resolved}
-    >
-      <Icon className="size-5" />
-    </Button>
+    <div className={cn('bg-secondary grid grid-cols-3 gap-1 rounded-full p-1', className)}>
+      {OPTIONS.map(({ value, label, Icon }) => (
+        <button
+          key={value}
+          type="button"
+          aria-pressed={theme === value}
+          onClick={() => setTheme(value)}
+          className={cn(
+            'inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-full text-[13px] font-semibold transition-colors',
+            theme === value ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground',
+          )}
+        >
+          <Icon className="size-4" />
+          {label}
+        </button>
+      ))}
+    </div>
   );
 }

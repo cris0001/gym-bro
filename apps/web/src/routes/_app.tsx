@@ -1,13 +1,13 @@
 import { createFileRoute, Outlet, redirect, useNavigate } from '@tanstack/react-router';
 
 import { BrandMark } from '@/components/brand-mark';
+import { BrandWordmark } from '@/components/brand-wordmark';
 import { BottomNav } from '@/components/nav/bottom-nav';
 import { SectionTabs } from '@/components/nav/section-tabs';
 import { SidebarNav } from '@/components/nav/sidebar-nav';
-import { LanguageToggle } from '@/components/language-toggle';
-import { PalettePicker } from '@/components/palette-picker';
 import { OfflineBanner } from '@/components/offline-banner';
-import { ThemeToggle } from '@/components/theme-toggle';
+
+import { useSystemThemeSync } from '@/hooks/use-system-theme-sync';
 import {
   LogoutButton,
   OnboardingSheet,
@@ -17,6 +17,7 @@ import {
 } from '@/features/auth';
 import { isLicenseExpired, PaywallModal, startCheckout } from '@/features/billing';
 import { ActiveSessionBubble } from '@/features/sessions';
+import { SettingsButton, SettingsSheet } from '@/features/settings';
 
 // Protected layout. beforeLoad resolves the current user from the shared cache
 // (fetching once if needed); a 401 throws and we redirect to the public landing
@@ -42,6 +43,7 @@ function AppLayout() {
   const { mutate: logout } = useLogout();
   const navigate = useNavigate();
   const expired = user ? isLicenseExpired(user) : false;
+  useSystemThemeSync();
 
   return (
     <div className="flex min-h-dvh flex-col lg:flex-row">
@@ -51,11 +53,10 @@ function AppLayout() {
         <header className="bg-background/80 sticky top-0 z-10 flex h-14 items-center justify-between border-b px-4 backdrop-blur lg:hidden">
           <span className="font-heading flex items-center gap-2 text-lg font-semibold">
             <BrandMark className="size-8" />
+            <BrandWordmark />
           </span>
           <div className="flex items-center gap-1">
-            <LanguageToggle />
-            <PalettePicker />
-            <ThemeToggle />
+            <SettingsButton />
             <LogoutButton />
           </div>
         </header>
@@ -72,6 +73,7 @@ function AppLayout() {
       <BottomNav />
       <ActiveSessionBubble />
       <OnboardingSheet />
+      <SettingsSheet />
       {expired && user ? (
         <PaywallModal
           expiresAt={user.licenseExpiresAt}

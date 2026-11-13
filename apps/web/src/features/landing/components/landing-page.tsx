@@ -3,15 +3,14 @@ import { BicepsFlexed } from 'lucide-react';
 import { useEffect } from 'react';
 
 import { useForceLightTheme } from '@/hooks/use-force-light-theme';
+import { FlagIcon } from '@/components/flag-icon';
 import { LOCALES, useLocaleStore } from '@/stores/locale.store';
+
+import { useLandingTranslation } from '../i18n';
 
 import { ModuleShowcase } from './module-showcase';
 import { PricingSection } from './pricing-section';
 import { PwaSection } from './pwa-section';
-
-const PAGE_TITLE = 'Gym Bro — training, nutrition & body tracking';
-const PAGE_DESC =
-  'A gym log, a food diary and a body tracker in one free, installable web app — with your Strava rides next to your workouts.';
 
 function BrandLogo({ size = 34, radius = 10 }: { size?: number; radius?: number }) {
   return (
@@ -24,9 +23,9 @@ function BrandLogo({ size = 34, radius = 10 }: { size?: number; radius?: number 
   );
 }
 
-// EN/PL switch styled in the landing's fixed-light palette (the shared LanguageToggle
-// uses theme tokens, which would clash on this theme-independent page). Writes the
-// app-wide locale store; content translation of the landing itself comes later.
+// EN/PL switch (with flags) styled in the landing's fixed-light palette - the shared
+// LanguageToggle uses theme tokens, which would clash on this theme-independent page.
+// Writes the app-wide locale store, which also translates this page.
 function LandingLangSwitch() {
   const locale = useLocaleStore((s) => s.locale);
   const setLocale = useLocaleStore((s) => s.setLocale);
@@ -39,10 +38,11 @@ function LandingLangSwitch() {
           aria-pressed={locale === code}
           onClick={() => setLocale(code)}
           className={
-            'rounded-full px-2.5 py-1 text-xs font-semibold transition-colors ' +
+            'inline-flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition-colors ' +
             (locale === code ? 'bg-[#8d4a5e] text-[#fdf6f5]' : 'text-[#5f5257]')
           }
         >
+          <FlagIcon locale={code} />
           {label}
         </button>
       ))}
@@ -88,20 +88,21 @@ function HeroLines() {
 // from the approved mockup: nav, hero, the scroll-driven module showcase, a serif
 // strip, the dark PWA band, pricing + FAQ, and a closing CTA. All CTAs route to auth.
 export function LandingPage() {
+  const t = useLandingTranslation();
   // The marketing page is designed light-only, whatever theme the app is set to.
   useForceLightTheme();
   // Page title/description for this route, plus smooth anchor scrolling while the
   // landing is mounted (restored on leave so the app isn't affected).
   useEffect(() => {
     const prevTitle = document.title;
-    document.title = PAGE_TITLE;
+    document.title = t.pageTitle;
     let meta = document.querySelector('meta[name="description"]');
     if (!meta) {
       meta = document.createElement('meta');
       meta.setAttribute('name', 'description');
       document.head.appendChild(meta);
     }
-    meta.setAttribute('content', PAGE_DESC);
+    meta.setAttribute('content', t.pageDesc);
 
     const root = document.documentElement;
     const prevBehavior = root.style.scrollBehavior;
@@ -110,7 +111,7 @@ export function LandingPage() {
       document.title = prevTitle;
       root.style.scrollBehavior = prevBehavior;
     };
-  }, []);
+  }, [t.pageTitle, t.pageDesc]);
 
   return (
     <div className="flex min-h-dvh flex-col items-center bg-[#f6f3f0] text-[#2b2126]">
@@ -122,20 +123,20 @@ export function LandingPage() {
         </span>
         <div className="flex items-center gap-4 sm:gap-[18px]">
           <a href="#inside" className="hidden text-[13px] font-semibold text-[#5f5257] sm:inline">
-            What&apos;s inside
+            {t.nav.inside}
           </a>
           <a href="#pwa" className="hidden text-[13px] font-semibold text-[#5f5257] sm:inline">
-            Install
+            {t.nav.install}
           </a>
           <a href="#pricing" className="hidden text-[13px] font-semibold text-[#5f5257] sm:inline">
-            Pricing
+            {t.nav.pricing}
           </a>
           <LandingLangSwitch />
           <Link
             to="/login"
             className="flex h-[38px] items-center rounded-full bg-[#8d4a5e] px-[18px] text-[13px] font-semibold whitespace-nowrap text-[#fdf6f5] hover:bg-[#75394c]"
           >
-            Sign in
+            {t.nav.signIn}
           </Link>
         </div>
       </div>
@@ -145,25 +146,24 @@ export function LandingPage() {
         <HeroLines />
         <div className="relative z-10 mx-auto flex w-full max-w-[1060px] flex-col items-center gap-8 px-6 pt-32 pb-32 text-center md:gap-9 md:pt-40 md:pb-40 lg:pt-48 lg:pb-48">
           <h1 className="font-heading max-w-[760px] text-[clamp(38px,6vw,58px)] leading-[1.08] font-medium tracking-tight text-balance">
-            Log your lifts. Track your plate.{' '}
-            <em className="mt-4 block text-[#8d4a5e] md:mt-0 md:inline">Watch the trend.</em>
+            {t.hero.title}{' '}
+            <em className="mt-4 block text-[#8d4a5e] md:mt-0 md:inline">{t.hero.accent}</em>
           </h1>
           <p className="hidden max-w-[560px] text-base leading-relaxed text-[#5f5257] sm:block">
-            A gym log, a food diary and a body tracker that live in one place — with your Strava
-            rides next to your workouts. Free, no app store needed.
+            {t.hero.lead}
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Link
               to="/register"
               className="flex h-12 items-center rounded-full bg-[#8d4a5e] px-[26px] text-[14.5px] font-semibold whitespace-nowrap text-[#fdf6f5] hover:bg-[#75394c]"
             >
-              Get started free
+              {t.hero.cta}
             </Link>
             <a
               href="#inside"
               className="hidden h-12 items-center rounded-full border border-[#d6c8bd] bg-[#fdfbf9] px-[22px] text-sm font-semibold whitespace-nowrap text-[#5f5257] sm:flex"
             >
-              See what&apos;s inside ↓
+              {t.hero.seeInside}
             </a>
           </div>
         </div>
@@ -179,7 +179,7 @@ export function LandingPage() {
                   key={i}
                   className="font-heading flex items-center gap-6 pr-6 text-[clamp(14px,1.6vw,18px)] whitespace-nowrap text-[#c9bcb2] italic"
                 >
-                  eat sleep lift repeat
+                  {t.marquee}
                   <span className="text-[#8d4a5e]">·</span>
                 </span>
               ))}
@@ -205,17 +205,17 @@ export function LandingPage() {
       <div className="mt-6 flex w-full justify-center bg-[#2b2126]">
         <div className="mx-auto flex w-full max-w-[1060px] flex-col items-center gap-5 px-6 py-11 text-center">
           <span className="font-heading text-[clamp(24px,3.5vw,32px)] font-medium tracking-tight text-[#f0e7ea]">
-            Your next session is waiting.
+            {t.closing.title}
           </span>
           <Link
             to="/register"
             className="flex h-12 items-center rounded-full bg-[#c98fa0] px-7 text-[14.5px] font-bold whitespace-nowrap text-[#2b2126]"
           >
-            Get started free
+            {t.closing.cta}
           </Link>
           <div className="flex w-full items-center justify-center gap-2.5 border-t border-[#4a3d43] pt-3">
             <BrandLogo size={24} radius={7} />
-            <span className="text-xs text-[#94858b]">Gym Bro · train, eat, track — 2026</span>
+            <span className="text-xs text-[#94858b]">{t.closing.footer}</span>
           </div>
         </div>
       </div>

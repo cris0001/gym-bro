@@ -36,6 +36,13 @@ export const useAuthTranslation = createFeatureTranslation({
       save: 'Save',
       saving: 'Saving…',
       skip: 'Skip for now',
+      foodNames: 'Food names',
+      foodNamesHint:
+        'Basic foods like fruit and vegetables have Polish and English names. Search always works in both — this picks the one shown and saved to your foods.',
+      foodNamesPl: 'Polish',
+      foodNamesEn: 'English',
+      foodNamesAuto: 'App language',
+      saved: 'Saved.',
     },
   },
   pl: {
@@ -72,6 +79,13 @@ export const useAuthTranslation = createFeatureTranslation({
       save: 'Zapisz',
       saving: 'Zapisywanie…',
       skip: 'Pomiń na razie',
+      foodNames: 'Nazwy produktów',
+      foodNamesHint:
+        'Podstawowe produkty, jak owoce i warzywa, mają nazwy polskie i angielskie. Wyszukiwanie zawsze działa w obu — tu wybierasz, która jest pokazywana i zapisywana w Twoich produktach.',
+      foodNamesPl: 'Polski',
+      foodNamesEn: 'Angielski',
+      foodNamesAuto: 'Język aplikacji',
+      saved: 'Zapisano.',
     },
   },
 });

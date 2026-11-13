@@ -3,17 +3,20 @@ import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 import { LANDING_MODULES, type LandingModule } from '../data/modules';
+import { useLandingTranslation } from '../i18n';
 
 // The browser-panel preview of one module. Uses the real screenshot when present in
 // /public/landing; until then a module-tinted placeholder so the switch is visible.
 // Wiring real PNGs later is a one-line change (set `screenshot`).
 function ModuleScreen({ module }: { module: LandingModule }) {
+  const t = useLandingTranslation();
+  const copy = t.modules[module.id];
   const Icon = module.icon;
   if (module.screenshot) {
     return (
       <img
         src={module.screenshot}
-        alt={`${module.title} screen`}
+        alt={t.inside.screenAlt(copy.title)}
         className="h-full w-full object-cover"
       />
     );
@@ -29,8 +32,8 @@ function ModuleScreen({ module }: { module: LandingModule }) {
       >
         <Icon className="size-8" />
       </span>
-      <span className="font-heading text-xl font-semibold text-[#2b2126]">{module.title}</span>
-      <span className="text-xs text-[#94858b]">Screenshot placeholder</span>
+      <span className="font-heading text-xl font-semibold text-[#2b2126]">{copy.title}</span>
+      <span className="text-xs text-[#94858b]">{t.inside.screenshot}</span>
     </div>
   );
 }
@@ -41,6 +44,7 @@ function ModuleScreen({ module }: { module: LandingModule }) {
 // preview panel crossfades. To fit one screen on mobile, the active card's extra bullet
 // list is desktop-only; the panel is hidden on mobile.
 export function ModuleShowcase() {
+  const t = useLandingTranslation();
   const [active, setActive] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
   // While a click-to-jump smooth-scroll is running, ignore scroll→active updates so
@@ -104,10 +108,10 @@ export function ModuleShowcase() {
         <div className="m-auto w-full max-w-[1060px] px-6 py-6 md:py-10">
           <div className="mb-4 flex flex-col items-center gap-1 text-center md:mb-10 md:gap-2">
             <span className="font-heading text-[13px] text-[#8d4a5e] italic md:text-[15px]">
-              What&apos;s inside
+              {t.inside.eyebrow}
             </span>
             <h2 className="font-heading text-[clamp(22px,3.5vw,36px)] font-medium tracking-tight text-[#2b2126]">
-              Six modules, zero setup
+              {t.inside.title}
             </h2>
           </div>
 
@@ -117,6 +121,7 @@ export function ModuleShowcase() {
               {LANDING_MODULES.map((module, index) => {
                 const Icon = module.icon;
                 const isActive = index === active;
+                const copy = t.modules[module.id];
                 return (
                   <button
                     key={module.id}
@@ -142,7 +147,7 @@ export function ModuleShowcase() {
                           isActive ? 'text-[#f0e7ea]' : 'text-[#2b2126]',
                         )}
                       >
-                        {module.title}
+                        {copy.title}
                       </span>
                       <span
                         className={cn('text-lg', isActive ? 'text-[#c98fa0]' : 'text-[#94858b]')}
@@ -165,10 +170,10 @@ export function ModuleShowcase() {
                             isActive ? 'text-[#bfb2b7]' : 'text-[#5f5257]',
                           )}
                         >
-                          {module.desc}
+                          {copy.desc}
                         </p>
                         <div className="mt-2.5 flex flex-wrap gap-1.5 pl-[50px]">
-                          {module.chips.map((chip) => (
+                          {copy.chips.map((chip) => (
                             <span
                               key={chip}
                               className={cn(
@@ -185,7 +190,7 @@ export function ModuleShowcase() {
                         {/* Extra bullets are desktop-only so the pinned block fits a phone. */}
                         {isActive && (
                           <ul className="mt-3 hidden flex-col gap-1.5 pl-[50px] lg:flex">
-                            {module.details.map((detail) => (
+                            {copy.details.map((detail) => (
                               <li
                                 key={detail}
                                 className="flex gap-2 text-[12.5px] leading-snug text-[#bfb2b7]"
@@ -213,7 +218,7 @@ export function ModuleShowcase() {
                     <span className="size-[9px] rounded-full bg-[#e0d3d8]" />
                   </span>
                   <span className="ml-2 text-xs font-semibold text-[#94858b]">
-                    gymbro.app — {current.title}
+                    Gym Bro — {t.modules[current.id].title}
                   </span>
                 </div>
                 {/* Stacked screens, crossfaded by opacity — the panel never blanks out. */}
@@ -232,7 +237,7 @@ export function ModuleShowcase() {
                   ))}
                 </div>
                 <span className="font-heading block border-t border-[#e8e1da] bg-[#f6f3f0] px-4 py-2.5 text-center text-[12.5px] text-[#94858b] italic">
-                  {current.caption}
+                  {t.modules[current.id].caption}
                 </span>
               </div>
             </div>

@@ -1,9 +1,8 @@
 import { Link } from '@tanstack/react-router';
 
 import { BrandMark } from '@/components/brand-mark';
-import { LanguageToggle } from '@/components/language-toggle';
-import { PalettePicker } from '@/components/palette-picker';
-import { ThemeToggle } from '@/components/theme-toggle';
+import { BrandWordmark } from '@/components/brand-wordmark';
+import { SettingsButton } from '@/features/settings';
 import { LogoutButton } from '@/features/auth';
 import { useTranslation } from '@/lib/i18n/use-translation';
 import { cn } from '@/lib/utils';
@@ -28,6 +27,7 @@ export function SidebarNav() {
     <aside className="bg-sidebar sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r lg:flex">
       <div className="flex h-14 items-center gap-2.5 border-b px-4">
         <BrandMark className="size-8" />
+        <BrandWordmark />
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
@@ -78,11 +78,7 @@ export function SidebarNav() {
 
       <div className="flex items-center justify-between gap-2 border-t p-3">
         <LogoutButton />
-        <div className="flex items-center gap-2">
-          <LanguageToggle />
-          <PalettePicker />
-          <ThemeToggle />
-        </div>
+        <SettingsButton />
       </div>
     </aside>
   );
