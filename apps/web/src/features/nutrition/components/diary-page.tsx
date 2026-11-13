@@ -3,7 +3,6 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 
 import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useMediaQuery } from '@/hooks/use-media-query';
 
 import { MEAL_TYPES } from '@gym-bro/shared';
@@ -14,11 +13,14 @@ import { useDiaryUiStore } from '../stores/diary-ui.store';
 import { AddEntryDesktop } from './add-entry-desktop';
 import { AddEntrySheet } from './add-entry-sheet';
 import { DaySummary } from './day-summary';
+import { DaySummarySkeleton } from './day-summary-skeleton';
 import { DiaryBottomBar } from './diary-bottom-bar';
 import { MealSection } from './diary-meal-section';
+import { MealSectionsSkeleton } from './meal-sections-skeleton';
 import { PhotoEstimateSheet } from './photo-estimate-sheet';
 
 const ISO = 'yyyy-MM-dd';
+const NO_TOTALS = { kcal: 0, proteinG: 0, carbsG: 0, fatG: 0 };
 
 const switchBtn =
   'text-muted-foreground hover:bg-accent flex size-9 items-center justify-center rounded-full transition-colors';
@@ -30,7 +32,11 @@ export function DiaryPage() {
   const t = useNutritionTranslation();
   const today = format(new Date(), ISO);
   const [date, setDate] = useState(today);
-  const { data } = useDailyFoodLog(date);
+  const { data, isLoading } = useDailyFoodLog(date);
+  // Skeleton only while the day is actually being fetched with nothing to show. Offline
+  // the request pauses (not loading), so the meals render empty and stay usable —
+  // entries can still be queued — instead of a skeleton that never resolves.
+  const showSkeleton = isLoading && !data;
   const addMeal = useDiaryUiStore((s) => s.addMeal);
   const isDesktop = useMediaQuery('(min-width: 768px)');
 
@@ -42,14 +48,16 @@ export function DiaryPage() {
   // mobile keeps the fullscreen overlay rendered below the diary.
   if (isDesktop && addMeal !== null) {
     return (
-      <div className="lg:col-start-2 w-full">
+      // min-w-0: as a grid item of the app shell this may not grow past its column
+      // to fit long names — the panes inside shrink and truncate instead.
+      <div className="lg:col-start-2 w-full min-w-0">
         <AddEntryDesktop loggedDate={date} meal={addMeal} />
       </div>
     );
   }
 
   return (
-    <div className="lg:col-start-2 flex w-full max-w-5xl flex-col gap-4 p-3 pb-36 md:p-4 lg:pb-4">
+    <div className="lg:col-start-2 flex w-full min-w-0 max-w-5xl flex-col gap-4 p-3 pb-36 md:p-4 lg:pb-4">
       <header className="flex items-center justify-between gap-2">
         <h1 className="font-heading text-[28px] leading-none font-medium">{t.diary.title}</h1>
         <div className="bg-card flex items-center rounded-full border p-1">
@@ -79,35 +87,35 @@ export function DiaryPage() {
         </div>
       </header>
 
-      <div className="lg:grid lg:grid-cols-[1fr_24rem] lg:items-start lg:gap-6">
+      {/* minmax(0,1fr): the meals column may shrink below its content (long names
+          truncate) instead of pushing the summary off the page. The summary is
+          narrower until xl, where there's room for the full 24rem. */}
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-5 xl:grid-cols-[minmax(0,1fr)_24rem] xl:gap-6">
         {/* Desktop sidebar summary; on mobile the inverted bottom bar takes over. */}
         <Card className="hidden rounded-2xl lg:sticky lg:top-4 lg:order-2 lg:block">
           <CardContent>
-            {data ? (
-              <DaySummary totals={data.totals} date={date} />
+            {showSkeleton ? (
+              <DaySummarySkeleton />
             ) : (
-              <div className="grid gap-3">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="grid gap-1">
-                    <Skeleton className="h-3 w-24" />
-                    <Skeleton className="h-2 w-full" />
-                  </div>
-                ))}
-              </div>
+              <DaySummary totals={data?.totals ?? NO_TOTALS} date={date} />
             )}
           </CardContent>
         </Card>
 
-        <div className="flex flex-col gap-3 lg:order-1">
-          {MEAL_TYPES.map((meal) => (
-            <MealSection
-              key={meal}
-              meal={meal}
-              label={t.meals[meal]}
-              loggedDate={date}
-              entries={entries.filter((entry) => entry.meal === meal)}
-            />
-          ))}
+        <div className="flex min-w-0 flex-col gap-3 lg:order-1">
+          {showSkeleton ? (
+            <MealSectionsSkeleton />
+          ) : (
+            MEAL_TYPES.map((meal) => (
+              <MealSection
+                key={meal}
+                meal={meal}
+                label={t.meals[meal]}
+                loggedDate={date}
+                entries={entries.filter((entry) => entry.meal === meal)}
+              />
+            ))
+          )}
         </div>
       </div>
 

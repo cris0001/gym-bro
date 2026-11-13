@@ -44,8 +44,18 @@ export async function restoreQueryCache(queryClient: QueryClient): Promise<void>
   void queryClient.resumePausedMutations();
 }
 
+// The service worker's cache of uploaded food/recipe photos (runtimeCaching in
+// vite.config.ts) — the same name must be used there.
+const USER_IMAGE_CACHE = 'user-images';
+
 // Logout: drop the on-disk copy too, so the next person on this device never sees
-// the previous account's cached data (the in-memory cache is cleared separately).
+// the previous account's cached data (the in-memory cache is cleared separately) —
+// and the cached photos with it.
 export async function clearPersistedQueryCache(): Promise<void> {
   await persister.removeClient();
+  try {
+    await caches.delete(USER_IMAGE_CACHE);
+  } catch {
+    // No Cache Storage (old browser, insecure dev origin) — nothing was cached.
+  }
 }

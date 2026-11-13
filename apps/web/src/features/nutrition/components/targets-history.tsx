@@ -1,13 +1,13 @@
 import { format, parseISO } from 'date-fns';
 
 import { EditIconButton } from '@/components/edit-icon-button';
-import { SkeletonList } from '@/components/skeletons';
 import { cn } from '@/lib/utils';
 
 import type { NutritionTarget } from '@gym-bro/shared';
 
 import { useTargets } from '../hooks/use-targets';
 import { useNutritionTranslation } from '../i18n';
+import { TargetsHistorySkeleton } from './targets-history-skeleton';
 
 const fmt = (n: number): string => Math.round(n).toLocaleString('en-US');
 
@@ -19,7 +19,7 @@ export function TargetsHistory({ onEdit }: { onEdit: (target: NutritionTarget) =
   const { data: targets = [], isPending } = useTargets();
 
   if (isPending) {
-    return <SkeletonList rows={3} avatar={false} />;
+    return <TargetsHistorySkeleton />;
   }
   if (targets.length === 0) {
     return <p className="text-muted-foreground text-sm">{t.targets.noHistory}</p>;

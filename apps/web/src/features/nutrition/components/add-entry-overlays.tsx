@@ -8,14 +8,25 @@ import { FoodSheet } from './food-sheet';
 // scanner (touch only), and the food create/edit sheet. Driven off the shared hook so
 // mobile and desktop wire them up identically.
 export function AddEntryOverlays({ state }: { state: UseAddEntry }) {
-  const { portionRow, setPortionRow, logPortion, canScan, scanning, setScanning, handleEan } =
-    state;
+  const {
+    portionRow,
+    setPortionRow,
+    logPortion,
+    editRowFood,
+    isPreparingEdit,
+    canScan,
+    scanning,
+    setScanning,
+    handleEan,
+  } = state;
 
   return (
     <>
       <AddPortionSheet
         row={portionRow}
         onClose={() => setPortionRow(null)}
+        onEdit={(row) => void editRowFood(row)}
+        isPreparingEdit={isPreparingEdit}
         onAdd={(portion) => {
           if (portionRow) logPortion(portionRow, portion);
           setPortionRow(null);

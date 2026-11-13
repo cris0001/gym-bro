@@ -4,8 +4,9 @@ import type { Food } from '@gym-bro/shared';
 
 // Seed values for the food form when adding a scanned product: the barcode plus
 // whatever we know (from our catalog or OpenFoodFacts). Nulls = the user fills it in.
+// A null ean = an in-store weighed-item scan, added as a plain custom food.
 export interface ScanPrefill {
-  ean: string;
+  ean: string | null;
   name: string;
   brand: string | null;
   kcal: number | null;

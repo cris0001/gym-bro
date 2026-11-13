@@ -45,6 +45,10 @@ export function AddEntryResultRow({
             {row.name}
           </span>
           <span className="text-muted-foreground mt-0.5 block truncate text-[11.5px]">
+            {/* Not in your foods yet — the first log adds it there. */}
+            {row.kind === 'catalog' ? (
+              <span className="text-primary font-semibold">{t.addEntry.fromCatalog} · </span>
+            ) : null}
             {row.meta}
           </span>
         </span>

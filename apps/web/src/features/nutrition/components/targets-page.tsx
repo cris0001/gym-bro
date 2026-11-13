@@ -5,6 +5,7 @@ import type { NutritionTarget } from '@gym-bro/shared';
 import { useCurrentTarget } from '../hooks/use-current-target';
 import { useNutritionTranslation } from '../i18n';
 import { TargetsForm } from './targets-form';
+import { TargetsFormSkeleton } from './targets-form-skeleton';
 import { TargetsHistory } from './targets-history';
 
 const CARD = 'rounded-[20px] border border-border bg-card p-4 md:p-5';
@@ -29,7 +30,7 @@ export function TargetsPage() {
             {editing ? t.targets.editTarget : t.targets.dailyTarget}
           </h2>
           {isPending ? (
-            <p className="text-muted-foreground text-sm">{t.common.loading}</p>
+            <TargetsFormSkeleton />
           ) : (
             <TargetsForm
               key={editing?.id ?? current?.id ?? 'none'}

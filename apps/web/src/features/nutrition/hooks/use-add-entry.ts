@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 import { useMediaQuery } from '@/hooks/use-media-query';
 
@@ -20,16 +21,22 @@ import { useDiaryUiStore } from '../stores/diary-ui.store';
 import {
   type AddEntryRow,
   buildAddEntryList,
+  catalogRow,
   type Portion,
   portionLabel,
 } from '../utils/add-entry-list';
+import { catalogFoodName } from '../utils/product-name';
+import { useAddFoodFromGlobal } from './use-add-food-from-global';
 import { useCreateFoodLogEntry } from './use-create-food-log-entry';
 import { foodLogKeys, useDailyFoodLog } from './use-daily-food-log';
 import { useFoods } from './use-foods';
+import { useFoodNameLang } from './use-food-name-lang';
+import { useGlobalProductSearch } from './use-global-product-search';
 import { useRecentDiaryItems } from './use-recent-diary-items';
 import { useRecipes } from './use-recipes';
 import { useScanFlow, type ScanOutcome } from './use-scan-flow';
 import { useTargetForDate } from './use-target-for-date';
+import { useTargets } from './use-targets';
 
 // Shared state + behaviour behind the diary "Add to meal" view, consumed by both the
 // mobile fullscreen layout and the desktop two-pane layout. Keeps every mutation/scan
@@ -44,6 +51,13 @@ export interface UseAddEntry {
   // True until everything the browse list is built from has arrived (first open only)
   // — the view shows a skeleton then, instead of a list that fills in and reshuffles.
   isListLoading: boolean;
+  // The day's entries or its target are still being fetched (first load) — the
+  // "Added" list and "Day after adding" panel show skeletons instead of zeros. Paused
+  // offline requests don't count as loading, so this never sticks.
+  isDayLoading: boolean;
+  // A catalog search is in flight (or waiting on the typing pause) — the view shows
+  // skeleton rows under your own matches until it lands.
+  isCatalogLoading: boolean;
   canScan: boolean;
   scanning: boolean;
   setScanning: (value: boolean) => void;
@@ -54,6 +68,9 @@ export interface UseAddEntry {
   dayTotals: MacroTotals;
   target: NutritionTarget | null;
   logPortion: (row: AddEntryRow, portion: Portion) => void;
+  // Open the food form for a food / catalog row (a catalog one is copied first).
+  editRowFood: (row: AddEntryRow) => Promise<void>;
+  isPreparingEdit: boolean;
   createNewFood: () => void;
   handleEan: (ean: string) => Promise<ScanOutcome>;
 }
@@ -64,6 +81,7 @@ export function useAddEntry(loggedDate: string): UseAddEntry {
   const t = useNutritionTranslation();
   const addMeal = useDiaryUiStore((s) => s.addMeal);
   const openScanned = useFoodUiStore((s) => s.openScanned);
+  const openEdit = useFoodUiStore((s) => s.openEdit);
 
   const [query, setQuery] = useState('');
   // This hook outlives the add view (its host stays mounted while closed), so reset the
@@ -80,12 +98,17 @@ export function useAddEntry(loggedDate: string): UseAddEntry {
   const canScan = useMediaQuery('(pointer: coarse)');
 
   const create = useCreateFoodLogEntry();
+  const addFromGlobal = useAddFoodFromGlobal();
+  const locale = useFoodNameLang();
   const foodsQuery = useFoods('');
   const recipesQuery = useRecipes();
   const foods = useMemo(() => foodsQuery.data ?? [], [foodsQuery.data]);
   const recipes = useMemo(() => recipesQuery.data ?? [], [recipesQuery.data]);
   const recentQuery = useRecentDiaryItems(addMeal);
-  const { data: dayLog } = useDailyFoodLog(loggedDate);
+  const dayLogQuery = useDailyFoodLog(loggedDate);
+  const dayLog = dayLogQuery.data;
+  // Same cached history useTargetForDate reads — no extra request, just its status.
+  const targetsQuery = useTargets();
   const target = useTargetForDate(loggedDate);
 
   // Freeze the recency ORDER for the lifetime of this meal's add view, so logging an
@@ -184,20 +207,69 @@ export function useAddEntry(loggedDate: string): UseAddEntry {
   // day, so this sum already reflects what was just added — no optimistic math needed.
   const dayTotals = sumMacros(dayLog?.entries ?? []);
 
+  const catalog = useGlobalProductSearch(query, addMeal !== null);
+  const catalogRows = useMemo(
+    () => catalog.products.map((p) => catalogRow(p, catalogFoodName(p, locale))),
+    [catalog.products, locale],
+  );
+
   const rows = useMemo(
-    () => (isListLoading ? [] : buildAddEntryList(foods, recipes, recent, query)),
-    [foods, recipes, recent, query, isListLoading],
+    () => (isListLoading ? [] : buildAddEntryList(foods, recipes, recent, query, catalogRows)),
+    [foods, recipes, recent, query, catalogRows, isListLoading],
   );
 
   // Log a source at a portion (one-tap default, or the portion editor's choice).
   function logPortion(row: AddEntryRow, portion: Portion) {
     if (addMeal === null) return;
+    if (row.kind === 'catalog') {
+      void logFromCatalog(row, portion);
+      return;
+    }
     const base = { quantity: portion.quantity, unit: portion.unit, meal: addMeal, loggedDate };
     const input: CreateFoodLogInput =
       row.kind === 'food'
         ? { type: 'food', foodId: row.id, ...base }
         : { type: 'recipe', recipeId: row.id, ...base };
     create.mutate({ ...input, preview: { name: row.name, portion: label(portion) } });
+  }
+
+  // A catalog product needs your own copy before it can be logged. That's an online
+  // step (the search that found it was too), so unlike a plain log it isn't queued.
+  async function logFromCatalog(row: AddEntryRow & { kind: 'catalog' }, portion: Portion) {
+    if (addMeal === null) return;
+    try {
+      const food = await addFromGlobal.mutateAsync({ globalProductId: row.id, name: row.name });
+      create.mutate({
+        type: 'food',
+        foodId: food.id,
+        quantity: portion.quantity,
+        unit: portion.unit,
+        meal: addMeal,
+        loggedDate,
+        preview: { name: food.name, portion: label(portion) },
+      });
+    } catch {
+      toast.error(t.addEntry.catalogAddFailed);
+    }
+  }
+
+  // "Edit product" from the portion editor: open the food form on your own copy. A
+  // catalog product isn't yours yet, so it's copied into your foods first — exactly as
+  // logging it would — and the edit lands on that copy, never on the shared product.
+  async function editRowFood(row: AddEntryRow) {
+    if (row.kind === 'recipe') return;
+    if (row.kind === 'food') {
+      setPortionRow(null);
+      openEdit(row.food);
+      return;
+    }
+    try {
+      const food = await addFromGlobal.mutateAsync({ globalProductId: row.id, name: row.name });
+      setPortionRow(null);
+      openEdit(food);
+    } catch {
+      toast.error(t.addEntry.catalogAddFailed);
+    }
   }
 
   // The short portion label a queued entry shows in the diary until it syncs.
@@ -250,8 +322,10 @@ export function useAddEntry(loggedDate: string): UseAddEntry {
     query,
     setQuery,
     rows,
-    isAdding: create.isPending,
+    isAdding: create.isPending || addFromGlobal.isPending,
     isListLoading,
+    isDayLoading: (dayLogQuery.isLoading && !dayLog) || targetsQuery.isLoading,
+    isCatalogLoading: catalog.isSearching,
     canScan,
     scanning,
     setScanning,
@@ -262,6 +336,8 @@ export function useAddEntry(loggedDate: string): UseAddEntry {
     dayTotals,
     target,
     logPortion,
+    editRowFood,
+    isPreparingEdit: addFromGlobal.isPending,
     createNewFood,
     handleEan,
   };

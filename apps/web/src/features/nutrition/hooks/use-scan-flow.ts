@@ -2,6 +2,7 @@ import { toast } from 'sonner';
 
 import type { Food, GlobalProduct } from '@gym-bro/shared';
 
+import { useNutritionTranslation } from '../i18n';
 import { useFoodUiStore, type ScanPrefill } from '../stores/food-ui.store';
 import { globalToInput } from '../utils/global-to-input';
 import { scannedFoodName } from '../utils/product-name';
@@ -51,7 +52,7 @@ function fromGlobal(p: GlobalProduct, foodId: string): ResolvedFood {
   };
 }
 
-function blankPrefill(ean: string): ScanPrefill {
+function blankPrefill(ean: string | null): ScanPrefill {
   return {
     ean,
     name: '',
@@ -73,6 +74,7 @@ function blankPrefill(ean: string): ScanPrefill {
 // adds it as an ingredient. Without it (the Foods page), the product just lands in your
 // foods with a toast.
 export function useScanFlow(onResolved?: (food: ResolvedFood) => void) {
+  const t = useNutritionTranslation();
   const lookup = useEanLookup();
   const createFood = useCreateFood();
   const openScanned = useFoodUiStore((s) => s.openScanned);
@@ -88,6 +90,13 @@ export function useScanFlow(onResolved?: (food: ResolvedFood) => void) {
   async function handleEan(ean: string): Promise<ScanOutcome> {
     try {
       const result = await lookup.mutateAsync(ean);
+      if (result.status === 'restricted') {
+        // A weighed-item code is per store and per weighing, so it can't be a catalog
+        // product — drop it and continue as a custom food.
+        toast.info(t.barcode.restrictedBarcode);
+        openScanned(blankPrefill(null), onResolved ? resolved : undefined);
+        return 'form';
+      }
       if (result.status === 'found') {
         if (result.inPantry && result.foodId) {
           if (onResolved) onResolved(fromGlobal(result.product, result.foodId));

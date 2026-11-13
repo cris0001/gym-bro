@@ -1,4 +1,10 @@
-import type { Food, FoodLogUnit, RecentDiaryItem, RecipeListItem } from '@gym-bro/shared';
+import type {
+  Food,
+  FoodLogUnit,
+  GlobalProduct,
+  RecentDiaryItem,
+  RecipeListItem,
+} from '@gym-bro/shared';
 
 // A portion to log: which unit and how many of it.
 export interface Portion {
@@ -6,10 +12,21 @@ export interface Portion {
   quantity: number;
 }
 
-// One row in the add-entry results list — a food or a recipe, resolved with the bits
-// the row needs to render (photo, meta line) and to log (the source object + its
-// last-used portion for a one-tap add).
+// One row in the add-entry results list — a food, a recipe, or a catalog product not in
+// your foods yet — resolved with the bits the row needs to render (photo, meta line)
+// and to log (the source object + its last-used portion for a one-tap add). A catalog
+// row is copied into your foods on first log, then logged like any food.
 export type AddEntryRow =
+  | {
+      kind: 'catalog';
+      id: string;
+      name: string;
+      imageUrl: string | null;
+      meta: string;
+      isRecent: false;
+      product: GlobalProduct;
+      lastUsed: null;
+    }
   | {
       kind: 'food';
       id: string;
@@ -37,9 +54,9 @@ function fmtMacro(n: number): string {
   return String(Number(n.toFixed(1)));
 }
 
-// The meta line under a name. A food describes a 100 g portion (its stored per-100g
-// macros); a recipe describes one serving (its per-serving macros).
-function foodMeta(food: Food): string {
+// The meta line under a name. A food (or catalog product) describes a 100 g portion
+// (its stored per-100g macros); a recipe describes one serving (its per-serving macros).
+function foodMeta(food: Food | GlobalProduct): string {
   return `100 g · ${Math.round(food.kcal)} kcal · P ${fmtMacro(food.proteinG)} · C ${fmtMacro(
     food.carbsG,
   )} · F ${fmtMacro(food.fatG)}`;
@@ -82,6 +99,21 @@ function recipeRow(
   };
 }
 
+// `name` is the catalog display name (UI language / brand-prefixed), resolved by the
+// caller.
+export function catalogRow(product: GlobalProduct, name: string): AddEntryRow {
+  return {
+    kind: 'catalog',
+    id: product.id,
+    name,
+    imageUrl: product.imageUrl,
+    meta: foodMeta(product),
+    isRecent: false,
+    product,
+    lastUsed: null,
+  };
+}
+
 // A portion as the short label the add pill and a pending diary row show ("120 g",
 // "1 serv"), with the unit abbreviations of the active locale.
 export function portionLabel(portion: Portion, unitShort: Record<FoodLogUnit, string>): string {
@@ -93,19 +125,22 @@ export function portionLabel(portion: Portion, unitShort: Record<FoodLogUnit, st
 export function defaultPortion(row: AddEntryRow): Portion {
   if (row.lastUsed) return row.lastUsed;
   if (row.kind === 'recipe') return { unit: 'servings', quantity: 1 };
-  return row.food.servingGrams !== null
+  const source = row.kind === 'food' ? row.food : row.product;
+  return source.servingGrams !== null
     ? { unit: 'servings', quantity: 1 }
     : { unit: 'grams', quantity: 100 };
 }
 
 // Build the results list. With an empty query: the meal's recently-used items first
 // (badged, in recency order), then the rest of the dictionary alphabetically. While
-// typing: a flat, unbadged name filter over foods + recipes.
+// typing: a flat, unbadged name filter over foods + recipes, followed by the catalog
+// rows (already searched server-side) for products you don't have yet.
 export function buildAddEntryList(
   foods: Food[],
   recipes: RecipeListItem[],
   recent: RecentDiaryItem[],
   query: string,
+  catalog: AddEntryRow[] = [],
 ): AddEntryRow[] {
   const q = query.trim().toLowerCase();
 
@@ -116,7 +151,9 @@ export function buildAddEntryList(
         .filter((r) => r.name.toLowerCase().includes(q))
         .map((r) => recipeRow(r, false, null)),
     ];
-    return rows.sort((a, b) => a.name.localeCompare(b.name));
+    const owned = new Set(foods.map((f) => f.globalProductId));
+    const fromCatalog = catalog.filter((row) => !owned.has(row.id));
+    return [...rows.sort((a, b) => a.name.localeCompare(b.name)), ...fromCatalog];
   }
 
   const foodById = new Map(foods.map((f) => [f.id, f]));

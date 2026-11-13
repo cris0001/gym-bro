@@ -14,7 +14,7 @@ export function globalToInput(p: GlobalProduct): CreateFoodInput {
     fatG: p.fatG,
     ...(p.servingGrams !== null ? { servingGrams: p.servingGrams } : {}),
     ...(p.unitGrams !== null ? { unitGrams: p.unitGrams } : {}),
-    ean: p.ean,
+    ...(p.ean !== null ? { ean: p.ean } : {}),
     ...(p.brand !== null ? { brand: p.brand } : {}),
     ...(p.imageUrl !== null ? { imageUrl: p.imageUrl } : {}),
   };

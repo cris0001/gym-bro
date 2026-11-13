@@ -6,7 +6,6 @@ import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { FIELD_CLASS } from '@/lib/form-styles';
-import { cn } from '@/lib/utils';
 
 import { divideMacros, scaleMacros, sumMacros } from '@gym-bro/shared';
 import type { CreateRecipeInput, RecipeDetail } from '@gym-bro/shared';
@@ -27,7 +26,7 @@ import { resizeImageToDataUrl } from '../utils/resize-image';
 import { BarcodeScanner } from './barcode-scanner';
 import { FoodCombobox } from './food-combobox';
 import { FoodSheet } from './food-sheet';
-import { RECIPE_TABLE_COLUMNS, RecipeIngredientRow } from './recipe-ingredient-row';
+import { RecipeIngredientRow } from './recipe-ingredient-row';
 import { RecipePerServingCard } from './recipe-per-serving-card';
 import { RecipePhoto } from './recipe-photo';
 import { RecipeServingsCard } from './recipe-servings-card';
@@ -59,7 +58,9 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
     e.target.value = '';
     if (!file) return;
     try {
-      setImageUrl(await resizeImageToDataUrl(file, 640));
+      // Shown at 240px at most (the desktop builder), 76px on phones — 360px stays
+      // sharp at 1.5x and keeps the stored data-URI small.
+      setImageUrl(await resizeImageToDataUrl(file, 360));
     } catch {
       toast.error(t.common.imageProcessError);
     }
@@ -130,24 +131,36 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
         {t.recipes.title}
       </Link>
 
-      {/* Phones: the photo tile sits beside the title. Desktop: the title alone. */}
-      <div className="flex items-center gap-4">
+      {/* Under 1300px: a large photo tile beside the title and a one-line per-serving
+          read, so the page opens on what the recipe is. From 1300px the photo gets
+          its own column and the full summary card sits on the right. */}
+      <div className="flex items-center gap-4 sm:gap-5">
         <RecipePhoto
           variant="slot"
-          className="xl:hidden"
+          className="size-28 sm:size-36 min-[1300px]:hidden"
           imageUrl={imageUrl}
           onPick={(e) => void onPickImage(e)}
           onRemove={() => setImageUrl(null)}
         />
-        <h1 className="font-heading min-w-0 text-[26px] leading-tight font-medium break-words xl:text-[30px]">
-          {name.trim() || (editing ? t.recipes.editRecipe : t.recipes.newRecipe)}
-        </h1>
+        <div className="flex min-w-0 flex-col gap-1.5">
+          <h1 className="font-heading min-w-0 text-[26px] leading-tight font-medium break-words min-[1300px]:text-[30px]">
+            {name.trim() || (editing ? t.recipes.editRecipe : t.recipes.newRecipe)}
+          </h1>
+          <p className="text-muted-foreground text-[13px] min-[1300px]:hidden">
+            <span className="text-foreground font-semibold">
+              {Math.round(perServing.kcal)} kcal
+            </span>{' '}
+            {t.recipes.perServing.toLowerCase()} · {short.protein} {Math.round(perServing.proteinG)}{' '}
+            · {short.carbs} {Math.round(perServing.carbsG)} · {short.fat}{' '}
+            {Math.round(perServing.fatG)}
+          </p>
+        </div>
       </div>
 
-      <div className="flex flex-col gap-4 xl:grid xl:grid-cols-[240px_minmax(0,1fr)_300px] xl:items-start xl:gap-6">
+      <div className="flex flex-col gap-4 min-[1300px]:grid min-[1300px]:grid-cols-[240px_minmax(0,1fr)_300px] min-[1300px]:items-start min-[1300px]:gap-6">
         <RecipePhoto
           variant="large"
-          className="hidden xl:flex"
+          className="hidden min-[1300px]:flex"
           imageUrl={imageUrl}
           onPick={(e) => void onPickImage(e)}
           onRemove={() => setImageUrl(null)}
@@ -165,20 +178,9 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
           </div>
 
           <div className="overflow-hidden rounded-[20px] border border-border bg-card">
-            {/* Card header: the section label on phones, the column header on desktop. */}
-            <div
-              className={cn(
-                'text-muted-foreground px-4 pt-4 pb-3 text-[11px] font-bold tracking-[0.08em] uppercase xl:grid xl:pb-2.5',
-                RECIPE_TABLE_COLUMNS,
-              )}
-            >
-              <span>{t.recipes.ingredients}</span>
-              <span className="hidden text-right xl:block">{t.recipes.amount}</span>
-              <span className="hidden text-right text-[#8d4a5e] xl:block">{short.protein}</span>
-              <span className="hidden text-right text-[#b8862a] xl:block">{short.carbs}</span>
-              <span className="hidden text-right text-[#5a7a52] xl:block">{short.fat}</span>
-              <span className="hidden text-right xl:block">kcal</span>
-            </div>
+            <p className="text-muted-foreground px-4 pt-4 pb-3 text-[11px] font-bold tracking-[0.08em] uppercase">
+              {t.recipes.ingredients}
+            </p>
 
             {ingredients.length === 0 ? (
               <p className="text-muted-foreground border-t border-dashed border-border px-4 py-3 text-[13px]">
@@ -222,7 +224,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 xl:sticky xl:top-4">
+        <div className="flex flex-col gap-4 min-[1300px]:sticky min-[1300px]:top-4">
           <RecipeServingsCard servings={servings} onChange={setServings} />
           <RecipePerServingCard perServing={perServing} total={total} />
 
@@ -233,7 +235,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
           ) : null}
 
           {/* Phones: Cancel | Save side by side. Desktop: Save above Cancel. */}
-          <div className="grid grid-cols-[1fr_1.4fr] gap-2 xl:flex xl:flex-col-reverse">
+          <div className="grid grid-cols-[1fr_1.4fr] gap-2 min-[1300px]:flex min-[1300px]:flex-col-reverse">
             <button
               type="button"
               className="border-border bg-card hover:bg-muted h-10 rounded-full border text-[14px] font-semibold text-subtle-foreground transition-colors"

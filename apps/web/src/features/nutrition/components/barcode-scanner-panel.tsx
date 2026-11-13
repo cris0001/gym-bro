@@ -296,7 +296,7 @@ export function BarcodeScannerPanel({ active, onDetected }: BarcodeScannerPanelP
             <select
               value={deviceId ?? ''}
               onChange={(e) => selectCamera(e.target.value)}
-              className="h-8 w-full appearance-none truncate rounded-full bg-[#fdf6f5]/15 pr-7 pl-3.5 text-[12.5px] font-semibold text-[#fdf6f5] outline-none backdrop-blur-sm"
+              className="h-8 w-full appearance-none truncate rounded-xl bg-[#fdf6f5]/15 pr-7 pl-3.5 text-[12.5px] font-semibold text-[#fdf6f5] outline-none backdrop-blur-sm"
             >
               {rearCams.map((cam, i) => (
                 <option key={cam.deviceId} value={cam.deviceId} className="text-foreground">

@@ -3,6 +3,7 @@ import { Barcode, ChevronLeft, Plus, Search } from 'lucide-react';
 
 import type { MealType } from '@gym-bro/shared';
 
+import { Skeleton } from '@/components/ui/skeleton';
 import { useSheetBackClose } from '@/hooks/use-sheet-back-close';
 
 import type { UseAddEntry } from '../hooks/use-add-entry';
@@ -41,6 +42,8 @@ export function AddEntryMobile({
     rows,
     isAdding,
     isListLoading,
+    isDayLoading,
+    isCatalogLoading,
     canScan,
     setScanning,
     setPortionRow,
@@ -103,19 +106,28 @@ export function AddEntryMobile({
                   dividerClassName={'border-t border-dashed border-border-strong'}
                 />
               ) : (
-                rows.map((row, i) => (
-                  <div
-                    key={`${row.kind}-${row.id}`}
-                    className={i > 0 ? 'border-t border-dashed border-border-strong' : ''}
-                  >
-                    <AddEntryResultRow
-                      row={row}
-                      disabled={isAdding}
-                      onAdd={() => logPortion(row, defaultPortion(row))}
-                      onEditPortion={() => setPortionRow(row)}
+                <>
+                  {rows.map((row, i) => (
+                    <div
+                      key={`${row.kind}-${row.id}`}
+                      className={i > 0 ? 'border-t border-dashed border-border-strong' : ''}
+                    >
+                      <AddEntryResultRow
+                        row={row}
+                        disabled={isAdding}
+                        onAdd={() => logPortion(row, defaultPortion(row))}
+                        onEditPortion={() => setPortionRow(row)}
+                      />
+                    </div>
+                  ))}
+                  {isCatalogLoading ? (
+                    <AddEntryListSkeleton
+                      rows={2}
+                      dividedFromAbove={rows.length > 0}
+                      dividerClassName={'border-t border-dashed border-border-strong'}
                     />
-                  </div>
-                ))
+                  ) : null}
+                </>
               )}
             </div>
             <button
@@ -157,10 +169,16 @@ export function AddEntryMobile({
           <span className="text-muted-foreground text-[11px] font-semibold tracking-wide uppercase">
             {t.addEntry.mealTotalLabel(mealLabel)}
           </span>
-          <span className="font-heading text-[17px] font-semibold">
-            {mealTotal.toLocaleString('en-US')}
-            <span className="text-muted-foreground ml-0.5 text-[11px] font-normal">kcal</span>
-          </span>
+          {isDayLoading ? (
+            <div className="flex h-[25.5px] items-center">
+              <Skeleton className="h-4 w-16" />
+            </div>
+          ) : (
+            <span className="font-heading text-[17px] font-semibold">
+              {mealTotal.toLocaleString('en-US')}
+              <span className="text-muted-foreground ml-0.5 text-[11px] font-normal">kcal</span>
+            </span>
+          )}
         </div>
         <button
           type="button"

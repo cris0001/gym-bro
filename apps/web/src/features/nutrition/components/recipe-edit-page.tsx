@@ -1,6 +1,7 @@
 import { useRecipe } from '../hooks/use-recipe';
 import { useNutritionTranslation } from '../i18n';
 import { RecipeBuilder } from './recipe-builder';
+import { RecipeBuilderSkeleton } from './recipe-builder-skeleton';
 
 interface RecipeEditPageProps {
   recipeId: string;
@@ -12,7 +13,7 @@ export function RecipeEditPage({ recipeId }: RecipeEditPageProps) {
   const { data: recipe, isPending, isError } = useRecipe(recipeId);
 
   if (isPending) {
-    return <p className="text-muted-foreground p-4 text-sm">{t.common.loading}</p>;
+    return <RecipeBuilderSkeleton />;
   }
   if (isError || !recipe) {
     return <p className="text-muted-foreground p-4 text-sm">{t.recipes.notFound}</p>;

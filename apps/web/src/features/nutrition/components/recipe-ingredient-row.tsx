@@ -16,10 +16,6 @@ import {
 } from '../utils/recipe-draft';
 import { RecipeUnitToggle } from './recipe-unit-toggle';
 
-// Desktop table track: ingredient | amount | P | C | F | kcal. Shared with the card's
-// column header so both line up.
-export const RECIPE_TABLE_COLUMNS = 'xl:grid-cols-[minmax(0,1fr)_76px_52px_52px_52px_64px]';
-
 interface RecipeIngredientRowProps {
   row: IngredientDraft;
   editing: boolean;
@@ -28,9 +24,9 @@ interface RecipeIngredientRowProps {
   onRemove: () => void;
 }
 
-// One ingredient line. Phones: name over a compact amount/macro line, kcal on the
-// right. 1280px+: the same values as table columns. Tapping the row opens the inline
-// editor underneath: amount, unit, remove.
+// One ingredient line, the same at every width: photo + name with the coloured macro
+// grams under it, kcal and the amount stacked on the right. Tapping the row opens the
+// inline editor underneath: amount, unit, remove.
 export function RecipeIngredientRow({
   row,
   editing,
@@ -74,12 +70,7 @@ export function RecipeIngredientRow({
 
   return (
     <li className={cn('border-t border-dashed border-border', editing && 'bg-field-muted')}>
-      <div
-        className={cn(
-          'flex items-center gap-3 px-4 py-4 xl:grid xl:py-3.5 xl:gap-0',
-          RECIPE_TABLE_COLUMNS,
-        )}
-      >
+      <div className="flex items-center gap-3 px-4 py-3.5">
         <button
           type="button"
           aria-label={t.recipes.editIngredientAria(name)}
@@ -99,21 +90,26 @@ export function RecipeIngredientRow({
           )}
           <span className="min-w-0">
             <span className="block truncate text-[14px] font-semibold">{name}</span>
-            <span className="text-muted-foreground mt-0.5 block text-[11.5px] xl:hidden">
-              {amountLabel} · {short.protein} {p} · {short.carbs} {c} · {short.fat} {f}
+            {/* Grams of each macro in its colour (the app's protein/carbs/fat tints). */}
+            <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[12px]">
+              <span className="text-[#8d4a5e] dark:text-[#f0bccb]">
+                {short.protein} <b className="font-semibold">{p}g</b>
+              </span>
+              <span className="text-[#b8862a] dark:text-[#d9a441]">
+                {short.carbs} <b className="font-semibold">{c}g</b>
+              </span>
+              <span className="text-[#5a7a52] dark:text-[#8fae85]">
+                {short.fat} <b className="font-semibold">{f}g</b>
+              </span>
             </span>
           </span>
         </button>
-        <span className="text-muted-foreground hidden text-right text-[13px] xl:block">
-          {amountLabel}
-        </span>
-        {[p, c, f].map((value, i) => (
-          <span key={i} className="hidden text-right text-[13px] xl:block">
-            {value}
+        <span className="flex shrink-0 flex-col items-end leading-tight">
+          <span className="font-heading text-base font-semibold">
+            {macros ? Math.round(macros.kcal) : 0}{' '}
+            <span className="text-muted-foreground font-sans text-[11px] font-medium">kcal</span>
           </span>
-        ))}
-        <span className="font-heading shrink-0 text-right text-base font-semibold">
-          {macros ? Math.round(macros.kcal) : 0}
+          <span className="text-muted-foreground mt-0.5 text-[12px]">{amountLabel}</span>
         </span>
       </div>
 

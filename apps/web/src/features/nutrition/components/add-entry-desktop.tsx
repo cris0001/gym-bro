@@ -2,6 +2,7 @@ import { format, parseISO } from 'date-fns';
 import { Barcode, ChevronLeft, Plus, Search } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 import type { MealType } from '@gym-bro/shared';
@@ -12,6 +13,7 @@ import { useNutritionTranslation } from '../i18n';
 import { useDiaryUiStore } from '../stores/diary-ui.store';
 import { defaultPortion } from '../utils/add-entry-list';
 import { MACRO_BAR, type MacroKey } from '../utils/macro-colors';
+import { AddEntryDaySkeleton } from './add-entry-day-skeleton';
 import { AddEntryOverlays } from './add-entry-overlays';
 import { AddEntryListSkeleton } from './add-entry-list-skeleton';
 import { AddEntryResultRow } from './add-entry-result-row';
@@ -39,6 +41,8 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
     rows,
     isAdding,
     isListLoading,
+    isDayLoading,
+    isCatalogLoading,
     canScan,
     setScanning,
     setPortionRow,
@@ -87,15 +91,18 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
           <button
             type="button"
             onClick={closeAdd}
-            className="bg-primary text-primary-foreground h-[42px] shrink-0 rounded-full px-6 text-[13.5px] font-semibold"
+            className="bg-primary text-primary-foreground h-9 shrink-0 rounded-full px-6 text-[13.5px] font-semibold"
           >
             {t.common.done}
           </button>
         </header>
 
-        <div className="grid items-start gap-5 md:grid-cols-[1fr_340px]">
+        {/* minmax(0,1fr): the results pane may shrink below its content (long names
+            truncate) rather than shove the right pane off-screen. The right pane is
+            narrower until xl, where the sidebar leaves room for the full 340px. */}
+        <div className="grid items-start gap-5 md:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_340px]">
           {/* LEFT — search + results */}
-          <div className="flex flex-col gap-[18px]">
+          <div className="flex min-w-0 flex-col gap-[18px]">
             <div className="flex gap-2">
               <div className="relative min-w-0 flex-1">
                 <Search className="text-muted-foreground absolute top-1/2 left-3.5 size-4 -translate-y-1/2" />
@@ -130,19 +137,28 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
               {isListLoading ? (
                 <AddEntryListSkeleton dividerClassName={cn('border-t', dashed)} />
               ) : (
-                rows.map((row, i) => (
-                  <div
-                    key={`${row.kind}-${row.id}`}
-                    className={i > 0 ? cn('border-t', dashed) : ''}
-                  >
-                    <AddEntryResultRow
-                      row={row}
-                      disabled={isAdding}
-                      onAdd={() => logPortion(row, defaultPortion(row))}
-                      onEditPortion={() => setPortionRow(row)}
+                <>
+                  {rows.map((row, i) => (
+                    <div
+                      key={`${row.kind}-${row.id}`}
+                      className={i > 0 ? cn('border-t', dashed) : ''}
+                    >
+                      <AddEntryResultRow
+                        row={row}
+                        disabled={isAdding}
+                        onAdd={() => logPortion(row, defaultPortion(row))}
+                        onEditPortion={() => setPortionRow(row)}
+                      />
+                    </div>
+                  ))}
+                  {isCatalogLoading ? (
+                    <AddEntryListSkeleton
+                      rows={2}
+                      dividedFromAbove={rows.length > 0}
+                      dividerClassName={cn('border-t', dashed)}
                     />
-                  </div>
-                ))
+                  ) : null}
+                </>
               )}
               <button
                 type="button"
@@ -159,16 +175,24 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
           </div>
 
           {/* RIGHT — added items + day projection (sticky) */}
-          <div className="sticky top-5 flex flex-col gap-[18px]">
+          <div className="sticky top-5 flex min-w-0 flex-col gap-[18px]">
             <div className="border-border bg-card rounded-2xl border p-4">
               <div className="flex items-baseline justify-between">
                 <span className={microLabel}>{t.addEntry.addedTo(mealLabel)}</span>
-                <span className="font-heading text-[17px] font-semibold">
-                  {fmt(mealTotal)}
-                  <span className="text-muted-foreground ml-0.5 text-[11px] font-normal">kcal</span>
-                </span>
+                {isDayLoading ? (
+                  <Skeleton className="h-4 w-14" />
+                ) : (
+                  <span className="font-heading text-[17px] font-semibold">
+                    {fmt(mealTotal)}
+                    <span className="text-muted-foreground ml-0.5 text-[11px] font-normal">
+                      kcal
+                    </span>
+                  </span>
+                )}
               </div>
-              {mealEntries.length > 0 || pending.length > 0 ? (
+              {isDayLoading ? (
+                <AddEntryDaySkeleton variant="added" dividerClassName={dashed} />
+              ) : mealEntries.length > 0 || pending.length > 0 ? (
                 <>
                   <ul className={cn('mt-2 flex flex-col divide-y divide-dashed', dashed)}>
                     {mealEntries.map((entry) => (
@@ -191,7 +215,9 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
 
             <div className="border-border bg-card rounded-2xl border p-4">
               <span className={microLabel}>{t.addEntry.dayAfter}</span>
-              {target ? (
+              {isDayLoading ? (
+                <AddEntryDaySkeleton variant="day" dividerClassName={dashed} />
+              ) : target ? (
                 <>
                   <div className="mt-2 flex items-center justify-between gap-2">
                     <span className="font-heading text-[20px] font-semibold">

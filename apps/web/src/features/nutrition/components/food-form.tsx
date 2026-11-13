@@ -20,6 +20,8 @@ import { cn } from '@/lib/utils';
 
 import type { CreateFoodInput, Food } from '@gym-bro/shared';
 
+import { isRestrictedBarcode } from '@gym-bro/shared';
+
 import { useCreateFood } from '../hooks/use-create-food';
 import { useUpdateFood } from '../hooks/use-update-food';
 import { useNutritionTranslation } from '../i18n';
@@ -52,13 +54,22 @@ const gramSizeField = z
     return Number.isFinite(n) && n > 0 && n <= 99999.99;
   }, 'Enter a number greater than 0');
 
+// A food photo is only ever shown as a thumbnail (72px at most, the desktop form
+// header), so 192px covers a 2.5x screen at ~5–10 KB. Each one rides along in every
+// food-list response, so the size matters.
+const FOOD_IMAGE_SIZE = 192;
+
 // Optional barcode typed by hand when adding a product that wasn't scanned. Blank =
 // none; otherwise a valid 8–14 digit code. Scanned/known barcodes are shown locked
 // (read-only under the photo), not through this field.
 const manualEanField = z
   .string()
   .trim()
-  .refine((v) => v === '' || /^\d{8,14}$/.test(v), 'Enter a valid 8–14 digit barcode');
+  .refine((v) => v === '' || /^\d{8,14}$/.test(v), 'Enter a valid 8–14 digit barcode')
+  .refine(
+    (v) => v === '' || !isRestrictedBarcode(v),
+    'In-store weighed-item codes can’t be shared — leave the barcode empty',
+  );
 
 const foodFormSchema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(100, 'Name is too long'),
@@ -151,7 +162,7 @@ export function FoodForm({
     e.target.value = '';
     if (!file) return;
     try {
-      setImage(await resizeImageToDataUrl(file));
+      setImage(await resizeImageToDataUrl(file, FOOD_IMAGE_SIZE));
     } catch {
       toast.error(t.common.imageProcessError);
     }
@@ -187,9 +198,10 @@ export function FoodForm({
   // manually-typed barcode) we prompt the user to make the name clear and verify the
   // macros. Found-in-catalog products never reach this form, so a locked/typed EAN here
   // always means "new global product".
-  const typedEan = form.watch('ean');
+  const typedEan = (form.watch('ean') ?? '').trim();
   const contributing =
-    !editing && (Boolean(lockedEan) || /^\d{8,14}$/.test((typedEan ?? '').trim()));
+    !editing &&
+    (Boolean(lockedEan) || (/^\d{8,14}$/.test(typedEan) && !isRestrictedBarcode(typedEan)));
 
   const create = useCreateFood();
   const update = useUpdateFood();
@@ -454,7 +466,7 @@ export function FoodForm({
         <button
           type="submit"
           disabled={isPending}
-          className="bg-primary text-primary-foreground hover:bg-primary-hover disabled:bg-primary/60 inline-flex h-12 items-center justify-center gap-2 rounded-full text-[14.5px] font-semibold transition-colors disabled:pointer-events-none"
+          className="bg-primary text-primary-foreground hover:bg-primary-hover disabled:bg-primary/60 inline-flex h-10 items-center justify-center gap-2 rounded-full text-[14.5px] font-semibold transition-colors disabled:pointer-events-none"
         >
           {isPending ? <Loader2 className="size-4 animate-spin" /> : null}
           {isPending ? t.common.saving : editing ? t.common.saveChanges : t.foods.addFood}

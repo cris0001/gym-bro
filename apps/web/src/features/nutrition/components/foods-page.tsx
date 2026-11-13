@@ -33,7 +33,7 @@ export function FoodsPage() {
         <div className="flex gap-2">
           <Button
             type="button"
-            className="h-[42px] rounded-full px-5 text-[14px] font-semibold"
+            className="h-9 rounded-full px-5 text-[14px] font-semibold"
             onClick={openCreate}
           >
             <Plus className="size-4" />

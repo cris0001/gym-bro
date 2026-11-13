@@ -8,7 +8,8 @@ export function lookupEan(ean: string): Promise<EanLookupResult> {
   return apiFetch<EanLookupResult>(`/api/products/by-ean/${encodeURIComponent(ean)}`);
 }
 
-// Name search over the shared catalog (the "All products" picker tab).
+// Name search over the shared catalog — packaged products by name, generic foods in
+// either language.
 export function searchGlobalProducts(q: string): Promise<GlobalProduct[]> {
   return apiFetch<GlobalProduct[]>(`/api/products/search?q=${encodeURIComponent(q)}`);
 }

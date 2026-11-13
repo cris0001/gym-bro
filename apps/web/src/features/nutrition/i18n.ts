@@ -78,6 +78,9 @@ export const useNutritionTranslation = createFeatureTranslation({
       pendingSync: 'waiting to sync',
       pendingItem: 'Item',
       unitShort: { grams: 'g', servings: 'serv', units: 'pcs' },
+      fromCatalog: 'Catalog',
+      editProduct: 'Edit product',
+      catalogAddFailed: 'Couldn’t add this product. Check your connection and try again.',
     },
     portion: {
       portion: 'Portion',
@@ -220,6 +223,8 @@ export const useNutritionTranslation = createFeatureTranslation({
       cameraUnavailable: 'Camera unavailable — type the barcode or upload a photo.',
       noBarcodeInImage: 'No barcode found in that image.',
       invalidBarcode: 'Enter a valid 8–14 digit barcode.',
+      restrictedBarcode:
+        'This is an in-store weighed-item code, so it can’t be shared — add it as your own food instead.',
     },
   },
   pl: {
@@ -292,6 +297,9 @@ export const useNutritionTranslation = createFeatureTranslation({
       pendingSync: 'czeka na wysłanie',
       pendingItem: 'Pozycja',
       unitShort: { grams: 'g', servings: 'porc.', units: 'szt.' },
+      fromCatalog: 'Katalog',
+      editProduct: 'Edytuj produkt',
+      catalogAddFailed: 'Nie udało się dodać produktu. Sprawdź połączenie i spróbuj ponownie.',
     },
     portion: {
       portion: 'Porcja',
@@ -438,6 +446,8 @@ export const useNutritionTranslation = createFeatureTranslation({
       cameraUnavailable: 'Aparat niedostępny — wpisz kod kreskowy lub prześlij zdjęcie.',
       noBarcodeInImage: 'Nie znaleziono kodu kreskowego na tym zdjęciu.',
       invalidBarcode: 'Wpisz prawidłowy kod kreskowy (8–14 cyfr).',
+      restrictedBarcode:
+        'To sklepowy kod wagowy, więc nie da się go udostępnić — dodaj produkt jako własny.',
     },
   },
 });

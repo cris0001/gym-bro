@@ -1,5 +1,5 @@
 import { Apple, Check, ChevronsUpDown, Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -17,6 +17,7 @@ import type { Food } from '@gym-bro/shared';
 
 import { useFoods } from '../hooks/use-foods';
 import { useNutritionTranslation } from '../i18n';
+import { CatalogCommandGroup } from './catalog-command-group';
 
 interface FoodComboboxProps {
   selectedId: string | null;
@@ -29,9 +30,9 @@ interface FoodComboboxProps {
   variant?: 'default' | 'add';
 }
 
-// Searchable food picker for a recipe ingredient. Lists the active food
-// dictionary; selectedName is shown on the trigger so a soft-deleted-but-still-
-// referenced food still reads correctly.
+// Searchable food picker for a recipe ingredient. Lists the active food dictionary,
+// with catalog matches below it while typing; selectedName is shown on the trigger so
+// a soft-deleted-but-still-referenced food still reads correctly.
 export function FoodCombobox({
   selectedId,
   selectedName,
@@ -41,12 +42,15 @@ export function FoodCombobox({
 }: FoodComboboxProps) {
   const t = useNutritionTranslation();
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
   const { data: foods = [] } = useFoods('');
+  const ownedGlobalIds = useMemo(() => new Set(foods.map((f) => f.globalProductId)), [foods]);
   const triggerLabel = placeholder ?? t.foods.selectFood;
 
   function handleSelect(food: Food) {
     onSelect(food);
     setOpen(false);
+    setSearch('');
   }
 
   return (
@@ -55,13 +59,13 @@ export function FoodCombobox({
         {variant === 'add' ? (
           <button
             type="button"
-            className="border-border bg-card text-primary hover:bg-muted flex h-12 w-full items-center gap-2.5 rounded-[14px] border pr-14 pl-4 text-left text-[14px] font-semibold transition-colors"
+            className="border-border bg-card text-primary hover:bg-muted flex h-12 w-full items-center gap-2.5 rounded-xl border pr-14 pl-4 text-left text-[14px] font-semibold transition-colors"
           >
             <Plus className="size-4 shrink-0" />
             <span className="truncate">{triggerLabel}</span>
           </button>
         ) : (
-          <Button variant="outline" className="h-10 w-full justify-between font-normal">
+          <Button variant="outline" className="h-10 w-full justify-between rounded-xl font-normal">
             <span className={cn('truncate', !selectedName && 'text-muted-foreground')}>
               {selectedName ?? triggerLabel}
             </span>
@@ -77,6 +81,8 @@ export function FoodCombobox({
           {/* A roomier search field with a readable placeholder, so it's obvious you
               can type to filter. */}
           <CommandInput
+            value={search}
+            onValueChange={setSearch}
             placeholder={t.foods.searchFoods}
             className="h-11 text-[14px] placeholder:text-[#7a6c72] dark:placeholder:text-[#9c9097]"
           />
@@ -118,6 +124,13 @@ export function FoodCombobox({
                 </CommandItem>
               ))}
             </CommandGroup>
+            {open ? (
+              <CatalogCommandGroup
+                search={search}
+                ownedGlobalIds={ownedGlobalIds}
+                onSelect={handleSelect}
+              />
+            ) : null}
           </CommandList>
         </Command>
       </PopoverContent>

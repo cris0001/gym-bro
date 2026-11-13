@@ -22,7 +22,10 @@ export default defineConfig({
     // Installable PWA. autoUpdate: a new deploy's service worker takes over on the
     // next load (no update prompt). The app shell is precached for offline launch;
     // API calls are never cached — navigateFallbackDenylist keeps "/api/*" on the
-    // network so live data and the auth cookie always hit the server.
+    // network so live data and the auth cookie always hit the server. The one
+    // exception is uploaded food/recipe photos: their URL carries a content hash
+    // (?v=), so cache-first is safe and keeps seen photos visible offline. Logout
+    // drops that cache (USER_IMAGE_CACHE in src/lib/query-persistence.ts).
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png', 'logo.svg'],
@@ -30,6 +33,19 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api/],
         // The SPA can grow past the default 2 MiB precache ceiling; lift it a bit.
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+        runtimeCaching: [
+          {
+            // A function, not a RegExp: Workbox tests a RegExp against the full URL.
+            urlPattern: ({ url, sameOrigin }) =>
+              sameOrigin && /^\/api\/(foods|recipes)\/[^/]+\/image$/.test(url.pathname),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'user-images',
+              expiration: { maxEntries: 1000, maxAgeSeconds: 365 * 24 * 60 * 60 },
+              cacheableResponse: { statuses: [200] },
+            },
+          },
+        ],
       },
       manifest: {
         name: 'Gym Bro',
