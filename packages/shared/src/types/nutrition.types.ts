@@ -11,6 +11,7 @@ import type {
   createRecipeSchema,
   eanParamSchema,
   estimateMacrosSchema,
+  foodFromGlobalSchema,
   foodLogDateQuerySchema,
   macroEstimateSchema,
   productSearchQuerySchema,
@@ -36,6 +37,7 @@ export type FoodLogDateQueryInput = z.infer<typeof foodLogDateQuerySchema>;
 export type RecentFoodLogQueryInput = z.infer<typeof recentFoodLogQuerySchema>;
 export type EanParamInput = z.infer<typeof eanParamSchema>;
 export type ProductSearchQueryInput = z.infer<typeof productSearchQuerySchema>;
+export type FoodFromGlobalInput = z.infer<typeof foodFromGlobalSchema>;
 export type EstimateMacrosInput = z.infer<typeof estimateMacrosSchema>;
 export type MacroEstimate = z.infer<typeof macroEstimateSchema>;
 
@@ -78,10 +80,14 @@ export interface Food extends MacroTotals {
 // A product from the shared, EAN-keyed catalog (built up as users scan). Macros per
 // 100g. Internal fields (offRaw, firstScannedBy) are not exposed — this is the shape
 // the barcode lookup returns, for a preview and to seed a pantry copy.
+// A packaged product has an ean and just `name`; a generic food (fruit, veg, …) has no
+// ean and is named in both languages via namePl / nameEn.
 export interface GlobalProduct extends MacroTotals {
   id: string;
-  ean: string;
+  ean: string | null;
   name: string;
+  namePl: string | null;
+  nameEn: string | null;
   brand: string | null;
   servingGrams: number | null;
   unitGrams: number | null;
@@ -106,12 +112,13 @@ export interface OffDraft {
 }
 
 // Result of a barcode lookup: already in our catalog (+ whether it's in the user's
-// pantry), found only on OpenFoodFacts (a draft to confirm), or nowhere (blank form,
-// ean remembered).
+// pantry), found only on OpenFoodFacts (a draft to confirm), nowhere (blank form, ean
+// remembered), or an in-store weighed-item code that can't back a shared product.
 export type EanLookupResult =
   | { status: 'found'; product: GlobalProduct; inPantry: boolean; foodId: string | null }
   | { status: 'off'; draft: OffDraft }
-  | { status: 'not_found'; ean: string };
+  | { status: 'not_found'; ean: string }
+  | { status: 'restricted'; ean: string };
 
 export interface NutritionTarget extends MacroTotals {
   id: string;

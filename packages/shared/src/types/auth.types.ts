@@ -13,6 +13,7 @@ export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 export type OnboardingInput = z.infer<typeof onboardingSchema>;
 
 export type Sex = NonNullable<UpdateProfileInput['sex']>;
+export type FoodNameLang = NonNullable<UpdateProfileInput['foodNameLang']>;
 
 // The user as it crosses the wire: password-stripped, with every date/timestamp
 // serialized to an ISO string by JSON (birthdate is YYYY-MM-DD, the rest are
@@ -28,6 +29,8 @@ export interface PublicUser {
   // null until the user finishes or skips onboarding.
   onboardedAt: string | null;
   heightCm: number | null;
+  // Language for generic catalog food names; null = follow the UI language.
+  foodNameLang: FoodNameLang | null;
   // Access licence expiry (ISO). null = perpetual/unlimited; a past timestamp
   // means the licence has lapsed and the app locks to the dashboard + paywall.
   licenseExpiresAt: string | null;

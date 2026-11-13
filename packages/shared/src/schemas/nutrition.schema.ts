@@ -50,6 +50,13 @@ export const productSearchQuerySchema = z.object({
   q: z.string().trim().min(1, 'Type something to search').max(100),
 });
 
+// Add a catalog product to your foods. Macros and the rest are copied from the global
+// server-side; only the pantry name comes from the client, which knows the UI language
+// (a generic food's Polish or English name) and the brand-prefixed display name.
+export const foodFromGlobalSchema = z.object({
+  name: itemName,
+});
+
 // --- Recipes ---
 
 // One ingredient line in a recipe: a food plus a gram amount. Position comes from

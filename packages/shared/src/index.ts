@@ -14,6 +14,7 @@ export * from './types/body.types';
 export * from './types/strava.types';
 export * from './utils/macros';
 export * from './utils/moving-average';
+export * from './utils/barcode';
 export * from './constants/auth.constants';
 export * from './constants/training.constants';
 export * from './constants/sessions.constants';

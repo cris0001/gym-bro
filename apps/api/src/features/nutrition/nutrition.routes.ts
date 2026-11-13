@@ -6,6 +6,7 @@ import {
   createRecipeSchema,
   eanParamSchema,
   estimateMacrosSchema,
+  foodFromGlobalSchema,
   foodLogDateQuerySchema,
   productSearchQuerySchema,
   recentFoodLogQuerySchema,
@@ -50,6 +51,30 @@ nutritionRoutes.post('/foods', requireAuth, async (c) => {
   return c.json({ data: food }, 201);
 });
 
+// An uploaded photo as an image (responses carry this URL instead of the bytes). The
+// URL's ?v= changes whenever the photo does, so the browser may keep it forever.
+// Private: it's behind the auth cookie, so no shared cache may store it.
+function imageResponse(c: Context<AppEnv>, image: { contentType: string; bytes: Buffer }) {
+  return c.body(new Uint8Array(image.bytes), 200, {
+    'Content-Type': image.contentType,
+    'Cache-Control': 'private, max-age=31536000, immutable',
+  });
+}
+
+nutritionRoutes.get('/foods/:id/image', requireAuth, async (c) => {
+  const id = parseUuidParam(c, 'id');
+  return imageResponse(c, await nutritionService.getFoodImage(c.get('userId'), id));
+});
+
+// Add a catalog product (picked from search) to your foods — returns the pantry copy,
+// existing or new.
+nutritionRoutes.post('/foods/from-global/:globalProductId', requireAuth, async (c) => {
+  const globalProductId = parseUuidParam(c, 'globalProductId');
+  const { name } = await parseJson(c, foodFromGlobalSchema);
+  const food = await nutritionService.addFoodFromGlobal(c.get('userId'), globalProductId, name);
+  return c.json({ data: food }, 201);
+});
+
 nutritionRoutes.put('/foods/:id', requireAuth, async (c) => {
   const id = parseUuidParam(c, 'id');
   const input = await parseJson(c, updateFoodSchema);
@@ -65,8 +90,8 @@ nutritionRoutes.delete('/foods/:id', requireAuth, async (c) => {
 
 // --- Products (barcode lookup + catalog search) ---
 
-// Name search over the shared catalog — the "All products" picker tab. Selecting a
-// result adds it to the user's foods via POST /foods (barcode-aware).
+// Name search over the shared catalog, shown alongside your own foods in the pickers.
+// Selecting a result adds it to the user's foods via POST /foods/from-global/:id.
 nutritionRoutes.get('/products/search', requireAuth, async (c) => {
   const parsed = productSearchQuerySchema.safeParse({ q: c.req.query('q') });
   if (!parsed.success) {
@@ -92,6 +117,11 @@ nutritionRoutes.get('/products/by-ean/:ean', requireAuth, async (c) => {
 nutritionRoutes.get('/recipes', requireAuth, async (c) => {
   const recipes = await nutritionService.listRecipes(c.get('userId'));
   return c.json({ data: recipes });
+});
+
+nutritionRoutes.get('/recipes/:id/image', requireAuth, async (c) => {
+  const id = parseUuidParam(c, 'id');
+  return imageResponse(c, await nutritionService.getRecipeImage(c.get('userId'), id));
 });
 
 nutritionRoutes.get('/recipes/:id', requireAuth, async (c) => {

@@ -17,6 +17,7 @@ function fakeUser(overrides: Partial<User> = {}): User {
     birthdate: null,
     sex: null,
     heightCm: null,
+    foodNameLang: null,
     onboardedAt: null,
     licenseExpiresAt: null,
     activePlanId: null,
@@ -109,6 +110,37 @@ describe('auth routes', () => {
     expect(res.status).toBe(200);
     expect(body.data.id).toBe('user-1');
     expect(repo.findById).toHaveBeenCalledWith('user-1');
+  });
+
+  it('PATCH /me saves the food-name language (and clears it with null)', async () => {
+    repo.findByEmail.mockResolvedValue(undefined);
+    repo.create.mockResolvedValue(fakeUser());
+    const cookie = cookieFrom(
+      await post('/api/auth/register', {
+        name: 'Test User',
+        email: 'test@example.com',
+        password: 'password123',
+      }),
+    );
+    const patch = (body: unknown) =>
+      app.request('/api/auth/me', {
+        method: 'PATCH',
+        headers: { ...JSON_HEADERS, cookie },
+        body: JSON.stringify(body),
+      });
+
+    repo.updateProfile.mockResolvedValue(fakeUser({ foodNameLang: 'pl' }));
+    const res = await patch({ foodNameLang: 'pl' });
+    const body = (await res.json()) as { data: { foodNameLang: string | null } };
+    expect(res.status).toBe(200);
+    expect(body.data.foodNameLang).toBe('pl');
+    expect(repo.updateProfile).toHaveBeenCalledWith('user-1', { foodNameLang: 'pl' });
+
+    repo.updateProfile.mockResolvedValue(fakeUser());
+    await patch({ foodNameLang: null });
+    expect(repo.updateProfile).toHaveBeenLastCalledWith('user-1', { foodNameLang: null });
+
+    expect((await patch({ foodNameLang: 'de' })).status).toBe(400);
   });
 
   it('POST /login with valid credentials returns 200 and a cookie', async () => {

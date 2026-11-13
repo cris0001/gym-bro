@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { SEX_OPTIONS } from '../constants/auth.constants';
+import { FOOD_NAME_LANGS, SEX_OPTIONS } from '../constants/auth.constants';
 
 // Single source of truth for auth contracts. The API validates request bodies
 // with these; the web infers form types from them so rules can't drift apart.
@@ -24,6 +24,8 @@ export const updateProfileSchema = z.object({
   birthdate: z.iso.date().nullable().optional(),
   sex: z.enum(SEX_OPTIONS).nullable().optional(),
   heightCm: z.number().int().min(50).max(300).nullable().optional(),
+  // null = follow the UI language.
+  foodNameLang: z.enum(FOOD_NAME_LANGS).nullable().optional(),
 });
 
 // Onboarding takes the same optional profile fields; the route additionally

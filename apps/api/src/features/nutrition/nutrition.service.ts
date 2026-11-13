@@ -13,7 +13,13 @@ import type {
   UpdateRecipeInput,
 } from '@gym-bro/shared';
 
-import { divideMacros, multiplyMacros, scaleMacros, sumMacros } from '@gym-bro/shared';
+import {
+  divideMacros,
+  isRestrictedBarcode,
+  multiplyMacros,
+  scaleMacros,
+  sumMacros,
+} from '@gym-bro/shared';
 
 import {
   ConflictError,
@@ -23,6 +29,7 @@ import {
 } from '../../lib/errors';
 import { AiUnavailableError, estimateMacrosFromPhoto } from './gemini-client';
 import * as nutritionRepository from './nutrition.repository';
+import { decodeDataUri, isOwnImageRef, toImageRef } from './nutrition.utils';
 import { fetchOffProduct, type OffProductData } from './off-client';
 
 // Business logic for the nutrition domain — ownership checks, conflict mapping,
@@ -83,6 +90,13 @@ export async function createFood(userId: string, input: CreateFoodInput) {
 // add or revive the user's pantry copy linked to it. Idempotent — re-adding a global
 // you already have returns the existing pantry entry.
 async function saveScannedFood(userId: string, ean: string, input: CreateFoodInput) {
+  // The client routes weighed-item codes to a custom food; this guards the catalog
+  // against a request that skips that.
+  if (isRestrictedBarcode(ean)) {
+    throw new ValidationError('In-store barcodes cannot be saved to the catalog', {
+      ean: ['This is an in-store weighed-item code — add it as your own food instead'],
+    });
+  }
   const global =
     (await nutritionRepository.findGlobalByEan(ean)) ??
     (await nutritionRepository.createGlobalProduct({
@@ -98,13 +112,40 @@ async function saveScannedFood(userId: string, ean: string, input: CreateFoodInp
       imageUrl: input.imageUrl,
       firstScannedBy: userId,
     }));
+  return ensurePantryCopy(userId, global.id, input);
+}
 
-  const existing = await nutritionRepository.findFoodByGlobalId(userId, global.id);
+// Add a catalog product picked from search (packaged or generic) to the user's foods.
+// The values come from the global itself — only the name is the client's, since it
+// depends on the UI language. Idempotent like the scan path.
+export async function addFoodFromGlobal(userId: string, globalProductId: string, name: string) {
+  const global = await nutritionRepository.findGlobalById(globalProductId);
+  if (!global) {
+    throw new NotFoundError('Product not found');
+  }
+  return ensurePantryCopy(userId, global.id, {
+    name,
+    kcal: global.kcal,
+    proteinG: global.proteinG,
+    carbsG: global.carbsG,
+    fatG: global.fatG,
+    ...(global.servingGrams !== null ? { servingGrams: global.servingGrams } : {}),
+    ...(global.unitGrams !== null ? { unitGrams: global.unitGrams } : {}),
+    ...(global.ean !== null ? { ean: global.ean } : {}),
+    ...(global.brand !== null ? { brand: global.brand } : {}),
+    ...(global.imageUrl !== null ? { imageUrl: global.imageUrl } : {}),
+  });
+}
+
+// One pantry copy per global per user: reuse a live one, revive a soft-deleted one, or
+// create it from `input`.
+async function ensurePantryCopy(userId: string, globalId: string, input: CreateFoodInput) {
+  const existing = await nutritionRepository.findFoodByGlobalId(userId, globalId);
   if (existing) {
     if (existing.isActive) return existing;
     return (await nutritionRepository.reactivateFood(userId, existing.id)) ?? existing;
   }
-  return nutritionRepository.createFood(userId, input, global.id);
+  return nutritionRepository.createFood(userId, input, globalId);
 }
 
 // Name search over the shared catalog for the "All products" picker tab, capped.
@@ -114,8 +155,12 @@ export async function searchGlobalProducts(query: string) {
 }
 
 // Barcode lookup: our catalog first (with whether it's already in the user's pantry),
-// then OpenFoodFacts (a draft to confirm), else nowhere.
+// then OpenFoodFacts (a draft to confirm), else nowhere. Weighed-item codes stop
+// before either — they're per-store and per-weighing, so a match would be wrong.
 export async function lookupByEan(userId: string, ean: string) {
+  if (isRestrictedBarcode(ean)) {
+    return { status: 'restricted' as const, ean };
+  }
   const global = await nutritionRepository.findGlobalByEan(ean);
   if (global) {
     const pantry = await nutritionRepository.findFoodByGlobalId(userId, global.id);
@@ -141,6 +186,8 @@ function toGlobalDto(global: nutritionRepository.GlobalProductRow) {
     id: global.id,
     ean: global.ean,
     name: global.name,
+    namePl: global.namePl,
+    nameEn: global.nameEn,
     brand: global.brand,
     kcal: global.kcal,
     proteinG: global.proteinG,
@@ -169,9 +216,11 @@ function toOffDraft(off: OffProductData): OffDraft {
 }
 
 export async function updateFood(userId: string, id: string, input: UpdateFoodInput) {
+  // The edit form echoes back the photo ref it loaded — that means "unchanged".
+  const keepImage = input.imageUrl !== undefined && isOwnImageRef('foods', id, input.imageUrl);
   let food;
   try {
-    food = await nutritionRepository.updateFood(userId, id, input);
+    food = await nutritionRepository.updateFood(userId, id, input, { keepImage });
   } catch (error) {
     if (isUniqueViolation(error)) {
       throw new ConflictError('A food with this name already exists');
@@ -182,6 +231,25 @@ export async function updateFood(userId: string, id: string, input: UpdateFoodIn
     throw new NotFoundError('Food not found');
   }
   return food;
+}
+
+// The bytes behind a food's / recipe's photo ref. Only uploaded photos are served
+// here; anything else (no photo, an OFF URL) is a 404 — the client never gets a ref
+// for those.
+export async function getFoodImage(userId: string, id: string) {
+  return decodeStoredImage(await nutritionRepository.findFoodImage(userId, id));
+}
+
+export async function getRecipeImage(userId: string, id: string) {
+  return decodeStoredImage(await nutritionRepository.findRecipeImage(userId, id));
+}
+
+function decodeStoredImage(stored: string | null) {
+  const image = stored !== null ? decodeDataUri(stored) : null;
+  if (!image) {
+    throw new NotFoundError('Image not found');
+  }
+  return image;
 }
 
 export async function deleteFood(userId: string, id: string) {
@@ -236,6 +304,7 @@ async function buildRecipeDetail(recipe: {
   const totalGrams = ingredients.reduce((sum, i) => sum + i.amountGrams, 0);
   return {
     ...recipe,
+    imageUrl: toImageRef('recipes', recipe.id, recipe.imageUrl),
     ingredients,
     totalGrams,
     total,
@@ -284,9 +353,10 @@ export async function createRecipe(userId: string, input: CreateRecipeInput) {
 
 export async function updateRecipe(userId: string, id: string, input: UpdateRecipeInput) {
   await assertIngredientFoodsExist(userId, input.ingredients);
+  const keepImage = input.imageUrl != null && isOwnImageRef('recipes', id, input.imageUrl);
   let recipe;
   try {
-    recipe = await nutritionRepository.replaceRecipe(id, { userId, ...input });
+    recipe = await nutritionRepository.replaceRecipe(id, { userId, ...input }, { keepImage });
   } catch (error) {
     if (isUniqueViolation(error)) {
       throw new ConflictError('A recipe with this name already exists');

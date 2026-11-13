@@ -18,6 +18,7 @@ function fakeUser(overrides: Partial<User> = {}): User {
     birthdate: null,
     sex: null,
     heightCm: null,
+    foodNameLang: null,
     onboardedAt: null,
     licenseExpiresAt: null,
     activePlanId: null,

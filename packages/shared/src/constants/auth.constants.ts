@@ -2,3 +2,8 @@
 // Mirrors the `sex` pgEnum in the API's users table. `as const` so it can seed
 // both the Zod enum and the inferred Sex type from one source.
 export const SEX_OPTIONS = ['male', 'female'] as const;
+
+// Which language a generic catalog food (fruit, veg… — named in both) is shown and
+// saved in. Mirrors the `food_name_lang` pgEnum; a user with none set follows the UI
+// language. Search always matches both.
+export const FOOD_NAME_LANGS = ['pl', 'en'] as const;

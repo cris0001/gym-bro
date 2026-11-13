@@ -7,7 +7,7 @@ import { users, type User } from '../../db/schema/users';
 // (or absent) skips it. Values are explicitly undefined-able to line up with the
 // Zod-inferred input under exactOptionalPropertyTypes.
 export type ProfileUpdate = {
-  [K in 'birthdate' | 'sex' | 'heightCm']?: User[K] | undefined;
+  [K in 'birthdate' | 'sex' | 'heightCm' | 'foodNameLang']?: User[K] | undefined;
 };
 
 // Case-insensitive lookup, matching the lower(email) unique index.

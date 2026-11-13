@@ -12,18 +12,27 @@ import {
 
 import { users } from './users';
 
-// Shared, crowd-sourced product catalog keyed by EAN barcode. Starts empty; a row is
-// created the first time any user scans a barcode we don't have yet — fetched from
-// OpenFoodFacts, or completed by the user when OFF lacks the data. Read-only to users:
-// nobody edits a global. To change values you fork it into your own `foods` (pantry)
-// row. Macros are per 100g, same convention as `foods`.
+// Shared product catalog, two kinds of row told apart by `ean`:
+// - packaged (ean set): crowd-sourced — created the first time any user scans a
+//   barcode we don't have yet, from OpenFoodFacts or completed by the user. Its one
+//   `name` is whatever the packaging / first scanner said.
+// - generic (ean null): a curated basic food (fruit, vegetables, meat, grains) with
+//   no barcode, added only by the operator, named in both Polish and English.
+// Read-only to users: nobody edits a global. To change values you fork it into your
+// own `foods` (pantry) row. Macros are per 100g, same convention as `foods`.
 export const globalProducts = pgTable(
   'global_products',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    // The barcode — the dedup key. One global per code (unique index below).
-    ean: text('ean').notNull(),
+    // The barcode — the dedup key for packaged products (unique index below). Null =
+    // a generic food.
+    ean: text('ean'),
+    // Packaged: the product name. Generic: a copy of nameEn, kept so every row has a
+    // name to fall back to.
     name: text('name').notNull(),
+    // Generic foods only — both required for them (CHECK below), null for packaged.
+    namePl: text('name_pl'),
+    nameEn: text('name_en'),
     // Brand/producer (OFF's `brands`), for easy identification. Optional.
     brand: text('brand'),
     // All per 100g. numeric(6,2) matches foods.
@@ -50,6 +59,18 @@ export const globalProducts = pgTable(
   },
   (table) => [
     uniqueIndex('global_products_ean_unique').on(table.ean),
+    // No two generic foods with the same name in either language (case-insensitive).
+    uniqueIndex('global_products_generic_name_pl_unique')
+      .on(sql`lower(${table.namePl})`)
+      .where(sql`${table.ean} IS NULL`),
+    uniqueIndex('global_products_generic_name_en_unique')
+      .on(sql`lower(${table.nameEn})`)
+      .where(sql`${table.ean} IS NULL`),
+    // A row without a barcode must be a fully-named generic food.
+    check(
+      'global_products_generic_names_required',
+      sql`${table.ean} IS NOT NULL OR (${table.namePl} IS NOT NULL AND ${table.nameEn} IS NOT NULL)`,
+    ),
     check('global_products_kcal_non_negative', sql`${table.kcal} >= 0`),
     check('global_products_protein_non_negative', sql`${table.proteinG} >= 0`),
     check('global_products_carbs_non_negative', sql`${table.carbsG} >= 0`),

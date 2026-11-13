@@ -17,6 +17,10 @@ import { trainingPlans } from './training-plans';
 // Closed set — drives BMR-type calculations later, so the values are fixed.
 export const sexEnum = pgEnum('sex', ['male', 'female']);
 
+// Language a generic catalog food (named in both) is shown and saved in. Mirrors
+// FOOD_NAME_LANGS in @gym-bro/shared.
+export const foodNameLangEnum = pgEnum('food_name_lang', ['pl', 'en']);
+
 // Root table: auth credentials + static onboarding profile. Time-series body
 // data (weight, body fat, circumferences) lives in a separate historical
 // `body_measurements` table (Stage 10), not here.
@@ -36,6 +40,9 @@ export const users = pgTable(
     birthdate: date('birthdate'),
     sex: sexEnum('sex'),
     heightCm: smallint('height_cm'),
+    // Generic catalog food names in Polish or English. NULL = follow the UI language
+    // (every existing account starts here, so nothing changes until it's set).
+    foodNameLang: foodNameLangEnum('food_name_lang'),
     // NULL until the user finishes or skips onboarding; the timestamp also
     // records when, hence timestamptz rather than a boolean.
     onboardedAt: timestamp('onboarded_at', { withTimezone: true }),

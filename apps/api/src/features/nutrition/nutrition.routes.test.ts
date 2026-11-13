@@ -146,6 +146,67 @@ describe('food update/delete routes', () => {
     expect(body.data.name).toBe('Chicken thigh');
   });
 
+  it('PUT /api/foods/:id echoing its own photo ref keeps the stored photo', async () => {
+    repo.updateFood.mockResolvedValue(fakeFood());
+
+    await request('PUT', `/api/foods/${FOOD_ID}`, {
+      cookie: await authCookie(),
+      body: { ...VALID_FOOD, imageUrl: `/api/foods/${FOOD_ID}/image?v=abc` },
+    });
+
+    expect(repo.updateFood).toHaveBeenCalledWith('user-1', FOOD_ID, expect.anything(), {
+      keepImage: true,
+    });
+  });
+
+  it('PUT /api/foods/:id with a new photo replaces it', async () => {
+    repo.updateFood.mockResolvedValue(fakeFood());
+
+    await request('PUT', `/api/foods/${FOOD_ID}`, {
+      cookie: await authCookie(),
+      body: { ...VALID_FOOD, imageUrl: 'data:image/webp;base64,AAAA' },
+    });
+
+    expect(repo.updateFood).toHaveBeenCalledWith(
+      'user-1',
+      FOOD_ID,
+      expect.objectContaining({ imageUrl: 'data:image/webp;base64,AAAA' }),
+      { keepImage: false },
+    );
+  });
+
+  it('GET /api/foods/:id/image serves the stored photo as a cacheable image', async () => {
+    repo.findFoodImage.mockResolvedValue('data:image/webp;base64,UklGRg==');
+
+    const res = await request('GET', `/api/foods/${FOOD_ID}/image`, {
+      cookie: await authCookie(),
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-type')).toBe('image/webp');
+    expect(res.headers.get('cache-control')).toContain('immutable');
+    expect(new Uint8Array(await res.arrayBuffer())).toEqual(
+      new Uint8Array(Buffer.from('UklGRg==', 'base64')),
+    );
+    expect(repo.findFoodImage).toHaveBeenCalledWith('user-1', FOOD_ID);
+  });
+
+  it("GET /api/foods/:id/image is 404 without a stored photo (or for another user's food)", async () => {
+    repo.findFoodImage.mockResolvedValue(null);
+
+    const res = await request('GET', `/api/foods/${FOOD_ID}/image`, {
+      cookie: await authCookie(),
+    });
+
+    expect(res.status).toBe(404);
+  });
+
+  it('GET /api/foods/:id/image requires auth', async () => {
+    const res = await request('GET', `/api/foods/${FOOD_ID}/image`);
+    expect(res.status).toBe(401);
+    expect(repo.findFoodImage).not.toHaveBeenCalled();
+  });
+
   it("PUT /api/foods/:id returns 404 when the food is not the user's", async () => {
     repo.updateFood.mockResolvedValue(undefined);
 
@@ -1091,6 +1152,8 @@ function fakeGlobal(overrides: Partial<GlobalProductRow> = {}): GlobalProductRow
     id: GLOBAL_ID,
     ean: EAN,
     name: 'Cola',
+    namePl: null,
+    nameEn: null,
     brand: 'Coca-Cola',
     kcal: 42,
     proteinG: 0,
@@ -1166,6 +1229,17 @@ describe('barcode products', () => {
     expect(body.data.ean).toBe(EAN);
   });
 
+  it('GET returns restricted for an in-store weighed-item code, without any lookup', async () => {
+    const res = await request('GET', '/api/products/by-ean/2912345012345', {
+      cookie: await authCookie(),
+    });
+    const body = (await res.json()) as { data: { status: string; ean: string } };
+
+    expect(body.data.status).toBe('restricted');
+    expect(repo.findGlobalByEan).not.toHaveBeenCalled();
+    expect(mockFetchOff).not.toHaveBeenCalled();
+  });
+
   it('GET rejects a non-numeric barcode with 400', async () => {
     const res = await request('GET', '/api/products/by-ean/not-a-code', {
       cookie: await authCookie(),
@@ -1187,6 +1261,17 @@ describe('barcode products', () => {
     expect(res.status).toBe(201);
     expect(repo.createGlobalProduct).toHaveBeenCalledTimes(1);
     expect(repo.createFood).toHaveBeenCalledWith('user-1', expect.anything(), GLOBAL_ID);
+  });
+
+  it('POST /api/foods with an in-store weighed-item code is rejected with 400', async () => {
+    const res = await request('POST', '/api/foods', {
+      cookie: await authCookie(),
+      body: { name: 'Ham', kcal: 110, proteinG: 18, carbsG: 1, fatG: 4, ean: '2912345012345' },
+    });
+
+    expect(res.status).toBe(400);
+    expect(repo.createGlobalProduct).not.toHaveBeenCalled();
+    expect(repo.createFood).not.toHaveBeenCalled();
   });
 
   it('POST /api/foods with an ean reuses an existing active pantry entry (idempotent)', async () => {
@@ -1215,6 +1300,53 @@ describe('barcode products', () => {
     expect(body.data).toHaveLength(1);
     expect(body.data[0]?.name).toBe('Cola');
     expect(repo.searchGlobalProducts).toHaveBeenCalledWith('cola', 20);
+  });
+
+  it('POST /api/foods/from-global/:id copies the global values under the client name', async () => {
+    repo.findGlobalById.mockResolvedValue(
+      fakeGlobal({ ean: null, name: 'Banana', namePl: 'Banan', nameEn: 'Banana', brand: null }),
+    );
+    repo.findFoodByGlobalId.mockResolvedValue(undefined);
+    repo.createFood.mockResolvedValue(fakeFood({ name: 'Banan', globalProductId: GLOBAL_ID }));
+
+    const res = await request('POST', `/api/foods/from-global/${GLOBAL_ID}`, {
+      cookie: await authCookie(),
+      // Macros in the body would be ignored — only the name is accepted.
+      body: { name: 'Banan', kcal: 999 },
+    });
+
+    expect(res.status).toBe(201);
+    expect(repo.createFood).toHaveBeenCalledWith(
+      'user-1',
+      expect.objectContaining({ name: 'Banan', kcal: 42 }),
+      GLOBAL_ID,
+    );
+    expect(repo.createFood.mock.calls[0]?.[1]).not.toHaveProperty('ean');
+  });
+
+  it('POST /api/foods/from-global/:id reuses an existing pantry copy', async () => {
+    repo.findGlobalById.mockResolvedValue(fakeGlobal());
+    repo.findFoodByGlobalId.mockResolvedValue(fakeFood({ globalProductId: GLOBAL_ID }));
+
+    const res = await request('POST', `/api/foods/from-global/${GLOBAL_ID}`, {
+      cookie: await authCookie(),
+      body: { name: 'Cola' },
+    });
+
+    expect(res.status).toBe(201);
+    expect(repo.createFood).not.toHaveBeenCalled();
+  });
+
+  it('POST /api/foods/from-global/:id returns 404 for an unknown product', async () => {
+    repo.findGlobalById.mockResolvedValue(undefined);
+
+    const res = await request('POST', `/api/foods/from-global/${GLOBAL_ID}`, {
+      cookie: await authCookie(),
+      body: { name: 'Banan' },
+    });
+
+    expect(res.status).toBe(404);
+    expect(repo.createFood).not.toHaveBeenCalled();
   });
 
   it('GET /api/products/search with a blank query returns 400', async () => {

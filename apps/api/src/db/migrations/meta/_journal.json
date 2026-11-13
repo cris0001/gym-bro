@@ -148,6 +148,20 @@
       "when": 1793784234465,
       "tag": "0020_add_template_short_name",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1794562737411,
+      "tag": "0021_generic_global_products",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1794576047959,
+      "tag": "0022_user_food_name_lang",
+      "breakpoints": true
     }
   ]
 }

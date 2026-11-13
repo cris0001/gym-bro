@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, ilike, inArray, max, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, ilike, inArray, max, or, sql } from 'drizzle-orm';
 
 import type { CreateRecipeInput, FoodLogSource, FoodLogUnit, MealType } from '@gym-bro/shared';
 
@@ -9,6 +9,7 @@ import { globalProducts } from '../../db/schema/global-products';
 import { nutritionTargets } from '../../db/schema/nutrition-targets';
 import { recipeIngredients } from '../../db/schema/recipe-ingredients';
 import { recipes } from '../../db/schema/recipes';
+import { toImageRef } from './nutrition.utils';
 
 // Drizzle queries for the nutrition domain — plain rows, no business logic. The
 // numeric macro columns come back as strings from the driver and are coerced to
@@ -18,10 +19,12 @@ import { recipes } from '../../db/schema/recipes';
 // --- Foods ---
 
 // Coerce the per-100g macro strings to numbers; timestamps stay Date (Hono
-// serializes them to ISO strings in the response).
+// serializes them to ISO strings in the response). An uploaded photo becomes its
+// image-endpoint URL (see nutrition.utils) — the bytes are read only by findFoodImage.
 function mapFoodRow(row: typeof foods.$inferSelect) {
   return {
     ...row,
+    imageUrl: toImageRef('foods', row.id, row.imageUrl),
     kcal: Number(row.kcal),
     proteinG: Number(row.proteinG),
     carbsG: Number(row.carbsG),
@@ -117,11 +120,24 @@ export async function createFood(
   return mapFoodRow(row);
 }
 
-// Full-replace edit; only active foods are editable.
+// The stored photo of any of the user's foods (soft-deleted too — old diary entries
+// still show theirs): the raw data-URI / URL, for the image endpoint only.
+export async function findFoodImage(userId: string, id: string): Promise<string | null> {
+  const [row] = await db
+    .select({ imageUrl: foods.imageUrl })
+    .from(foods)
+    .where(and(eq(foods.id, id), eq(foods.userId, userId)))
+    .limit(1);
+  return row?.imageUrl ?? null;
+}
+
+// Full-replace edit; only active foods are editable. `keepImage` leaves the stored
+// photo as is (the client sent back the ref it was given, not a new image).
 export async function updateFood(
   userId: string,
   id: string,
   data: FoodInput,
+  { keepImage = false }: { keepImage?: boolean } = {},
 ): Promise<FoodRow | undefined> {
   const [row] = await db
     .update(foods)
@@ -129,7 +145,7 @@ export async function updateFood(
       name: data.name,
       ean: data.ean ?? null,
       brand: data.brand ?? null,
-      imageUrl: data.imageUrl ?? null,
+      ...(keepImage ? {} : { imageUrl: data.imageUrl ?? null }),
       kcal: data.kcal.toString(),
       proteinG: data.proteinG.toString(),
       carbsG: data.carbsG.toString(),
@@ -188,16 +204,29 @@ export async function findGlobalByEan(ean: string): Promise<GlobalProductRow | u
   return row ? mapGlobalRow(row) : undefined;
 }
 
-// Name search over the shared catalog (the "All products" picker tab), capped.
+export async function findGlobalById(id: string): Promise<GlobalProductRow | undefined> {
+  const [row] = await db.select().from(globalProducts).where(eq(globalProducts.id, id)).limit(1);
+  return row ? mapGlobalRow(row) : undefined;
+}
+
+// Name search over the shared catalog, capped. Generic foods match in either language
+// ("banan" and "banana" both find the banana) and rank first, ahead of packaged ones.
 export async function searchGlobalProducts(
   query: string,
   limit: number,
 ): Promise<GlobalProductRow[]> {
+  const pattern = `%${query}%`;
   const rows = await db
     .select()
     .from(globalProducts)
-    .where(ilike(globalProducts.name, `%${query}%`))
-    .orderBy(asc(sql`lower(${globalProducts.name})`))
+    .where(
+      or(
+        ilike(globalProducts.name, pattern),
+        ilike(globalProducts.namePl, pattern),
+        ilike(globalProducts.nameEn, pattern),
+      ),
+    )
+    .orderBy(sql`${globalProducts.ean} IS NOT NULL`, asc(sql`lower(${globalProducts.name})`))
     .limit(limit);
   return rows.map(mapGlobalRow);
 }
@@ -309,7 +338,7 @@ export async function listRecipesWithTotals(userId: string): Promise<RecipeWithT
     id: row.id,
     userId: row.userId,
     name: row.name,
-    imageUrl: row.imageUrl,
+    imageUrl: toImageRef('recipes', row.id, row.imageUrl),
     ingredientNames: row.ingredientNames,
     servings: row.servings,
     isActive: row.isActive,
@@ -325,6 +354,19 @@ export async function listRecipesWithTotals(userId: string): Promise<RecipeWithT
   }));
 }
 
+// The stored photo of any of the user's recipes (soft-deleted too, for old diary
+// entries), raw — for the image endpoint only.
+export async function findRecipeImage(userId: string, id: string): Promise<string | null> {
+  const [row] = await db
+    .select({ imageUrl: recipes.imageUrl })
+    .from(recipes)
+    .where(and(eq(recipes.id, id), eq(recipes.userId, userId)))
+    .limit(1);
+  return row?.imageUrl ?? null;
+}
+
+// Raw row: imageUrl is the stored value; the service turns it into a ref for the
+// response (buildRecipeDetail).
 export async function findRecipeById(userId: string, id: string) {
   const [row] = await db
     .select()
@@ -387,7 +429,7 @@ export async function listRecipeIngredientsWithFood(
     },
     servingGrams: row.servingGrams === null ? null : Number(row.servingGrams),
     unitGrams: row.unitGrams === null ? null : Number(row.unitGrams),
-    imageUrl: row.imageUrl,
+    imageUrl: toImageRef('foods', row.foodId, row.imageUrl),
   }));
 }
 
@@ -424,14 +466,18 @@ export async function createRecipe(data: RecipeInput) {
 
 // Edit an active recipe: update its metadata and fully replace its ingredient lines
 // in one transaction. Returns undefined if the recipe isn't the user's (or already
-// soft-deleted).
-export async function replaceRecipe(id: string, data: RecipeInput) {
+// soft-deleted). `keepImage` leaves the stored photo as is.
+export async function replaceRecipe(
+  id: string,
+  data: RecipeInput,
+  { keepImage = false }: { keepImage?: boolean } = {},
+) {
   return db.transaction(async (tx) => {
     const [recipe] = await tx
       .update(recipes)
       .set({
         name: data.name,
-        imageUrl: data.imageUrl ?? null,
+        ...(keepImage ? {} : { imageUrl: data.imageUrl ?? null }),
         servings: data.servings,
         updatedAt: new Date(),
       })
@@ -536,15 +582,26 @@ export async function listFoodLogByDate(userId: string, date: string): Promise<F
     .select({
       entry: foodLog,
       // The product's photo: a food entry's food image, else a recipe entry's image
-      // (custom entries have neither). Joined live so it tracks the current photo.
-      imageUrl: sql<string | null>`coalesce(${foods.imageUrl}, ${recipes.imageUrl})`,
+      // (custom entries have neither). Joined live so it tracks the current photo;
+      // kept apart so each becomes the right endpoint ref.
+      foodImage: foods.imageUrl,
+      recipeImage: recipes.imageUrl,
     })
     .from(foodLog)
     .leftJoin(foods, eq(foods.id, foodLog.foodId))
     .leftJoin(recipes, eq(recipes.id, foodLog.recipeId))
     .where(and(eq(foodLog.userId, userId), eq(foodLog.loggedDate, date)))
     .orderBy(asc(foodLog.createdAt));
-  return rows.map((row) => mapFoodLogRow(row.entry, row.imageUrl));
+  return rows.map(({ entry, foodImage, recipeImage }) =>
+    mapFoodLogRow(
+      entry,
+      entry.foodId !== null
+        ? toImageRef('foods', entry.foodId, foodImage)
+        : entry.recipeId !== null
+          ? toImageRef('recipes', entry.recipeId, recipeImage)
+          : null,
+    ),
+  );
 }
 
 export async function findFoodLogEntryById(
