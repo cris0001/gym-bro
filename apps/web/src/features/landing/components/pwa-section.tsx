@@ -10,8 +10,8 @@ export function PwaSection() {
     <section id="pwa" className="scroll-mt-16 bg-[#2b2126]">
       <div className="mx-auto grid w-full max-w-[1060px] items-center gap-9 px-6 py-16 md:grid-cols-2">
         <div className="flex flex-col gap-3.5">
-          <span className="font-heading text-[15px] text-[#c98fa0] italic">{t.pwa.eyebrow}</span>
-          <h2 className="font-heading text-[clamp(28px,4vw,40px)] font-medium tracking-tight text-[#f0e7ea]">
+          <span className="font-display text-[15px] text-[#c98fa0] italic">{t.pwa.eyebrow}</span>
+          <h2 className="font-display text-[clamp(28px,4vw,40px)] font-medium tracking-tight text-[#f0e7ea]">
             {t.pwa.title}
           </h2>
           <p className="text-[15px] leading-relaxed text-[#bfb2b7]">{t.pwa.body}</p>
@@ -24,7 +24,7 @@ export function PwaSection() {
                 {step}
               </span>
             ))}
-            <span className="font-heading pt-1.5 text-[12.5px] text-[#94858b] italic">
+            <span className="font-display pt-1.5 text-[12.5px] text-[#94858b] italic">
               {t.pwa.platforms}
             </span>
           </div>

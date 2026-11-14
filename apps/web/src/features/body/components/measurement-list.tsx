@@ -97,7 +97,7 @@ function MeasurementRow({
             {format(parseISO(entry.measuredDate), 'd MMM yy')}
           </span>
           <span className="truncate">
-            <span className="font-heading font-semibold">
+            <span className="font-heading font-semibold tabular-nums">
               {entry.weightKg !== null ? `${entry.weightKg} kg` : '—'}
             </span>
             {kcal !== null ? (
@@ -179,7 +179,7 @@ export function MeasurementList({
   }
 
   return (
-    <div className="flex flex-col divide-y divide-dashed divide-border-strong">
+    <div className="flex flex-col divide-y divide-border">
       {monthGroups(entries).map((group, index) => {
         const open = overrides[group.key] ?? index === 0;
         return (
@@ -194,7 +194,7 @@ export function MeasurementList({
               <span className="text-muted-foreground ml-auto text-xs">{group.items.length}</span>
             </button>
             {open ? (
-              <ul className="divide-y divide-dashed divide-border-strong border-t border-dashed border-border-strong">
+              <ul className="divide-y divide-border border-t border-border">
                 {group.items.map((entry) => (
                   <MeasurementRow key={entry.id} entry={entry} targets={targets} />
                 ))}

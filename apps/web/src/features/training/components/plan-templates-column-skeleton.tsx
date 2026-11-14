@@ -15,7 +15,7 @@ export function PlanTemplatesColumnSkeleton() {
           <Skeleton className="h-3 w-24" />
         </div>
       </div>
-      <span className="text-muted-foreground text-[11px] font-bold tracking-[0.08em] uppercase">
+      <span className="text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase">
         Templates
       </span>
       <TemplateRowsSkeleton rows={3} />

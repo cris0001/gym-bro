@@ -2,6 +2,8 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { NUMBER_FIELD_CLASS } from '@/lib/form-styles';
+import { cn } from '@/lib/utils';
 
 import type { FoodLogEntry, FoodLogUnit } from '@gym-bro/shared';
 
@@ -84,7 +86,7 @@ export function EntryEditForm({ entry, onDone }: { entry: FoodLogEntry; onDone: 
         <Input
           inputMode="decimal"
           aria-label={t.common.quantity}
-          className="h-9 w-20"
+          className={cn(NUMBER_FIELD_CLASS, 'w-20')}
           value={quantity}
           onChange={(e) => setQuantity(e.target.value)}
         />

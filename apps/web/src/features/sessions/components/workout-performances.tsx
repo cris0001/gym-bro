@@ -1,107 +1,141 @@
+import { History } from 'lucide-react';
+import { useState } from 'react';
+
 import type { WorkoutSessionDetail } from '@gym-bro/shared';
 
 import { cn } from '@/lib/utils';
 
 import { useSessionsTranslation } from '../i18n';
-import { formatVolume, performanceVolume } from '../utils/workout-totals';
 import { ExerciseHistoryPanel } from './exercise-history-panel';
 import { WorkoutNote } from './workout-note';
+import { WorkoutPerformanceCard } from './workout-performance-card';
 
-const cell = (value: number | null): string => (value === null ? '—' : String(value));
-const COLS = 'grid grid-cols-3 text-center';
+type Performance = WorkoutSessionDetail['performances'][number];
 
 interface WorkoutPerformancesProps {
   performances: WorkoutSessionDetail['performances'];
-  // Date of this workout, so each exercise's "Previous" panel excludes it.
+  // Date of this workout, so each exercise's history excludes it.
   performedDate: string;
-  // The per-exercise "Previous" panel is useful on the full detail page but noisy
-  // in compact contexts, so it can be turned off.
-  showPrevious?: boolean;
-  className?: string;
 }
 
-// One workout's exercises as cards: name + category/sets (or what it was swapped
-// from) with the exercise volume, its note, a KG · REPS · RIR table where only the
-// top set is highlighted, and the "Previous" strip. A null weight reads "BW".
-export function WorkoutPerformances({
-  performances,
-  performedDate,
-  showPrevious = true,
-  className,
-}: WorkoutPerformancesProps) {
+const microLabel = 'text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase';
+
+// One workout's exercises. Phones: a card per exercise with the sets as tiles
+// (WorkoutPerformanceCard). From md: rows in a single card — number, name + category
+// (or what it was swapped from), the sets as "weight × reps" pills with the top set
+// highlighted, the exercise's note, and a History icon toggle for past results.
+export function WorkoutPerformances({ performances, performedDate }: WorkoutPerformancesProps) {
   const t = useSessionsTranslation();
+  const label = t.workoutDetail.exercises(performances.length);
   return (
-    <div className={cn('grid gap-3.5', className)}>
-      {performances.map((performance) => {
-        const swapped = performance.exercise.id !== performance.originalExercise.id;
-        const volume = performanceVolume(performance);
-        return (
-          <div
+    <>
+      <div className="flex flex-col gap-2.5 md:hidden">
+        <p className={cn(microLabel, 'mt-1')}>{label}</p>
+        {performances.map((performance) => (
+          <WorkoutPerformanceCard
             key={performance.id}
-            className="bg-card flex min-w-0 flex-col gap-2.5 rounded-[20px] border px-3.5 pt-3.5 pb-3"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="font-heading text-[17px] leading-tight font-semibold break-words">
-                  {performance.exercise.name}
-                </p>
-                <p className="text-muted-foreground mt-0.5 text-[11.5px]">
-                  {performance.exercise.category}
-                  {swapped
-                    ? t.workoutDetail.swappedFrom(performance.originalExercise.name)
-                    : ` · ${t.dayWorkout.sets(performance.sets.length)}`}
-                </p>
-              </div>
-              <span className="text-muted-foreground mt-1 shrink-0 text-[11.5px] font-semibold">
-                {volume > 0 ? `${formatVolume(volume)} kg` : 'BW'}
-              </span>
-            </div>
+            performance={performance}
+            performedDate={performedDate}
+          />
+        ))}
+      </div>
 
-            {performance.notes !== null && <WorkoutNote note={performance.notes} compact />}
+      <section className="bg-card hidden rounded-xl border md:block">
+        <p className={cn(microLabel, 'px-4 pt-4 pb-2')}>{label}</p>
+        <ol>
+          {performances.map((performance, index) => (
+            <PerformanceRow
+              key={performance.id}
+              index={index}
+              performance={performance}
+              performedDate={performedDate}
+            />
+          ))}
+        </ol>
+      </section>
+    </>
+  );
+}
 
-            <div className="border-border border-t pt-2">
-              <div
-                className={cn(
-                  COLS,
-                  'text-muted-foreground pb-1 text-[10.5px] font-bold tracking-[0.08em] uppercase',
-                )}
-              >
-                <span>kg</span>
-                <span>{t.common.reps}</span>
-                <span>{t.common.rir}</span>
-              </div>
-              {performance.sets.map((set) => (
-                <div
-                  key={set.id}
-                  className={cn(
-                    COLS,
-                    'relative items-center rounded-[10px] py-1.5',
-                    set.isTopSet && 'bg-accent text-accent-foreground',
-                  )}
-                >
-                  {/* Pinned to the row's left edge so the weight column stays centered. */}
-                  {set.isTopSet && (
-                    <span className="absolute top-1/2 left-2 -translate-y-1/2 text-[16px] leading-none">
-                      ★
-                    </span>
-                  )}
-                  <span className="font-heading text-[16px] font-semibold">
-                    {set.weight ?? 'BW'}
-                  </span>
-                  <span className="font-heading text-[16px] font-semibold">{cell(set.reps)}</span>
-                  <span className="font-heading text-muted-foreground text-[15px]">
-                    {cell(set.rir)}
-                  </span>
-                </div>
-              ))}
-            </div>
+function PerformanceRow({
+  index,
+  performance,
+  performedDate,
+}: {
+  index: number;
+  performance: Performance;
+  performedDate: string;
+}) {
+  const [showHistory, setShowHistory] = useState(false);
+  const t = useSessionsTranslation();
+  const swapped = performance.exercise.id !== performance.originalExercise.id;
 
-            {showPrevious && (
-              <ExerciseHistoryPanel exerciseId={performance.exercise.id} before={performedDate} />
-            )}
-          </div>
-        );
-      })}
-    </div>
+  return (
+    <li className="border-border flex flex-col gap-2.5 border-t px-4 py-3.5">
+      <div className="grid grid-cols-[1.75rem_minmax(0,1fr)] items-start gap-x-3 gap-y-2.5 md:grid-cols-[1.75rem_minmax(9rem,13rem)_minmax(0,1fr)_auto] md:items-center">
+        <span className="bg-secondary text-muted-foreground flex size-7 items-center justify-center rounded-full text-xs font-bold">
+          {index + 1}
+        </span>
+        <div className="min-w-0">
+          <p className="text-[15px] leading-tight font-semibold break-words">
+            {performance.exercise.name}
+          </p>
+          <p className="text-muted-foreground mt-0.5 text-xs">
+            {performance.exercise.category}
+            {swapped ? t.workoutDetail.swappedFrom(performance.originalExercise.name) : ''}
+          </p>
+        </div>
+        <ul className="col-start-2 flex flex-wrap gap-1.5 md:col-start-3">
+          {performance.sets.map((set) => (
+            <li
+              key={set.id}
+              className={cn(
+                'rounded-lg px-2.5 py-1 text-[13px] font-semibold tabular-nums',
+                set.isTopSet ? 'bg-accent text-accent-foreground' : 'bg-secondary',
+              )}
+            >
+              {set.isTopSet ? '★ ' : ''}
+              {set.weight ?? 'BW'} × {set.reps ?? '–'}
+              {set.rir !== null && set.rir !== undefined ? (
+                <span className="text-muted-foreground ml-1 text-[11px] font-medium">
+                  RIR {set.rir}
+                </span>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+        {/* Phones: icon + label (an icon alone is easy to miss). From md: a round icon
+            button at the row's end, tinted while the history is open. */}
+        <button
+          type="button"
+          aria-expanded={showHistory}
+          aria-label={showHistory ? t.workoutDetail.hideHistory : t.workoutDetail.history}
+          title={showHistory ? t.workoutDetail.hideHistory : t.workoutDetail.history}
+          onClick={() => setShowHistory((value) => !value)}
+          className={cn(
+            'text-primary col-start-2 inline-flex h-8 w-fit items-center gap-1.5 rounded-full text-xs font-semibold transition-colors md:col-start-4 md:size-9 md:justify-center md:gap-0',
+            showHistory
+              ? 'md:bg-accent'
+              : 'md:text-muted-foreground md:hover:bg-muted md:hover:text-foreground',
+          )}
+        >
+          <History className="size-4" />
+          <span className="md:sr-only">
+            {showHistory ? t.workoutDetail.hideHistory : t.workoutDetail.history}
+          </span>
+        </button>
+      </div>
+
+      {performance.notes !== null && (
+        <div className="md:pl-10">
+          <WorkoutNote note={performance.notes} compact />
+        </div>
+      )}
+      {showHistory && (
+        <div className="md:pl-10">
+          <ExerciseHistoryPanel exerciseId={performance.exercise.id} before={performedDate} />
+        </div>
+      )}
+    </li>
   );
 }

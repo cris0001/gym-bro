@@ -1,34 +1,38 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
-const NAME_WIDTHS = ['w-1/2', 'w-2/5', 'w-3/5', 'w-1/3', 'w-[45%]', 'w-[55%]'];
+const NAME_WIDTHS = ['w-1/2', 'w-2/5', 'w-3/5', 'w-1/3'];
 
-// Loading state for the exercise library, in the list's real shape: dashed-divided
-// rows on phones, a 2/3-column grid of cards from md. Six items fill whole grid rows at
-// both widths. The category icon only shows under "All", as in the real rows.
-export function ExerciseListSkeleton({ withIcon }: { withIcon: boolean }) {
+function GroupSkeleton({ rows }: { rows: number }) {
   return (
-    <ul
-      aria-hidden
-      className="divide-y divide-dashed divide-border md:grid md:grid-cols-2 md:gap-3 md:divide-y-0 lg:grid-cols-3"
-    >
-      {NAME_WIDTHS.map((width) => (
-        <li
-          key={width}
-          className="flex items-center gap-3 px-4 py-3 md:bg-card md:rounded-2xl md:border md:py-4"
-        >
-          {withIcon ? <Skeleton className="size-9 shrink-0 rounded-full" /> : null}
-          <div className="flex min-w-0 flex-1 flex-col">
-            {/* Name: 16px semibold (24px line); category: text-xs (16px line). */}
-            <div className="flex h-6 items-center">
-              <Skeleton className={cn('h-4', width)} />
-            </div>
-            <div className="flex h-4 items-center">
-              <Skeleton className="h-3 w-14" />
-            </div>
+    <div className="flex flex-col gap-2">
+      {/* Group label: 18px icon + 13px label (20px line). */}
+      <div className="flex h-5 items-center gap-2 px-1">
+        <Skeleton className="size-[18px] rounded-md" />
+        <Skeleton className="h-3 w-20" />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        {NAME_WIDTHS.slice(0, rows).map((width) => (
+          // Row: its own bordered card, 15px semibold name (py-2.5 around a ~22px line).
+          <div key={width} className="bg-card flex h-[44px] items-center rounded-lg border px-3.5">
+            <Skeleton className={cn('h-4', width)} />
           </div>
-        </li>
-      ))}
-    </ul>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Loading state for the exercise library, in the list's real shape: under "All" a
+// few muscle groups of spaced rows (two side by side from md, three from 1300px),
+// else one group.
+export function ExerciseListSkeleton({ grouped }: { grouped: boolean }) {
+  if (!grouped) return <GroupSkeleton rows={4} />;
+  return (
+    <div aria-hidden className="grid items-start gap-4 md:grid-cols-2 min-[1300px]:grid-cols-3">
+      <GroupSkeleton rows={4} />
+      <GroupSkeleton rows={3} />
+      <GroupSkeleton rows={2} />
+    </div>
   );
 }

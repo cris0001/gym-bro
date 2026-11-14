@@ -21,9 +21,9 @@ interface AssignTemplateFormProps {
 }
 
 // Assigns a template to a date, styled as a day card (same surface as the planned
-// to-do card): a header, plan chips (active plan first; hidden with a single plan),
-// the plan's templates as numbered rows with their exercise counts, then Assign /
-// Cancel. Any plan's templates are assignable (per the calendar model). Plain
+// to-do card): a header, the plan's templates as numbered rows with their exercise
+// counts, then Assign / Cancel. With an active plan only its templates are offered;
+// without one, plan chips let any plan be picked (hidden with a single plan). Plain
 // useState rather than RHF: the inputs are choices constrained to server lists.
 export function AssignTemplateForm({ date, onDone }: AssignTemplateFormProps) {
   const { data: plans = [] } = useQuery(plansQueryOptions());
@@ -32,11 +32,10 @@ export function AssignTemplateForm({ date, onDone }: AssignTemplateFormProps) {
   const [planIdOverride, setPlanIdOverride] = useState<string | null>(null);
   const [templateId, setTemplateId] = useState<string | null>(null);
 
-  // Effective plan = explicit pick, else active plan, else the first plan.
-  const planId = planIdOverride ?? activePlan?.id ?? plans[0]?.id ?? null;
-  const ordered = [...plans].sort((a, b) =>
-    a.id === activePlan?.id ? -1 : b.id === activePlan?.id ? 1 : a.name.localeCompare(b.name),
-  );
+  // Effective plan = the active plan, else an explicit pick, else the first plan.
+  const planId = activePlan?.id ?? planIdOverride ?? plans[0]?.id ?? null;
+  const ordered = [...plans].sort((a, b) => a.name.localeCompare(b.name));
+  const showPlanChips = !activePlan && ordered.length > 1;
 
   const { data: plan } = useQuery({
     ...planQueryOptions(planId ?? ''),
@@ -59,7 +58,7 @@ export function AssignTemplateForm({ date, onDone }: AssignTemplateFormProps) {
   }
 
   return (
-    <div className="bg-card flex flex-col gap-3 rounded-2xl border p-4">
+    <div className="bg-card flex flex-col gap-3 rounded-xl border p-4">
       <div className="flex items-start gap-3">
         <span className="bg-accent text-primary flex size-10 shrink-0 items-center justify-center rounded-full">
           <Plus className="size-5" />
@@ -74,7 +73,7 @@ export function AssignTemplateForm({ date, onDone }: AssignTemplateFormProps) {
         <p className="text-muted-foreground text-sm">{t.assign.noPlans}</p>
       ) : (
         <>
-          {ordered.length > 1 && (
+          {showPlanChips && (
             <div className="flex flex-wrap gap-1.5">
               {ordered.map((p) => (
                 <button
@@ -125,7 +124,7 @@ export function AssignTemplateForm({ date, onDone }: AssignTemplateFormProps) {
 
       <div className="flex items-center gap-2">
         <Button
-          className="h-10 flex-1 rounded-full"
+          className="h-9 flex-1 rounded-full"
           onClick={handleAssign}
           disabled={!templateId || createMutation.isPending}
         >
@@ -133,7 +132,7 @@ export function AssignTemplateForm({ date, onDone }: AssignTemplateFormProps) {
         </Button>
         <Button
           variant="ghost"
-          className="text-muted-foreground h-10 rounded-full px-4"
+          className="text-muted-foreground h-9 rounded-full px-4"
           onClick={onDone}
         >
           {t.assign.cancel}

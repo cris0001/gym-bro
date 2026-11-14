@@ -30,15 +30,13 @@ export function PlanTemplatesColumn({
   }
 
   return (
-    <div className="border-border bg-background/60 flex flex-col gap-3 border-r p-4">
+    <div className="border-border flex flex-col gap-3 border-r p-4">
       <header className="flex flex-col gap-1">
         <h2 className="font-heading text-[20px] leading-tight font-semibold break-words">
           {plan.name}
         </h2>
         {plan.description ? (
-          <p className="font-heading text-muted-foreground text-[12.5px] italic">
-            {plan.description}
-          </p>
+          <p className="text-muted-foreground text-[12.5px]">{plan.description}</p>
         ) : null}
         {isActive ? (
           <span className="text-primary inline-flex items-center gap-1 text-[12px] font-semibold">
@@ -59,13 +57,13 @@ export function PlanTemplatesColumn({
       </header>
 
       <div className="flex items-center justify-between">
-        <span className="text-muted-foreground text-[11px] font-bold tracking-[0.08em] uppercase">
+        <span className="text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase">
           Templates
         </span>
         <button
           type="button"
           onClick={() => openCreateTemplate(plan.id)}
-          className="text-primary text-[12.5px] font-bold"
+          className="bg-accent text-accent-foreground hover:bg-accent/70 h-8 rounded-full px-3 text-[12.5px] font-semibold transition-colors"
         >
           + Add
         </button>

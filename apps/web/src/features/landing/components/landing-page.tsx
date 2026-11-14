@@ -119,7 +119,7 @@ export function LandingPage() {
       <div className="mx-auto flex w-full max-w-[1060px] items-center justify-between px-6 py-[22px]">
         <span className="flex items-center gap-2.5">
           <BrandLogo />
-          <span className="font-heading text-[21px] font-semibold">Gym Bro</span>
+          <span className="font-display text-[21px] font-semibold">Gym Bro</span>
         </span>
         <div className="flex items-center gap-4 sm:gap-[18px]">
           <a href="#inside" className="hidden text-[13px] font-semibold text-[#5f5257] sm:inline">
@@ -145,7 +145,7 @@ export function LandingPage() {
       <div className="relative w-full overflow-hidden">
         <HeroLines />
         <div className="relative z-10 mx-auto flex w-full max-w-[1060px] flex-col items-center gap-8 px-6 pt-32 pb-32 text-center md:gap-9 md:pt-40 md:pb-40 lg:pt-48 lg:pb-48">
-          <h1 className="font-heading max-w-[760px] text-[clamp(38px,6vw,58px)] leading-[1.08] font-medium tracking-tight text-balance">
+          <h1 className="font-display max-w-[760px] text-[clamp(38px,6vw,58px)] leading-[1.08] font-medium tracking-tight text-balance">
             {t.hero.title}{' '}
             <em className="mt-4 block text-[#8d4a5e] md:mt-0 md:inline">{t.hero.accent}</em>
           </h1>
@@ -177,7 +177,7 @@ export function LandingPage() {
               {Array.from({ length: 8 }).map((_, i) => (
                 <span
                   key={i}
-                  className="font-heading flex items-center gap-6 pr-6 text-[clamp(14px,1.6vw,18px)] whitespace-nowrap text-[#c9bcb2] italic"
+                  className="font-display flex items-center gap-6 pr-6 text-[clamp(14px,1.6vw,18px)] whitespace-nowrap text-[#c9bcb2] italic"
                 >
                   {t.marquee}
                   <span className="text-[#8d4a5e]">·</span>
@@ -204,7 +204,7 @@ export function LandingPage() {
       {/* Closing CTA */}
       <div className="mt-6 flex w-full justify-center bg-[#2b2126]">
         <div className="mx-auto flex w-full max-w-[1060px] flex-col items-center gap-5 px-6 py-11 text-center">
-          <span className="font-heading text-[clamp(24px,3.5vw,32px)] font-medium tracking-tight text-[#f0e7ea]">
+          <span className="font-display text-[clamp(24px,3.5vw,32px)] font-medium tracking-tight text-[#f0e7ea]">
             {t.closing.title}
           </span>
           <Link

@@ -31,6 +31,7 @@ export const useDashboardTranslation = createFeatureTranslation({
       firstEntry: 'First entry',
       logWeight: 'Log your weight',
       thisMonth: 'this month',
+      in90Days: 'in 90 days',
     },
     lastWorkout: {
       label: 'Last workout',
@@ -44,9 +45,8 @@ export const useDashboardTranslation = createFeatureTranslation({
       nextSession: 'Next session',
       weight: 'Weight',
       lastWorkout: 'Last workout',
-      strava: 'Strava',
       lastActivity: 'Last activity',
-      thisMonth: 'This month',
+      lastWeeks: 'Last 8 weeks',
     },
   },
   pl: {
@@ -77,6 +77,7 @@ export const useDashboardTranslation = createFeatureTranslation({
       firstEntry: 'Pierwszy wpis',
       logWeight: 'Zapisz wagę',
       thisMonth: 'w tym miesiącu',
+      in90Days: 'w 90 dni',
     },
     lastWorkout: {
       label: 'Ostatni trening',
@@ -90,9 +91,8 @@ export const useDashboardTranslation = createFeatureTranslation({
       nextSession: 'Następna sesja',
       weight: 'Waga',
       lastWorkout: 'Ostatni trening',
-      strava: 'Strava',
       lastActivity: 'Ostatnia aktywność',
-      thisMonth: 'W tym miesiącu',
+      lastWeeks: 'Ostatnie 8 tygodni',
     },
   },
 });

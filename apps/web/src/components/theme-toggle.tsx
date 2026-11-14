@@ -16,7 +16,7 @@ export function ThemeToggle({ className }: { className?: string }) {
   const setTheme = useThemeStore((s) => s.setTheme);
 
   return (
-    <div className={cn('bg-secondary grid grid-cols-3 gap-1 rounded-full p-1', className)}>
+    <div className={cn('bg-secondary grid h-9 grid-cols-3 gap-1 rounded-md p-[3px]', className)}>
       {OPTIONS.map(({ value, label, Icon }) => (
         <button
           key={value}
@@ -24,7 +24,7 @@ export function ThemeToggle({ className }: { className?: string }) {
           aria-pressed={theme === value}
           onClick={() => setTheme(value)}
           className={cn(
-            'inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-full text-[13px] font-semibold transition-colors',
+            'inline-flex h-full cursor-pointer items-center justify-center gap-1.5 rounded-sm text-[13px] font-semibold transition-colors',
             theme === value ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground',
           )}
         >

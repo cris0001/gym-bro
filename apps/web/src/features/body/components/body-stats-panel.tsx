@@ -32,7 +32,9 @@ function Stat({
   return (
     <div className="flex flex-col">
       <span className="text-muted-foreground text-xs">{label}</span>
-      <span className={cn('font-heading text-lg font-semibold', valueClassName)}>{value}</span>
+      <span className={cn('font-heading text-lg font-bold tabular-nums', valueClassName)}>
+        {value}
+      </span>
     </div>
   );
 }

@@ -18,7 +18,7 @@ export function AddEntryDaySkeleton({
 
   if (variant === 'added') {
     return (
-      <ul aria-hidden className={cn('mt-2 flex flex-col divide-y divide-dashed', dividerClassName)}>
+      <ul aria-hidden className={cn('mt-2 flex flex-col divide-y', dividerClassName)}>
         {['w-1/2', 'w-2/5'].map((width) => (
           <li key={width} className="flex items-center gap-3 py-2.5">
             <Skeleton className="size-11 shrink-0 rounded-lg" />

@@ -85,7 +85,7 @@ export function DiaryEntryRow({
           {Math.round(entry.carbsG)} · F {Math.round(entry.fatG)}
         </p>
       </button>
-      <span className="font-heading shrink-0 text-base font-semibold">
+      <span className="font-heading shrink-0 text-base font-semibold tabular-nums">
         {Math.round(entry.kcal)}
         <span className="text-muted-foreground ml-0.5 text-[11px] font-normal">kcal</span>
       </span>

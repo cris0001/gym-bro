@@ -35,10 +35,10 @@ export function AddEntryResultRow({
           <img
             src={row.imageUrl}
             alt=""
-            className="border-border size-[38px] shrink-0 rounded-[10px] border object-cover"
+            className="border-border size-[38px] shrink-0 rounded-lg border object-cover"
           />
         ) : (
-          <span className="size-[38px] shrink-0 rounded-[10px] bg-gradient-to-br from-[#efe0e4] to-[#cbaab3] dark:from-[#2c1f25] dark:to-[#3d363a]" />
+          <span className="size-[38px] shrink-0 rounded-lg bg-gradient-to-br from-[#efe0e4] to-[#cbaab3] dark:from-[#2c1f25] dark:to-[#3d363a]" />
         )}
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[13.5px] leading-tight font-semibold">

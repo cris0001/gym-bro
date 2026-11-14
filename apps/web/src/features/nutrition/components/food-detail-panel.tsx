@@ -18,7 +18,7 @@ export function FoodDetailPanel() {
   useEffect(() => close, [close]);
 
   return (
-    <div className="sticky top-4 overflow-hidden rounded-[20px] border border-border bg-card">
+    <div className="sticky top-4 overflow-hidden rounded-xl border border-border bg-card">
       {/* Keyed so switching rows (or back to "new") resets the form's default values.
           The panel layout renders its own header (photo + title) inside the form. */}
       <FoodForm

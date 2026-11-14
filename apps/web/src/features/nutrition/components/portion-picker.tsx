@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { NUMBER_FIELD_CLASS } from '@/lib/form-styles';
 
 import type { FoodLogUnit } from '@gym-bro/shared';
 
@@ -179,7 +180,7 @@ export function PortionPicker({
                   onFocus={() => setSelected(option.id)}
                   inputMode="decimal"
                   placeholder="0"
-                  className="h-9 w-20"
+                  className={cn(NUMBER_FIELD_CLASS, 'w-20')}
                 />
                 <span className="text-muted-foreground text-sm">{inputLabel}</span>
                 {gramsHint ? (

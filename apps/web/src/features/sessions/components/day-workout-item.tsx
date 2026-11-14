@@ -69,7 +69,7 @@ export function DayWorkoutItem({
   const performances = detail?.performances ?? [];
 
   return (
-    <div className="bg-card overflow-hidden rounded-2xl border">
+    <div className="bg-card overflow-hidden rounded-xl border">
       <button
         type="button"
         onClick={() => setExpanded((value) => !value)}
@@ -165,7 +165,7 @@ export function DayWorkoutItem({
               })}
 
               <div className="flex items-center gap-2 border-t border-border pt-3">
-                <Button asChild className="h-10 flex-1 rounded-full">
+                <Button asChild className="h-9 flex-1 rounded-full">
                   <Link to="/history/$sessionId" params={{ sessionId: workout.id }}>
                     {t.dayWorkout.open}
                   </Link>

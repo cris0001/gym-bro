@@ -11,7 +11,7 @@ interface RecipeServingsCardProps {
 export function RecipeServingsCard({ servings, onChange }: RecipeServingsCardProps) {
   const t = useNutritionTranslation();
   return (
-    <div className="flex items-center justify-between gap-4 rounded-[20px] border border-border bg-card p-4">
+    <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-card p-4">
       <div className="min-w-0">
         <p className="text-muted-foreground text-[11px] font-bold tracking-[0.08em] uppercase">
           {t.recipes.servings}
@@ -27,7 +27,9 @@ export function RecipeServingsCard({ servings, onChange }: RecipeServingsCardPro
         >
           <Minus className="size-4" />
         </button>
-        <span className="font-heading w-8 text-center text-[19px] font-semibold">{servings}</span>
+        <span className="font-heading w-8 text-center text-[19px] font-bold tabular-nums">
+          {servings}
+        </span>
         <button
           type="button"
           aria-label={t.recipes.moreServings}

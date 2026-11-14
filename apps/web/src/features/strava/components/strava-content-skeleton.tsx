@@ -10,7 +10,7 @@ const TILES = ['Activities', 'Distance', 'Moving time', 'Elevation'];
 export function StravaContentSkeleton() {
   return (
     <div aria-hidden className="flex flex-col gap-4">
-      <div className="bg-card flex flex-col gap-3 rounded-2xl border p-4">
+      <div className="bg-card flex flex-col gap-3 rounded-xl border p-4">
         <div className="flex flex-wrap items-center gap-1.5">
           <Skeleton className="h-10 w-12 rounded-full" />
           {[0, 1, 2].map((i) => (
@@ -33,7 +33,7 @@ export function StravaContentSkeleton() {
         </div>
       </div>
 
-      <div className="bg-card flex flex-col gap-2 rounded-2xl border p-4">
+      <div className="bg-card flex flex-col gap-2 rounded-xl border p-4">
         <div className="flex h-4 items-center">
           <Skeleton className="h-3 w-52" />
         </div>
@@ -54,7 +54,7 @@ export function StravaContentSkeleton() {
         </div>
         <ul className="flex flex-col gap-2">
           {['w-2/5', 'w-1/2', 'w-1/3', 'w-[45%]', 'w-2/5'].map((width, i) => (
-            <li key={i} className="bg-card flex items-center gap-3 rounded-2xl border p-3">
+            <li key={i} className="bg-card flex items-center gap-3 rounded-xl border p-3">
               <Skeleton className="size-9 shrink-0 rounded-full" />
               <div className="flex min-w-0 flex-1 flex-col">
                 <div className="flex h-6 items-center">

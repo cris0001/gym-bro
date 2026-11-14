@@ -25,8 +25,8 @@ export function PaywallModal({ expiresAt, onRenew, onSignOut }: PaywallModalProp
       aria-labelledby="paywall-title"
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
     >
-      <div className="bg-card w-full max-w-md rounded-2xl border p-6 text-center shadow-xl">
-        <span className="bg-accent text-primary mx-auto flex size-12 items-center justify-center rounded-2xl">
+      <div className="bg-card w-full max-w-md rounded-xl border p-6 text-center shadow-xl">
+        <span className="bg-accent text-primary mx-auto flex size-12 items-center justify-center rounded-xl">
           <Lock className="size-6" />
         </span>
         <h2 id="paywall-title" className="font-heading mt-4 text-2xl font-semibold">

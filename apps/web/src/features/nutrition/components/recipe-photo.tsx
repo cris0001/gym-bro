@@ -46,7 +46,7 @@ export function RecipePhoto({ imageUrl, onPick, onRemove, variant, className }: 
       <div className={cn('relative size-[76px] shrink-0', className)}>
         <label
           className={cn(
-            'flex size-full cursor-pointer flex-col items-center justify-center gap-1 overflow-hidden rounded-2xl',
+            'flex size-full cursor-pointer flex-col items-center justify-center gap-1 overflow-hidden rounded-xl',
             imageUrl
               ? ''
               : 'bg-card text-muted-foreground border-[1.5px] border-dashed border-border-strong',
@@ -71,7 +71,7 @@ export function RecipePhoto({ imageUrl, onPick, onRemove, variant, className }: 
     <div className={cn('flex flex-col gap-3', className)}>
       <div
         className={cn(
-          'bg-muted relative aspect-square overflow-hidden rounded-[18px]',
+          'bg-muted relative aspect-square overflow-hidden rounded-xl',
           !imageUrl && 'border-[1.5px] border-dashed border-border-strong',
         )}
       >

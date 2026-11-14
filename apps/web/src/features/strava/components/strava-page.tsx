@@ -6,6 +6,7 @@ import type { StravaSessionItem } from '@gym-bro/shared';
 
 import { EmptyState } from '@/components/empty-state';
 import { ErrorState } from '@/components/error-state';
+import { PageTitle } from '@/components/page-title';
 
 import { useStravaSessions } from '../hooks/use-strava-sessions';
 import { useStravaStatus } from '../hooks/use-strava-status';
@@ -59,7 +60,9 @@ export function StravaPage({ initialActivityId }: { initialActivityId?: string |
 
   return (
     <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-4 p-3 md:p-4">
-      <h1 className="font-heading text-[28px] leading-none font-medium">Strava</h1>
+      <PageTitle className="font-heading text-[28px] leading-none font-bold tracking-tight">
+        Strava
+      </PageTitle>
 
       {/* Before the status arrives, assume the connected layout (the common case) so
           the page has its shape rather than a bare title. */}
@@ -99,7 +102,7 @@ export function StravaPage({ initialActivityId }: { initialActivityId?: string |
 
                 {groupByMonth(shown).map((group) => (
                   <section key={group.key} className="flex flex-col gap-2">
-                    <h2 className="font-heading py-1 text-[13px] italic text-[#a89a88] dark:text-[#8a7c69]">
+                    <h2 className="py-1 text-[13px] text-[#a89a88] dark:text-[#8a7c69]">
                       {group.label}
                     </h2>
                     <ul className="flex flex-col gap-2">

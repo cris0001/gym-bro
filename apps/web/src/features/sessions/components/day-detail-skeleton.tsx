@@ -23,7 +23,7 @@ function Line({ height, className }: { height: string; className: string }) {
 export function DayDetailSkeleton() {
   return (
     <div aria-hidden className="flex flex-col gap-4 p-4">
-      <div className="bg-card overflow-hidden rounded-2xl border">
+      <div className="bg-card overflow-hidden rounded-xl border">
         <div className="flex items-center gap-3 p-3">
           <Skeleton className="size-10 shrink-0 rounded-full" />
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -53,7 +53,7 @@ export function DayDetailSkeleton() {
         </div>
       </div>
 
-      <Skeleton className="h-10 w-full rounded-2xl" />
+      <Skeleton className="h-10 w-full rounded-xl" />
     </div>
   );
 }

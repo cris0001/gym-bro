@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { SELECT_TRIGGER_CLASS } from '@/lib/form-styles';
 
 import type { Food } from '@gym-bro/shared';
 
@@ -59,13 +60,16 @@ export function FoodCombobox({
         {variant === 'add' ? (
           <button
             type="button"
-            className="border-border bg-card text-primary hover:bg-muted flex h-12 w-full items-center gap-2.5 rounded-xl border pr-14 pl-4 text-left text-[14px] font-semibold transition-colors"
+            className={cn(
+              SELECT_TRIGGER_CLASS,
+              'text-primary justify-start gap-2.5 pr-14 font-semibold',
+            )}
           >
             <Plus className="size-4 shrink-0" />
             <span className="truncate">{triggerLabel}</span>
           </button>
         ) : (
-          <Button variant="outline" className="h-10 w-full justify-between rounded-xl font-normal">
+          <Button variant="outline" className={cn(SELECT_TRIGGER_CLASS, 'font-normal shadow-none')}>
             <span className={cn('truncate', !selectedName && 'text-muted-foreground')}>
               {selectedName ?? triggerLabel}
             </span>
@@ -74,7 +78,7 @@ export function FoodCombobox({
         )}
       </PopoverTrigger>
       <PopoverContent
-        className="w-(--radix-popover-trigger-width) overflow-hidden rounded-[14px] border-border p-0 shadow-lg"
+        className="w-(--radix-popover-trigger-width) overflow-hidden rounded-lg border-border p-0 shadow-lg"
         align="start"
       >
         <Command>

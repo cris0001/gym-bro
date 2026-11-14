@@ -256,7 +256,7 @@ export function BarcodeScannerPanel({ active, onDetected }: BarcodeScannerPanelP
 
   return (
     <div className="grid gap-4">
-      <div className="relative h-[240px] overflow-hidden rounded-[18px] bg-[#1f191c]">
+      <div className="relative h-[240px] overflow-hidden rounded-xl bg-[#1f191c]">
         <button
           type="button"
           onClick={() => void refocus()}
@@ -326,7 +326,7 @@ export function BarcodeScannerPanel({ active, onDetected }: BarcodeScannerPanelP
 
       {note ? <p className="text-muted-foreground text-sm">{note}</p> : null}
 
-      <div className="font-heading text-muted-foreground flex items-center gap-3 text-[13px] italic">
+      <div className="text-muted-foreground flex items-center gap-3 text-[13px]">
         <span className="h-px flex-1 bg-border" />
         {t.barcode.orTypeNumber}
         <span className="h-px flex-1 bg-border" />
@@ -336,7 +336,7 @@ export function BarcodeScannerPanel({ active, onDetected }: BarcodeScannerPanelP
         <Input
           inputMode="numeric"
           placeholder={t.barcode.numberPlaceholder}
-          className={cn(FIELD_CLASS, 'h-12 flex-1')}
+          className={cn(FIELD_CLASS, 'flex-1')}
           value={manual}
           onChange={(e) => setManual(e.target.value)}
           onKeyDown={(e) => {

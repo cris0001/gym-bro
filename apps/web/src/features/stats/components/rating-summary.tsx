@@ -22,24 +22,22 @@ export function RatingSummaryCard() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-end justify-between gap-4">
-        <div className="flex items-baseline gap-2">
-          <span className="font-heading text-[44px] leading-none font-medium">
+      {/* Just the overall average, with the last 30 days on one line beneath it. */}
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center gap-2">
+          <span className="font-heading text-[44px] leading-none font-bold tabular-nums">
             {summary.average.toFixed(1)}
           </span>
-          <Star className="size-5 fill-chart-2 text-chart-2" />
-          <span className="text-muted-foreground text-[13px]">
-            avg · {summary.count} {summary.count === 1 ? 'workout' : 'workouts'}
-          </span>
+          <Star className="size-6 fill-primary text-primary" />
         </div>
         {summary.recentAverage !== null ? (
-          <div className="text-right">
-            <p className="text-[15px] font-semibold">{summary.recentAverage.toFixed(1)}</p>
-            <p className="text-muted-foreground text-[11.5px]">
-              last 30 days
-              {summary.recentDelta !== null ? <Delta value={summary.recentDelta} /> : null}
-            </p>
-          </div>
+          <p className="text-muted-foreground text-[13px]">
+            Last 30 days{' '}
+            <span className="text-foreground font-semibold tabular-nums">
+              {summary.recentAverage.toFixed(1)}
+            </span>
+            {summary.recentDelta !== null ? <Delta value={summary.recentDelta} /> : null}
+          </p>
         ) : null}
       </div>
 
@@ -52,7 +50,7 @@ export function RatingSummaryCard() {
               <span className="text-muted-foreground w-6 shrink-0 tabular-nums">{stars}★</span>
               <div className="bg-secondary h-2 flex-1 overflow-hidden rounded-full">
                 <div
-                  className="h-full rounded-full bg-chart-2"
+                  className="h-full rounded-full bg-primary"
                   style={{ width: maxBucket > 0 ? `${(count / maxBucket) * 100}%` : 0 }}
                 />
               </div>
@@ -65,10 +63,10 @@ export function RatingSummaryCard() {
       </div>
 
       <div className="flex flex-col">
-        <p className="text-muted-foreground mb-1 text-[11px] font-bold tracking-[0.08em] uppercase">
+        <p className="text-muted-foreground mb-1 text-[11px] font-medium tracking-[0.08em] uppercase">
           Latest
         </p>
-        <ul className="divide-border divide-y divide-dashed">
+        <ul className="divide-border divide-y">
           {summary.latest.map((point) => (
             <li key={point.sessionId} className="flex items-center gap-3 py-2">
               <span className="text-muted-foreground w-12 shrink-0 text-[12px]">
@@ -93,7 +91,7 @@ function Delta({ value }: { value: number }) {
     <span
       className={cn(
         'font-semibold',
-        up ? 'text-[#5a7a52] dark:text-[#8fae85]' : 'text-destructive',
+        up ? 'text-[#4a6943] dark:text-[#8fae85]' : 'text-destructive',
       )}
     >
       {' '}
@@ -110,7 +108,7 @@ function Stars({ rating }: { rating: number }) {
           key={n}
           className={cn(
             'size-3.5',
-            n <= rating ? 'fill-chart-2 text-chart-2' : 'text-border-strong',
+            n <= rating ? 'fill-primary text-primary' : 'text-border-strong',
           )}
         />
       ))}

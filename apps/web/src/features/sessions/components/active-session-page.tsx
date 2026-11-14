@@ -16,6 +16,7 @@ import { useWorkoutDraftStore } from '../stores/workout-draft.store';
 import { ExercisePerformanceCard } from './exercise-performance-card';
 import { ExercisePickerSheet } from './exercise-picker-sheet';
 import { FinishSessionSheet } from './finish-session-sheet';
+import { SessionHistoryPanel } from './session-history-panel';
 import { StartWorkoutPicker } from './start-workout-picker';
 
 // Elapsed workout time as "M:SS" (or "H:MM:SS" past an hour) for the running chip.
@@ -65,13 +66,11 @@ export function ActiveSessionPage() {
     return (
       <div className="mx-auto flex w-full max-w-sm flex-col gap-4 p-6 pt-10 lg:col-span-3">
         <div className="flex flex-col items-center gap-2 text-center">
-          <BrandMark className="size-14 rounded-2xl" />
-          <h1 className="font-heading text-[28px] leading-none font-medium">
+          <BrandMark className="size-14 rounded-xl" />
+          <h1 className="font-heading text-[28px] leading-none font-bold tracking-tight">
             {t.activeSession.startTitle}
           </h1>
-          <p className="font-heading text-muted-foreground text-sm italic">
-            {format(new Date(), 'EEEE, MMMM d')}
-          </p>
+          <p className="text-muted-foreground text-sm">{format(new Date(), 'EEEE, MMMM d')}</p>
         </div>
 
         {todaysPlanned.length > 0 && (
@@ -83,7 +82,7 @@ export function ActiveSessionPage() {
               <button
                 key={session.id}
                 type="button"
-                className="bg-card hover:bg-muted/50 flex items-center gap-3 rounded-2xl border p-4 text-left transition-colors"
+                className="bg-card hover:bg-muted/50 flex items-center gap-3 rounded-xl border p-4 text-left transition-colors"
                 onClick={() =>
                   void startFromTemplate({
                     templateId: session.template.id,
@@ -107,7 +106,7 @@ export function ActiveSessionPage() {
                 <Play className="text-primary size-4 shrink-0 fill-current" />
               </button>
             ))}
-            <div className="text-muted-foreground font-heading flex items-center gap-3 text-xs italic">
+            <div className="text-muted-foreground flex items-center gap-3 text-xs">
               <span className="bg-border h-px flex-1" />
               {t.activeSession.orPickTemplate}
               <span className="bg-border h-px flex-1" />
@@ -162,8 +161,8 @@ export function ActiveSessionPage() {
   const saveLabel = isEditing ? t.activeSession.saveChanges : t.activeSession.finishWorkout;
 
   return (
-    <div className="mx-auto flex w-full max-w-[820px] flex-col gap-3 p-3 pb-28 md:p-4 md:pb-8 lg:col-span-3">
-      {/* Mobile: minimize + running timer (desktop shows minimize in the header). */}
+    <div className="flex w-full max-w-6xl flex-col gap-3 p-3 pb-28 md:p-4 md:pb-8 lg:col-start-2">
+      {/* Mobile: minimize + running timer (desktop shows the timer in the header). */}
       <div className="flex items-center justify-between md:hidden">
         <Button
           variant="ghost"
@@ -182,31 +181,10 @@ export function ActiveSessionPage() {
         ) : null}
       </div>
 
-      <header className="flex items-start justify-between gap-4">
-        <div className="flex min-w-0 flex-col">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-muted-foreground -ml-2 mb-1 hidden w-fit gap-1.5 md:inline-flex"
-            aria-label={t.activeSession.minimizeAria}
-            onClick={() => void navigate({ to: '/dashboard' })}
-          >
-            <ChevronLeft className="size-4" />
-            {t.activeSession.minimize}
-          </Button>
-          {isTemplateBased ? (
-            <h1 className="font-heading truncate text-[26px] font-semibold md:text-[30px]">
-              {draft.name}
-            </h1>
-          ) : (
-            <Input
-              aria-label={t.activeSession.workoutNameAria}
-              className="font-heading h-auto border-transparent bg-transparent px-0 text-[26px] font-semibold shadow-none focus-visible:ring-0 md:text-[30px]"
-              value={draft.name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          )}
-          <p className="font-heading text-muted-foreground text-[13px] italic">
+      <header className="flex items-center justify-between gap-4">
+        <div className="flex min-w-0 flex-col gap-1">
+          {/* Date line above the name, like every page's header. */}
+          <p className="text-muted-foreground text-sm">
             {format(parseISO(draft.performedDate), 'EEEE, MMMM d')} ·{' '}
             {isTemplateBased ? t.activeSession.fromTemplate : t.activeSession.freestyle} ·{' '}
             <button
@@ -217,6 +195,18 @@ export function ActiveSessionPage() {
               {t.activeSession.editDate}
             </button>
           </p>
+          {isTemplateBased ? (
+            <h1 className="font-heading truncate text-[26px] font-bold tracking-tight md:text-[30px]">
+              {draft.name}
+            </h1>
+          ) : (
+            <Input
+              aria-label={t.activeSession.workoutNameAria}
+              className="font-heading h-auto border-transparent bg-transparent px-0 text-[26px] font-bold tracking-tight shadow-none focus-visible:ring-0 md:text-[30px]"
+              value={draft.name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          )}
           <input
             ref={dateInputRef}
             type="date"
@@ -227,50 +217,63 @@ export function ActiveSessionPage() {
           />
         </div>
 
-        {/* Desktop: actions in the header — no bottom bar. */}
+        {/* Desktop: timer + actions in the header — no bottom bar, no minimize (the
+            sidebar is right there). */}
         <div className="hidden shrink-0 items-center gap-2 md:flex">
+          {draft.startedAt && !isEditing ? (
+            <span className="bg-accent text-primary rounded-full px-3.5 py-1.5 text-sm font-extrabold tabular-nums">
+              {formatElapsed(now - new Date(draft.startedAt).getTime())}
+            </span>
+          ) : null}
           <Button
             variant="ghost"
-            className="text-muted-foreground h-10 rounded-full px-4"
+            className="text-muted-foreground h-9.5 rounded-full px-4"
             onClick={() => void handleDiscard()}
           >
             {discardLabel}
           </Button>
-          <Button className="h-10 rounded-full px-6" onClick={() => setFinishing(true)}>
+          <Button className="h-9.5 rounded-full px-6" onClick={() => setFinishing(true)}>
             {saveLabel}
           </Button>
         </div>
       </header>
 
-      <div className="flex flex-col gap-3">
-        {draft.performances.map((performance) => (
-          <ExercisePerformanceCard
-            key={performance.id}
-            performance={performance}
-            onSwap={() => setPicker({ type: 'swap', performanceId: performance.id })}
-          />
-        ))}
+      {/* From 1200px: exercise cards on the left, a history card per exercise on the
+          right. */}
+      <div className="flex flex-col gap-3 min-[1200px]:grid min-[1200px]:grid-cols-[minmax(0,1fr)_21.5rem] min-[1200px]:items-start min-[1200px]:gap-5">
+        <div className="flex flex-col gap-3">
+          {draft.performances.map((performance) => (
+            <ExercisePerformanceCard
+              key={performance.id}
+              performance={performance}
+              onSwap={() => setPicker({ type: 'swap', performanceId: performance.id })}
+            />
+          ))}
+          <button
+            type="button"
+            className="w-full rounded-xl bg-accent py-2.5 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent/70"
+            onClick={() => setPicker({ type: 'add' })}
+          >
+            {t.activeSession.addExercise}
+          </button>
+        </div>
+        <SessionHistoryPanel
+          performances={draft.performances}
+          performedDate={draft.performedDate}
+        />
       </div>
-
-      <button
-        type="button"
-        className="w-full rounded-2xl border border-border bg-card py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-muted"
-        onClick={() => setPicker({ type: 'add' })}
-      >
-        {t.activeSession.addExercise}
-      </button>
 
       {/* Mobile: sticky action bar (desktop uses the header actions). */}
       <div className="bg-background/95 fixed inset-x-0 bottom-0 z-30 border-t p-3 backdrop-blur md:hidden">
         <div className="mx-auto flex w-full max-w-[820px] gap-2">
           <Button
             variant="ghost"
-            className="text-muted-foreground h-12 rounded-full px-5"
+            className="text-muted-foreground h-9.5 rounded-full px-5"
             onClick={() => void handleDiscard()}
           >
             {discardLabel}
           </Button>
-          <Button className="h-12 flex-1 rounded-full" onClick={() => setFinishing(true)}>
+          <Button className="h-9.5 flex-1 rounded-full" onClick={() => setFinishing(true)}>
             {saveLabel}
           </Button>
         </div>

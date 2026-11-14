@@ -18,9 +18,9 @@ interface PlansColumnProps {
 
 // First column of the desktop plans workspace: every plan (active first, starred) as a
 // link to /plans/$planId — selecting is plain navigation, so the URL, Back and a shared
-// link behave like the mobile pages. Each row carries its own edit / delete, the same
-// way template and exercise rows do in the next columns (shown on the open plan, and on
-// hover/focus for the rest so the list stays calm). Create lives in the page header.
+// link behave like the mobile pages. The open plan shows its edit / delete under the
+// name, so names can wrap at full width and the list stays calm. Create lives in the
+// page header.
 export function PlansColumn({ plans, activePlanId, selectedPlanId }: PlansColumnProps) {
   const openEdit = usePlanUiStore((s) => s.openEdit);
   const { deletePlan, isPending: deleting } = useDeletePlanFlow();
@@ -31,7 +31,7 @@ export function PlansColumn({ plans, activePlanId, selectedPlanId }: PlansColumn
 
   return (
     <div className="border-border flex flex-col gap-1 border-r p-3">
-      <span className="text-muted-foreground px-2 pb-2 text-[11px] font-bold tracking-[0.08em] uppercase">
+      <span className="text-muted-foreground px-2 pb-2 text-[11px] font-medium tracking-[0.08em] uppercase">
         Plans
       </span>
 
@@ -45,23 +45,30 @@ export function PlansColumn({ plans, activePlanId, selectedPlanId }: PlansColumn
             <div
               key={plan.id}
               className={cn(
-                'group flex items-center gap-0.5 rounded-xl pr-1 transition-colors',
-                isSelected ? 'bg-accent' : 'hover:bg-muted',
+                'flex flex-col rounded-lg transition-colors',
+                isSelected ? 'bg-accent ring-primary/35 ring-1 ring-inset' : 'hover:bg-muted',
               )}
             >
               <Link
                 to="/plans/$planId"
                 params={{ planId: plan.id }}
-                className="flex min-w-0 flex-1 flex-col gap-0.5 py-2.5 pl-2.5"
+                className={cn(
+                  'flex min-w-0 flex-col gap-0.5 px-2.5 pt-2.5',
+                  !isSelected && 'pb-2.5',
+                )}
               >
-                <span className="font-heading flex min-w-0 items-center gap-1.5 text-[16px] font-semibold">
+                <span className="font-heading flex min-w-0 items-start gap-1.5 text-[16px] leading-snug font-semibold">
                   {isActive ? (
                     <Star
-                      className="text-primary size-3.5 shrink-0 fill-current"
+                      className="text-primary mt-1 size-3.5 shrink-0 fill-current"
                       aria-label="Active plan"
                     />
                   ) : null}
-                  <span className="truncate">{plan.name}</span>
+                  <span
+                    className={cn('min-w-0 break-words', isSelected && 'text-accent-foreground')}
+                  >
+                    {plan.name}
+                  </span>
                 </span>
                 <span
                   className={cn(
@@ -73,19 +80,18 @@ export function PlansColumn({ plans, activePlanId, selectedPlanId }: PlansColumn
                   {isActive ? ' · active' : ''}
                 </span>
               </Link>
-              <div
-                className={cn(
-                  'flex shrink-0 items-center transition-opacity',
-                  !isSelected && 'opacity-0 group-focus-within:opacity-100 group-hover:opacity-100',
-                )}
-              >
-                <EditIconButton aria-label={`Edit ${plan.name}`} onClick={() => openEdit(plan)} />
-                <DeleteIconButton
-                  aria-label={`Delete ${plan.name}`}
-                  disabled={deleting}
-                  onClick={() => void deletePlan(plan)}
-                />
-              </div>
+              {/* Edit / delete sit under the name (so long names keep the full width),
+                  only on the selected plan — no row-height jump on hover. */}
+              {isSelected && (
+                <div className="flex items-center justify-end gap-0.5 px-1.5 pb-1.5">
+                  <EditIconButton aria-label={`Edit ${plan.name}`} onClick={() => openEdit(plan)} />
+                  <DeleteIconButton
+                    aria-label={`Delete ${plan.name}`}
+                    disabled={deleting}
+                    onClick={() => void deletePlan(plan)}
+                  />
+                </div>
+              )}
             </div>
           );
         })

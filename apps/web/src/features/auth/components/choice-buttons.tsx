@@ -29,7 +29,7 @@ export function ChoiceButtons<T extends string>({
           key={opt.value || 'none'}
           type="button"
           variant={value === opt.value ? 'default' : 'outline'}
-          className="h-11 px-2"
+          className="h-9 rounded-md px-2"
           onClick={() =>
             onChange(value === opt.value && deselectTo !== undefined ? deselectTo : opt.value)
           }

@@ -16,7 +16,7 @@ import { useRecipes } from '../hooks/use-recipes';
 import { useNutritionTranslation } from '../i18n';
 import { MacroValues } from './macro-values';
 
-const CARD = 'overflow-hidden rounded-[20px] border border-border bg-card';
+const CARD = 'overflow-hidden rounded-xl border border-border bg-card';
 
 interface RecipeListProps {
   // Desktop master-detail: rows select the recipe locally (highlighting selectedId) and
@@ -48,7 +48,7 @@ export function RecipeList({ selectedId = null, onSelect }: RecipeListProps) {
   if (isPending) {
     return (
       <div className={CARD}>
-        <SkeletonList avatar avatarClassName="size-16 rounded-[14px]" rows={3} />
+        <SkeletonList avatar avatarClassName="size-16 rounded-lg" rows={3} />
       </div>
     );
   }
@@ -95,10 +95,10 @@ export function RecipeList({ selectedId = null, onSelect }: RecipeListProps) {
               <img
                 src={recipe.imageUrl}
                 alt=""
-                className="bg-muted size-16 shrink-0 rounded-[14px] object-cover"
+                className="bg-muted size-16 shrink-0 rounded-lg object-cover"
               />
             ) : (
-              <span className="bg-muted flex size-16 shrink-0 items-center justify-center rounded-[14px] text-muted-foreground">
+              <span className="bg-muted flex size-16 shrink-0 items-center justify-center rounded-lg text-muted-foreground">
                 <ChefHat className="size-6" />
               </span>
             )}
@@ -108,7 +108,7 @@ export function RecipeList({ selectedId = null, onSelect }: RecipeListProps) {
                   {recipe.name}
                 </span>
                 <span className="shrink-0 text-right leading-none">
-                  <span className="font-heading block text-[17px] font-semibold">
+                  <span className="font-heading block text-[17px] font-bold tabular-nums">
                     {Math.round(recipe.perServing.kcal)}
                   </span>
                   <span className="text-muted-foreground text-[10.5px] font-semibold">kcal</span>

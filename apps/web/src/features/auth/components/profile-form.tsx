@@ -12,6 +12,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { FIELD_CLASS } from '@/lib/form-styles';
 
 import { useAuthTranslation } from '../i18n';
 import { ChoiceButtons } from './choice-buttons';
@@ -125,7 +126,7 @@ export function ProfileForm({
             <FormItem>
               <FormLabel>{t.onboarding.birthdate}</FormLabel>
               <FormControl>
-                <Input type="date" className="h-11" {...field} />
+                <Input type="date" className={FIELD_CLASS} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -160,7 +161,7 @@ export function ProfileForm({
                   type="text"
                   inputMode="numeric"
                   placeholder={t.onboarding.heightPlaceholder}
-                  className="h-11"
+                  className={FIELD_CLASS}
                   {...field}
                 />
               </FormControl>
@@ -177,7 +178,7 @@ export function ProfileForm({
         {status}
 
         <div className="grid gap-2 pt-2">
-          <Button type="submit" className="h-10 rounded-full" disabled={isPending}>
+          <Button type="submit" className="h-9.5 rounded-full" disabled={isPending}>
             {isPending ? t.onboarding.saving : t.onboarding.save}
           </Button>
           {secondaryAction}

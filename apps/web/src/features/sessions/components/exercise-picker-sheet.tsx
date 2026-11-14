@@ -13,6 +13,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import { FIELD_CLASS } from '@/lib/form-styles';
 
 import { useSessionsTranslation } from '../i18n';
 import { useWorkoutDraftStore } from '../stores/workout-draft.store';
@@ -115,7 +116,7 @@ export function ExercisePickerSheet({ mode, onClose }: ExercisePickerSheetProps)
 
           <Input
             placeholder={t.picker.searchPlaceholder}
-            className="h-11"
+            className={FIELD_CLASS}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />

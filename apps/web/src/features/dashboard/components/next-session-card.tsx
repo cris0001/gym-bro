@@ -27,7 +27,7 @@ export function NextSessionCard({ session }: NextSessionCardProps) {
   };
 
   return (
-    <div className="bg-card flex h-full flex-col gap-1.5 rounded-2xl border p-5">
+    <div className="bg-card flex h-full flex-col gap-1.5 rounded-xl border p-5">
       <p className={microLabel}>{t.nextSession.label}</p>
       {session ? (
         <>

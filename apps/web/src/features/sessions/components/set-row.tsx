@@ -1,4 +1,4 @@
-import { ChevronDown, X } from 'lucide-react';
+import { ChevronDown, Star, X } from 'lucide-react';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 
 import { Input } from '@/components/ui/input';
@@ -27,8 +27,39 @@ function parseField(value: string): number | null {
 
 const toValue = (n: number | null): string => (n === null ? '' : String(n));
 
-// One set-type chip (Top set / BW / Clear). Selected = filled plum; unselected =
-// the warm secondary pill. Clear reuses the unselected look.
+// Desktop set-type toggle (Top set / BW): a soft grey rounded-rect pill that turns
+// solid primary when switched on; an optional leading icon.
+function TypeToggle({
+  active,
+  icon,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  icon?: ReactNode;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className={cn(
+        'inline-flex h-8 items-center gap-1.5 rounded-lg px-3.5 text-xs font-semibold transition-colors',
+        active
+          ? 'bg-primary text-primary-foreground'
+          : 'bg-secondary text-muted-foreground hover:bg-muted hover:text-foreground',
+      )}
+    >
+      {icon}
+      {children}
+    </button>
+  );
+}
+
+// One mobile set-type chip (Top set / BW / Clear) under the row. Selected = filled
+// primary; unselected = the secondary pill. Clear reuses the unselected look.
 function TypeChip({
   active,
   onClick,
@@ -90,7 +121,7 @@ export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowP
   }
 
   const field = cn(
-    'h-10 rounded-[10px] border-border bg-secondary text-center font-heading text-base font-semibold',
+    'h-10 rounded-md border-border bg-secondary text-center font-heading text-base font-semibold tabular-nums',
     isCurrent && 'border-primary border-[1.5px] dark:border-primary',
   );
   const iconBtn =
@@ -103,7 +134,7 @@ export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowP
             serif numeral. */}
         <span
           className={cn(
-            'font-heading flex size-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold',
+            'font-heading flex size-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold tabular-nums',
             set.isTopSet ? 'bg-accent text-accent-foreground' : 'text-[#c9bcb2]',
           )}
         >
@@ -153,17 +184,21 @@ export function SetRow({ performanceId, set, index, isCurrent = false }: SetRowP
           }}
         />
 
-        {/* Desktop: set-type chips inline after the fields (fill the row so X sits at the end). */}
+        {/* Desktop: set-type toggles inline after the fields (fill the row so X sits at the end). */}
         <div className="hidden items-center gap-1.5 md:flex md:flex-1">
-          <TypeChip active={set.isTopSet} onClick={() => toggleTopSet(performanceId, set.id)}>
+          <TypeToggle
+            active={set.isTopSet}
+            icon={<Star className={cn('size-3.5', set.isTopSet && 'fill-current')} />}
+            onClick={() => toggleTopSet(performanceId, set.id)}
+          >
             {t.setRow.topSet}
-          </TypeChip>
-          <TypeChip
+          </TypeToggle>
+          <TypeToggle
             active={set.isBodyweight}
             onClick={() => toggleBodyweight(performanceId, set.id)}
           >
             BW
-          </TypeChip>
+          </TypeToggle>
         </div>
 
         {/* Mobile: a chevron reveals the set-type chips under the row. */}

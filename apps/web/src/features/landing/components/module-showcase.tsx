@@ -32,7 +32,7 @@ function ModuleScreen({ module }: { module: LandingModule }) {
       >
         <Icon className="size-8" />
       </span>
-      <span className="font-heading text-xl font-semibold text-[#2b2126]">{copy.title}</span>
+      <span className="font-display text-xl font-semibold text-[#2b2126]">{copy.title}</span>
       <span className="text-xs text-[#94858b]">{t.inside.screenshot}</span>
     </div>
   );
@@ -107,10 +107,10 @@ export function ModuleShowcase() {
       <div className="no-scrollbar sticky top-0 flex h-dvh overflow-y-auto">
         <div className="m-auto w-full max-w-[1060px] px-6 py-6 md:py-10">
           <div className="mb-4 flex flex-col items-center gap-1 text-center md:mb-10 md:gap-2">
-            <span className="font-heading text-[13px] text-[#8d4a5e] italic md:text-[15px]">
+            <span className="font-display text-[13px] text-[#8d4a5e] italic md:text-[15px]">
               {t.inside.eyebrow}
             </span>
-            <h2 className="font-heading text-[clamp(22px,3.5vw,36px)] font-medium tracking-tight text-[#2b2126]">
+            <h2 className="font-display text-[clamp(22px,3.5vw,36px)] font-medium tracking-tight text-[#2b2126]">
               {t.inside.title}
             </h2>
           </div>
@@ -143,7 +143,7 @@ export function ModuleShowcase() {
                       </span>
                       <span
                         className={cn(
-                          'font-heading flex-1 text-lg font-semibold md:text-xl',
+                          'font-display flex-1 text-lg font-semibold md:text-xl',
                           isActive ? 'text-[#f0e7ea]' : 'text-[#2b2126]',
                         )}
                       >
@@ -236,7 +236,7 @@ export function ModuleShowcase() {
                     </div>
                   ))}
                 </div>
-                <span className="font-heading block border-t border-[#e8e1da] bg-[#f6f3f0] px-4 py-2.5 text-center text-[12.5px] text-[#94858b] italic">
+                <span className="font-display block border-t border-[#e8e1da] bg-[#f6f3f0] px-4 py-2.5 text-center text-[12.5px] text-[#94858b] italic">
                   {t.modules[current.id].caption}
                 </span>
               </div>

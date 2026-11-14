@@ -21,7 +21,7 @@ export function AssignTemplateRow({
   onSelect,
 }: AssignTemplateRowProps) {
   return (
-    <li className={cn(index > 0 && 'border-t border-dashed border-border')}>
+    <li className={cn(index > 0 && 'border-t border-border')}>
       <button
         type="button"
         onClick={onSelect}
@@ -31,9 +31,7 @@ export function AssignTemplateRow({
           selected ? 'bg-accent' : 'hover:bg-muted',
         )}
       >
-        <span className="font-heading w-4 shrink-0 text-center text-sm text-[#c9bcb2] italic">
-          {index + 1}
-        </span>
+        <span className="w-4 shrink-0 text-center text-sm text-[#c9bcb2]">{index + 1}</span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[13px] font-semibold">{name}</span>
           <span className="text-muted-foreground block text-[10.5px] font-medium tracking-wide uppercase">

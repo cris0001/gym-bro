@@ -21,7 +21,7 @@ export function PalettePicker({ className }: { className?: string }) {
             aria-pressed={active}
             onClick={() => setPalette(p.id)}
             className={cn(
-              'flex h-11 cursor-pointer items-center gap-2.5 rounded-xl border px-3 text-left text-[13px] font-medium transition-colors',
+              'flex h-9 cursor-pointer items-center gap-2.5 rounded-md border px-3 text-left text-[13px] font-medium transition-colors',
               active
                 ? 'border-primary/40 bg-accent text-accent-foreground'
                 : 'border-border hover:bg-muted',

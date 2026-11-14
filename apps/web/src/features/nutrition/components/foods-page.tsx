@@ -4,6 +4,9 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { PageTitle } from '@/components/page-title';
+import { FIELD_CLASS } from '@/lib/form-styles';
+import { cn } from '@/lib/utils';
 
 import { useNutritionTranslation } from '../i18n';
 import { useFoodUiStore } from '../stores/food-ui.store';
@@ -27,13 +30,13 @@ export function FoodsPage() {
   return (
     <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-4 p-3 md:p-4">
       <div className="flex items-center justify-between gap-2">
-        <h1 className="font-heading text-[28px] leading-none font-medium xl:text-[30px]">
+        <PageTitle className="font-heading text-[28px] leading-none font-bold tracking-tight xl:text-[30px]">
           {t.foods.title}
-        </h1>
+        </PageTitle>
         <div className="flex gap-2">
           <Button
             type="button"
-            className="h-9 rounded-full px-5 text-[14px] font-semibold"
+            className="h-9.5 rounded-full px-5 text-[14px] font-semibold"
             onClick={openCreate}
           >
             <Plus className="size-4" />
@@ -51,20 +54,18 @@ export function FoodsPage() {
             <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2" />
             <Input
               placeholder={t.foods.searchFoods}
-              className="h-11 rounded-xl border-border bg-field pl-10 text-[14px] shadow-none"
+              className={cn(FIELD_CLASS, 'pl-10')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
           <div className="flex items-center justify-between gap-3 px-1">
-            <p className="font-heading text-muted-foreground text-[12.5px] italic">
-              {t.foods.macrosPer100g}
-            </p>
+            <p className="text-muted-foreground text-[12.5px]">{t.foods.macrosPer100g}</p>
             <MacroLegend className="xl:hidden" />
           </div>
           {/* Below xl the rows are their own cards; at xl the table sits in one card
               next to the panel. */}
-          <div className=" xl:overflow-hidden xl:rounded-[20px] xl:border xl:border-border xl:bg-card">
+          <div className=" xl:overflow-hidden xl:rounded-xl xl:border xl:border-border xl:bg-card">
             <FoodList search={search} selectedId={isDesktop ? (editing?.id ?? null) : null} />
           </div>
         </div>

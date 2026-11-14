@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { DeleteIconButton } from '@/components/delete-icon-button';
 import { cn } from '@/lib/utils';
 import { useConfirm } from '@/stores/confirm.store';
+import { TEXTAREA_CLASS } from '@/lib/form-styles';
 
 import { exerciseHistoryQueryOptions } from '../hooks/use-exercise-history';
 import { useSessionsTranslation } from '../i18n';
@@ -18,20 +19,11 @@ interface ExercisePerformanceCardProps {
   onSwap: () => void;
 }
 
-// A short "weight × reps" label for the Copy-last button, taken from the last set.
-function lastSetLabel(
-  performance: DraftPerformance,
-  t: ReturnType<typeof useSessionsTranslation>['exerciseCard'],
-): string {
-  const last = performance.sets.at(-1);
-  if (!last) return t.copyLast;
-  return t.copyLastWith(last.weight ?? 'BW', last.reps ?? '–');
-}
-
 // One exercise within the active session. Collapsible so finished exercises can be
-// tucked away (the header stays, inputs + history hide). Expanded shows the
-// "Previous" strip, column headers, set rows, add-set actions, and a note. The
-// header actions copy the previous session's sets, swap the exercise, or remove it.
+// tucked away (the header stays, inputs + history hide). Expanded shows column
+// headers, set rows, add-set / copy-last actions, a note, and the "Previous" strip at
+// the bottom. The header actions copy the previous session's sets, swap the exercise,
+// or remove it.
 export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerformanceCardProps) {
   const addEmptySet = useWorkoutDraftStore((s) => s.addEmptySet);
   const copyLastSet = useWorkoutDraftStore((s) => s.copyLastSet);
@@ -91,10 +83,13 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
   }
 
   const iconBtn =
-    'text-muted-foreground hover:bg-muted flex size-8 shrink-0 items-center justify-center rounded-[9px] border transition-colors';
+    'text-muted-foreground hover:bg-muted flex size-8 shrink-0 items-center justify-center rounded-[9px] transition-colors';
 
   return (
-    <div className="bg-card flex flex-col rounded-2xl border">
+    <div
+      id={`exercise-${performance.id}`}
+      className="bg-card flex scroll-mt-4 flex-col rounded-xl border"
+    >
       <div className="flex items-center gap-2 p-3">
         <button
           type="button"
@@ -163,9 +158,7 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
       )}
 
       {expanded && (
-        <div className="flex flex-col gap-3 border-t border-dashed px-3 pt-3 pb-3">
-          <SessionPreviousLine exerciseId={performance.actualExerciseId} before={performedDate} />
-
+        <div className="flex flex-col gap-3 border-t px-3 pt-3 pb-3">
           {setCount > 0 && (
             <>
               <div className="text-muted-foreground flex items-center gap-1.5 text-[10.5px] font-semibold tracking-wide uppercase md:gap-2">
@@ -177,7 +170,7 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
                   {t.common.reps}
                 </span>
                 <span className="flex-1 text-center md:w-[90px] md:flex-none">{t.common.rir}</span>
-                <span className="hidden md:block md:flex-1">{t.common.setType}</span>
+                <span className="hidden md:block md:flex-1" aria-hidden />
                 <span className="size-8 shrink-0 md:hidden" aria-hidden />
                 <span className="size-8 shrink-0" aria-hidden />
               </div>
@@ -195,11 +188,11 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
             </>
           )}
 
-          <div className="flex flex-col gap-2 border-t border-dashed pt-3 md:flex-row-reverse md:items-center md:justify-between">
+          <div className="flex flex-col gap-2 border-t pt-3 md:flex-row-reverse md:items-center md:justify-between">
             <div className="flex w-full gap-2 md:w-auto">
               <button
                 type="button"
-                className="bg-accent text-accent-foreground hover:bg-accent/70 h-10 w-1/2 rounded-full px-4 text-sm font-semibold md:w-auto md:flex-none"
+                className="bg-accent text-accent-foreground hover:bg-accent/70 h-9 w-1/2 rounded-full px-4 text-sm font-semibold md:h-8 md:w-auto md:flex-none md:px-3.5 md:text-[13px]"
                 onClick={() => addEmptySet(performance.id)}
               >
                 {t.exerciseCard.addSet}
@@ -207,10 +200,10 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
               {canCopyLast && (
                 <button
                   type="button"
-                  className="text-accent-foreground hover:bg-muted h-10 flex-1 rounded-full border px-4 text-sm font-medium md:flex-none"
+                  className="bg-secondary text-accent-foreground hover:bg-muted h-9 flex-1 rounded-full px-4 text-sm font-medium md:h-8 md:flex-none md:px-3.5 md:text-[13px]"
                   onClick={() => copyLastSet(performance.id)}
                 >
-                  {lastSetLabel(performance, t.exerciseCard)}
+                  {t.exerciseCard.copyLast}
                 </button>
               )}
             </div>
@@ -231,13 +224,18 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
               aria-label={t.exerciseCard.notesAria}
               rows={2}
               placeholder={t.exerciseCard.notesPlaceholder}
-              className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 rounded-lg border bg-background px-2.5 py-2 text-base transition-colors outline-none focus-visible:ring-3 md:text-sm"
+              className={TEXTAREA_CLASS}
               value={performance.notes ?? ''}
               onChange={(e) =>
                 setExerciseNotes(performance.id, e.target.value.length > 0 ? e.target.value : null)
               }
             />
           )}
+
+          {/* From 1200px the history moves to the side column. */}
+          <div className="min-[1200px]:hidden">
+            <SessionPreviousLine exerciseId={performance.actualExerciseId} before={performedDate} />
+          </div>
         </div>
       )}
     </div>

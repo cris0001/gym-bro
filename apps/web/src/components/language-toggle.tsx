@@ -10,7 +10,7 @@ export function LanguageToggle({ className }: { className?: string }) {
   const setLocale = useLocaleStore((s) => s.setLocale);
 
   return (
-    <div className={cn('bg-secondary flex items-center rounded-full p-0.5', className)}>
+    <div className={cn('bg-secondary flex h-9 items-center gap-1 rounded-md p-[3px]', className)}>
       {LOCALES.map(({ code, label }) => (
         <button
           key={code}
@@ -18,7 +18,7 @@ export function LanguageToggle({ className }: { className?: string }) {
           aria-pressed={locale === code}
           onClick={() => setLocale(code)}
           className={cn(
-            'inline-flex h-7 cursor-pointer items-center gap-1 rounded-full px-2.5 text-[11.5px] font-semibold transition-colors',
+            'inline-flex h-full cursor-pointer items-center gap-1.5 rounded-sm px-3 text-[13px] font-semibold transition-colors',
             locale === code ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground',
           )}
         >

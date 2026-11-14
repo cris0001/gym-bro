@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 // top, the "Since … · P · C · F" line under it, and the edit button.
 export function TargetsHistorySkeleton() {
   return (
-    <ul aria-hidden className="divide-y divide-dashed divide-border">
+    <ul aria-hidden className="divide-y divide-border">
       {[0, 1, 2].map((i) => (
         <li key={i} className="flex items-center gap-3 py-2.5">
           <span

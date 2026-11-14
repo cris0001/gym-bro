@@ -13,6 +13,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { SELECT_TRIGGER_CLASS } from '@/lib/form-styles';
 
 import { useStatExercises } from '../hooks/use-stats';
 
@@ -23,8 +24,9 @@ interface ExerciseStatPickerProps {
   onSelect: (exercise: StatExercise) => void;
 }
 
-// Searchable picker for the progress chart. Lists only exercises the user has
-// logged (from /stats/exercises), so every choice yields a non-empty chart.
+// Searchable picker for the progress chart (a 36px select with small corners). Lists
+// only exercises the user has logged (from /stats/exercises), so every choice yields
+// a non-empty chart. Nothing is picked by default.
 // Exercises are grouped by category (in the canonical category order; names are
 // already sorted within each from the backend) so the list reads by muscle group.
 export function ExerciseStatPicker({ value, onSelect }: ExerciseStatPickerProps) {
@@ -44,7 +46,7 @@ export function ExerciseStatPicker({ value, onSelect }: ExerciseStatPickerProps)
   // Until the logged exercises arrive the picker has nothing to offer — hold its
   // place with a skeleton the trigger's exact size.
   if (isPending) {
-    return <Skeleton className="h-10 w-full rounded-md" />;
+    return <Skeleton className="h-9 w-60 max-w-full rounded-md" />;
   }
 
   return (
@@ -53,15 +55,16 @@ export function ExerciseStatPicker({ value, onSelect }: ExerciseStatPickerProps)
         <Button
           variant="ghost"
           className={cn(
-            'h-10 w-full justify-between rounded-md font-medium',
-            value ? 'bg-accent text-primary' : 'bg-secondary text-muted-foreground',
+            SELECT_TRIGGER_CLASS,
+            'w-60 max-w-full font-semibold',
+            !value && 'text-muted-foreground',
           )}
         >
           <span className="truncate">{value ? value.name : 'Select an exercise'}</span>
           <ChevronsUpDown className="size-4 shrink-0 opacity-60" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
+      <PopoverContent className="w-(--radix-popover-trigger-width) min-w-64 p-0" align="start">
         <Command>
           <CommandInput placeholder="Search exercises" />
           <CommandList>

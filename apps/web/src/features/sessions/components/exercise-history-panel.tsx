@@ -1,31 +1,11 @@
-import { format, parseISO } from 'date-fns';
 import { useState } from 'react';
-
-import type { ExerciseHistoryEntry } from '@gym-bro/shared';
 
 import { useSessionsTranslation } from '../i18n';
 import { useExerciseHistory } from '../hooks/use-exercise-history';
+import { HistoryEntry } from './history-entry';
 
 // How many more past sessions each "More" reveals.
 const STEP = 3;
-
-// Compact set summary, e.g. "100 × 8" (weight × reps). null weight is bodyweight; a
-// missing rep count shows as a dash; a top set is prefixed "★".
-function formatSet(set: ExerciseHistoryEntry['sets'][number]): string {
-  const text = `${set.weight ?? 'BW'} × ${set.reps ?? '–'}`;
-  return set.isTopSet ? `★ ${text}` : text;
-}
-
-function EntryLine({ entry }: { entry: ExerciseHistoryEntry }) {
-  return (
-    <p className="text-muted-foreground min-w-0 text-[11.5px] leading-snug">
-      <span className="text-subtle-foreground font-semibold">
-        {format(parseISO(entry.performedDate), 'MMM d')}
-      </span>{' '}
-      — {entry.sets.map(formatSet).join(' · ') || '—'}
-    </p>
-  );
-}
 
 interface ExerciseHistoryPanelProps {
   exerciseId: string;
@@ -34,20 +14,19 @@ interface ExerciseHistoryPanelProps {
   before?: string | undefined;
 }
 
-// "Previous" strip on the workout detail: the most recent past session on one line,
-// with a "More" that grows the window by STEP older sessions listed beneath.
+// Past results of one exercise on the workout detail: the most recent session as
+// small set pills, with a centered "More" that grows the window by STEP older ones.
 export function ExerciseHistoryPanel({ exerciseId, before }: ExerciseHistoryPanelProps) {
   const [limit, setLimit] = useState(1);
   const { data: entries = [], isLoading } = useExerciseHistory(exerciseId, before, limit);
   const t = useSessionsTranslation();
 
-  const box = 'bg-field-muted rounded-[10px] px-2 py-1.5';
+  const box = 'bg-field-muted rounded-[10px] px-2.5 py-2';
 
   if (isLoading && entries.length === 0) {
     return <p className={`${box} text-muted-foreground text-[11.5px]`}>{t.previous.loading}</p>;
   }
-  const [latest, ...older] = entries;
-  if (!latest) {
+  if (entries.length === 0) {
     return <p className={`${box} text-muted-foreground text-[11.5px]`}>{t.previous.none}</p>;
   }
 
@@ -55,22 +34,19 @@ export function ExerciseHistoryPanel({ exerciseId, before }: ExerciseHistoryPane
   const canShowMore = entries.length >= limit;
 
   return (
-    <div className={`${box} flex flex-col gap-1`}>
-      <div className="flex items-start justify-between gap-1">
-        <EntryLine entry={latest} />
-        {canShowMore && (
-          <button
-            type="button"
-            className="text-primary shrink-0 text-[10.5px] leading-[1.6] font-semibold"
-            onClick={() => setLimit((current) => current + STEP)}
-          >
-            {t.previous.more}
-          </button>
-        )}
-      </div>
-      {older.map((entry, index) => (
-        <EntryLine key={`${entry.sessionId}-${index}`} entry={entry} />
+    <div className={`${box} flex flex-col gap-2`}>
+      {entries.map((entry, index) => (
+        <HistoryEntry key={`${entry.sessionId}-${index}`} entry={entry} size="sm" />
       ))}
+      {canShowMore && (
+        <button
+          type="button"
+          className="text-primary self-center text-[11px] font-semibold hover:underline md:text-xs"
+          onClick={() => setLimit((current) => current + STEP)}
+        >
+          {t.previous.showMore}
+        </button>
+      )}
     </div>
   );
 }

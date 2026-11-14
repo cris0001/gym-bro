@@ -63,7 +63,7 @@ export function StartWorkoutPicker({ onSelectTemplate }: StartWorkoutPickerProps
         <button
           key={plan.id}
           type="button"
-          className="bg-card hover:bg-muted/50 flex items-center gap-3 rounded-2xl border p-4 text-left transition-colors"
+          className="bg-card hover:bg-muted/50 flex items-center gap-3 rounded-xl border p-4 text-left transition-colors"
           onClick={() => setSelectedPlanId(plan.id)}
         >
           <span className="bg-accent text-primary flex size-10 shrink-0 items-center justify-center rounded-xl">
@@ -124,7 +124,7 @@ function TemplatePicker({ planId, showBack, onBack, onSelectTemplate }: Template
             <button
               key={template.id}
               type="button"
-              className="bg-card hover:bg-muted/50 flex items-center gap-3 rounded-2xl border p-4 text-left transition-colors"
+              className="bg-card hover:bg-muted/50 flex items-center gap-3 rounded-xl border p-4 text-left transition-colors"
               onClick={() => onSelectTemplate({ id: template.id, name: template.name })}
             >
               <span className="bg-accent text-primary flex size-10 shrink-0 items-center justify-center rounded-xl">

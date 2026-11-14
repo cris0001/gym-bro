@@ -13,6 +13,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import { FIELD_CLASS, TEXTAREA_CLASS } from '@/lib/form-styles';
 
 import { useSessionsTranslation } from '../i18n';
 import { useCreateActivitySession } from '../hooks/use-create-activity-session';
@@ -101,7 +102,7 @@ export function ActivityFormSheet({ open, onClose }: ActivityFormSheetProps) {
             {t.activity.name}
             <Input
               placeholder={t.activity.namePlaceholder}
-              className="h-11"
+              className={FIELD_CLASS}
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -111,7 +112,7 @@ export function ActivityFormSheet({ open, onClose }: ActivityFormSheetProps) {
             {t.activity.date}
             <Input
               type="date"
-              className="h-11"
+              className={FIELD_CLASS}
               value={performedDate}
               onChange={(e) => e.target.value && setPerformedDate(e.target.value)}
             />
@@ -122,7 +123,7 @@ export function ActivityFormSheet({ open, onClose }: ActivityFormSheetProps) {
             <Input
               inputMode="numeric"
               placeholder={t.common.optional}
-              className="h-11"
+              className={FIELD_CLASS}
               value={durationMinutes ?? ''}
               onChange={(e) => setDurationMinutes(parseDuration(e.target.value))}
             />
@@ -156,7 +157,7 @@ export function ActivityFormSheet({ open, onClose }: ActivityFormSheetProps) {
             <textarea
               placeholder={t.common.optional}
               rows={3}
-              className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 rounded-lg border bg-background px-2.5 py-2 text-base transition-colors outline-none focus-visible:ring-3 md:text-sm"
+              className={TEXTAREA_CLASS}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />

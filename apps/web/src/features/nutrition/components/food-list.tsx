@@ -52,7 +52,7 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
   }
 
   if (isPending) {
-    return <SkeletonList avatar avatarClassName="size-[46px] rounded-xl" />;
+    return <SkeletonList avatar avatarClassName="size-[46px] rounded-lg" />;
   }
   if (filtered.length === 0) {
     if (query) {
@@ -88,9 +88,9 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
       >
         <span className="pl-14">{t.common.name}</span>
         <span className="text-right">kcal</span>
-        <span className="text-right text-[#8d4a5e]">{t.common.macroShort.protein}</span>
-        <span className="text-right text-[#b8862a]">{t.common.macroShort.carbs}</span>
-        <span className="text-right text-[#5a7a52]">{t.common.macroShort.fat}</span>
+        <span className="text-macro-protein-text text-right">{t.common.macroShort.protein}</span>
+        <span className="text-macro-carbs-text text-right">{t.common.macroShort.carbs}</span>
+        <span className="text-macro-fat-text text-right">{t.common.macroShort.fat}</span>
         <span aria-hidden />
       </div>
       <ul className="grid grid-cols-1 gap-2 md:grid-cols-2 md:gap-3 xl:block">
@@ -100,7 +100,7 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
             <li
               key={food.id}
               className={cn(
-                'bg-card border-border flex items-center gap-2 rounded-2xl border py-3 pr-2 pl-3.5 transition-colors hover:border-border-strong',
+                'bg-card border-border flex items-center gap-2 rounded-xl border py-3 pr-2 pl-3.5 transition-colors hover:border-border-strong',
                 'xl:hover:bg-muted/50 xl:rounded-none xl:border-x-0 xl:border-t-0 xl:border-b xl:border-border xl:bg-transparent xl:py-3 xl:last:border-b-0',
                 selected && 'bg-accent xl:bg-accent xl:hover:bg-accent',
               )}
@@ -119,17 +119,17 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
                     <img
                       src={food.imageUrl}
                       alt=""
-                      className="bg-muted size-[46px] shrink-0 rounded-xl object-cover xl:size-11"
+                      className="bg-muted size-[46px] shrink-0 rounded-lg object-cover xl:size-11"
                     />
                   ) : (
-                    <span className="bg-muted flex size-[46px] shrink-0 items-center justify-center rounded-xl text-muted-foreground xl:size-11">
+                    <span className="bg-muted flex size-[46px] shrink-0 items-center justify-center rounded-lg text-muted-foreground xl:size-11">
                       <Apple className="size-5" />
                     </span>
                   )}
                   <span className="min-w-0 flex-1">
                     <span
                       className={cn(
-                        'font-heading block truncate text-[16.5px] leading-tight font-medium xl:text-base',
+                        'font-heading block truncate text-[16.5px] leading-tight font-semibold xl:text-base',
                         selected && 'xl:text-accent-foreground',
                       )}
                     >

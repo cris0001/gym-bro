@@ -1,10 +1,12 @@
 import { format, parseISO } from 'date-fns';
-import { Barcode, ChevronLeft, Plus, Search } from 'lucide-react';
+import { Barcode, Plus, Search } from 'lucide-react';
 
 import type { MealType } from '@gym-bro/shared';
 
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSheetBackClose } from '@/hooks/use-sheet-back-close';
+import { FIELD_CLASS } from '@/lib/form-styles';
+import { cn } from '@/lib/utils';
 
 import type { UseAddEntry } from '../hooks/use-add-entry';
 import { usePendingFoodLogEntries } from '../hooks/use-pending-food-log-entries';
@@ -59,21 +61,14 @@ export function AddEntryMobile({
     <div className="bg-background fixed inset-0 z-50 flex flex-col">
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto flex w-full max-w-md flex-col gap-4 p-3 min-[400px]:p-4">
-          <div className="flex items-center justify-between gap-2">
-            <button
-              type="button"
-              onClick={closeAdd}
-              className="text-muted-foreground -ml-1 flex items-center text-[13px] font-semibold"
-            >
-              <ChevronLeft className="size-4" />
-              {t.addEntry.back}
-            </button>
-            <span className="font-heading text-muted-foreground text-sm italic">
+          <div className="flex flex-col gap-1">
+            <p className="text-muted-foreground text-sm">
               {format(parseISO(loggedDate), 'EEEE, MMMM d')}
-            </span>
+            </p>
+            <h1 className="font-heading text-[26px] font-bold tracking-tight">
+              {t.addEntry.addTo(mealLabel)}
+            </h1>
           </div>
-
-          <h1 className="font-heading text-[26px] font-semibold">{t.addEntry.addTo(mealLabel)}</h1>
 
           <div className="flex gap-2">
             <div className="relative min-w-0 flex-1">
@@ -82,7 +77,10 @@ export function AddEntryMobile({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={t.addEntry.searchPlaceholder}
-                className="border-border bg-card placeholder:text-muted-foreground h-[46px] w-full rounded-xl border pr-3 pl-10 text-sm focus:outline-none"
+                className={cn(
+                  FIELD_CLASS,
+                  'w-full border pr-3 pl-10 placeholder:text-muted-foreground',
+                )}
               />
             </div>
             {canScan ? (
@@ -90,27 +88,25 @@ export function AddEntryMobile({
                 type="button"
                 aria-label={t.barcode.scanAria}
                 onClick={() => setScanning(true)}
-                className="border-border bg-card text-primary flex size-[46px] shrink-0 items-center justify-center rounded-xl border"
+                className="border-border bg-field text-primary hover:bg-muted flex size-9 shrink-0 items-center justify-center rounded-md border transition-colors"
               >
                 <Barcode className="size-5" />
               </button>
             ) : null}
           </div>
 
-          <div className="border-border bg-card overflow-hidden rounded-[18px] border">
+          <div className="border-border bg-card overflow-hidden rounded-xl border">
             {/* Capped height with its own scroll so the "Added" list and the total bar
                 stay in view without scrolling past the whole dictionary. */}
             <div className="max-h-[42vh] overflow-y-auto">
               {isListLoading ? (
-                <AddEntryListSkeleton
-                  dividerClassName={'border-t border-dashed border-border-strong'}
-                />
+                <AddEntryListSkeleton dividerClassName={'border-t border-border'} />
               ) : (
                 <>
                   {rows.map((row, i) => (
                     <div
                       key={`${row.kind}-${row.id}`}
-                      className={i > 0 ? 'border-t border-dashed border-border-strong' : ''}
+                      className={i > 0 ? 'border-t border-border' : ''}
                     >
                       <AddEntryResultRow
                         row={row}
@@ -124,7 +120,7 @@ export function AddEntryMobile({
                     <AddEntryListSkeleton
                       rows={2}
                       dividedFromAbove={rows.length > 0}
-                      dividerClassName={'border-t border-dashed border-border-strong'}
+                      dividerClassName={'border-t border-border'}
                     />
                   ) : null}
                 </>
@@ -133,7 +129,7 @@ export function AddEntryMobile({
             <button
               type="button"
               onClick={createNewFood}
-              className="text-primary flex w-full items-center justify-center gap-1.5 border-t border-dashed border-border-strong py-3.5 text-[12.5px] font-bold"
+              className="text-primary flex w-full items-center justify-center gap-1.5 border-t border-border py-3.5 text-[12.5px] font-bold"
             >
               <Plus className="size-4" />
               {t.addEntry.createFood}
@@ -146,12 +142,12 @@ export function AddEntryMobile({
                 <span className="text-muted-foreground text-[11px] font-semibold tracking-wide uppercase">
                   {t.addEntry.addedTo(mealLabel)}
                 </span>
-                <span className="font-heading text-lg font-semibold">
+                <span className="font-heading text-lg font-bold tabular-nums">
                   {mealTotal.toLocaleString('en-US')}
                   <span className="text-muted-foreground ml-0.5 text-[11px] font-normal">kcal</span>
                 </span>
               </div>
-              <ul className="border-border bg-card flex flex-col divide-y divide-dashed divide-border-strong rounded-[18px] border px-4">
+              <ul className="border-border bg-card flex flex-col divide-y divide-border rounded-xl border px-4">
                 {mealEntries.map((entry) => (
                   <DiaryEntryRow key={entry.id} entry={entry} showImage />
                 ))}
@@ -174,7 +170,7 @@ export function AddEntryMobile({
               <Skeleton className="h-4 w-16" />
             </div>
           ) : (
-            <span className="font-heading text-[17px] font-semibold">
+            <span className="font-heading text-[17px] font-bold tabular-nums">
               {mealTotal.toLocaleString('en-US')}
               <span className="text-muted-foreground ml-0.5 text-[11px] font-normal">kcal</span>
             </span>

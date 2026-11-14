@@ -41,9 +41,7 @@ export function DayDetailPanel() {
     <aside className="h-fit lg:sticky lg:top-4">
       <header className="flex items-center justify-between gap-2 px-4 pt-1 pb-2">
         <div className="flex min-w-0 flex-col">
-          <span className="font-heading text-muted-foreground text-sm italic">
-            {format(parseISO(date), 'EEEE')}
-          </span>
+          <span className="text-muted-foreground text-sm">{format(parseISO(date), 'EEEE')}</span>
           <h2 className="font-heading text-2xl leading-tight font-semibold">
             {format(parseISO(date), 'MMM d, yyyy')}
           </h2>

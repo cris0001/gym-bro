@@ -33,7 +33,7 @@ function distinctTypes(sessions: StravaSessionItem[]): string[] {
 function Tile({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-secondary/60 rounded-xl p-3 text-center">
-      <p className="font-heading text-lg font-semibold">{value}</p>
+      <p className="font-heading text-lg font-bold tabular-nums">{value}</p>
       <p className="text-muted-foreground text-[11px] tracking-[0.08em] uppercase">{label}</p>
     </div>
   );
@@ -75,7 +75,7 @@ export function StravaSummary({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="bg-card flex flex-col gap-3 rounded-2xl border p-4">
+      <div className="bg-card flex flex-col gap-3 rounded-xl border p-4">
         {/* Sport filter — tap an icon to scope the dashboard to that activity type. */}
         {types.length > 1 && (
           <div className="flex flex-wrap items-center gap-1.5">
@@ -140,7 +140,7 @@ export function StravaSummary({
         </div>
       </div>
 
-      <div className="bg-card flex flex-col gap-2 rounded-2xl border p-4">
+      <div className="bg-card flex flex-col gap-2 rounded-xl border p-4">
         <p className="text-muted-foreground text-xs font-semibold uppercase">
           {type ? `${type} · ` : ''}weekly {hasDistance ? 'distance' : 'time'} · last 12 weeks
         </p>

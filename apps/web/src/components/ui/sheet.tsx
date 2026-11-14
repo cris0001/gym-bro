@@ -4,7 +4,7 @@
 //   a dialog on desktop, so it never becomes an awkward full-width bar;
 // - Sheet wires up useSheetBackClose so the phone Back button closes an open sheet
 //   instead of navigating away to another URL (applies to every sheet in the app);
-// - Warm-editorial: --card surface, 2xl radius on the desktop modal, a serif SheetTitle,
+// - Warm-editorial: --card surface, xl (12px) radius on the sheet/modal, a SheetTitle,
 //   and a grab-handle affordance on mobile bottom sheets;
 // - SheetContent takes a closeClassName so a caller can restyle the × button.
 import * as React from 'react';
@@ -84,7 +84,7 @@ function SheetContent({
           // content-driven), width-capped and only as tall as its content up to 85dvh
           // (then it scrolls), zoom+fade in. A bottom sheet on phones, a modal on desktop.
           side === 'bottom' &&
-            'max-sm:data-[state=closed]:slide-out-to-bottom max-sm:data-[state=open]:slide-in-from-bottom inset-x-0 bottom-0 max-h-[90dvh] overflow-y-auto rounded-t-2xl border-t sm:left-1/2 sm:right-auto sm:top-[45%] sm:bottom-auto sm:-translate-x-1/2 sm:-translate-y-1/2 sm:max-h-[85dvh] sm:w-[calc(100%-2rem)] sm:max-w-2xl lg:max-w-3xl sm:rounded-2xl sm:border sm:data-[state=open]:zoom-in-95 sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:fade-out-0',
+            'max-sm:data-[state=closed]:slide-out-to-bottom max-sm:data-[state=open]:slide-in-from-bottom inset-x-0 bottom-0 max-h-[90dvh] overflow-y-auto rounded-t-xl border-t sm:left-1/2 sm:right-auto sm:top-[45%] sm:bottom-auto sm:-translate-x-1/2 sm:-translate-y-1/2 sm:max-h-[85dvh] sm:w-[calc(100%-2rem)] sm:max-w-2xl lg:max-w-3xl sm:rounded-xl sm:border sm:data-[state=open]:zoom-in-95 sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:fade-out-0',
           className,
         )}
         {...props}

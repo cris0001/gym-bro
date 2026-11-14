@@ -2,13 +2,14 @@ import { useState } from 'react';
 
 import type { NutritionTarget } from '@gym-bro/shared';
 
+import { PageTitle } from '@/components/page-title';
 import { useCurrentTarget } from '../hooks/use-current-target';
 import { useNutritionTranslation } from '../i18n';
 import { TargetsForm } from './targets-form';
 import { TargetsFormSkeleton } from './targets-form-skeleton';
 import { TargetsHistory } from './targets-history';
 
-const CARD = 'rounded-[20px] border border-border bg-card p-4 md:p-5';
+const CARD = 'rounded-xl border border-border bg-card p-4 md:p-5';
 
 // Targets settings: set the current daily target or back-fill/edit a dated entry,
 // and review the history of past targets. Editing state is owned here and shared by
@@ -19,10 +20,10 @@ export function TargetsPage() {
   const [editing, setEditing] = useState<NutritionTarget | null>(null);
 
   return (
-    <div className="mx-auto lg:col-span-3 flex w-full max-w-5xl flex-col gap-4 p-3 md:p-4">
-      <h1 className="font-heading text-[28px] leading-none font-medium lg:text-[30px]">
+    <div className="flex w-full flex-col gap-4 p-3 md:p-4 max-w-6xl lg:col-start-2">
+      <PageTitle className="font-heading text-[28px] leading-none font-bold tracking-tight lg:text-[30px]">
         {t.targets.title}
-      </h1>
+      </PageTitle>
 
       <div className="grid gap-3 lg:grid-cols-2 lg:items-start lg:gap-5">
         <section className={CARD}>

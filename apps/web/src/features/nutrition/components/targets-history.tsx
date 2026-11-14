@@ -29,7 +29,7 @@ export function TargetsHistory({ onEdit }: { onEdit: (target: NutritionTarget) =
   const short = t.common.macroShort;
 
   return (
-    <ul className="divide-y divide-dashed divide-border">
+    <ul className="divide-y divide-border">
       {ordered.map((target, index) => {
         const current = index === 0;
         return (
@@ -43,7 +43,7 @@ export function TargetsHistory({ onEdit }: { onEdit: (target: NutritionTarget) =
             />
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <p className="font-heading text-[16px] leading-tight font-semibold">
+                <p className="font-heading text-[16px] leading-tight font-semibold tabular-nums">
                   {fmt(target.kcal)} kcal
                 </p>
                 {current ? (

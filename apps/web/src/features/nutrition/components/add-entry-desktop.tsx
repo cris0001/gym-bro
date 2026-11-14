@@ -1,9 +1,10 @@
 import { format, parseISO } from 'date-fns';
-import { Barcode, ChevronLeft, Plus, Search } from 'lucide-react';
+import { Barcode, Plus, Search } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { FIELD_CLASS } from '@/lib/form-styles';
 
 import type { MealType } from '@gym-bro/shared';
 
@@ -23,7 +24,7 @@ import { PendingFoodLogRow } from './pending-food-log-row';
 const fmt = (n: number): string => Math.round(n).toLocaleString('en-US');
 
 const microLabel = 'text-muted-foreground text-[11px] font-semibold tracking-[0.08em] uppercase';
-const dashed = 'border-dashed border-border';
+const divider = 'border-border';
 
 // Desktop "Add to {meal}" view: a two-pane page inside the app layout (sidebar stays).
 // Left: search (+ ⌘K, + barcode) over the results list. Right (sticky): the items added
@@ -73,25 +74,20 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
 
   return (
     <>
-      <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-[18px] px-6 py-6 md:px-8">
-        <header className="flex items-start justify-between gap-4">
+      <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-[18px] px-6 py-4 md:px-8">
+        <header className="flex items-center justify-between gap-4">
           <div className="flex flex-col gap-1">
-            <button
-              type="button"
-              onClick={closeAdd}
-              className="text-muted-foreground -ml-0.5 flex w-fit items-center gap-1 text-[12.5px] font-medium"
-            >
-              <ChevronLeft className="size-3.5" />
-              {t.addEntry.diaryCrumb(format(parseISO(loggedDate), 'EEEE, MMMM d'))}
-            </button>
-            <h1 className="font-heading text-[30px] leading-tight font-semibold">
+            <p className="text-muted-foreground text-sm">
+              {format(parseISO(loggedDate), 'EEEE, MMMM d')}
+            </p>
+            <h1 className="font-heading text-[30px] leading-tight font-bold tracking-tight">
               {t.addEntry.addTo(mealLabel)}
             </h1>
           </div>
           <button
             type="button"
             onClick={closeAdd}
-            className="bg-primary text-primary-foreground h-9 shrink-0 rounded-full px-6 text-[13.5px] font-semibold"
+            className="bg-primary text-primary-foreground h-9.5 shrink-0 rounded-full px-6 text-[13.5px] font-semibold"
           >
             {t.common.done}
           </button>
@@ -111,7 +107,10 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={t.addEntry.searchPlaceholder}
-                  className="border-border bg-card placeholder:text-muted-foreground h-[46px] w-full rounded-xl border pr-14 pl-10 text-sm focus:outline-none"
+                  className={cn(
+                    FIELD_CLASS,
+                    'w-full border pr-14 pl-10 placeholder:text-muted-foreground',
+                  )}
                 />
                 <kbd className="border-border text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 rounded-md border px-1.5 py-0.5 text-[11px] font-medium">
                   ⌘K
@@ -122,26 +121,26 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
                   type="button"
                   aria-label={t.barcode.scanAria}
                   onClick={() => setScanning(true)}
-                  className="border-border bg-card text-primary flex size-[46px] shrink-0 items-center justify-center rounded-xl border"
+                  className="border-border bg-field text-primary hover:bg-muted flex size-9 shrink-0 items-center justify-center rounded-md border transition-colors"
                 >
                   <Barcode className="size-5" />
                 </button>
               ) : null}
             </div>
 
-            <div className="border-border bg-card overflow-hidden rounded-2xl border">
-              <div className={cn('flex items-center justify-between border-b px-4 py-3', dashed)}>
+            <div className="border-border bg-card overflow-hidden rounded-xl border">
+              <div className={cn('flex items-center justify-between border-b px-4 py-3', divider)}>
                 <span className={microLabel}>{t.addEntry.allFoodsRecipes}</span>
                 <span className="text-muted-foreground text-[11px]">{t.addEntry.recentFirst}</span>
               </div>
               {isListLoading ? (
-                <AddEntryListSkeleton dividerClassName={cn('border-t', dashed)} />
+                <AddEntryListSkeleton dividerClassName={cn('border-t', divider)} />
               ) : (
                 <>
                   {rows.map((row, i) => (
                     <div
                       key={`${row.kind}-${row.id}`}
-                      className={i > 0 ? cn('border-t', dashed) : ''}
+                      className={i > 0 ? cn('border-t', divider) : ''}
                     >
                       <AddEntryResultRow
                         row={row}
@@ -155,7 +154,7 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
                     <AddEntryListSkeleton
                       rows={2}
                       dividedFromAbove={rows.length > 0}
-                      dividerClassName={cn('border-t', dashed)}
+                      dividerClassName={cn('border-t', divider)}
                     />
                   ) : null}
                 </>
@@ -165,7 +164,7 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
                 onClick={createNewFood}
                 className={cn(
                   'text-primary flex w-full items-center justify-center gap-1.5 border-t py-3.5 text-[12.5px] font-bold',
-                  dashed,
+                  divider,
                 )}
               >
                 <Plus className="size-4" />
@@ -176,13 +175,13 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
 
           {/* RIGHT — added items + day projection (sticky) */}
           <div className="sticky top-5 flex min-w-0 flex-col gap-[18px]">
-            <div className="border-border bg-card rounded-2xl border p-4">
+            <div className="border-border bg-card rounded-xl border p-4">
               <div className="flex items-baseline justify-between">
                 <span className={microLabel}>{t.addEntry.addedTo(mealLabel)}</span>
                 {isDayLoading ? (
                   <Skeleton className="h-4 w-14" />
                 ) : (
-                  <span className="font-heading text-[17px] font-semibold">
+                  <span className="font-heading text-[17px] font-bold tabular-nums">
                     {fmt(mealTotal)}
                     <span className="text-muted-foreground ml-0.5 text-[11px] font-normal">
                       kcal
@@ -191,21 +190,16 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
                 )}
               </div>
               {isDayLoading ? (
-                <AddEntryDaySkeleton variant="added" dividerClassName={dashed} />
+                <AddEntryDaySkeleton variant="added" dividerClassName={divider} />
               ) : mealEntries.length > 0 || pending.length > 0 ? (
-                <>
-                  <ul className={cn('mt-2 flex flex-col divide-y divide-dashed', dashed)}>
-                    {mealEntries.map((entry) => (
-                      <DiaryEntryRow key={entry.id} entry={entry} showImage />
-                    ))}
-                    {pending.map((variables) => (
-                      <PendingFoodLogRow key={variables.id} variables={variables} />
-                    ))}
-                  </ul>
-                  <p className="font-heading text-muted-foreground mt-3 text-[12px] italic">
-                    {t.addEntry.tapToEdit}
-                  </p>
-                </>
+                <ul className={cn('mt-2 flex flex-col divide-y', divider)}>
+                  {mealEntries.map((entry) => (
+                    <DiaryEntryRow key={entry.id} entry={entry} showImage />
+                  ))}
+                  {pending.map((variables) => (
+                    <PendingFoodLogRow key={variables.id} variables={variables} />
+                  ))}
+                </ul>
               ) : (
                 <p className="text-muted-foreground mt-3 text-[12.5px]">
                   {t.addEntry.nothingAdded}
@@ -213,14 +207,14 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
               )}
             </div>
 
-            <div className="border-border bg-card rounded-2xl border p-4">
+            <div className="border-border bg-card rounded-xl border p-4">
               <span className={microLabel}>{t.addEntry.dayAfter}</span>
               {isDayLoading ? (
-                <AddEntryDaySkeleton variant="day" dividerClassName={dashed} />
+                <AddEntryDaySkeleton variant="day" dividerClassName={divider} />
               ) : target ? (
                 <>
                   <div className="mt-2 flex items-center justify-between gap-2">
-                    <span className="font-heading text-[20px] font-semibold">
+                    <span className="font-heading text-[20px] font-bold tabular-nums">
                       {fmt(dayTotals.kcal)}
                       <span className="text-muted-foreground text-[13px] font-normal">
                         {' '}
@@ -289,7 +283,7 @@ function DayMacroBar({
         <span className="text-muted-foreground text-[10px] font-bold tracking-wide uppercase">
           {label}
         </span>
-        <span className="font-heading text-[13px] font-semibold">
+        <span className="font-heading text-[13px] font-semibold tabular-nums">
           {Math.round(current)}
           <span className="text-muted-foreground text-[11px] font-normal">
             /{Math.round(target)} g

@@ -40,11 +40,16 @@ export function DiaryBottomBar({ totals, date }: { totals: MacroTotals; date: st
 
   return (
     <div className="fixed inset-x-0 bottom-[3.75rem] z-20 px-3 lg:hidden">
-      <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 rounded-2xl bg-foreground px-4 py-2.5 text-background">
+      <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 rounded-xl bg-foreground px-4 py-2.5 text-background">
         <span className="text-[13px] font-bold">{fmt(totals.kcal)} kcal</span>
-        <MacroPair dot="#c98fa0" eaten={totals.proteinG} target={target.proteinG} letter="P" />
-        <MacroPair dot="#d9a441" eaten={totals.carbsG} target={target.carbsG} letter="C" />
-        <MacroPair dot="#8fae85" eaten={totals.fatG} target={target.fatG} letter="F" />
+        <MacroPair dot="var(--soft)" eaten={totals.proteinG} target={target.proteinG} letter="P" />
+        <MacroPair
+          dot="var(--macro-carbs)"
+          eaten={totals.carbsG}
+          target={target.carbsG}
+          letter="C"
+        />
+        <MacroPair dot="var(--macro-fat)" eaten={totals.fatG} target={target.fatG} letter="F" />
       </div>
     </div>
   );

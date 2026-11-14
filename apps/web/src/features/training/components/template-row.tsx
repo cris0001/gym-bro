@@ -1,10 +1,11 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Link } from '@tanstack/react-router';
-import { ChevronRight, GripVertical, Pencil } from 'lucide-react';
+import { GripVertical } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { DeleteIconButton } from '@/components/delete-icon-button';
+import { EditIconButton } from '@/components/edit-icon-button';
 import { cn } from '@/lib/utils';
 import { useConfirm } from '@/stores/confirm.store';
 import type { WorkoutTemplate } from '@gym-bro/shared';
@@ -16,7 +17,7 @@ interface TemplateRowProps {
   template: WorkoutTemplate;
   // Desktop workspace: the template whose exercises are open in the next column.
   selected?: boolean;
-  // 'list' (mobile plan page): dashed-divider rows on the card. 'column' (desktop
+  // 'list' (mobile plan page): divider rows on the card. 'column' (desktop
   // workspace): each template its own bordered card on the tinted column; the open one
   // gets an accent border, a lift and a chevron pointing at its exercises.
   variant?: 'list' | 'column';
@@ -49,8 +50,8 @@ export function TemplateRow({ template, selected = false, variant = 'list' }: Te
       className={cn(
         'flex items-center gap-2.5',
         variant === 'list'
-          ? 'border-t border-dashed border-border bg-card py-[11px] first:border-t-0'
-          : 'rounded-xl border px-2 py-2.5 transition-colors',
+          ? 'border-t border-border bg-card py-[11px] first:border-t-0'
+          : 'rounded-lg border px-2 py-2.5 transition-colors',
         variant === 'column' &&
           (selected
             ? 'border-primary/45 bg-card shadow-[0_1px_3px_rgb(43_33_38/0.08)]'
@@ -91,25 +92,15 @@ export function TemplateRow({ template, selected = false, variant = 'list' }: Te
         ) : null}
       </Link>
 
-      {/* Desktop column: the template is edited from its Edit pill in the next column. */}
-      {variant === 'list' ? (
-        <button
-          type="button"
-          className="shrink-0 p-1.5 text-faint-foreground"
-          aria-label={`Edit ${template.name}`}
-          onClick={() => openEdit(template)}
-        >
-          <Pencil className="size-[14px]" />
-        </button>
-      ) : null}
-      <DeleteIconButton
-        aria-label={`Delete ${template.name}`}
-        disabled={remove.isPending}
-        onClick={() => void onDelete()}
-      />
-      {variant === 'column' && selected ? (
-        <ChevronRight className="text-primary size-4 shrink-0" />
-      ) : null}
+      {/* Edit + delete as one tight pair (the row's own gap would space them apart). */}
+      <div className="flex shrink-0 items-center gap-0.5">
+        <EditIconButton aria-label={`Edit ${template.name}`} onClick={() => openEdit(template)} />
+        <DeleteIconButton
+          aria-label={`Delete ${template.name}`}
+          disabled={remove.isPending}
+          onClick={() => void onDelete()}
+        />
+      </div>
     </li>
   );
 }

@@ -43,7 +43,7 @@ function PlateRings({ className, opacity = 0.12 }: { className: string; opacity?
 // Type scales up again from 1200px, where the split panel is wide enough that the
 // base sizes read as small.
 const HEADER =
-  'font-heading leading-[1.12] font-medium text-[#f0e7ea] text-[29px] min-[800px]:text-[clamp(34px,2.8vw,50px)] min-[1200px]:text-[clamp(42px,3.3vw,58px)]';
+  'font-heading leading-[1.12] font-bold tracking-tight text-[#f0e7ea] text-[29px] min-[800px]:text-[clamp(34px,2.8vw,50px)] min-[1200px]:text-[clamp(42px,3.3vw,58px)]';
 const LEAD =
   'mt-4 text-[13.5px] leading-relaxed text-[#cfc2c8] min-[800px]:mt-5 min-[800px]:text-[14px] min-[1200px]:mt-6 min-[1200px]:text-[16px]';
 
@@ -133,7 +133,7 @@ export function AuthShell({ variant, children }: AuthShellProps) {
           <BrandContent variant={variant} />
         </div>
 
-        <p className="font-heading relative hidden text-sm text-[#94858b] italic min-[800px]:block min-[1200px]:text-[15.5px]">
+        <p className="relative hidden text-sm text-[#94858b] min-[800px]:block min-[1200px]:text-[15.5px]">
           &quot;{QUOTES[variant]}&quot;
         </p>
       </section>
@@ -149,7 +149,7 @@ export function AuthShell({ variant, children }: AuthShellProps) {
             <ArrowLeft className="size-4" />
             {t.backHome}
           </Link>
-          <h1 className="font-heading text-[28px] leading-tight font-semibold text-[#2b2126] min-[1200px]:text-[30px] 4xl:text-[32px]">
+          <h1 className="font-heading text-[28px] leading-tight font-bold tracking-tight text-[#2b2126] min-[1200px]:text-[30px] 4xl:text-[32px]">
             {copy.title}
           </h1>
           <p className="mt-1 text-[13.5px] text-[#94858b] min-[1200px]:text-[14.5px]">

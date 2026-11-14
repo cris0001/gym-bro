@@ -29,7 +29,7 @@ export function StravaConnectionCard({
     return (
       <div
         className={cn(
-          'bg-card flex flex-col items-center gap-3 rounded-2xl border p-6 text-center',
+          'bg-card flex flex-col items-center gap-3 rounded-xl border p-6 text-center',
           className,
         )}
       >
@@ -63,7 +63,7 @@ export function StravaConnectionCard({
   }
 
   return (
-    <div className={cn('bg-card flex flex-col gap-3 rounded-2xl border p-4', className)}>
+    <div className={cn('bg-card flex flex-col gap-3 rounded-xl border p-4', className)}>
       <div className="flex items-center gap-2">
         <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#fbe3d4] text-[#d15b28] dark:bg-[#45291b] dark:text-[#ff7a3d]">
           <Zap className="size-4" />

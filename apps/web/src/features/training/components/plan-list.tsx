@@ -37,7 +37,7 @@ export function PlanList() {
         title="No plans yet"
         description="Create a plan (e.g. PPL, Upper/Lower) to organize your workout templates."
         action={
-          <Button type="button" className="h-10 rounded-full px-5" onClick={openCreate}>
+          <Button type="button" className="h-9.5 rounded-full px-5" onClick={openCreate}>
             <Plus className="size-4" />
             New plan
           </Button>
@@ -62,13 +62,13 @@ export function PlanList() {
           // inside it — while "Set active" sits above it and keeps its own click.
           <div
             key={plan.id}
-            className="bg-card hover:border-border-strong hover:bg-muted/40 relative flex flex-col gap-2 rounded-2xl border p-4 transition-colors has-[a:focus-visible]:ring-3 has-[a:focus-visible]:ring-ring/50 lg:min-h-[150px] lg:gap-3 lg:p-5"
+            className="bg-card hover:border-border-strong hover:bg-muted/40 relative flex flex-col gap-2 rounded-xl border p-4 transition-colors has-[a:focus-visible]:ring-3 has-[a:focus-visible]:ring-ring/50 lg:min-h-[150px] lg:gap-3 lg:p-5"
           >
             <div className="flex items-start justify-between gap-2">
               <Link
                 to="/plans/$planId"
                 params={{ planId: plan.id }}
-                className="font-heading min-w-0 flex-1 truncate text-lg font-semibold outline-none after:absolute after:inset-0 after:rounded-2xl lg:text-xl"
+                className="font-heading min-w-0 flex-1 truncate text-lg font-semibold outline-none after:absolute after:inset-0 after:rounded-xl lg:text-xl"
               >
                 {plan.name}
               </Link>

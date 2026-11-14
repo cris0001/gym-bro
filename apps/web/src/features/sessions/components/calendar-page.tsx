@@ -1,8 +1,5 @@
-import { Link } from '@tanstack/react-router';
-import { Play } from 'lucide-react';
-
-import { Button } from '@/components/ui/button';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { PageTitle } from '@/components/page-title';
 
 import { useSessionsTranslation } from '../i18n';
 import { CalendarGrid } from './calendar-grid';
@@ -20,15 +17,9 @@ export function CalendarPage() {
   return (
     <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-4 p-3 md:p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-3">
-          <h1 className="font-heading text-[28px] leading-none font-medium">{t.calendar.title}</h1>
-          <Button asChild className="h-9 rounded-full px-4">
-            <Link to="/session">
-              <Play className="size-4" />
-              {t.common.start}
-            </Link>
-          </Button>
-        </div>
+        <PageTitle className="font-heading text-[28px] leading-none font-bold tracking-tight">
+          {t.calendar.title}
+        </PageTitle>
         <div className="text-muted-foreground flex items-center gap-4 text-xs">
           <span className="flex items-center gap-1.5">
             <span className="size-2.5 rounded-full bg-[#5a7a52] dark:bg-[#8fae85]" />
@@ -45,8 +36,8 @@ export function CalendarPage() {
         </div>
       </div>
 
-      <div className="lg:grid lg:grid-cols-[1fr_26rem] lg:items-start lg:gap-6">
-        <div className="bg-card rounded-2xl border p-3 sm:p-4">
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-2 xl:grid-cols-[minmax(0,1fr)_27.5rem]">
+        <div className="bg-card rounded-xl border p-3 sm:p-4">
           <CalendarGrid />
         </div>
         {isDesktop && <DayDetailPanel />}

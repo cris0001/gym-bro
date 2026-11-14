@@ -5,7 +5,7 @@ const NAME_WIDTHS = ['w-1/2', 'w-2/5', 'w-3/5', 'w-1/3', 'w-[45%]'];
 
 // Loading rows for the template and template-exercise lists, in their real shape:
 // grip | name | 32px action. 'card' = the desktop workspace's separate small cards;
-// 'list' = the mobile rows inside one card, split by dashed rules.
+// 'list' = the mobile rows inside one card, split by dividers.
 export function TemplateRowsSkeleton({
   rows = 3,
   variant = 'card',
@@ -21,8 +21,8 @@ export function TemplateRowsSkeleton({
           className={cn(
             'flex items-center gap-2.5',
             variant === 'card'
-              ? 'border-border bg-card/70 rounded-xl border px-2 py-2.5'
-              : 'border-border border-t border-dashed py-[11px] first:border-t-0',
+              ? 'border-border bg-card/70 rounded-lg border px-2 py-2.5'
+              : 'border-border border-t py-[11px] first:border-t-0',
           )}
         >
           <span className="flex w-[23px] shrink-0 justify-center">

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { FIELD_CLASS } from '@/lib/form-styles';
 import { cn } from '@/lib/utils';
+import { PageTitle } from '@/components/page-title';
 
 import type { BodyMeasurement } from '@gym-bro/shared';
 
@@ -77,12 +78,14 @@ export function BodyPage() {
 
   return (
     <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-4 p-3 md:p-4">
-      <h1 className="font-heading text-[28px] leading-none font-medium">{t.title}</h1>
+      <PageTitle className="font-heading text-[28px] leading-none font-bold tracking-tight">
+        {t.title}
+      </PageTitle>
 
       <div className="grid gap-4 lg:grid-cols-[22rem_1fr] lg:items-start">
-        <Card className="rounded-2xl">
+        <Card className="rounded-xl">
           <CardHeader>
-            <CardTitle className="font-heading text-lg">
+            <CardTitle className="font-heading text-lg font-semibold">
               {editing ? t.form.editTitle : t.form.addTitle}
             </CardTitle>
           </CardHeader>
@@ -91,9 +94,9 @@ export function BodyPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl">
+        <Card className="rounded-xl">
           <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-            <CardTitle className="font-heading text-lg">{t.trends.title}</CardTitle>
+            <CardTitle className="font-heading text-lg font-semibold">{t.trends.title}</CardTitle>
             <div className="bg-secondary flex rounded-full p-0.5">
               {PERIODS.map((p) => (
                 <button
@@ -168,7 +171,7 @@ export function BodyPage() {
 
       <section className="flex flex-col gap-2">
         <h2 className="font-heading text-lg font-semibold">{t.history.title}</h2>
-        <div className="bg-card rounded-2xl border px-4">
+        <div className="bg-card rounded-xl border px-4">
           {isPending ? (
             <MeasurementListSkeleton />
           ) : (

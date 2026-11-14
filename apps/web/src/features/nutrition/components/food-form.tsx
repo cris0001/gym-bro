@@ -112,9 +112,9 @@ interface FoodFormProps {
 // Macro label colours for the desktop panel's one-row macro fields.
 const MACRO_LABEL_COLOR: Record<(typeof MACRO_FIELDS)[number], string> = {
   kcal: '',
-  proteinG: 'text-[#8d4a5e] dark:text-[#f0bccb]',
-  carbsG: 'text-[#b8862a] dark:text-[#d9a441]',
-  fatG: 'text-[#5a7a52] dark:text-[#8fae85]',
+  proteinG: 'text-macro-protein-text',
+  carbsG: 'text-macro-carbs-text',
+  fatG: 'text-macro-fat-text',
 };
 
 // In a card the fields sit on parchment rather than the card's own white.
@@ -253,7 +253,7 @@ export function FoodForm({
                 alt=""
                 className={cn(
                   'bg-muted object-cover',
-                  panel ? 'size-[72px] rounded-2xl' : 'size-16 rounded-[14px]',
+                  panel ? 'size-[72px] rounded-xl' : 'size-16 rounded-lg',
                 )}
               />
               <button
@@ -266,11 +266,11 @@ export function FoodForm({
               </button>
             </div>
           ) : panel ? (
-            <span className="bg-muted flex size-[72px] shrink-0 items-center justify-center rounded-2xl text-muted-foreground">
+            <span className="bg-muted flex size-[72px] shrink-0 items-center justify-center rounded-xl text-muted-foreground">
               <Apple className="size-7" />
             </span>
           ) : (
-            <span className="text-muted-foreground flex size-16 shrink-0 items-center justify-center rounded-[14px] border-[1.5px] border-dashed border-border-strong">
+            <span className="text-muted-foreground flex size-16 shrink-0 items-center justify-center rounded-lg border-[1.5px] border-dashed border-border-strong">
               <Camera className="size-5" />
             </span>
           )}

@@ -23,6 +23,7 @@ export {
   workoutSessionKeys,
 } from './hooks/use-workout-sessions';
 export { useWorkoutSession, workoutSessionQueryOptions } from './hooks/use-workout-session';
+export { useWorkoutsInRange } from './hooks/use-workouts-in-range';
 export { useStartWorkout } from './hooks/use-start-workout';
 export { useCreateStrengthSession } from './hooks/use-create-strength-session';
 export { useCreateActivitySession } from './hooks/use-create-activity-session';

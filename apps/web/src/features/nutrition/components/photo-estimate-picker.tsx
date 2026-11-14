@@ -19,7 +19,7 @@ export function PhotoEstimatePicker({ image, onPick, onRemove }: PhotoEstimatePi
     <div className="flex items-center gap-4">
       {image ? (
         <div className="relative shrink-0">
-          <img src={image} alt="" className="bg-muted size-24 rounded-2xl object-cover" />
+          <img src={image} alt="" className="bg-muted size-24 rounded-xl object-cover" />
           <button
             type="button"
             onClick={onRemove}
@@ -30,7 +30,7 @@ export function PhotoEstimatePicker({ image, onPick, onRemove }: PhotoEstimatePi
           </button>
         </div>
       ) : (
-        <span className="text-muted-foreground border-border-strong flex size-24 shrink-0 items-center justify-center rounded-2xl border-[1.5px] border-dashed">
+        <span className="text-muted-foreground border-border-strong flex size-24 shrink-0 items-center justify-center rounded-xl border-[1.5px] border-dashed">
           <Camera className="size-6" />
         </span>
       )}

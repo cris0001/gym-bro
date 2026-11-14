@@ -39,7 +39,7 @@ export function DaySummary({ totals, date }: DaySummaryProps) {
       <div className="flex items-center gap-4">
         <CalorieRing kcal={kcal} target={target.kcal} />
         <div className="flex flex-col gap-0.5">
-          <p className="font-heading text-xl font-semibold">
+          <p className="font-heading text-xl font-bold tabular-nums">
             {fmt(kcal)}
             <span className="text-muted-foreground text-base font-normal">
               {' '}
@@ -104,7 +104,7 @@ function CalorieRing({ kcal, target }: { kcal: number; target: number }) {
         x="60"
         y="66"
         textAnchor="middle"
-        className="fill-foreground font-heading text-xl font-semibold"
+        className="fill-foreground font-heading text-xl font-bold tabular-nums"
       >
         {Math.round(pct * 100)}%
       </text>

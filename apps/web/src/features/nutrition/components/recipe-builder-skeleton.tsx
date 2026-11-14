@@ -1,5 +1,3 @@
-import { ChevronLeft } from 'lucide-react';
-
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
@@ -25,17 +23,9 @@ export function RecipeBuilderSkeleton() {
   const microLabel = 'text-muted-foreground text-[11px] font-bold tracking-[0.08em] uppercase';
 
   return (
-    <div
-      aria-hidden
-      className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-3 md:p-4 lg:col-span-3"
-    >
-      <span className="text-muted-foreground inline-flex w-fit items-center gap-1 text-[14px] font-semibold">
-        <ChevronLeft className="size-4" />
-        {t.recipes.title}
-      </span>
-
+    <div aria-hidden className="flex w-full flex-col gap-4 p-3 md:p-4 max-w-6xl lg:col-start-2">
       <div className="flex items-center gap-4 sm:gap-5">
-        <Skeleton className="size-28 shrink-0 rounded-2xl sm:size-36 min-[1300px]:hidden" />
+        <Skeleton className="size-28 shrink-0 rounded-xl sm:size-36 min-[1300px]:hidden" />
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <Line
             height="h-[32.5px] min-[1300px]:h-[37.5px]"
@@ -47,22 +37,22 @@ export function RecipeBuilderSkeleton() {
 
       <div className="flex flex-col gap-4 min-[1300px]:grid min-[1300px]:grid-cols-[240px_minmax(0,1fr)_300px] min-[1300px]:items-start min-[1300px]:gap-6">
         <div className="hidden flex-col gap-3 min-[1300px]:flex">
-          <Skeleton className="aspect-square w-full rounded-[18px]" />
+          <Skeleton className="aspect-square w-full rounded-xl" />
           <Skeleton className="h-10 w-full rounded-full" />
         </div>
 
         <div className="flex min-w-0 flex-col gap-4">
           <Skeleton className="h-11 w-full rounded-xl" />
 
-          <div className="border-border bg-card overflow-hidden rounded-[20px] border">
+          <div className="border-border bg-card overflow-hidden rounded-xl border">
             <p className={cn(microLabel, 'px-4 pt-4 pb-3')}>{t.recipes.ingredients}</p>
             <ul>
               {INGREDIENT_WIDTHS.map((width) => (
                 <li
                   key={width}
-                  className="border-border flex items-center gap-3 border-t border-dashed px-4 py-3.5"
+                  className="border-border flex items-center gap-3 border-t px-4 py-3.5"
                 >
-                  <Skeleton className="size-10 shrink-0 rounded-[10px]" />
+                  <Skeleton className="size-10 shrink-0 rounded-lg" />
                   <div className="flex min-w-0 flex-1 flex-col">
                     <Line height="h-[21px]" className={cn('h-3.5', width)} />
                     <Line height="h-[22px] mt-1" className="h-3 w-40" />
@@ -74,14 +64,14 @@ export function RecipeBuilderSkeleton() {
                 </li>
               ))}
             </ul>
-            <div className="border-border border-t border-dashed p-3">
+            <div className="border-border border-t p-3">
               <Skeleton className="h-12 w-full rounded-xl" />
             </div>
           </div>
         </div>
 
         <div className="flex flex-col gap-4">
-          <div className="border-border bg-card flex items-center justify-between gap-4 rounded-[20px] border p-4">
+          <div className="border-border bg-card flex items-center justify-between gap-4 rounded-xl border p-4">
             <div className="min-w-0">
               <p className={microLabel}>{t.recipes.servings}</p>
               <p className="text-muted-foreground text-[12.5px] leading-snug">
@@ -92,7 +82,7 @@ export function RecipeBuilderSkeleton() {
           </div>
 
           {/* The dark summary card keeps its own fill; bars pulse on top of it. */}
-          <div className="flex flex-col rounded-[20px] bg-[#2b2126] p-5">
+          <div className="flex flex-col rounded-xl bg-[#2b2126] p-5">
             <div className="flex items-baseline justify-between gap-3">
               <p className="font-heading text-[19px] font-semibold text-[#f0e7ea]">
                 {t.recipes.perServing}

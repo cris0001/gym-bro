@@ -6,10 +6,7 @@ import { cn } from '@/lib/utils';
 // the Import / Disconnect buttons.
 export function StravaConnectionCardSkeleton({ className }: { className?: string }) {
   return (
-    <div
-      aria-hidden
-      className={cn('bg-card flex flex-col gap-3 rounded-2xl border p-4', className)}
-    >
+    <div aria-hidden className={cn('bg-card flex flex-col gap-3 rounded-xl border p-4', className)}>
       <div className="flex items-center gap-2">
         <Skeleton className="size-9 shrink-0 rounded-full" />
         <div className="flex flex-col">

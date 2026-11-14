@@ -19,7 +19,7 @@ export function PlanCardsSkeleton() {
         <div
           key={i}
           className={cn(
-            'bg-card flex flex-col gap-2 rounded-2xl border p-4 lg:min-h-[150px] lg:gap-3 lg:p-5',
+            'bg-card flex flex-col gap-2 rounded-xl border p-4 lg:min-h-[150px] lg:gap-3 lg:p-5',
             card.className,
           )}
         >

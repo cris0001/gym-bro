@@ -70,10 +70,10 @@ export function AddPortionSheet({
             <img
               src={row.imageUrl}
               alt=""
-              className="border-border size-12 shrink-0 rounded-xl border object-cover"
+              className="border-border size-12 shrink-0 rounded-lg border object-cover"
             />
           ) : (
-            <span className="bg-muted text-muted-foreground flex size-12 shrink-0 items-center justify-center rounded-xl">
+            <span className="bg-muted text-muted-foreground flex size-12 shrink-0 items-center justify-center rounded-lg">
               <Apple className="size-5" />
             </span>
           )}

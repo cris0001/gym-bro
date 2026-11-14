@@ -4,6 +4,7 @@ import { ChevronLeft, Star } from 'lucide-react';
 import { DeleteButton } from '@/components/delete-button';
 import { ErrorState } from '@/components/error-state';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PageTitle } from '@/components/page-title';
 
 import { useActivePlan } from '../hooks/use-active-plan';
 import { useDeletePlanFlow } from '../hooks/use-delete-plan-flow';
@@ -36,7 +37,7 @@ export function PlanDetail({ planId }: PlanDetailProps) {
     return (
       <div
         aria-hidden
-        className="mx-auto lg:col-span-3 flex w-full max-w-2xl flex-col gap-[14px] px-5 py-5"
+        className="mx-auto lg:col-span-3 flex w-full max-w-2xl flex-col gap-[14px] p-3 md:p-4"
       >
         <div className="flex h-5 items-center">
           <Skeleton className="h-3.5 w-14" />
@@ -50,13 +51,13 @@ export function PlanDetail({ planId }: PlanDetailProps) {
           </div>
           <Skeleton className="h-9 w-44 rounded-full" />
         </div>
-        <div className="border-border bg-card rounded-[20px] border px-[18px] py-4">
-          <span className="text-muted-foreground text-[11px] font-bold tracking-[0.08em] uppercase">
+        <div className="border-border bg-card rounded-xl border px-[18px] py-4">
+          <span className="text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase">
             Templates
           </span>
           <TemplateRowsSkeleton rows={3} variant="list" />
         </div>
-        <Skeleton className="h-[41px] w-full rounded-[18px]" />
+        <Skeleton className="h-[41px] w-full rounded-xl" />
       </div>
     );
   }
@@ -66,7 +67,7 @@ export function PlanDetail({ planId }: PlanDetailProps) {
   }
 
   return (
-    <div className="mx-auto lg:col-span-3 flex w-full max-w-2xl flex-col gap-[14px] px-5 py-5 text-foreground">
+    <div className="mx-auto lg:col-span-3 flex w-full max-w-2xl flex-col gap-[14px] p-3 md:p-4 text-foreground">
       <Link
         to="/plans"
         className="text-muted-foreground inline-flex items-center gap-1 self-start text-[13px] font-semibold"
@@ -76,18 +77,18 @@ export function PlanDetail({ planId }: PlanDetailProps) {
       </Link>
 
       <header className="flex flex-col gap-2.5">
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="font-heading text-[26px] font-semibold break-words">{plan.name}</h1>
+            <PageTitle className="font-heading text-[26px] font-bold tracking-tight break-words">
+              {plan.name}
+            </PageTitle>
             {plan.description ? (
-              <p className="font-heading text-muted-foreground text-[13px] italic">
-                {plan.description}
-              </p>
+              <p className="text-muted-foreground text-[13px]">{plan.description}</p>
             ) : null}
           </div>
           <button
             type="button"
-            className="border-border bg-card text-primary h-9 shrink-0 rounded-full border px-4 text-[13px] font-semibold"
+            className="bg-primary text-primary-foreground hover:bg-primary-hover h-9.5 shrink-0 rounded-full px-5 text-[13px] font-semibold transition-colors"
             onClick={() => openEdit(plan)}
           >
             Edit
@@ -102,7 +103,7 @@ export function PlanDetail({ planId }: PlanDetailProps) {
         ) : (
           <button
             type="button"
-            className="border-border bg-card text-muted-foreground inline-flex h-9 items-center gap-1.5 self-start rounded-full border px-3.5 text-[13px] font-semibold disabled:opacity-50"
+            className="bg-secondary text-muted-foreground hover:text-foreground inline-flex h-9 items-center gap-1.5 self-start rounded-full px-3.5 text-[13px] font-semibold transition-colors disabled:opacity-50"
             disabled={setActive.isPending}
             onClick={() => setActive.mutate(plan.id)}
           >
@@ -112,15 +113,15 @@ export function PlanDetail({ planId }: PlanDetailProps) {
         )}
       </header>
 
-      <section className="border-border bg-card rounded-[20px] border px-[18px] py-4">
+      <section className="border-border bg-card rounded-xl border px-[18px] py-4">
         <div className="flex items-center justify-between">
-          <span className="text-muted-foreground text-[11px] font-bold tracking-[0.08em] uppercase">
+          <span className="text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase">
             Templates
           </span>
           <button
             type="button"
             onClick={() => openCreateTemplate(plan.id)}
-            className="text-primary text-[12.5px] font-bold"
+            className="bg-accent text-accent-foreground hover:bg-accent/70 h-8 rounded-full px-3 text-[12.5px] font-semibold transition-colors"
           >
             + Add
           </button>
@@ -136,15 +137,13 @@ export function PlanDetail({ planId }: PlanDetailProps) {
       <button
         type="button"
         onClick={() => openCreateTemplate(plan.id)}
-        className="rounded-[18px] border border-border bg-card px-[13px] py-2.5 text-center text-[13px] font-bold text-primary transition-colors hover:bg-muted"
+        className="bg-accent text-accent-foreground hover:bg-accent/70 rounded-xl px-[13px] py-2.5 text-center text-[13px] font-semibold transition-colors"
       >
         + Add template
       </button>
 
       {plan.templates.length > 1 ? (
-        <p className="font-heading text-muted-foreground text-center text-[12.5px] italic">
-          drag rows to reorder
-        </p>
+        <p className="text-muted-foreground text-center text-[12.5px]">Drag rows to reorder</p>
       ) : null}
 
       <DeleteButton

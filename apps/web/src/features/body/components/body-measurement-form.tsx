@@ -27,7 +27,7 @@ import { useBodyUiStore } from '../stores/body-ui.store';
 type BodyT = ReturnType<typeof useBodyTranslation>;
 
 // The app's form field at the compact 40px height (same as the Targets form).
-const FIELD = cn(FIELD_CLASS, 'bg-field-muted h-10');
+const FIELD = cn(FIELD_CLASS, 'bg-field-muted');
 
 // An optional measurement field: kept as a string (empty = "not entered"), valid
 // when blank or a number in [0, max]. No Zod transform, so input/output types

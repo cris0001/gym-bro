@@ -1,5 +1,4 @@
 import { format, parseISO } from 'date-fns';
-import { useEffect, useState } from 'react';
 import {
   CartesianGrid,
   Line,
@@ -11,174 +10,144 @@ import {
 } from 'recharts';
 
 import { SkeletonChart } from '@/components/skeletons';
-import { cn } from '@/lib/utils';
 
 import type { StatsRange } from '../api/stats';
 import { useExerciseProgress } from '../hooks/use-stats';
-
+import { headline, latestText, modeOf, setLabel, tierValue } from '../utils/exercise-progress';
 import { ChartPlaceholder } from './chart-placeholder';
+import { ProgressFigure } from './progress-figure';
 
-// The two set tiers a session contributes: the marked top set vs the first normal
-// (back-off) set.
-type Dimension = 'top' | 'normal';
+const TOP_COLOR = 'var(--primary)';
+const NORMAL_COLOR = 'var(--soft)';
 
-const DIMENSIONS: { key: Dimension; label: string }[] = [
-  { key: 'top', label: 'Top set' },
-  { key: 'normal', label: 'Normal' },
-];
-
-// Expand an axis a fixed amount beyond its data so the lines don't touch the top /
-// bottom edges. Null values (a tier not logged this session) are ignored; a logged
-// bodyweight set is 0, so it counts and pins the floor to 0.
-function paddedDomain(values: (number | null)[], pad: number): [number, number] | undefined {
-  const nums = values.filter((v): v is number => v !== null);
-  if (nums.length === 0) return undefined;
-  return [Math.max(0, Math.floor(Math.min(...nums) - pad)), Math.ceil(Math.max(...nums) + pad)];
-}
-
-interface ExerciseProgressChartProps {
+// Per-session progress for the picked exercise: the top set and the normal (back-off)
+// set as two lines (in kg, or in reps for bodyweight-only exercises), under three
+// headline numbers. The full sets show in the tooltip.
+export function ExerciseProgressChart({
+  exerciseId,
+  range,
+}: {
   exerciseId: string | null;
   range?: StatsRange | undefined;
-}
-
-// Per-session progress for the picked exercise: weight and reps plotted together
-// (weight on the left axis, reps on the right — different scales), switchable
-// between the top set and the normal (back-off) set. Normal is the default since
-// most history's uniform back-off sets are the fuller series.
-export function ExerciseProgressChart({ exerciseId, range }: ExerciseProgressChartProps) {
-  const [dimension, setDimension] = useState<Dimension>('normal');
+}) {
   const { data: points = [], isPending } = useExerciseProgress(exerciseId, range);
-
-  // Reset to the normal (back-off) set whenever a different exercise is picked —
-  // it's the fuller series, so it's the sensible default on each new selection.
-  useEffect(() => {
-    setDimension('normal');
-  }, [exerciseId]);
+  const { data: allTime = [] } = useExerciseProgress(exerciseId);
 
   if (exerciseId === null) {
     return <ChartPlaceholder>Select an exercise to see its progress.</ChartPlaceholder>;
   }
-  if (isPending) {
-    return <SkeletonChart />;
+  if (isPending) return <SkeletonChart />;
+  if (points.length === 0) {
+    return <ChartPlaceholder>No sessions with this exercise in this period.</ChartPlaceholder>;
   }
 
-  const data = points.map((point) => {
-    const rawWeight = dimension === 'top' ? point.topWeight : point.normalWeight;
-    const reps = dimension === 'top' ? point.topReps : point.normalReps;
-    // A tier that was logged shows on the line; one that wasn't stays a real gap.
-    // Reps are the presence signal — a logged bodyweight set has null weight but
-    // real reps, so it must plot (at 0), while a session with no top/normal set at
-    // all has null reps and stays null (connectNulls={false} breaks the line).
-    const logged = rawWeight !== null || reps !== null;
-    const isBodyweight = logged && rawWeight === null;
-    return {
-      date: point.date,
-      // Bodyweight sets sit at 0 on the kg axis so added load reads as 0 -> +Xkg.
-      weight: logged ? (rawWeight ?? 0) : null,
-      isBodyweight,
-      // Kept off the chart (a second line read weird) but surfaced in the tooltip.
-      reps,
-    };
-  });
-  const weightDomain = paddedDomain(
-    data.map((d) => d.weight),
-    3,
-  );
-  const hasData = data.some((d) => d.weight !== null);
-  const dimensionLabel = DIMENSIONS.find((d) => d.key === dimension)?.label.toLowerCase();
-  // Top set reads as the terracotta accent; the normal (back-off) set as gold.
-  const lineColor = dimension === 'top' ? 'var(--primary)' : 'var(--chart-2)';
+  const mode = modeOf(allTime.length > 0 ? allTime : points);
+  const unit = mode === 'kg' ? ' kg' : ' reps';
+  const data = points.map((p) => ({
+    date: p.date,
+    top: tierValue(p.topWeight, p.topReps, mode),
+    normal: tierValue(p.normalWeight, p.normalReps, mode),
+    topLabel: setLabel(p.topWeight, p.topReps),
+    normalLabel: setLabel(p.normalWeight, p.normalReps),
+  }));
+  const h = headline(points, allTime, mode);
+  const latest = h.latest ? latestText(h.latest, mode) : null;
 
-  // The Top/Normal switch stays mounted even with no data for the chosen tier, so
-  // you can always switch back (e.g. from an empty Top set to Normal).
   return (
-    <div className="flex flex-col gap-3">
-      <ToggleGroup options={DIMENSIONS} value={dimension} onChange={setDimension} />
+    <div className="flex flex-col gap-4">
+      {/* Headline numbers are desktop/tablet only — phones get the chart alone. */}
+      <div className="hidden flex-wrap gap-x-7 gap-y-2 sm:flex">
+        {latest && (
+          <ProgressFigure
+            value={latest.value}
+            unit={latest.unit}
+            label={h.latestIsTop ? 'Latest top set' : 'Latest set'}
+          />
+        )}
+        {h.change !== null && (
+          <ProgressFigure
+            value={`${h.change > 0 ? '+' : ''}${h.change}`}
+            unit={unit}
+            label="in this period"
+            tone={h.change > 0 ? 'up' : h.change < 0 ? 'down' : undefined}
+          />
+        )}
+        {h.best && (
+          <ProgressFigure
+            value={mode === 'kg' && h.best.value === 0 ? 'BW' : `${h.best.value}`}
+            unit={mode === 'kg' && h.best.value === 0 ? '' : unit}
+            label={`Best ever · ${format(parseISO(h.best.date), 'MMM d')}`}
+          />
+        )}
+      </div>
 
-      {!hasData ? (
-        <ChartPlaceholder>No {dimensionLabel} data for this exercise yet.</ChartPlaceholder>
-      ) : (
-        <div className="h-64 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: -8 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--muted)" vertical={false} />
-              <XAxis
-                dataKey="date"
-                tickFormatter={(value: string) => format(parseISO(value), 'MMM d')}
-                tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
-                tickMargin={8}
-                minTickGap={24}
-              />
-              <YAxis
-                domain={weightDomain ?? ['auto', 'auto']}
-                // The floor is clamped to 0 kg, so bodyweight points (plotted at 0)
-                // would sit right on the axis line — lift the plot off it a little.
-                padding={{ bottom: 14 }}
-                tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
-                width={44}
-              />
-              <Tooltip
-                content={({ active, payload, label }) => {
-                  if (!active || !payload || payload.length === 0) return null;
-                  const row = payload[0]!.payload as {
-                    weight: number | null;
-                    isBodyweight: boolean;
-                    reps: number | null;
-                  };
-                  const weight = row.isBodyweight ? 'BW' : `${row.weight} kg`;
-                  return (
-                    <div className="bg-card text-card-foreground rounded-lg border px-3 py-2 text-sm shadow-sm">
-                      <p className="mb-0.5 font-medium">{format(parseISO(String(label)), 'PP')}</p>
-                      <p>
-                        {weight}
-                        {row.reps !== null ? ` · ${row.reps} reps` : ''}
-                      </p>
-                    </div>
-                  );
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="weight"
-                stroke={lineColor}
-                strokeWidth={2}
-                dot={{ r: 3, fill: lineColor }}
-                activeDot={{ r: 5 }}
-                connectNulls={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-    </div>
-  );
-}
+      {/* Phones: the chart bleeds into the card padding so the plot gets the width. */}
+      <div className="-mx-2.5 h-64 sm:mx-0">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data} margin={{ top: 8, right: 4, bottom: 0, left: -14 }}>
+            <CartesianGrid stroke="var(--border)" vertical={false} />
+            <XAxis
+              dataKey="date"
+              tickFormatter={(value: string) => format(parseISO(value), 'MMM d')}
+              tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
+              tickLine={false}
+              axisLine={{ stroke: 'var(--border)' }}
+              tickMargin={8}
+              minTickGap={24}
+            />
+            <YAxis
+              domain={['auto', 'auto']}
+              padding={{ bottom: 14 }}
+              tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
+              tickLine={false}
+              axisLine={false}
+              width={40}
+            />
+            <Tooltip
+              content={({ active, payload, label }) => {
+                if (!active || !payload || payload.length === 0) return null;
+                const row = payload[0]!.payload as (typeof data)[number];
+                return (
+                  <div className="bg-card text-card-foreground rounded-lg border px-3 py-2 text-sm shadow-sm">
+                    <p className="mb-0.5 font-medium">{format(parseISO(String(label)), 'PP')}</p>
+                    {row.topLabel && <p className="text-accent-foreground">★ {row.topLabel}</p>}
+                    {row.normalLabel && <p className="text-muted-foreground">{row.normalLabel}</p>}
+                  </div>
+                );
+              }}
+            />
+            <Line
+              type="monotone"
+              dataKey="normal"
+              stroke={NORMAL_COLOR}
+              strokeWidth={2}
+              dot={false}
+              activeDot={{ r: 4 }}
+              connectNulls={false}
+            />
+            <Line
+              type="monotone"
+              dataKey="top"
+              stroke={TOP_COLOR}
+              strokeWidth={3}
+              dot={{ r: 3, fill: TOP_COLOR }}
+              activeDot={{ r: 5 }}
+              connectNulls={false}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
 
-// A segmented toggle over a list of {key,label} options.
-function ToggleGroup<T extends string>({
-  options,
-  value,
-  onChange,
-}: {
-  options: { key: T; label: string }[];
-  value: T;
-  onChange: (next: T) => void;
-}) {
-  return (
-    <div className="bg-secondary flex w-fit rounded-full p-0.5">
-      {options.map((option) => (
-        <button
-          key={option.key}
-          type="button"
-          onClick={() => onChange(option.key)}
-          className={cn(
-            'h-8 rounded-full px-3 text-sm font-medium transition-colors',
-            value === option.key ? 'bg-card text-foreground border' : 'text-muted-foreground',
-          )}
-        >
-          {option.label}
-        </button>
-      ))}
+      <div className="text-subtle-foreground flex gap-5 text-xs">
+        <span className="inline-flex items-center gap-1.5">
+          <span className="bg-primary h-[3px] w-3.5 rounded-full" />
+          Top set
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="bg-soft h-[2px] w-3.5 rounded-full" />
+          Normal sets
+        </span>
+      </div>
     </div>
   );
 }

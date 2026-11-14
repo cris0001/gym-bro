@@ -20,7 +20,7 @@ interface MealSectionProps {
 
 // One meal's section of the diary: a header with the meal's kcal subtotal and add
 // actions (camera → photo estimate, plus → add sheet), then its entries separated by
-// dashed rules. An empty meal reads as a dashed-outline "nothing yet" card.
+// divider rules. An empty meal reads as an outlined "Nothing yet" card.
 export function MealSection({ meal, label, loggedDate, entries }: MealSectionProps) {
   // Entries added offline / still retrying — shown under the synced ones until they land.
   const pending = usePendingFoodLogEntries(loggedDate, meal);
@@ -56,12 +56,10 @@ export function MealSection({ meal, label, loggedDate, entries }: MealSectionPro
 
   if (entries.length === 0 && pending.length === 0) {
     return (
-      <div className="bg-card flex items-center justify-between gap-2 rounded-2xl border border-dashed border-border-strong p-4">
+      <div className="bg-card flex items-center justify-between gap-2 rounded-xl border border-border p-4">
         <div className="flex items-baseline gap-2">
           <h2 className="font-heading text-lg font-semibold">{label}</h2>
-          <span className="text-muted-foreground font-heading text-sm italic">
-            {t.diary.nothingYet}
-          </span>
+          <span className="text-muted-foreground text-sm">{t.diary.nothingYet}</span>
         </div>
         {actions}
       </div>
@@ -69,15 +67,18 @@ export function MealSection({ meal, label, loggedDate, entries }: MealSectionPro
   }
 
   return (
-    <div className="bg-card flex flex-col rounded-2xl border p-4">
+    <div className="bg-card flex flex-col rounded-xl border p-4">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-baseline gap-2">
           <h2 className="font-heading text-lg font-semibold">{label}</h2>
-          <span className="text-primary text-sm font-medium">{kcal} kcal</span>
+          {/* The meal kcal is hidden under 450px — long meal names need the room. */}
+          <span className="text-primary hidden text-sm font-medium min-[450px]:inline">
+            {kcal} kcal
+          </span>
         </div>
         {actions}
       </div>
-      <ul className="mt-1 flex flex-col divide-y divide-dashed divide-border-strong">
+      <ul className="mt-1 flex flex-col divide-y divide-border">
         {entries.map((entry) => (
           <DiaryEntryRow key={entry.id} entry={entry} />
         ))}

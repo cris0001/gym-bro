@@ -44,15 +44,15 @@ type TargetFormValues = z.infer<typeof targetFormSchema>;
 
 // Protein / carbs / fat share one row; each label wears its macro colour.
 const MACRO_FIELDS = [
-  { name: 'proteinG', labelClass: 'text-[#8d4a5e] dark:text-[#f0bccb]' },
-  { name: 'carbsG', labelClass: 'text-[#b8862a] dark:text-[#d9a441]' },
-  { name: 'fatG', labelClass: 'text-[#5a7a52] dark:text-[#8fae85]' },
+  { name: 'proteinG', labelClass: 'text-macro-protein-text' },
+  { name: 'carbsG', labelClass: 'text-macro-carbs-text' },
+  { name: 'fatG', labelClass: 'text-macro-fat-text' },
 ] as const;
 
 // In a card the fields sit on parchment rather than the card's own white.
 const PANEL_BG = 'bg-field-muted';
 // Compact (40px) fields: this is a settings form, not a gym-floor input.
-const FIELD = cn(FIELD_CLASS, PANEL_BG, 'h-10');
+const FIELD = cn(FIELD_CLASS, PANEL_BG);
 
 interface TargetsFormProps {
   current: NutritionTarget | null;
@@ -148,7 +148,7 @@ export function TargetsForm({ current, editing, onDone }: TargetsFormProps) {
                   placeholder="0"
                   className={cn(
                     FIELD,
-                    'font-heading h-11 text-[18px] font-semibold md:text-[18px]',
+                    'font-heading h-9 text-[18px] font-semibold tabular-nums md:text-[18px]',
                   )}
                   {...field}
                 />
@@ -174,11 +174,7 @@ export function TargetsForm({ current, editing, onDone }: TargetsFormProps) {
                     <Input
                       inputMode="decimal"
                       placeholder="0"
-                      className={cn(
-                        NUMBER_FIELD_CLASS,
-                        PANEL_BG,
-                        'h-10 text-[15px] md:text-[15px]',
-                      )}
+                      className={cn(NUMBER_FIELD_CLASS, PANEL_BG, 'text-[15px] md:text-[15px]')}
                       {...f}
                     />
                   </FormControl>
@@ -193,11 +189,11 @@ export function TargetsForm({ current, editing, onDone }: TargetsFormProps) {
         {split ? (
           <div className="grid gap-2">
             <div className="flex h-2 gap-0.5 overflow-hidden rounded-full">
-              <span className="bg-[#8d4a5e]" style={{ flexGrow: split.p, flexBasis: 0 }} />
-              <span className="bg-[#d9a441]" style={{ flexGrow: split.c, flexBasis: 0 }} />
-              <span className="bg-[#5a7a52]" style={{ flexGrow: split.f, flexBasis: 0 }} />
+              <span className="bg-macro-protein" style={{ flexGrow: split.p, flexBasis: 0 }} />
+              <span className="bg-macro-carbs" style={{ flexGrow: split.c, flexBasis: 0 }} />
+              <span className="bg-macro-fat" style={{ flexGrow: split.f, flexBasis: 0 }} />
             </div>
-            <p className="font-heading text-muted-foreground text-[12.5px] italic">
+            <p className="text-muted-foreground text-[12.5px]">
               {t.targets.split(split.p, split.c, split.f)}
             </p>
           </div>

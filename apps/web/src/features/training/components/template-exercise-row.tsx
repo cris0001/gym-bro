@@ -1,9 +1,10 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Pencil } from 'lucide-react';
+import { GripVertical } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { DeleteIconButton } from '@/components/delete-icon-button';
+import { EditIconButton } from '@/components/edit-icon-button';
 import { cn } from '@/lib/utils';
 import { useConfirm } from '@/stores/confirm.store';
 import type { TemplateExerciseWithExercise } from '@gym-bro/shared';
@@ -79,11 +80,11 @@ export function TemplateExerciseRow({
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(
         'flex items-center gap-2.5',
-        // List: dashed dividers in one card. Table (desktop workspace): each row its
+        // List: dividers in one card. Table (desktop workspace): each row its
         // own small card, matching the template rows in the middle column.
         variant === 'list'
-          ? 'border-t border-dashed border-border bg-card py-[11px] first:border-t-0'
-          : 'border-border bg-card/70 hover:bg-card rounded-xl border px-2 py-2.5 transition-colors',
+          ? 'border-t border-border bg-card py-[11px] first:border-t-0'
+          : 'border-border bg-card/70 hover:bg-card rounded-lg border px-2 py-2.5 transition-colors',
         isDragging && 'opacity-50',
       )}
     >
@@ -114,24 +115,23 @@ export function TemplateExerciseRow({
 
       {variant === 'table' ? (
         // Hidden under 1250px: the column is narrow there and would truncate names.
-        <span className="font-heading hidden w-24 shrink-0 text-[15px] font-semibold min-[1250px]:block">
+        <span className="font-heading hidden w-24 shrink-0 text-[15px] font-semibold tabular-nums min-[1250px]:block">
           {compactTarget(templateExercise)}
         </span>
       ) : null}
 
-      <button
-        type="button"
-        className="shrink-0 p-1.5 text-faint-foreground"
-        aria-label={`Edit ${exercise.name}`}
-        onClick={() => openEdit(templateExercise)}
-      >
-        <Pencil className="size-[14px]" />
-      </button>
-      <DeleteIconButton
-        aria-label={`Remove ${exercise.name}`}
-        disabled={remove.isPending}
-        onClick={() => void onDelete()}
-      />
+      {/* Edit + delete as one tight pair (the row's own gap would space them apart). */}
+      <div className="flex shrink-0 items-center gap-0.5">
+        <EditIconButton
+          aria-label={`Edit ${exercise.name}`}
+          onClick={() => openEdit(templateExercise)}
+        />
+        <DeleteIconButton
+          aria-label={`Remove ${exercise.name}`}
+          disabled={remove.isPending}
+          onClick={() => void onDelete()}
+        />
+      </div>
     </li>
   );
 }

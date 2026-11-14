@@ -18,18 +18,18 @@ export function MealSectionsSkeleton() {
   return (
     <div aria-hidden className="flex flex-col gap-3">
       {MEAL_TYPES.map((meal, i) => (
-        <div key={meal} className="bg-card flex flex-col rounded-2xl border p-4">
+        <div key={meal} className="bg-card flex flex-col rounded-xl border p-4">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-baseline gap-2">
               <h2 className="font-heading text-lg font-semibold">{t.meals[meal]}</h2>
-              <Skeleton className="h-3.5 w-14" />
+              <Skeleton className="hidden h-3.5 w-14 min-[450px]:block" />
             </div>
             <div className="flex items-center gap-1">
               <Skeleton className="size-9 rounded-lg" />
               <Skeleton className="size-9 rounded-lg" />
             </div>
           </div>
-          <ul className="mt-1 flex flex-col divide-y divide-dashed divide-border-strong">
+          <ul className="mt-1 flex flex-col divide-y divide-border">
             {Array.from({ length: ROWS[i] ?? 1 }, (_, row) => (
               <li key={row} className="flex items-center gap-3 py-2.5">
                 <div className="flex min-w-0 flex-1 flex-col">

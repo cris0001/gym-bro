@@ -3,7 +3,6 @@ import type { TemplateWithExercises } from '@gym-bro/shared';
 import { cn } from '@/lib/utils';
 
 import { useTemplateExerciseUiStore } from '../stores/template-exercise-ui.store';
-import { useTemplateUiStore } from '../stores/template-ui.store';
 import { TemplateExerciseList } from './template-exercise-list';
 import { TemplateExerciseSheet } from './template-exercise-sheet';
 
@@ -12,8 +11,8 @@ interface TemplateExercisesPanelProps {
   // The mobile page's own title (h1); a column inside the desktop workspace uses h2.
   asPageTitle?: boolean;
   // 'card' (mobile page): exercises in a bordered card. 'column' (desktop workspace):
-  // a flat Exercise / Target table in the column, an Edit pill for the template, and
-  // a dashed add button — matching the workspace mockup.
+  // a flat Exercise / Target table in the column (the template is edited from its row
+  // in the middle column), and a tinted add button.
   variant?: 'card' | 'column';
 }
 
@@ -26,7 +25,6 @@ export function TemplateExercisesPanel({
   variant = 'card',
 }: TemplateExercisesPanelProps) {
   const openCreate = useTemplateExerciseUiStore((s) => s.openCreate);
-  const openEditTemplate = useTemplateUiStore((s) => s.openEdit);
   const Heading = asPageTitle ? 'h1' : 'h2';
   const isColumn = variant === 'column';
 
@@ -48,43 +46,32 @@ export function TemplateExercisesPanel({
             ) : null}
           </Heading>
           {template.description ? (
-            <p className="font-heading text-muted-foreground text-[13px] italic">
-              {template.description}
-            </p>
+            <p className="text-muted-foreground text-[13px]">{template.description}</p>
           ) : null}
         </div>
-        {isColumn ? (
-          <button
-            type="button"
-            className="border-border bg-card text-primary h-9 shrink-0 rounded-full border px-4 text-[13px] font-semibold"
-            onClick={() => openEditTemplate(template)}
-          >
-            Edit
-          </button>
-        ) : null}
       </header>
 
       <section
-        className={cn(!isColumn && 'border-border bg-card rounded-[20px] border px-[18px] py-4')}
+        className={cn(!isColumn && 'border-border bg-card rounded-xl border px-[18px] py-4')}
       >
         {isColumn ? (
           // Aligned with the card rows (1px border + 8px padding): grip | name | 96px
           // target (1250px+ only, like the rows) | edit + delete.
-          <div className="text-muted-foreground flex items-center gap-2.5 px-[9px] pb-1.5 text-[10.5px] font-bold tracking-[0.08em] uppercase">
+          <div className="text-muted-foreground flex items-center gap-2.5 px-[9px] pb-1.5 text-[10.5px] font-medium tracking-[0.08em] uppercase">
             <span className="w-[23px] shrink-0" />
             <span className="flex-1">Exercise</span>
             <span className="hidden w-24 shrink-0 min-[1250px]:block">Target</span>
-            <span className="w-[74px] shrink-0" />
+            <span className="w-[66px] shrink-0" />
           </div>
         ) : (
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground text-[11px] font-bold tracking-[0.08em] uppercase">
+            <span className="text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase">
               Exercises
             </span>
             <button
               type="button"
               onClick={() => openCreate(template.id)}
-              className="text-primary text-[12.5px] font-bold"
+              className="bg-accent text-accent-foreground hover:bg-accent/70 h-8 rounded-full px-3 text-[12.5px] font-semibold transition-colors"
             >
               + Add
             </button>
@@ -106,18 +93,16 @@ export function TemplateExercisesPanel({
         type="button"
         onClick={() => openCreate(template.id)}
         className={cn(
-          'text-primary hover:bg-muted px-[13px] py-2.5 text-center text-[13px] font-bold transition-colors',
-          isColumn
-            ? 'border-border-strong rounded-[14px] border border-dashed'
-            : 'border-border bg-card rounded-[18px] border',
+          'bg-accent text-accent-foreground hover:bg-accent/70 px-[13px] py-2.5 text-center text-[13px] font-semibold transition-colors',
+          isColumn ? 'rounded-lg' : 'rounded-xl',
         )}
       >
         + Add exercise from library
       </button>
 
       {template.exercises.length > 1 ? (
-        <p className="font-heading text-muted-foreground text-center text-[12.5px] italic">
-          drag rows to reorder — order is used during the workout
+        <p className="text-muted-foreground text-center text-[12.5px]">
+          Drag rows to reorder — order is used during the workout
         </p>
       ) : null}
 

@@ -25,7 +25,7 @@ export function AddEntryListSkeleton({
             (i > 0 || dividedFromAbove) && dividerClassName,
           )}
         >
-          <Skeleton className="size-[38px] shrink-0 rounded-[10px]" />
+          <Skeleton className="size-[38px] shrink-0 rounded-lg" />
           <div className="flex min-w-0 flex-1 flex-col gap-1.5">
             <Skeleton className="h-3.5 w-2/5" />
             <Skeleton className="h-3 w-4/5" />

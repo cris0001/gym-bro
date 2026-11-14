@@ -13,9 +13,9 @@ const label = cn('flex items-center leading-none', LABEL_CLASS);
 export function TargetsFormSkeleton() {
   const t = useNutritionTranslation();
   const macros = [
-    { name: 'proteinG', color: 'text-[#8d4a5e] dark:text-[#f0bccb]' },
-    { name: 'carbsG', color: 'text-[#b8862a] dark:text-[#d9a441]' },
-    { name: 'fatG', color: 'text-[#5a7a52] dark:text-[#8fae85]' },
+    { name: 'proteinG', color: 'text-macro-protein-text' },
+    { name: 'carbsG', color: 'text-macro-carbs-text' },
+    { name: 'fatG', color: 'text-macro-fat-text' },
   ] as const;
 
   return (

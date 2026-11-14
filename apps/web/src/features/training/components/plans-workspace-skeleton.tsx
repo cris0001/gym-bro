@@ -10,10 +10,10 @@ export function PlansWorkspaceSkeleton() {
   return (
     <div
       aria-hidden
-      className="border-border bg-card grid min-h-[560px] grid-cols-[240px_280px_minmax(0,1fr)] overflow-hidden rounded-[20px] border"
+      className="border-border bg-card grid min-h-[560px] grid-cols-[200px_240px_minmax(0,1fr)] xl:grid-cols-[240px_280px_minmax(0,1fr)] overflow-hidden rounded-xl border"
     >
       <div className="border-border flex flex-col gap-1 border-r p-3">
-        <span className="text-muted-foreground px-2 pb-2 text-[11px] font-bold tracking-[0.08em] uppercase">
+        <span className="text-muted-foreground px-2 pb-2 text-[11px] font-medium tracking-[0.08em] uppercase">
           Plans
         </span>
         {['w-3/5', 'w-1/2', 'w-2/3'].map((width) => (

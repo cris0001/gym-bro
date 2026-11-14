@@ -14,6 +14,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import { FIELD_CLASS, TEXTAREA_CLASS } from '@/lib/form-styles';
 
 import { useSessionsTranslation } from '../i18n';
 import type { WorkoutDraft } from '../stores/workout-draft.store';
@@ -180,7 +181,7 @@ export function FinishSessionSheet({ open, onClose }: FinishSessionSheetProps) {
             <Input
               inputMode="numeric"
               placeholder={t.common.optional}
-              className="h-11"
+              className={FIELD_CLASS}
               value={draft.durationMinutes ?? ''}
               onChange={(e) => setDuration(parseDuration(e.target.value))}
             />
@@ -191,7 +192,7 @@ export function FinishSessionSheet({ open, onClose }: FinishSessionSheetProps) {
             <textarea
               placeholder={t.common.optional}
               rows={3}
-              className="border-input bg-background placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 rounded-lg border px-2.5 py-2 text-base transition-colors outline-none focus-visible:ring-3 md:text-sm"
+              className={TEXTAREA_CLASS}
               value={draft.notes ?? ''}
               onChange={(e) => setNotes(e.target.value.length > 0 ? e.target.value : null)}
             />

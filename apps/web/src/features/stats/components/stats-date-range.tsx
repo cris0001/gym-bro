@@ -1,12 +1,12 @@
 import { format, subMonths } from 'date-fns';
 import { useEffect, useState } from 'react';
 
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { FIELD_CLASS } from '@/lib/form-styles';
 
 import type { StatsRange } from '../api/stats';
 
-type Period = '1m' | '3m' | '6m' | '1y' | 'all';
+type Period = '1m' | '3m' | '6m' | '1y' | 'all' | 'custom';
 
 const PERIODS: { key: Period; label: string; months: number | null }[] = [
   { key: '1m', label: '1M', months: 1 },
@@ -14,91 +14,78 @@ const PERIODS: { key: Period; label: string; months: number | null }[] = [
   { key: '6m', label: '6M', months: 6 },
   { key: '1y', label: '1Y', months: 12 },
   { key: 'all', label: 'All', months: null },
+  { key: 'custom', label: 'Custom', months: null },
 ];
 
-// Date-range control mirroring the body section: quick period buttons (default 3M)
-// plus an explicit from/to window that takes over when set. Emits the resolved
-// StatsRange (server-side window) to the parent; undefined = all history.
+const DATE_FIELD = cn(FIELD_CLASS, 'min-w-0 flex-1 border px-2.5 outline-none');
+
+// Period switch for the progress chart (default 3M) as a 36px segmented track that
+// matches the exercise picker's height. "Custom" reveals a From / To pair. Emits the
+// resolved StatsRange (server-side window) to the parent; undefined = all history.
 export function StatsDateRange({
   onChange,
+  className,
 }: {
   onChange: (range: StatsRange | undefined) => void;
+  className?: string;
 }) {
   const [period, setPeriod] = useState<Period>('3m');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
-  const customRange = from !== '' || to !== '';
 
   useEffect(() => {
-    let range: StatsRange | undefined;
-    if (customRange) {
-      range = {};
+    if (period === 'custom') {
+      const range: StatsRange = {};
       if (from) range.from = from;
       if (to) range.to = to;
-    } else {
-      const months = PERIODS.find((p) => p.key === period)?.months;
-      range = months ? { from: format(subMonths(new Date(), months), 'yyyy-MM-dd') } : undefined;
+      onChange(from || to ? range : undefined);
+      return;
     }
-    onChange(range);
-  }, [period, from, to, customRange, onChange]);
-
-  const selectPeriod = (next: Period) => {
-    setPeriod(next);
-    setFrom('');
-    setTo('');
-  };
+    const months = PERIODS.find((p) => p.key === period)?.months;
+    onChange(months ? { from: format(subMonths(new Date(), months), 'yyyy-MM-dd') } : undefined);
+  }, [period, from, to, onChange]);
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="bg-muted flex w-fit gap-0.5 rounded-md p-0.5">
+    <div className={cn('flex flex-col gap-2', className)}>
+      <div className="bg-secondary flex h-9 rounded-md p-[3px]">
         {PERIODS.map((p) => (
-          <Button
+          <button
             key={p.key}
             type="button"
-            size="sm"
-            variant={!customRange && period === p.key ? 'default' : 'ghost'}
-            className={cn('h-7 px-2', (customRange || period !== p.key) && 'text-muted-foreground')}
-            onClick={() => selectPeriod(p.key)}
+            aria-pressed={period === p.key}
+            onClick={() => setPeriod(p.key)}
+            className={cn(
+              'h-full flex-1 rounded-sm px-2.5 text-[12.5px] font-semibold transition-colors',
+              period === p.key
+                ? 'bg-card text-accent-foreground shadow-xs'
+                : 'text-muted-foreground hover:text-foreground',
+            )}
           >
             {p.label}
-          </Button>
+          </button>
         ))}
       </div>
-      <div className="flex items-end gap-2 text-sm">
-        <label className="flex min-w-0 flex-1 flex-col gap-1">
-          <span className="text-muted-foreground text-xs">From</span>
+      {period === 'custom' && (
+        <div className="flex items-center gap-2">
           <input
             type="date"
             aria-label="From date"
-            className="border-input text-foreground h-9 w-full min-w-0 rounded-md border bg-background px-2 text-sm"
+            className={DATE_FIELD}
             value={from}
             max={to || undefined}
             onChange={(e) => setFrom(e.target.value)}
           />
-        </label>
-        <label className="flex min-w-0 flex-1 flex-col gap-1">
-          <span className="text-muted-foreground text-xs">To</span>
+          <span className="text-muted-foreground text-sm">–</span>
           <input
             type="date"
             aria-label="To date"
-            className="border-input text-foreground h-9 w-full min-w-0 rounded-md border bg-background px-2 text-sm"
+            className={DATE_FIELD}
             value={to}
             min={from || undefined}
             onChange={(e) => setTo(e.target.value)}
           />
-        </label>
-        {customRange ? (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-9 shrink-0"
-            onClick={() => selectPeriod(period)}
-          >
-            Clear
-          </Button>
-        ) : null}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

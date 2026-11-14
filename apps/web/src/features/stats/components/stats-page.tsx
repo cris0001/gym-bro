@@ -1,53 +1,50 @@
 import { useState } from 'react';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import type { StatExercise } from '@gym-bro/shared';
+
+import { PageTitle } from '@/components/page-title';
+import { cn } from '@/lib/utils';
 
 import type { StatsRange } from '../api/stats';
 import { ExerciseProgressChart } from './exercise-progress-chart';
 import { ExerciseStatPicker } from './exercise-stat-picker';
 import { RatingSummaryCard } from './rating-summary';
 import { StatsDateRange } from './stats-date-range';
+import { StatsOverviewTiles } from './stats-overview-tiles';
 
-import type { StatExercise } from '@gym-bro/shared';
+const microLabel = 'text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase';
 
-// Training stats: per-exercise progress (top set vs normal set — weight + reps,
-// over a selectable date window) and a workout rating summary. Side by side on
-// desktop, stacked on mobile. The selected exercise and window live here so the
-// picker, range control, and chart stay in sync.
+// Training stats: a row of this-month tiles, then per-exercise progress (wide, with
+// its exercise + period pickers and headline numbers) beside the workout-rating
+// summary. Stacked on phones. The selected exercise and window live here so the
+// pickers and the chart stay in sync.
 export function StatsPage() {
   const [exercise, setExercise] = useState<StatExercise | null>(null);
   const [range, setRange] = useState<StatsRange | undefined>(undefined);
 
   return (
     <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-4 p-3 md:p-4">
-      <h1 className="font-heading text-[28px] leading-none font-medium">Stats</h1>
+      <PageTitle className="font-heading text-[28px] leading-none font-bold tracking-tight">
+        Stats
+      </PageTitle>
 
-      <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
-        <Card className="rounded-2xl">
-          <CardHeader>
-            <CardTitle className="font-heading text-lg">Exercise progress</CardTitle>
-            <CardDescription className="font-heading text-[13px] italic">
-              Top-set vs normal-set weight and reps.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
+      <StatsOverviewTiles />
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_21rem] xl:items-start">
+        <section className="bg-card flex min-w-0 flex-col gap-4 rounded-xl border p-5">
+          <p className={cn(microLabel, 'lg:hidden')}>Exercise progress</p>
+          {/* Period on the left, exercise on the right (stacked on phones). */}
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <StatsDateRange onChange={setRange} className="w-full sm:w-auto" />
             <ExerciseStatPicker value={exercise} onSelect={setExercise} />
-            <StatsDateRange onChange={setRange} />
-            <ExerciseProgressChart exerciseId={exercise?.id ?? null} range={range} />
-          </CardContent>
-        </Card>
+          </div>
+          <ExerciseProgressChart exerciseId={exercise?.id ?? null} range={range} />
+        </section>
 
-        <Card className="rounded-2xl">
-          <CardHeader>
-            <CardTitle className="font-heading text-lg">Workout ratings</CardTitle>
-            <CardDescription className="font-heading text-[13px] italic">
-              How you rate your sessions.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <RatingSummaryCard />
-          </CardContent>
-        </Card>
+        <section className="bg-card flex flex-col gap-4 rounded-xl border p-5">
+          <p className={cn(microLabel, 'lg:hidden')}>Workout ratings</p>
+          <RatingSummaryCard />
+        </section>
       </div>
     </div>
   );

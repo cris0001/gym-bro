@@ -11,8 +11,6 @@ export const useSessionsTranslation = createFeatureTranslation({
       weight: 'Weight',
       reps: 'Reps',
       rir: 'RIR',
-      setType: 'Set type',
-      start: 'Start',
       startWorkout: 'Start workout',
       today: 'Today',
       edit: 'Edit',
@@ -48,7 +46,7 @@ export const useSessionsTranslation = createFeatureTranslation({
       startTitle: 'Start a workout',
       plannedForToday: 'Planned for today',
       plannedForTodayCaption: 'planned for today',
-      orPickTemplate: 'or pick a template',
+      orPickTemplate: 'Or pick a template',
       startEmpty: 'Start empty workout',
       minimize: 'Minimize',
       minimizeAria: 'Minimize — your session keeps running in the background',
@@ -88,8 +86,6 @@ export const useSessionsTranslation = createFeatureTranslation({
     },
     exerciseCard: {
       copyLast: 'Copy last',
-      copyLastWith: (weight: string | number, reps: string | number) =>
-        `Copy last (${weight} × ${reps})`,
       swapped: ' · swapped',
       sets: (n: number) => `${n} ${n === 1 ? 'set' : 'sets'}`,
       addSet: '+ Add set',
@@ -111,7 +107,7 @@ export const useSessionsTranslation = createFeatureTranslation({
       none: 'No previous sessions.',
       more: 'More ▾',
       less: 'Less ▴',
-      showMore: 'Show more',
+      showMore: 'More',
     },
     dayDetail: {
       targetReps: (reps: string) => `${reps} REPS`,
@@ -198,6 +194,9 @@ export const useSessionsTranslation = createFeatureTranslation({
       swappedFrom: (name: string) => ` · swapped from ${name}`,
       activity: 'Activity',
       stats: { duration: 'Duration', volume: 'Volume', sets: 'Sets', rating: 'Rating' },
+      exercises: (n: number) => `Exercises · ${n}`,
+      history: 'History',
+      hideHistory: 'Hide history',
     },
   },
   pl: {
@@ -205,8 +204,6 @@ export const useSessionsTranslation = createFeatureTranslation({
       weight: 'Ciężar',
       reps: 'Powt.',
       rir: 'RIR',
-      setType: 'Typ serii',
-      start: 'Zacznij',
       startWorkout: 'Zacznij trening',
       today: 'Dziś',
       edit: 'Edytuj',
@@ -242,7 +239,7 @@ export const useSessionsTranslation = createFeatureTranslation({
       startTitle: 'Rozpocznij trening',
       plannedForToday: 'Zaplanowane na dziś',
       plannedForTodayCaption: 'zaplanowane na dziś',
-      orPickTemplate: 'lub wybierz szablon',
+      orPickTemplate: 'Lub wybierz szablon',
       startEmpty: 'Rozpocznij pusty trening',
       minimize: 'Zwiń',
       minimizeAria: 'Zwiń — sesja działa dalej w tle',
@@ -282,8 +279,6 @@ export const useSessionsTranslation = createFeatureTranslation({
     },
     exerciseCard: {
       copyLast: 'Kopiuj ostatnią',
-      copyLastWith: (weight: string | number, reps: string | number) =>
-        `Kopiuj ostatnią (${weight} × ${reps})`,
       swapped: ' · zamienione',
       sets: (n: number) => `${n} ${n === 1 ? 'seria' : 'serii'}`,
       addSet: '+ Dodaj serię',
@@ -305,7 +300,7 @@ export const useSessionsTranslation = createFeatureTranslation({
       none: 'Brak poprzednich sesji.',
       more: 'Więcej ▾',
       less: 'Mniej ▴',
-      showMore: 'Pokaż więcej',
+      showMore: 'Więcej',
     },
     dayDetail: {
       targetReps: (reps: string) => `${reps} POWT.`,
@@ -392,6 +387,9 @@ export const useSessionsTranslation = createFeatureTranslation({
       swappedFrom: (name: string) => ` · zamienione z ${name}`,
       activity: 'Aktywność',
       stats: { duration: 'Czas', volume: 'Objętość', sets: 'Serie', rating: 'Ocena' },
+      exercises: (n: number) => `Ćwiczenia · ${n}`,
+      history: 'Historia',
+      hideHistory: 'Ukryj historię',
     },
   },
 });

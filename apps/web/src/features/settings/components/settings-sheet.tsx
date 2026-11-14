@@ -16,7 +16,7 @@ import { useSettingsUiStore } from '../stores/settings-ui.store';
 
 const SECTION_TITLE = 'font-heading text-[17px] font-semibold';
 const LABEL = 'text-[12.5px] font-semibold text-subtle-foreground';
-const DIVIDER = 'border-border border-t border-dashed pt-6';
+const DIVIDER = 'border-border border-t pt-6';
 
 // Settings as a modal over the current page — a bottom sheet on phones, a centred
 // dialog on larger screens. Top to bottom: the food-name language (saves on tap), the
@@ -40,7 +40,7 @@ export function SettingsSheet() {
         className="flex flex-col gap-0 overflow-hidden sm:max-w-lg lg:max-w-lg"
       >
         <SheetHeader className="shrink-0">
-          <SheetTitle className="font-heading text-[22px] font-medium">{t.title}</SheetTitle>
+          <SheetTitle className="font-heading text-[22px] font-semibold">{t.title}</SheetTitle>
         </SheetHeader>
 
         <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto overscroll-contain px-4 pb-6">

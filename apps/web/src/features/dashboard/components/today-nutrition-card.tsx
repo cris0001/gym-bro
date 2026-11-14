@@ -19,7 +19,7 @@ export function TodayNutritionCard({ date }: { date: string }) {
   const left = targetKcal !== null ? Math.round(targetKcal - kcal) : null;
 
   return (
-    <div className="bg-card flex flex-col gap-4 rounded-2xl border p-5">
+    <div className="bg-card flex flex-col gap-4 rounded-xl border p-5">
       <p className="text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase">
         {t.nutrition.label}
       </p>
@@ -28,7 +28,7 @@ export function TodayNutritionCard({ date }: { date: string }) {
         <SkeletonHero />
       ) : targetKcal === null ? (
         <div className="flex flex-col gap-2">
-          <p className="font-heading text-2xl font-semibold">{kcal} kcal</p>
+          <p className="font-heading text-2xl font-bold tabular-nums">{kcal} kcal</p>
           <Link
             to="/targets"
             className="bg-accent text-primary hover:bg-accent/70 mt-1 inline-flex h-9 w-fit items-center rounded-full px-3.5 text-[12.5px] font-semibold"
@@ -98,7 +98,7 @@ function CalorieRing({ kcal, target }: { kcal: number; target: number }) {
         x="60"
         y="60"
         textAnchor="middle"
-        className="fill-foreground font-heading text-2xl font-semibold"
+        className="fill-foreground font-heading text-2xl font-bold tabular-nums"
       >
         {kcal}
       </text>

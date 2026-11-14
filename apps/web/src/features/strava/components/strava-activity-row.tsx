@@ -53,7 +53,7 @@ export function StravaActivityRow({
       : formatDuration(session.movingTimeS);
 
   return (
-    <li id={`strava-activity-${session.id}`} className="bg-card overflow-hidden rounded-2xl border">
+    <li id={`strava-activity-${session.id}`} className="bg-card overflow-hidden rounded-xl border">
       <button
         type="button"
         onClick={onToggle}

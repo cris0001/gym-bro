@@ -27,7 +27,7 @@ export function ActivePlanRow({ planId, name }: ActivePlanRowProps) {
   });
 
   return (
-    <div className="bg-card overflow-hidden rounded-2xl border">
+    <div className="bg-card overflow-hidden rounded-xl border">
       <div className="flex items-center gap-2 p-4">
         <button
           type="button"
@@ -60,11 +60,11 @@ export function ActivePlanRow({ planId, name }: ActivePlanRowProps) {
 
       {expanded &&
         (templates.length === 0 ? (
-          <p className="text-muted-foreground border-t border-dashed border-border px-4 py-3 text-sm">
+          <p className="text-muted-foreground border-t border-border px-4 py-3 text-sm">
             This plan has no templates yet.
           </p>
         ) : (
-          <ul className="divide-y divide-dashed divide-border border-t border-dashed border-border">
+          <ul className="divide-y divide-border border-t border-border">
             {templates.map((template, i) => {
               const count = templateQueries[i]?.data?.exercises.length ?? 0;
               return (

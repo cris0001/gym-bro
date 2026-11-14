@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { PageTitle } from '@/components/page-title';
 
 import { MEAL_TYPES } from '@gym-bro/shared';
 
@@ -59,7 +60,9 @@ export function DiaryPage() {
   return (
     <div className="lg:col-start-2 flex w-full min-w-0 max-w-5xl flex-col gap-4 p-3 pb-36 md:p-4 lg:pb-4">
       <header className="flex items-center justify-between gap-2">
-        <h1 className="font-heading text-[28px] leading-none font-medium">{t.diary.title}</h1>
+        <PageTitle className="font-heading text-[28px] leading-none font-bold tracking-tight">
+          {t.diary.title}
+        </PageTitle>
         <div className="bg-card flex items-center rounded-full border p-1">
           <button
             type="button"
@@ -92,7 +95,7 @@ export function DiaryPage() {
           narrower until xl, where there's room for the full 24rem. */}
       <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-5 xl:grid-cols-[minmax(0,1fr)_24rem] xl:gap-6">
         {/* Desktop sidebar summary; on mobile the inverted bottom bar takes over. */}
-        <Card className="hidden rounded-2xl lg:sticky lg:top-4 lg:order-2 lg:block">
+        <Card className="hidden rounded-xl lg:sticky lg:top-4 lg:order-2 lg:block">
           <CardContent>
             {showSkeleton ? (
               <DaySummarySkeleton />

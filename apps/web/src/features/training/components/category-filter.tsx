@@ -2,8 +2,6 @@ import { EXERCISE_CATEGORIES, type ExerciseCategory } from '@gym-bro/shared';
 
 import { cn } from '@/lib/utils';
 
-import { CategoryIcon } from '../utils/category-icon';
-
 interface CategoryFilterProps {
   value: ExerciseCategory | null;
   onChange: (value: ExerciseCategory | null) => void;
@@ -11,16 +9,18 @@ interface CategoryFilterProps {
 
 const chipClass = (active: boolean): string =>
   cn(
-    'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm whitespace-nowrap transition-colors',
-    active ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground',
+    'inline-flex h-8 shrink-0 items-center rounded-full px-3.5 text-[13px] font-semibold whitespace-nowrap transition-colors',
+    active
+      ? 'bg-primary text-primary-foreground'
+      : 'bg-secondary text-subtle-foreground hover:bg-muted',
   );
 
-// Category chips for the exercise library: a swipeable row on touch screens, and
-// wrapped onto extra lines on desktop (a mouse can't swipe a hidden-scrollbar row).
-// Leading "All" clears the filter (the default = show everything).
+// Category chips for the exercise library: a swipeable row on touch screens (bleeding
+// to the page edge), wrapped onto extra lines on desktop (a mouse can't swipe a
+// hidden-scrollbar row). Leading "All" clears the filter (the default).
 export function CategoryFilter({ value, onChange }: CategoryFilterProps) {
   return (
-    <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 pb-2 md:flex-wrap md:overflow-visible md:px-0 md:pb-0">
+    <div className="no-scrollbar -mx-3 flex gap-1.5 overflow-x-auto px-3 md:mx-0 md:flex-wrap md:overflow-visible md:px-0">
       <button type="button" onClick={() => onChange(null)} className={chipClass(value === null)}>
         All
       </button>
@@ -31,7 +31,6 @@ export function CategoryFilter({ value, onChange }: CategoryFilterProps) {
           onClick={() => onChange(category)}
           className={chipClass(value === category)}
         >
-          <CategoryIcon category={category} className="size-4" />
           {category}
         </button>
       ))}

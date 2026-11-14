@@ -8,18 +8,12 @@ const BAR_WIDTHS = ['w-4/5', 'w-full', 'w-1/2', 'w-1/5', 'w-[8%]'];
 export function RatingSummarySkeleton() {
   return (
     <div aria-hidden className="flex flex-col gap-5">
-      <div className="flex items-end justify-between gap-4">
-        <div className="flex h-[44px] items-end gap-2">
-          <Skeleton className="h-10 w-16" />
-          <Skeleton className="mb-1 h-3.5 w-28" />
+      <div className="flex flex-col gap-1.5">
+        <div className="flex h-[44px] items-center">
+          <Skeleton className="h-10 w-24" />
         </div>
-        <div className="flex flex-col items-end">
-          <div className="flex h-[22.5px] items-center">
-            <Skeleton className="h-4 w-8" />
-          </div>
-          <div className="flex h-[17px] items-center">
-            <Skeleton className="h-3 w-24" />
-          </div>
+        <div className="flex h-5 items-center">
+          <Skeleton className="h-3.5 w-36" />
         </div>
       </div>
 
@@ -36,10 +30,10 @@ export function RatingSummarySkeleton() {
       </div>
 
       <div className="flex flex-col">
-        <p className="text-muted-foreground mb-1 text-[11px] font-bold tracking-[0.08em] uppercase">
+        <p className="text-muted-foreground mb-1 text-[11px] font-medium tracking-[0.08em] uppercase">
           Latest
         </p>
-        <ul className="divide-border divide-y divide-dashed">
+        <ul className="divide-border divide-y">
           {[0, 1, 2, 3, 4].map((i) => (
             <li key={i} className="flex items-center gap-3 py-2">
               <div className="flex h-5 w-12 shrink-0 items-center">

@@ -1,11 +1,12 @@
-import { Link, useNavigate } from '@tanstack/react-router';
-import { Barcode, ChevronLeft, Loader2 } from 'lucide-react';
+import { useNavigate } from '@tanstack/react-router';
+import { Barcode, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { Input } from '@/components/ui/input';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { FIELD_CLASS } from '@/lib/form-styles';
+import { PageTitle } from '@/components/page-title';
 
 import { divideMacros, scaleMacros, sumMacros } from '@gym-bro/shared';
 import type { CreateRecipeInput, RecipeDetail } from '@gym-bro/shared';
@@ -122,15 +123,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
   const short = t.common.macroShort;
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-3 md:p-4 lg:col-span-3">
-      <Link
-        to="/recipes"
-        className="text-muted-foreground hover:text-foreground inline-flex w-fit items-center gap-1 text-[14px] font-semibold"
-      >
-        <ChevronLeft className="size-4" />
-        {t.recipes.title}
-      </Link>
-
+    <div className="flex w-full flex-col gap-4 p-3 md:p-4 max-w-6xl lg:col-start-2">
       {/* Under 1300px: a large photo tile beside the title and a one-line per-serving
           read, so the page opens on what the recipe is. From 1300px the photo gets
           its own column and the full summary card sits on the right. */}
@@ -143,9 +136,9 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
           onRemove={() => setImageUrl(null)}
         />
         <div className="flex min-w-0 flex-col gap-1.5">
-          <h1 className="font-heading min-w-0 text-[26px] leading-tight font-medium break-words min-[1300px]:text-[30px]">
+          <PageTitle className="font-heading min-w-0 text-[26px] leading-tight font-bold tracking-tight break-words min-[1300px]:text-[30px]">
             {name.trim() || (editing ? t.recipes.editRecipe : t.recipes.newRecipe)}
-          </h1>
+          </PageTitle>
           <p className="text-muted-foreground text-[13px] min-[1300px]:hidden">
             <span className="text-foreground font-semibold">
               {Math.round(perServing.kcal)} kcal
@@ -177,13 +170,13 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
             />
           </div>
 
-          <div className="overflow-hidden rounded-[20px] border border-border bg-card">
+          <div className="overflow-hidden rounded-xl border border-border bg-card">
             <p className="text-muted-foreground px-4 pt-4 pb-3 text-[11px] font-bold tracking-[0.08em] uppercase">
               {t.recipes.ingredients}
             </p>
 
             {ingredients.length === 0 ? (
-              <p className="text-muted-foreground border-t border-dashed border-border px-4 py-3 text-[13px]">
+              <p className="text-muted-foreground border-t border-border px-4 py-3 text-[13px]">
                 {t.recipes.noIngredients}
               </p>
             ) : (
@@ -202,7 +195,7 @@ export function RecipeBuilder({ editing }: RecipeBuilderProps) {
             )}
 
             {/* Add: search the foods dictionary, or (touch devices) scan a barcode. */}
-            <div className="relative border-t border-dashed border-border p-3">
+            <div className="relative border-t border-border p-3">
               <FoodCombobox
                 variant="add"
                 selectedId={null}

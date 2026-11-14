@@ -18,7 +18,7 @@ export function RecipeUnitToggle({ food, unit, onChange }: RecipeUnitToggleProps
     return <span className="text-muted-foreground px-1 text-[14px] font-semibold">g</span>;
   }
   return (
-    <div className="flex h-10 shrink-0 overflow-hidden rounded-[10px] border border-border bg-field">
+    <div className="flex h-9 shrink-0 overflow-hidden rounded-md border border-border bg-field">
       {options.map((option) => (
         <button
           key={option}

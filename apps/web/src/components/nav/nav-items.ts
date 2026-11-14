@@ -1,5 +1,4 @@
 import {
-  Activity,
   Apple,
   CalendarDays,
   ChefHat,
@@ -15,6 +14,9 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 
+import type { ComponentType } from 'react';
+
+import { StravaLogo } from '@/components/strava-logo';
 import type { NavKey } from '@/lib/i18n/messages';
 
 // Param-free top-level routes, so a single union types the nav config and keeps
@@ -38,7 +40,8 @@ export interface NavLink {
   to: NavPath;
   // Key into the i18n `nav` namespace; the label text is resolved at render time.
   labelKey: NavKey;
-  icon: LucideIcon;
+  // A lucide icon, or any component taking just a className (the Strava logo).
+  icon: LucideIcon | ComponentType<{ className?: string }>;
 }
 
 // A top-level section: a main destination (where the category lands) plus an
@@ -82,7 +85,7 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
   { to: '/body', labelKey: 'body', icon: Scale, children: [] },
-  { to: '/strava', labelKey: 'strava', icon: Activity, brand: 'strava', children: [] },
+  { to: '/strava', labelKey: 'strava', icon: StravaLogo, brand: 'strava', children: [] },
 ];
 
 // True when `pathname` is the route itself or a child route under it (e.g.

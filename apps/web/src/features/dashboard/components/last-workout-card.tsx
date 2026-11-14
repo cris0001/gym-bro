@@ -13,13 +13,14 @@ const RECENT_WINDOW = 10;
 
 const microLabel = 'text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase';
 
-// The most recent strength workout, linking to its detail. Text-forward stat card:
-// micro-label over the serif name + a muted meta line. Ad-hoc activity sessions are
-// ignored (they belong to the Strava/activity view).
+// The most recent strength workout, linking to its detail. Compact stat card: micro-label
+// over the name + one muted meta line (date, duration, exercise count, rating). It sizes
+// to its content (self-start) rather than stretching to the Weight card beside it.
+// Ad-hoc activity sessions are ignored (they belong to the Strava/activity view).
 export function LastWorkoutCard() {
   const { data, isPending } = useWorkoutSessions(RECENT_WINDOW, 0);
   const last = data?.items.find((session) => session.sessionType === 'strength') ?? null;
-  // Pull the exercise names performed (list items don't carry them); deferred until
+  // The exercise count comes from the detail (list items don't carry it); deferred until
   // there's a session to show.
   const { data: detail } = useWorkoutSession(last?.id ?? '', Boolean(last));
   const exercises = detail?.performances.map((performance) => performance.exercise.name) ?? [];
@@ -27,7 +28,7 @@ export function LastWorkoutCard() {
 
   if (isPending) {
     return (
-      <div className="bg-card flex flex-col gap-2 rounded-2xl border p-5">
+      <div className="bg-card flex flex-col gap-2 self-start rounded-xl border p-5">
         <p className={microLabel}>{t.lastWorkout.label}</p>
         <Skeleton className="h-5 w-2/3" />
         <Skeleton className="h-3 w-1/2" />
@@ -37,7 +38,7 @@ export function LastWorkoutCard() {
 
   if (!last) {
     return (
-      <div className="bg-card flex flex-col gap-1 rounded-2xl border p-5">
+      <div className="bg-card flex flex-col gap-1 self-start rounded-xl border p-5">
         <p className={microLabel}>{t.lastWorkout.label}</p>
         <span className="text-muted-foreground text-sm">{t.lastWorkout.none}</span>
         <Link
@@ -51,7 +52,7 @@ export function LastWorkoutCard() {
   }
 
   const meta = [
-    format(parseISO(last.performedDate), 'EEEE'),
+    format(parseISO(last.performedDate), 'EEEE, MMM d'),
     last.durationMinutes ? t.lastWorkout.minutes(last.durationMinutes) : null,
     exercises.length > 0 ? t.lastWorkout.exercise(exercises.length) : null,
   ]
@@ -62,7 +63,7 @@ export function LastWorkoutCard() {
     <Link
       to="/history/$sessionId"
       params={{ sessionId: last.id }}
-      className="bg-card flex flex-col gap-1 rounded-2xl border p-5"
+      className="bg-card flex flex-col gap-1 self-start rounded-xl border p-5"
     >
       <div className="flex items-center justify-between">
         <p className={microLabel}>{t.lastWorkout.label}</p>
@@ -78,9 +79,6 @@ export function LastWorkoutCard() {
           </span>
         ) : null}
       </p>
-      {exercises.length > 0 ? (
-        <p className="text-muted-foreground line-clamp-1 text-xs">{exercises.join(', ')}</p>
-      ) : null}
     </Link>
   );
 }

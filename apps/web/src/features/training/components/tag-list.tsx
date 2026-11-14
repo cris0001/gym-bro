@@ -37,7 +37,7 @@ export function TagList() {
         title="No tags yet"
         description="Add tags to label and color-code your workouts on the calendar."
         action={
-          <Button type="button" className="h-10 rounded-full px-5" onClick={openCreate}>
+          <Button type="button" className="h-9.5 rounded-full px-5" onClick={openCreate}>
             <Plus className="size-4" />
             Add tag
           </Button>
@@ -57,11 +57,12 @@ export function TagList() {
   }
 
   return (
-    <ul className="divide-y divide-dashed divide-border">
+    // From lg (with the sidebar): a plain two-column grid of separate rows.
+    <ul className="divide-y divide-border lg:grid lg:grid-cols-2 lg:gap-2 lg:divide-y-0">
       {tags.map((tag) => (
         <li
           key={tag.id}
-          className="flex items-center gap-3 py-1 pr-4 transition-colors hover:bg-muted/50"
+          className="flex items-center gap-3 py-1 pr-4 transition-colors hover:bg-muted/50 lg:bg-card lg:rounded-lg lg:border"
         >
           {/* The whole row body opens the edit sheet; only delete stays a separate
               control. */}
