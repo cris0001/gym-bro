@@ -1,4 +1,4 @@
-import { Apple, Loader2, Pencil } from 'lucide-react';
+import { Apple, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -77,7 +77,7 @@ export function AddPortionSheet({
               <Apple className="size-5" />
             </span>
           )}
-          <SheetTitle className="min-w-0 flex-1 truncate">
+          <SheetTitle className="min-w-0 flex-1 break-words">
             {row?.name ?? t.portion.portion}
           </SheetTitle>
           {row && row.kind !== 'recipe' && onEdit ? (
@@ -85,14 +85,11 @@ export function AddPortionSheet({
               type="button"
               disabled={isPreparingEdit}
               onClick={() => onEdit(row)}
-              className="border-border bg-card text-primary hover:bg-muted inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-semibold transition-colors disabled:opacity-60"
+              aria-label={t.addEntry.editProduct}
+              // A small text pill, so a long product name keeps the width (and wraps).
+              className="border-border bg-card text-primary hover:bg-muted inline-flex h-8 min-w-14 shrink-0 cursor-pointer items-center justify-center rounded-full border px-3 text-[12.5px] font-semibold transition-colors disabled:opacity-60"
             >
-              {isPreparingEdit ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : (
-                <Pencil className="size-3.5" />
-              )}
-              {t.addEntry.editProduct}
+              {isPreparingEdit ? <Loader2 className="size-3.5 animate-spin" /> : t.addEntry.edit}
             </button>
           ) : null}
         </SheetHeader>

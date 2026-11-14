@@ -1,7 +1,6 @@
 import { createFileRoute, Outlet, redirect, useNavigate } from '@tanstack/react-router';
 
-import { BrandMark } from '@/components/brand-mark';
-import { BrandWordmark } from '@/components/brand-wordmark';
+import { BrandLogo } from '@/components/brand-logo';
 import { BottomNav } from '@/components/nav/bottom-nav';
 import { SectionTabs } from '@/components/nav/section-tabs';
 import { SidebarNav } from '@/components/nav/sidebar-nav';
@@ -51,10 +50,7 @@ function AppLayout() {
       <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
         {/* Mobile-only top bar; on lg the sidebar carries the logo + logout. */}
         <header className="bg-background/80 sticky top-0 z-10 flex h-14 items-center justify-between border-b px-4 backdrop-blur lg:hidden">
-          <span className="font-heading flex items-center gap-2 text-lg font-semibold">
-            <BrandMark className="size-8" />
-            <BrandWordmark />
-          </span>
+          <BrandLogo />
           <div className="flex items-center gap-1">
             <SettingsButton />
             <LogoutButton />

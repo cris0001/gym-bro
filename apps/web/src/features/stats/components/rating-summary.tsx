@@ -1,21 +1,24 @@
-import { format, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
 import { Star } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
 import { useRatingTrend } from '../hooks/use-stats';
+import { useStatsTranslation } from '../i18n';
 import { summarizeRatings } from '../utils/rating-summary';
 
 import { ChartPlaceholder } from './chart-placeholder';
 import { RatingSummarySkeleton } from './rating-summary-skeleton';
+import { formatDate } from '@/lib/i18n/date-format';
 
 // The workout-rating history as a short summary: the overall average, the last 30
 // days' direction, how the ratings spread across 1–5, and the latest sessions.
 export function RatingSummaryCard() {
+  const t = useStatsTranslation();
   const { data: points = [], isPending } = useRatingTrend();
 
   if (isPending) return <RatingSummarySkeleton />;
-  if (points.length === 0) return <ChartPlaceholder>No rated workouts yet.</ChartPlaceholder>;
+  if (points.length === 0) return <ChartPlaceholder>{t.ratings.empty}</ChartPlaceholder>;
 
   const summary = summarizeRatings(points);
   const maxBucket = Math.max(...summary.distribution);
@@ -32,7 +35,7 @@ export function RatingSummaryCard() {
         </div>
         {summary.recentAverage !== null ? (
           <p className="text-muted-foreground text-[13px]">
-            Last 30 days{' '}
+            {t.ratings.last30Days}{' '}
             <span className="text-foreground font-semibold tabular-nums">
               {summary.recentAverage.toFixed(1)}
             </span>
@@ -64,13 +67,13 @@ export function RatingSummaryCard() {
 
       <div className="flex flex-col">
         <p className="text-muted-foreground mb-1 text-[11px] font-medium tracking-[0.08em] uppercase">
-          Latest
+          {t.ratings.latest}
         </p>
         <ul className="divide-border divide-y">
           {summary.latest.map((point) => (
             <li key={point.sessionId} className="flex items-center gap-3 py-2">
               <span className="text-muted-foreground w-12 shrink-0 text-[12px]">
-                {format(parseISO(point.date), 'MMM d')}
+                {formatDate(parseISO(point.date), 'MMM d')}
               </span>
               <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium">
                 {point.name}

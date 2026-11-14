@@ -1,11 +1,13 @@
 import { Skeleton } from '@/components/ui/skeleton';
 
+import { useStatsTranslation } from '../i18n';
 // Loading state for the rating summary, in its real shape: the big average + the
 // last-30-days figure, the 5★…1★ breakdown (labels stay real, bars and counts pulse)
 // and the "Latest" rows. Each bar sits in a box as tall as the text it replaces.
 const BAR_WIDTHS = ['w-4/5', 'w-full', 'w-1/2', 'w-1/5', 'w-[8%]'];
 
 export function RatingSummarySkeleton() {
+  const t = useStatsTranslation();
   return (
     <div aria-hidden className="flex flex-col gap-5">
       <div className="flex flex-col gap-1.5">
@@ -31,7 +33,7 @@ export function RatingSummarySkeleton() {
 
       <div className="flex flex-col">
         <p className="text-muted-foreground mb-1 text-[11px] font-medium tracking-[0.08em] uppercase">
-          Latest
+          {t.ratings.latest}
         </p>
         <ul className="divide-border divide-y">
           {[0, 1, 2, 3, 4].map((i) => (

@@ -14,6 +14,7 @@ import { LastWorkoutCard } from './last-workout-card';
 import { LatestWeightCard } from './latest-weight-card';
 import { NextSessionCard } from './next-session-card';
 import { TodayNutritionCard } from './today-nutrition-card';
+import { formatDate } from '@/lib/i18n/date-format';
 
 // Recent-sessions window shared with LastWorkoutCard so both hit one cached query.
 const RECENT_WINDOW = 10;
@@ -64,7 +65,7 @@ export function DashboardPage() {
     <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-5 p-3 md:p-4">
       <header className="flex items-center justify-between gap-3">
         <div className="flex flex-col">
-          <p className="text-muted-foreground text-sm">{format(today, 'EEEE, MMMM d')}</p>
+          <p className="text-muted-foreground text-sm">{formatDate(today, 'EEEE, MMMM d')}</p>
           <h1 className="font-heading text-[28px] leading-tight font-bold tracking-tight lg:text-[34px]">
             {t.greeting[greetingKey(today.getHours())]}
           </h1>

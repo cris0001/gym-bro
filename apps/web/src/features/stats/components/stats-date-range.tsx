@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { FIELD_CLASS } from '@/lib/form-styles';
 
 import type { StatsRange } from '../api/stats';
+import { useStatsTranslation } from '../i18n';
 
 type Period = '1m' | '3m' | '6m' | '1y' | 'all' | 'custom';
 
@@ -29,6 +30,7 @@ export function StatsDateRange({
   onChange: (range: StatsRange | undefined) => void;
   className?: string;
 }) {
+  const t = useStatsTranslation();
   const [period, setPeriod] = useState<Period>('3m');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
@@ -61,7 +63,7 @@ export function StatsDateRange({
                 : 'text-muted-foreground hover:text-foreground',
             )}
           >
-            {p.label}
+            {p.key === 'all' ? t.periods.all : p.key === 'custom' ? t.periods.custom : p.label}
           </button>
         ))}
       </div>
@@ -69,7 +71,7 @@ export function StatsDateRange({
         <div className="flex items-center gap-2">
           <input
             type="date"
-            aria-label="From date"
+            aria-label={t.periods.fromAria}
             className={DATE_FIELD}
             value={from}
             max={to || undefined}
@@ -78,7 +80,7 @@ export function StatsDateRange({
           <span className="text-muted-foreground text-sm">–</span>
           <input
             type="date"
-            aria-label="To date"
+            aria-label={t.periods.toAria}
             className={DATE_FIELD}
             value={to}
             min={from || undefined}

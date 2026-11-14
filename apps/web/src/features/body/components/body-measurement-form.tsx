@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
+import { ChevronRight } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -26,7 +27,7 @@ import { useBodyUiStore } from '../stores/body-ui.store';
 
 type BodyT = ReturnType<typeof useBodyTranslation>;
 
-// The app's form field at the compact 40px height (same as the Targets form).
+// The app's 36px form field (same as the Targets form).
 const FIELD = cn(FIELD_CLASS, 'bg-field-muted');
 
 // An optional measurement field: kept as a string (empty = "not entered"), valid
@@ -84,10 +85,10 @@ function toDefaults(editing: BodyMeasurement | null): BodyFormValues {
 }
 
 const hasAdvanced = (editing: BodyMeasurement | null) =>
-  !!editing && ADVANCED.some((key) => editing[key] !== null);
+  !!editing && (editing.notes !== null || ADVANCED.some((key) => editing[key] !== null));
 
 // The prominent quick-add / edit form. Weight + body fat are always shown; the
-// circumference fields sit behind "Show more". In create mode blank fields are
+// circumference fields and notes sit behind "Show more". In create mode blank fields are
 // omitted so a same-day re-save merges (non-destructive); in edit mode a cleared
 // field is sent as null to actually clear it. At least one value is required.
 export function BodyMeasurementForm() {
@@ -166,7 +167,7 @@ export function BodyMeasurementForm() {
             <FormItem>
               <FormLabel className={LABEL_CLASS}>{t.form.date}</FormLabel>
               <FormControl>
-                <Input type="date" className={cn(FIELD, 'max-w-[220px]')} {...field} />
+                <Input type="date" className={FIELD} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -192,32 +193,35 @@ export function BodyMeasurementForm() {
           ))}
         </div>
 
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          className="justify-self-start px-0"
+          aria-expanded={showMore}
+          className="text-primary flex h-8 items-center gap-1 justify-self-start text-[13px] font-semibold"
           onClick={() => setShowMore((v) => !v)}
         >
+          <ChevronRight className={cn('size-4 transition-transform', showMore && 'rotate-90')} />
           {showMore ? t.form.showLess : t.form.showMore}
-        </Button>
+        </button>
 
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className={LABEL_CLASS}>{t.form.notes}</FormLabel>
-              <FormControl>
-                <textarea
-                  placeholder={t.form.notesPlaceholder}
-                  className={cn(TEXTAREA_CLASS, 'bg-field-muted min-h-16')}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {showMore && (
+          <FormField
+            control={form.control}
+            name="notes"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className={LABEL_CLASS}>{t.form.notes}</FormLabel>
+                <FormControl>
+                  <textarea
+                    placeholder={t.form.notesPlaceholder}
+                    className={cn(TEXTAREA_CLASS, 'bg-field-muted min-h-16')}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         {error ? (
           <p role="alert" className="text-destructive text-sm">
@@ -226,14 +230,14 @@ export function BodyMeasurementForm() {
         ) : null}
 
         <div className="flex gap-2">
-          <Button type="submit" className="h-10 flex-1 rounded-full" disabled={upsert.isPending}>
+          <Button type="submit" className="h-9.5 flex-1 rounded-full" disabled={upsert.isPending}>
             {upsert.isPending ? t.form.saving : editing ? t.form.saveChanges : t.form.add}
           </Button>
           {editing ? (
             <Button
               type="button"
               variant="outline"
-              className="h-10 rounded-full"
+              className="h-9.5 rounded-full"
               onClick={clearEditing}
             >
               {t.form.cancel}

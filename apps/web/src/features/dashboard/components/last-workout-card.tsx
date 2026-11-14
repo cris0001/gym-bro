@@ -1,11 +1,12 @@
 import { Link } from '@tanstack/react-router';
-import { format, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
 import { ChevronRight, Star } from 'lucide-react';
 
 import { useWorkoutSession, useWorkoutSessions } from '@/features/sessions';
 import { Skeleton } from '@/components/ui/skeleton';
 
 import { useDashboardTranslation } from '../i18n';
+import { formatDate } from '@/lib/i18n/date-format';
 
 // A small window of recent sessions to find the latest strength one within (ad-hoc
 // activities are skipped) — enough for the dashboard without paging.
@@ -52,7 +53,7 @@ export function LastWorkoutCard() {
   }
 
   const meta = [
-    format(parseISO(last.performedDate), 'EEEE, MMM d'),
+    formatDate(parseISO(last.performedDate), 'EEEE, MMM d'),
     last.durationMinutes ? t.lastWorkout.minutes(last.durationMinutes) : null,
     exercises.length > 0 ? t.lastWorkout.exercise(exercises.length) : null,
   ]

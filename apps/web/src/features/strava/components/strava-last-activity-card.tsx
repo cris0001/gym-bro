@@ -1,4 +1,4 @@
-import { format, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
 
 import type { StravaSessionItem } from '@gym-bro/shared';
 
@@ -13,6 +13,7 @@ import {
   isPaceType,
 } from '../utils/format';
 import { RouteMap } from './route-map';
+import { formatDate } from '@/lib/i18n/date-format';
 
 const microLabel = 'text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase';
 
@@ -70,7 +71,7 @@ export function StravaLastActivityCard({ session }: { session: StravaSessionItem
                 {session.name}
               </p>
               <p className="text-muted-foreground text-[13px]">
-                {format(parseISO(session.startedAt), 'EEEE, MMM d')}
+                {formatDate(parseISO(session.startedAt), 'EEEE, MMM d')}
               </p>
             </div>
           </div>

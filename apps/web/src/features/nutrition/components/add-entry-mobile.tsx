@@ -1,4 +1,4 @@
-import { format, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
 import { Barcode, Plus, Search } from 'lucide-react';
 
 import type { MealType } from '@gym-bro/shared';
@@ -17,6 +17,7 @@ import { AddEntryListSkeleton } from './add-entry-list-skeleton';
 import { AddEntryResultRow } from './add-entry-result-row';
 import { DiaryEntryRow } from './diary-entry-row';
 import { PendingFoodLogRow } from './pending-food-log-row';
+import { formatDate } from '@/lib/i18n/date-format';
 
 // Mobile "Add to {meal}" view: a fullscreen takeover with an inline results list under a
 // search box, added items + running meal total below, and a sticky "Done" bar. One tap
@@ -63,7 +64,7 @@ export function AddEntryMobile({
         <div className="mx-auto flex w-full max-w-md flex-col gap-4 p-3 min-[400px]:p-4">
           <div className="flex flex-col gap-1">
             <p className="text-muted-foreground text-sm">
-              {format(parseISO(loggedDate), 'EEEE, MMMM d')}
+              {formatDate(parseISO(loggedDate), 'EEEE, MMMM d')}
             </p>
             <h1 className="font-heading text-[26px] font-bold tracking-tight">
               {t.addEntry.addTo(mealLabel)}

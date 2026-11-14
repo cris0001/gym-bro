@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { format, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
 import { ClipboardList, Plus } from 'lucide-react';
 
 import { EmptyState } from '@/components/empty-state';
@@ -11,6 +11,7 @@ import { usePlans } from '../hooks/use-plans';
 import { useSetActivePlan } from '../hooks/use-set-active-plan';
 import { usePlanUiStore } from '../stores/plan-ui.store';
 import { PlanCardsSkeleton } from './plan-cards-skeleton';
+import { formatDate } from '@/lib/i18n/date-format';
 
 // The plans grid: every plan is an equal card (active first, marked with a badge),
 // the whole card linking to its detail page for templates and edit/delete. "Set active" flips the
@@ -94,7 +95,7 @@ export function PlanList() {
 
             <p className="text-muted-foreground mt-auto text-xs">
               {plan.templateCount} {plan.templateCount === 1 ? 'template' : 'templates'} · started{' '}
-              {format(parseISO(plan.createdAt), 'MMM d')}
+              {formatDate(parseISO(plan.createdAt), 'MMM d')}
             </p>
           </div>
         );

@@ -1,39 +1,66 @@
-import { useLandingTranslation } from '../i18n';
+import { BicepsFlexed } from 'lucide-react';
 
-// The "Install it like an app" band: a deliberately dark section explaining the PWA
-// install, with a numbered how-to and a photo slot (placeholder until a real image is
-// dropped into /public/landing/pwa.jpg).
+import { cn } from '@/lib/utils';
+
+import { useInView } from '../hooks/use-in-view';
+import { useLandingTranslation } from '../i18n';
+import { H2, HAND, SECTION } from '../utils/styles';
+
+// A phone home screen (sm+): a grid of blank app tiles and the Lift4Me icon popping
+// in once the section scrolls into view.
+function HomeScreen({ show }: { show: boolean }) {
+  return (
+    <div className="mx-auto hidden h-[520px] w-[270px] rounded-[26px] bg-[#05070b] p-[7px] shadow-2xl sm:block">
+      <div className="grid h-full grid-cols-4 content-start gap-x-3.5 gap-y-5 rounded-[19px] bg-gradient-to-b from-[#1e2a44] to-[#0f1420] px-5 pt-12">
+        {Array.from({ length: 11 }).map((_, i) => (
+          <span key={i} className="aspect-square rounded-[14px] bg-white/10" />
+        ))}
+        <span
+          className={cn(
+            'flex aspect-square items-center justify-center rounded-[14px] bg-white ring-3 ring-[#7fa6ff]',
+            show ? 'animate-pop' : 'opacity-0',
+          )}
+        >
+          <BicepsFlexed className="size-[60%] text-[#3a60a0]" strokeWidth={2.2} />
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// "Install it like an app": the dark band with the home-screen mock and three
+// numbered steps.
 export function PwaSection() {
   const t = useLandingTranslation();
+  const [ref, inView] = useInView<HTMLDivElement>(0.3);
 
   return (
-    <section id="pwa" className="scroll-mt-16 bg-[#2b2126]">
-      <div className="mx-auto grid w-full max-w-[1060px] items-center gap-9 px-6 py-16 md:grid-cols-2">
-        <div className="flex flex-col gap-3.5">
-          <span className="font-display text-[15px] text-[#c98fa0] italic">{t.pwa.eyebrow}</span>
-          <h2 className="font-display text-[clamp(28px,4vw,40px)] font-medium tracking-tight text-[#f0e7ea]">
+    <section id="pwa" className="scroll-mt-16 bg-[#14181f] text-[#f4f2ec]">
+      <div
+        ref={ref}
+        className={`${SECTION} grid items-center gap-14 py-20 md:py-28 lg:grid-cols-[360px_minmax(0,1fr)] lg:gap-20`}
+      >
+        <HomeScreen show={inView} />
+        <div>
+          <p className={`${HAND} text-lg text-[#7fa6ff] md:text-[22px]`}>{t.pwa.eyebrow}</p>
+          <h2 className={H2}>
             {t.pwa.title}
+            <span className="block text-[#8a93a6]">{t.pwa.titleMuted}</span>
           </h2>
-          <p className="text-[15px] leading-relaxed text-[#bfb2b7]">{t.pwa.body}</p>
-          <div className="flex flex-col gap-2.5 pt-1">
-            {t.pwa.steps.map((step, index) => (
-              <span key={step} className="flex items-center gap-2.5 text-[13.5px] text-[#f0e7ea]">
-                <span className="flex size-[26px] shrink-0 items-center justify-center rounded-lg bg-[#3a2f34] text-xs font-bold text-[#c98fa0]">
-                  {index + 1}
+          <p className="mt-6 max-w-[560px] text-[15.5px] leading-relaxed text-[#b8bfcc]">
+            {t.pwa.body}
+          </p>
+          <ol className="mt-10 grid gap-6 sm:grid-cols-3">
+            {t.pwa.steps.map((step, i) => (
+              <li key={step} className="border-t border-[#2d3546] pt-4">
+                <span className="font-heading text-3xl font-extrabold text-[#7fa6ff]">
+                  {String(i + 1).padStart(2, '0')}
                 </span>
-                {step}
-              </span>
+                <p className="mt-2 text-[15px] leading-relaxed text-[#c7ccd6]">{step}</p>
+              </li>
             ))}
-            <span className="font-display pt-1.5 text-[12.5px] text-[#94858b] italic">
-              {t.pwa.platforms}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex justify-center">
-          <div className="flex aspect-[5/4] w-full max-w-[420px] items-center justify-center overflow-hidden rounded-3xl bg-[#3a2f34] text-center text-sm text-[#94858b] shadow-2xl">
-            {t.pwa.photo}
-          </div>
+          </ol>
+          <p className={`${HAND} mt-8 text-lg text-[#8a93a6]`}>{t.pwa.platforms}</p>
         </div>
       </div>
     </section>

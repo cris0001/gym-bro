@@ -13,7 +13,7 @@ type Performance = WorkoutSessionDetail['performances'][number];
 
 // The phone layout of one exercise on the workout detail: its own card with name,
 // category, the sets as tiles four to a row, three under 360px (weight large, reps +
-// RIR beneath, the top set tinted), its note, and a History toggle (bottom right) that
+// RIR beneath, the top set tinted), its note, and an icon-only History toggle (bottom right) that
 // opens past results under the card.
 export function WorkoutPerformanceCard({
   performance,
@@ -64,14 +64,14 @@ export function WorkoutPerformanceCard({
       <button
         type="button"
         aria-expanded={showHistory}
+        aria-label={showHistory ? t.workoutDetail.hideHistory : t.workoutDetail.history}
         onClick={() => setShowHistory((value) => !value)}
         className={cn(
-          'text-primary -mr-1 -mb-1 inline-flex h-9 items-center gap-1.5 self-end rounded-full px-2.5 text-xs font-semibold transition-colors',
+          'text-primary -mr-1 -mb-1 inline-flex size-9 items-center justify-center self-end rounded-full transition-colors',
           showHistory && 'bg-accent',
         )}
       >
-        <History className="size-4" />
-        {showHistory ? t.workoutDetail.hideHistory : t.workoutDetail.history}
+        <History className="size-4.5" />
       </button>
       {showHistory && (
         <ExerciseHistoryPanel exerciseId={performance.exercise.id} before={performedDate} />

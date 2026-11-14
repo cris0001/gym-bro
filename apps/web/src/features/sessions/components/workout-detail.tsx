@@ -1,5 +1,5 @@
 import { Link, useNavigate } from '@tanstack/react-router';
-import { format, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
 import { ChevronLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -17,6 +17,7 @@ import { WorkoutNote } from './workout-note';
 import { WorkoutPerformances } from './workout-performances';
 import { WorkoutStats } from './workout-stats';
 import { WorkoutTagPills } from './workout-tag-pills';
+import { formatDate } from '@/lib/i18n/date-format';
 
 interface WorkoutDetailProps {
   sessionId: string;
@@ -74,7 +75,7 @@ export function WorkoutDetail({ sessionId }: WorkoutDetailProps) {
         <div className="flex min-w-0 flex-col gap-1">
           {/* The workout's own date sits above the name, like every page's date line. */}
           <p className="text-muted-foreground text-sm">
-            {format(parseISO(session.performedDate), 'EEEE, MMM d, yyyy')}
+            {formatDate(parseISO(session.performedDate), 'EEEE, MMM d, yyyy')}
             {!hasExercises &&
               session.durationMinutes !== null &&
               ` · ${session.durationMinutes} min`}

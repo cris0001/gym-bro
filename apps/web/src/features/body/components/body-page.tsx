@@ -2,9 +2,8 @@ import { format, subMonths } from 'date-fns';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { FIELD_CLASS } from '@/lib/form-styles';
+import { FIELD_CLASS, LABEL_CLASS } from '@/lib/form-styles';
 import { cn } from '@/lib/utils';
 import { PageTitle } from '@/components/page-title';
 
@@ -33,6 +32,9 @@ const PERIODS: { key: Period; months: number | null }[] = [
 
 // Inline date fields in the trends header: the app's field look at a compact height.
 const DATE_FIELD = cn(FIELD_CLASS, 'h-9 w-full min-w-0 px-2.5 text-[13px] md:text-[13px]');
+
+const CARD = 'bg-card flex flex-col gap-4 rounded-xl border p-4 sm:p-5';
+const MICRO_LABEL = 'text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase';
 
 // Entries within the period (newest-first order preserved). The cutoff compares
 // 'YYYY-MM-DD' strings lexically, which matches chronological order.
@@ -83,31 +85,25 @@ export function BodyPage() {
       </PageTitle>
 
       <div className="grid gap-4 lg:grid-cols-[22rem_1fr] lg:items-start">
-        <Card className="rounded-xl">
-          <CardHeader>
-            <CardTitle className="font-heading text-lg font-semibold">
-              {editing ? t.form.editTitle : t.form.addTitle}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <BodyMeasurementForm />
-          </CardContent>
-        </Card>
+        <section className={CARD}>
+          <h2 className={MICRO_LABEL}>{editing ? t.form.editTitle : t.form.addTitle}</h2>
+          <BodyMeasurementForm />
+        </section>
 
-        <Card className="rounded-xl">
-          <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-            <CardTitle className="font-heading text-lg font-semibold">{t.trends.title}</CardTitle>
-            <div className="bg-secondary flex rounded-full p-0.5">
+        <section className={cn(CARD, 'min-w-0')}>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className={MICRO_LABEL}>{t.trends.title}</h2>
+            <div className="bg-secondary flex h-9 rounded-md p-[3px]">
               {PERIODS.map((p) => (
                 <button
                   key={p.key}
                   type="button"
                   onClick={() => selectPeriod(p.key)}
                   className={cn(
-                    'h-7 rounded-full px-2.5 text-sm font-medium transition-colors',
+                    'h-full rounded-sm px-2.5 text-[12.5px] font-semibold transition-colors',
                     !customRange && period === p.key
-                      ? 'bg-card text-foreground border'
-                      : 'text-muted-foreground',
+                      ? 'bg-card text-accent-foreground shadow-xs'
+                      : 'text-muted-foreground hover:text-foreground',
                   )}
                 >
                   {p.key === 'all'
@@ -118,66 +114,61 @@ export function BodyPage() {
                 </button>
               ))}
             </div>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <div className="flex items-end gap-2 text-sm">
-              <label className="flex min-w-0 flex-1 flex-col gap-1">
-                <span className="text-muted-foreground text-xs">{t.trends.from}</span>
-                <Input
-                  type="date"
-                  aria-label={t.trends.fromAria}
-                  className={DATE_FIELD}
-                  value={from}
-                  max={to || undefined}
-                  onChange={(e) => setFrom(e.target.value)}
-                />
-              </label>
-              <label className="flex min-w-0 flex-1 flex-col gap-1">
-                <span className="text-muted-foreground text-xs">{t.trends.to}</span>
-                <Input
-                  type="date"
-                  aria-label={t.trends.toAria}
-                  className={DATE_FIELD}
-                  value={to}
-                  min={from || undefined}
-                  onChange={(e) => setTo(e.target.value)}
-                />
-              </label>
-              {customRange && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-9 shrink-0"
-                  onClick={() => selectPeriod(period)}
-                >
-                  {t.trends.clear}
-                </Button>
-              )}
-            </div>
-            {/* While the history loads the stats/chart would read as "no data" —
-                show their shape instead. */}
-            {isPending ? (
-              <BodyTrendsSkeleton />
-            ) : (
-              <>
-                <BodyStatsPanel entries={filtered} />
-                <BodyTrendChart entries={filtered} targets={targets ?? []} />
-              </>
+          </div>
+          <div className="flex items-end gap-2 text-sm">
+            <label className="flex min-w-0 flex-1 flex-col gap-1">
+              <span className={LABEL_CLASS}>{t.trends.from}</span>
+              <Input
+                type="date"
+                aria-label={t.trends.fromAria}
+                className={DATE_FIELD}
+                value={from}
+                max={to || undefined}
+                onChange={(e) => setFrom(e.target.value)}
+              />
+            </label>
+            <label className="flex min-w-0 flex-1 flex-col gap-1">
+              <span className={LABEL_CLASS}>{t.trends.to}</span>
+              <Input
+                type="date"
+                aria-label={t.trends.toAria}
+                className={DATE_FIELD}
+                value={to}
+                min={from || undefined}
+                onChange={(e) => setTo(e.target.value)}
+              />
+            </label>
+            {customRange && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-9 shrink-0"
+                onClick={() => selectPeriod(period)}
+              >
+                {t.trends.clear}
+              </Button>
             )}
-          </CardContent>
-        </Card>
+          </div>
+          {/* While the history loads the stats/chart would read as "no data" —
+                show their shape instead. */}
+          {isPending ? (
+            <BodyTrendsSkeleton />
+          ) : (
+            <>
+              <BodyStatsPanel entries={filtered} />
+              {/* Near-edge on mobile (like Stats) so the plot gets the width. */}
+              <div className="-mx-2.5 sm:mx-0">
+                <BodyTrendChart entries={filtered} targets={targets ?? []} />
+              </div>
+            </>
+          )}
+        </section>
       </div>
 
       <section className="flex flex-col gap-2">
         <h2 className="font-heading text-lg font-semibold">{t.history.title}</h2>
-        <div className="bg-card rounded-xl border px-4">
-          {isPending ? (
-            <MeasurementListSkeleton />
-          ) : (
-            <MeasurementList entries={filtered} targets={targets ?? []} />
-          )}
-        </div>
+        {isPending ? <MeasurementListSkeleton /> : <MeasurementList entries={filtered} />}
       </section>
     </div>
   );

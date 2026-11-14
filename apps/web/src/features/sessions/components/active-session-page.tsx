@@ -1,23 +1,21 @@
 import { useNavigate } from '@tanstack/react-router';
-import { format, parseISO } from 'date-fns';
-import { CalendarDays, ChevronLeft, Play } from 'lucide-react';
+import { parseISO } from 'date-fns';
+import { ChevronLeft } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-import { BrandMark } from '@/components/brand-mark';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useConfirm } from '@/stores/confirm.store';
 
 import { useSessionsTranslation } from '../i18n';
 import { useLeaveEdit } from '../hooks/use-leave-edit';
-import { usePlannedSessions } from '../hooks/use-planned-sessions';
-import { useStartWorkout } from '../hooks/use-start-workout';
 import { useWorkoutDraftStore } from '../stores/workout-draft.store';
 import { ExercisePerformanceCard } from './exercise-performance-card';
 import { ExercisePickerSheet } from './exercise-picker-sheet';
 import { FinishSessionSheet } from './finish-session-sheet';
 import { SessionHistoryPanel } from './session-history-panel';
-import { StartWorkoutPicker } from './start-workout-picker';
+import { StartWorkoutScreen } from './start-workout-screen';
+import { formatDate } from '@/lib/i18n/date-format';
 
 // Elapsed workout time as "M:SS" (or "H:MM:SS" past an hour) for the running chip.
 function formatElapsed(ms: number): string {
@@ -41,15 +39,10 @@ export function ActiveSessionPage() {
   const setName = useWorkoutDraftStore((s) => s.setName);
   const setPerformedDate = useWorkoutDraftStore((s) => s.setPerformedDate);
   const discard = useWorkoutDraftStore((s) => s.discard);
-  const { startFromTemplate, startEmpty } = useStartWorkout();
   const confirm = useConfirm();
   const navigate = useNavigate();
   const leaveEdit = useLeaveEdit();
   const t = useSessionsTranslation();
-
-  const todayIso = format(new Date(), 'yyyy-MM-dd');
-  const { data: plannedToday = [] } = usePlannedSessions(todayIso, todayIso);
-  const todaysPlanned = plannedToday.filter((session) => session.status === 'planned');
 
   const [picker, setPicker] = useState<PickerMode | null>(null);
   const [finishing, setFinishing] = useState(false);
@@ -62,73 +55,7 @@ export function ActiveSessionPage() {
     return () => clearInterval(id);
   }, []);
 
-  if (!draft) {
-    return (
-      <div className="mx-auto flex w-full max-w-sm flex-col gap-4 p-6 pt-10 lg:col-span-3">
-        <div className="flex flex-col items-center gap-2 text-center">
-          <BrandMark className="size-14 rounded-xl" />
-          <h1 className="font-heading text-[28px] leading-none font-bold tracking-tight">
-            {t.activeSession.startTitle}
-          </h1>
-          <p className="text-muted-foreground text-sm">{format(new Date(), 'EEEE, MMMM d')}</p>
-        </div>
-
-        {todaysPlanned.length > 0 && (
-          <div className="flex flex-col gap-2">
-            <p className="text-muted-foreground px-1 text-[11px] font-medium tracking-[0.08em] uppercase">
-              {t.activeSession.plannedForToday}
-            </p>
-            {todaysPlanned.map((session) => (
-              <button
-                key={session.id}
-                type="button"
-                className="bg-card hover:bg-muted/50 flex items-center gap-3 rounded-xl border p-4 text-left transition-colors"
-                onClick={() =>
-                  void startFromTemplate({
-                    templateId: session.template.id,
-                    templateName: session.template.name,
-                    plannedSessionId: session.id,
-                    scheduledDate: session.scheduledDate,
-                  })
-                }
-              >
-                <span className="bg-accent text-primary flex size-10 shrink-0 items-center justify-center rounded-xl">
-                  <CalendarDays className="size-5" />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="font-heading block truncate text-[17px] font-semibold">
-                    {session.template.name}
-                  </span>
-                  <span className="text-muted-foreground block text-xs">
-                    {t.activeSession.plannedForTodayCaption}
-                  </span>
-                </span>
-                <Play className="text-primary size-4 shrink-0 fill-current" />
-              </button>
-            ))}
-            <div className="text-muted-foreground flex items-center gap-3 text-xs">
-              <span className="bg-border h-px flex-1" />
-              {t.activeSession.orPickTemplate}
-              <span className="bg-border h-px flex-1" />
-            </div>
-          </div>
-        )}
-
-        <StartWorkoutPicker
-          onSelectTemplate={(template) => {
-            void startFromTemplate({ templateId: template.id, templateName: template.name });
-          }}
-        />
-        <Button
-          variant="ghost"
-          className="text-muted-foreground h-10"
-          onClick={() => void startEmpty()}
-        >
-          {t.activeSession.startEmpty}
-        </Button>
-      </div>
-    );
-  }
+  if (!draft) return <StartWorkoutScreen />;
 
   const isEditing = draft.editingSessionId !== null;
   // A template-started session takes the template's name; only ad-hoc sessions
@@ -185,7 +112,7 @@ export function ActiveSessionPage() {
         <div className="flex min-w-0 flex-col gap-1">
           {/* Date line above the name, like every page's header. */}
           <p className="text-muted-foreground text-sm">
-            {format(parseISO(draft.performedDate), 'EEEE, MMMM d')} ·{' '}
+            {formatDate(parseISO(draft.performedDate), 'EEEE, MMMM d')} ·{' '}
             {isTemplateBased ? t.activeSession.fromTemplate : t.activeSession.freestyle} ·{' '}
             <button
               type="button"

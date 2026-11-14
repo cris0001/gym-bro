@@ -6,7 +6,7 @@ import { create } from 'zustand';
 // light-only landing/auth pages force it. The inline script in index.html reads the
 // same key before first paint — keep PALETTE_KEY, the ids and the default in sync there.
 export const PALETTES = [
-  { id: 'slate', label: 'Slate', light: '#3a60a0', dark: '#85aae6' },
+  { id: 'slate', label: 'Slate', light: '#023e8a', dark: '#85aae6' },
   { id: 'plum', label: 'Plum', light: '#8d4a5e', dark: '#d68aa0' },
   { id: 'forest', label: 'Forest', light: '#2f5d46', dark: '#7fbf9b' },
   { id: 'lagoon', label: 'Lagoon', light: '#0f766e', dark: '#4fd1c0' },

@@ -1,4 +1,4 @@
-import { format, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
 
 import {
   Sheet,
@@ -11,6 +11,7 @@ import {
 import { useSessionsTranslation } from '../i18n';
 import { useCalendarUiStore } from '../stores/calendar-ui.store';
 import { DayDetail } from './day-detail';
+import { formatDate } from '@/lib/i18n/date-format';
 
 // Mobile presentation of a tapped calendar day: a bottom sheet hosting the
 // shared DayDetail body. Open state is the store's selectedDate. On large
@@ -25,7 +26,7 @@ export function DayDetailSheet() {
       <SheetContent side="bottom" className="bg-background gap-0">
         <SheetHeader>
           <SheetTitle>
-            {selectedDate ? format(parseISO(selectedDate), 'EEEE, MMM d') : ''}
+            {selectedDate ? formatDate(parseISO(selectedDate), 'EEEE, MMM d') : ''}
           </SheetTitle>
           <SheetDescription>{t.dayDetail.sheetDescription}</SheetDescription>
         </SheetHeader>

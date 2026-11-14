@@ -19,6 +19,7 @@ import { DiaryBottomBar } from './diary-bottom-bar';
 import { MealSection } from './diary-meal-section';
 import { MealSectionsSkeleton } from './meal-sections-skeleton';
 import { PhotoEstimateSheet } from './photo-estimate-sheet';
+import { formatDate } from '@/lib/i18n/date-format';
 
 const ISO = 'yyyy-MM-dd';
 const NO_TOTALS = { kcal: 0, proteinG: 0, carbsG: 0, fatG: 0 };
@@ -77,7 +78,7 @@ export function DiaryPage() {
             className="min-w-[6rem] px-2 text-center text-sm font-medium"
             onClick={() => setDate(today)}
           >
-            {isToday ? t.common.today : format(parseISO(date), 'EEE, MMM d')}
+            {isToday ? t.common.today : formatDate(parseISO(date), 'EEE, MMM d')}
           </button>
           <button
             type="button"

@@ -5,6 +5,7 @@ import { useSessionsTranslation } from '../i18n';
 import { useCalendarDay } from '../hooks/use-calendar-day';
 import { useCalendarUiStore } from '../stores/calendar-ui.store';
 import { DayDetail } from './day-detail';
+import { formatDate } from '@/lib/i18n/date-format';
 
 const ISO = 'yyyy-MM-dd';
 
@@ -43,7 +44,7 @@ export function DayDetailPanel() {
         <div className="flex min-w-0 flex-col">
           <span className="text-muted-foreground text-sm">{format(parseISO(date), 'EEEE')}</span>
           <h2 className="font-heading text-2xl leading-tight font-semibold">
-            {format(parseISO(date), 'MMM d, yyyy')}
+            {formatDate(parseISO(date), 'MMM d, yyyy')}
           </h2>
           {status && (
             <span className="text-muted-foreground mt-1 flex items-center gap-1.5 text-[11px] font-bold tracking-[0.06em] uppercase">

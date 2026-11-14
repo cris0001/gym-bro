@@ -4,20 +4,24 @@ import { cn } from '@/lib/utils';
 
 import { LANDING_MODULES, type LandingModule } from '../data/modules';
 import { useLandingTranslation } from '../i18n';
+import { useScreenshot } from '../hooks/use-screenshot';
+import { HAND } from '../utils/styles';
+import { PhoneFrame } from './phone-frame';
 
-// The browser-panel preview of one module. Uses the real screenshot when present in
-// /public/landing; until then a module-tinted placeholder so the switch is visible.
-// Wiring real PNGs later is a one-line change (set `screenshot`).
+// The browser-panel preview of one module: the demo account's screenshot in the
+// visitor's language (public/landing/<locale>/), or a module-tinted placeholder for
+// modules without one (Strava — the demo accounts aren't connected).
 function ModuleScreen({ module }: { module: LandingModule }) {
   const t = useLandingTranslation();
+  const shot = useScreenshot();
   const copy = t.modules[module.id];
   const Icon = module.icon;
   if (module.screenshot) {
     return (
       <img
-        src={module.screenshot}
+        src={shot(module.screenshot)}
         alt={t.inside.screenAlt(copy.title)}
-        className="h-full w-full object-cover"
+        className="h-full w-full object-cover object-left-top"
       />
     );
   }
@@ -32,8 +36,8 @@ function ModuleScreen({ module }: { module: LandingModule }) {
       >
         <Icon className="size-8" />
       </span>
-      <span className="font-display text-xl font-semibold text-[#2b2126]">{copy.title}</span>
-      <span className="text-xs text-[#94858b]">{t.inside.screenshot}</span>
+      <span className="font-heading text-xl font-bold text-[#14181f]">{copy.title}</span>
+      <span className="text-xs text-[#8a8f9a]">{t.inside.screenshot}</span>
     </div>
   );
 }
@@ -100,22 +104,22 @@ export function ModuleShowcase() {
   const current = LANDING_MODULES[active] ?? LANDING_MODULES[0]!;
 
   return (
-    <section id="inside" ref={sectionRef} className="scroll-mt-16 bg-[#f5e7ea] h-[400vh]">
+    <section id="inside" ref={sectionRef} className="scroll-mt-16 bg-[#eef2f9] h-[400vh]">
       {/* Pinned viewport (all breakpoints): stays fixed while the track scrolls.
           Centered via m-auto (not items-center) + overflow-y-auto so if the block
           is ever taller than the screen it scrolls instead of clipping top/bottom. */}
       <div className="no-scrollbar sticky top-0 flex h-dvh overflow-y-auto">
-        <div className="m-auto w-full max-w-[1060px] px-6 py-6 md:py-10">
+        <div className="m-auto w-full max-w-[1200px] px-5 py-6 md:px-10 md:py-10">
           <div className="mb-4 flex flex-col items-center gap-1 text-center md:mb-10 md:gap-2">
-            <span className="font-display text-[13px] text-[#8d4a5e] italic md:text-[15px]">
+            <span className={`${HAND} text-lg text-[#023e8a] md:text-[22px]`}>
               {t.inside.eyebrow}
             </span>
-            <h2 className="font-display text-[clamp(22px,3.5vw,36px)] font-medium tracking-tight text-[#2b2126]">
+            <h2 className="font-heading text-[clamp(26px,3.6vw,44px)] font-extrabold tracking-[-0.035em] text-[#14181f]">
               {t.inside.title}
             </h2>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[minmax(300px,1fr)_minmax(320px,460px)] lg:items-center">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-16 lg:items-center">
             {/* Left — the card list; scroll progress or a click sets the active one. */}
             <div className="flex flex-col gap-1.5 md:gap-2.5">
               {LANDING_MODULES.map((module, index) => {
@@ -130,8 +134,8 @@ export function ModuleShowcase() {
                     className={cn(
                       'w-full rounded-2xl border p-3 text-left transition-all duration-300 md:p-[18px]',
                       isActive
-                        ? 'border-transparent bg-[#2b2126] shadow-lg'
-                        : 'border-[#e8e1da] bg-[#fdfbf9] opacity-55 hover:border-[#8d4a5e]/40 lg:opacity-65',
+                        ? 'border-transparent bg-[#14181f] shadow-lg'
+                        : 'border-[#e4e1d8] bg-white opacity-55 hover:border-[#023e8a]/40 lg:opacity-65',
                     )}
                   >
                     <div className="flex items-center gap-3">
@@ -143,14 +147,14 @@ export function ModuleShowcase() {
                       </span>
                       <span
                         className={cn(
-                          'font-display flex-1 text-lg font-semibold md:text-xl',
-                          isActive ? 'text-[#f0e7ea]' : 'text-[#2b2126]',
+                          'font-heading flex-1 text-lg font-bold md:text-xl',
+                          isActive ? 'text-white' : 'text-[#14181f]',
                         )}
                       >
                         {copy.title}
                       </span>
                       <span
-                        className={cn('text-lg', isActive ? 'text-[#c98fa0]' : 'text-[#94858b]')}
+                        className={cn('text-lg', isActive ? 'text-[#7fa6ff]' : 'text-[#8a8f9a]')}
                       >
                         →
                       </span>
@@ -167,7 +171,7 @@ export function ModuleShowcase() {
                         <p
                           className={cn(
                             'pt-2 pl-[50px] text-[13px] leading-relaxed',
-                            isActive ? 'text-[#bfb2b7]' : 'text-[#5f5257]',
+                            isActive ? 'text-[#b8bfcc]' : 'text-[#5b6170]',
                           )}
                         >
                           {copy.desc}
@@ -179,8 +183,8 @@ export function ModuleShowcase() {
                               className={cn(
                                 'rounded-full px-2.5 py-1 text-[11px] font-semibold',
                                 isActive
-                                  ? 'bg-[#3a2f34] text-[#e8cdd5]'
-                                  : 'bg-[#f0e9e3] text-[#5f5257]',
+                                  ? 'bg-[#262c38] text-[#c5d3ee]'
+                                  : 'bg-[#efeee9] text-[#5b6170]',
                               )}
                             >
                               {chip}
@@ -193,9 +197,9 @@ export function ModuleShowcase() {
                             {copy.details.map((detail) => (
                               <li
                                 key={detail}
-                                className="flex gap-2 text-[12.5px] leading-snug text-[#bfb2b7]"
+                                className="flex gap-2 text-[12.5px] leading-snug text-[#b8bfcc]"
                               >
-                                <span className="text-[#c98fa0]">›</span>
+                                <span className="text-[#7fa6ff]">›</span>
                                 {detail}
                               </li>
                             ))}
@@ -209,37 +213,26 @@ export function ModuleShowcase() {
             </div>
 
             {/* Right — the preview panel (desktop only); stays put via the pin. */}
-            <div className="hidden lg:block">
-              <div className="overflow-hidden rounded-[20px] border border-[#e0d3d8] bg-[#fdfbf9] shadow-2xl">
-                <div className="flex items-center gap-2 border-b border-[#e8e1da] bg-[#f6f3f0] px-4 py-3">
-                  <span className="flex gap-1.5">
-                    <span className="size-[9px] rounded-full bg-[#e0d3d8]" />
-                    <span className="size-[9px] rounded-full bg-[#e0d3d8]" />
-                    <span className="size-[9px] rounded-full bg-[#e0d3d8]" />
-                  </span>
-                  <span className="ml-2 text-xs font-semibold text-[#94858b]">
-                    Gym Bro — {t.modules[current.id].title}
-                  </span>
-                </div>
-                {/* Stacked screens, crossfaded by opacity — the panel never blanks out. */}
-                <div className="relative h-[440px] w-full">
-                  {LANDING_MODULES.map((module, index) => (
-                    <div
-                      key={module.id}
-                      className={cn(
-                        'absolute inset-0 transition-opacity duration-500 ease-out',
-                        index === active ? 'opacity-100' : 'opacity-0',
-                      )}
-                      aria-hidden={index !== active}
-                    >
-                      <ModuleScreen module={module} />
-                    </div>
-                  ))}
-                </div>
-                <span className="font-display block border-t border-[#e8e1da] bg-[#f6f3f0] px-4 py-2.5 text-center text-[12.5px] text-[#94858b] italic">
-                  {t.modules[current.id].caption}
-                </span>
-              </div>
+            <div className="hidden flex-col items-center gap-4 lg:flex">
+              <PhoneFrame className="w-[300px]">
+                {/* Stacked screens, crossfaded by opacity — the phone never blanks out. */}
+                {LANDING_MODULES.map((module, index) => (
+                  <div
+                    key={module.id}
+                    className={cn(
+                      'absolute inset-x-0 bottom-0 transition-opacity duration-500 ease-out',
+                      module.tabbed ? 'top-3' : 'top-0',
+                      index === active ? 'opacity-100' : 'opacity-0',
+                    )}
+                    aria-hidden={index !== active}
+                  >
+                    <ModuleScreen module={module} />
+                  </div>
+                ))}
+              </PhoneFrame>
+              <span className={`${HAND} text-center text-lg text-[#5b6170]`}>
+                {t.modules[current.id].caption}
+              </span>
             </div>
           </div>
         </div>

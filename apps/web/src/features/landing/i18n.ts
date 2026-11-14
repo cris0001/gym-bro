@@ -17,44 +17,51 @@ interface LandingCopy {
   pageTitle: string;
   pageDesc: string;
   nav: { inside: string; install: string; pricing: string; signIn: string };
-  hero: { title: string; accent: string; lead: string; cta: string; seeInside: string };
+  hero: {
+    note: string;
+    lines: string[];
+    accent: string;
+    lead: string;
+    cta: string;
+    seeInside: string;
+    shotNote: string;
+  };
   marquee: string;
   inside: { eyebrow: string; title: string; screenshot: string; screenAlt: (m: string) => string };
   modules: Record<ModuleId, ModuleCopy>;
+  timeline: { eyebrow: string; title: string; body: string; note: string; alt: string };
   pwa: {
     eyebrow: string;
     title: string;
+    titleMuted: string;
     body: string;
     steps: string[];
     platforms: string;
-    photo: string;
   };
   pricing: {
     eyebrow: string;
     title: string;
-    current: string;
-    free: string;
-    noTimeLimit: string;
+    accent: string;
     features: string[];
     cta: string;
-    proBody: string;
-    proCta: string;
     faq: { q: string; a: string }[];
   };
   closing: { title: string; cta: string; footer: string };
 }
 
 const en: LandingCopy = {
-  pageTitle: 'Gym Bro — training, nutrition & body tracking',
+  pageTitle: 'Lift4Me — training, nutrition & body tracking',
   pageDesc:
     'A gym log, a food diary and a body tracker in one free, installable web app — with your Strava activities next to your workouts.',
   nav: { inside: 'What’s inside', install: 'Install', pricing: 'Pricing', signIn: 'Sign in' },
   hero: {
-    title: 'Log your lifts. Track your plate.',
-    accent: 'Watch the trend.',
-    lead: 'A gym log, a food diary and a body tracker that live in one place — with your Strava activities next to your workouts. Free, no app store needed.',
-    cta: 'Get started free',
-    seeInside: 'See what’s inside ↓',
+    note: 'free · no app store · works offline',
+    lines: ['Log the lift.', 'Eat the plan.', 'Watch the'],
+    accent: 'trend.',
+    lead: 'Your gym log, food diary and body tracker in one place — with Strava runs on the same calendar as your squats. Built for one hand, between sets.',
+    cta: 'Start free',
+    seeInside: 'See what’s inside',
+    shotNote: 'your whole day, one screen',
   },
   marquee: 'eat sleep lift repeat',
   inside: {
@@ -132,67 +139,75 @@ const en: LandingCopy = {
       caption: 'Stats — proof the work is working.',
     },
   },
+  timeline: {
+    eyebrow: 'one timeline',
+    title: 'Lifting, cardio and food — on one calendar.',
+    body: 'Gym sessions, runs and every day’s plan sit side by side, so you can see the whole week — and why Thursday felt heavy.',
+    note: 'plan a day, tap it, start the session',
+    alt: 'The Lift4Me calendar with a month of workouts',
+  },
   pwa: {
-    eyebrow: 'No app store',
-    title: 'Install it like an app',
-    body: 'Gym Bro is a Progressive Web App: add it to your home screen straight from the browser — no store, no updates to babysit. It runs full-screen like a native app, works offline in the gym basement, and syncs your data the moment you’re back online.',
+    eyebrow: 'no app store',
+    title: 'Install it like an app.',
+    titleMuted: 'Skip the store.',
+    body: 'Lift4Me is a Progressive Web App: add it to your home screen straight from the browser. It runs full-screen, works offline in the gym basement and syncs the moment you’re back online.',
     steps: [
-      'Open Gym Bro in your browser',
-      'Tap “Add to Home Screen”',
-      'Train — even with no signal',
+      'Open Lift4Me in your phone’s browser.',
+      'Tap Share → “Add to Home Screen”.',
+      'Launch it full-screen — even with no signal.',
     ],
-    platforms: 'works on iPhone, Android and desktop',
-    photo: 'Gym photo',
+    platforms: 'iPhone, Android and desktop',
   },
   pricing: {
-    eyebrow: 'Pricing',
-    title: 'Free. Actually free.',
-    current: 'CURRENT PLAN',
-    free: 'Free',
-    noTimeLimit: '/ no time limit',
+    eyebrow: 'pricing',
+    title: 'Free.',
+    accent: 'No catch.',
     features: [
-      'Every feature — training, nutrition, body, stats',
+      'Every module — training, nutrition, body, stats',
       'No limits on workouts, foods or history',
       'Strava import included',
-      'Install as a PWA, works offline',
+      'Installs as an app, works offline',
     ],
-    cta: 'Get started free',
-    proBody:
-      'A paid plan may show up someday, if the servers start sweating. Until then everything above is free — no trial clock, no locked features, no card.',
-    proCta: 'Someday, maybe',
+    cta: 'Create your account',
     faq: [
       {
         q: 'Is it really free?',
-        a: 'Yes. No trial, no card, no feature gates. If a Pro plan ever appears, everything you use today stays free.',
+        a: 'Yes. No trial clock, no card, no locked charts. If a paid plan ever appears, everything you use today stays free.',
       },
       {
         q: 'Does it work without internet?',
-        a: 'Yes — log meals and finish workouts offline; everything syncs when you’re back online. Basement gyms welcome.',
+        a: 'Yes — log meals and finish workouts offline; everything syncs when you’re back online.',
       },
       {
         q: 'iPhone or Android?',
-        a: 'Both — it installs from the browser on either, and it works on desktop too, with a full layout for big screens.',
+        a: 'Both — it installs from the browser on either, and has a full layout for desktop too.',
+      },
+      {
+        q: 'Do I need Strava?',
+        a: 'No. Strava is optional — connect it if you want your runs and rides next to your lifts.',
       },
     ],
   },
   closing: {
-    title: 'Your next session is waiting.',
-    cta: 'Get started free',
-    footer: 'Gym Bro · train, eat, track — 2026',
+    title: 'Your next set starts here.',
+    cta: 'Start free',
+    footer: '© 2026 Lift4Me · made for lifters, by a lifter',
   },
 };
 
 const pl: LandingCopy = {
-  pageTitle: 'Gym Bro — trening, odżywianie i sylwetka',
+  pageTitle: 'Lift4Me — trening, odżywianie i sylwetka',
   pageDesc:
     'Dziennik treningów, dziennik jedzenia i pomiary ciała w jednej darmowej aplikacji webowej do zainstalowania — z aktywnościami ze Stravy obok treningów.',
   nav: { inside: 'Co w środku', install: 'Instalacja', pricing: 'Cennik', signIn: 'Zaloguj się' },
   hero: {
-    title: 'Zapisuj treningi. Licz talerz.',
-    accent: 'Patrz na trend.',
-    lead: 'Dziennik treningów, dziennik jedzenia i pomiary ciała w jednym miejscu — z aktywnościami ze Stravy obok treningów. Za darmo, bez sklepu z aplikacjami.',
+    note: 'za darmo · bez sklepu · działa offline',
+    lines: ['Zapisuj serie.', 'Trzymaj plan.', 'Patrz na'],
+    accent: 'trend.',
+    lead: 'Dziennik treningów, dziennik jedzenia i pomiary ciała w jednym miejscu — z bieganiem ze Stravy w tym samym kalendarzu co przysiady. Zrobione pod jedną rękę, między seriami.',
     cta: 'Zacznij za darmo',
-    seeInside: 'Zobacz, co w środku ↓',
+    seeInside: 'Zobacz, co w środku',
+    shotNote: 'cały dzień na jednym ekranie',
   },
   marquee: 'jedz śpij trenuj powtórz',
   inside: {
@@ -270,53 +285,59 @@ const pl: LandingCopy = {
       caption: 'Statystyki — dowód, że praca działa.',
     },
   },
+  timeline: {
+    eyebrow: 'jedna oś czasu',
+    title: 'Siłownia, cardio i jedzenie — w jednym kalendarzu.',
+    body: 'Treningi, bieganie i plan każdego dnia leżą obok siebie, więc widzisz cały tydzień — i wiesz, czemu czwartek był ciężki.',
+    note: 'zaplanuj dzień, kliknij, zacznij trening',
+    alt: 'Kalendarz Lift4Me z miesiącem treningów',
+  },
   pwa: {
-    eyebrow: 'Bez sklepu z aplikacjami',
-    title: 'Zainstaluj jak aplikację',
-    body: 'Gym Bro to Progressive Web App: dodajesz ją do ekranu głównego prosto z przeglądarki — bez sklepu i bez pilnowania aktualizacji. Działa na pełnym ekranie jak natywna aplikacja, działa offline w piwnicznej siłowni i synchronizuje dane, gdy tylko wrócisz do sieci.',
+    eyebrow: 'bez sklepu z aplikacjami',
+    title: 'Zainstaluj jak aplikację.',
+    titleMuted: 'Bez sklepu.',
+    body: 'Lift4Me to Progressive Web App: dodajesz ją do ekranu głównego prosto z przeglądarki. Działa na pełnym ekranie, offline w piwnicznej siłowni i synchronizuje się, gdy tylko wrócisz do sieci.',
     steps: [
-      'Otwórz Gym Bro w przeglądarce',
-      'Stuknij „Dodaj do ekranu głównego”',
-      'Trenuj — nawet bez zasięgu',
+      'Otwórz Lift4Me w przeglądarce telefonu.',
+      'Stuknij Udostępnij → „Do ekranu głównego”.',
+      'Uruchamiaj na pełnym ekranie — nawet bez zasięgu.',
     ],
-    platforms: 'działa na iPhonie, Androidzie i komputerze',
-    photo: 'Zdjęcie z siłowni',
+    platforms: 'iPhone, Android i komputer',
   },
   pricing: {
-    eyebrow: 'Cennik',
-    title: 'Za darmo. Naprawdę.',
-    current: 'OBECNY PLAN',
-    free: 'Darmowy',
-    noTimeLimit: '/ bez limitu czasu',
+    eyebrow: 'cennik',
+    title: 'Za darmo.',
+    accent: 'Bez haczyka.',
     features: [
-      'Wszystkie funkcje — trening, odżywianie, sylwetka, statystyki',
+      'Wszystkie moduły — trening, odżywianie, sylwetka, statystyki',
       'Bez limitów treningów, produktów i historii',
       'Import ze Stravy w zestawie',
-      'Instalacja jako PWA, działa offline',
+      'Instaluje się jak aplikacja, działa offline',
     ],
-    cta: 'Zacznij za darmo',
-    proBody:
-      'Płatny plan może się kiedyś pojawić, jeśli serwery zaczną się pocić. Do tego czasu wszystko powyżej jest za darmo — bez okresu próbnego, bez blokad, bez karty.',
-    proCta: 'Kiedyś, może',
+    cta: 'Załóż konto',
     faq: [
       {
         q: 'Naprawdę za darmo?',
-        a: 'Tak. Bez okresu próbnego, bez karty, bez blokad funkcji. Jeśli kiedyś pojawi się Pro, wszystko, z czego korzystasz dziś, zostanie darmowe.',
+        a: 'Tak. Bez okresu próbnego, bez karty, bez zablokowanych wykresów. Jeśli kiedyś pojawi się płatny plan, wszystko, z czego korzystasz dziś, zostanie darmowe.',
       },
       {
         q: 'Działa bez internetu?',
-        a: 'Tak — dodawaj posiłki i kończ treningi offline; wszystko zsynchronizuje się po powrocie do sieci. Siłownie w piwnicach mile widziane.',
+        a: 'Tak — dodawaj posiłki i kończ treningi offline; wszystko zsynchronizuje się po powrocie do sieci.',
       },
       {
         q: 'iPhone czy Android?',
-        a: 'Oba — instaluje się z przeglądarki na każdym, a na komputerze ma pełny układ na duży ekran.',
+        a: 'Oba — instaluje się z przeglądarki na każdym, a na komputerze ma pełny układ.',
+      },
+      {
+        q: 'Czy potrzebuję Stravy?',
+        a: 'Nie. Strava jest opcjonalna — podłącz ją, jeśli chcesz mieć bieganie i rower obok siłowni.',
       },
     ],
   },
   closing: {
-    title: 'Twój następny trening czeka.',
+    title: 'Twoja następna seria zaczyna się tutaj.',
     cta: 'Zacznij za darmo',
-    footer: 'Gym Bro · trenuj, jedz, mierz — 2026',
+    footer: '© 2026 Lift4Me · zrobione dla trenujących, przez trenującego',
   },
 };
 

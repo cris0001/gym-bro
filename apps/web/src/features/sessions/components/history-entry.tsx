@@ -1,8 +1,9 @@
-import { format, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
 
 import type { ExerciseHistoryEntry } from '@gym-bro/shared';
 
 import { cn } from '@/lib/utils';
+import { formatDate } from '@/lib/i18n/date-format';
 
 const SIZES = {
   // Desktop session side panel.
@@ -25,7 +26,7 @@ export function HistoryEntry({
   return (
     <div className="flex flex-col gap-0.5">
       <span className={cn('text-muted-foreground font-medium', s.date)}>
-        {format(parseISO(entry.performedDate), 'EEE, MMM d')}
+        {formatDate(parseISO(entry.performedDate), 'EEE, MMM d')}
       </span>
       {entry.sets.length === 0 ? (
         <span className="text-muted-foreground text-xs">—</span>

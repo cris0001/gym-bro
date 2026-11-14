@@ -29,6 +29,7 @@ import { useWorkoutsInRange } from '../hooks/use-workouts-in-range';
 import { useCalendarUiStore } from '../stores/calendar-ui.store';
 import { calendarRange } from '../utils/calendar-range';
 import { CalendarDayCell } from './calendar-day-cell';
+import { formatDate } from '@/lib/i18n/date-format';
 
 const ISO = 'yyyy-MM-dd';
 
@@ -124,8 +125,8 @@ export function CalendarGrid() {
   } = calendarRange(anchor, viewMode);
   const days = eachDayOfInterval({ start: gridStart, end: gridEnd });
   const label = isWeek
-    ? `${format(gridStart, 'MMM d')} – ${format(gridEnd, 'MMM d')}`
-    : format(anchor, 'MMMM yyyy');
+    ? `${formatDate(gridStart, 'MMM d')} – ${formatDate(gridEnd, 'MMM d')}`
+    : format(anchor, 'LLLL yyyy');
   const { data: sessions = [] } = usePlannedSessions(fromIso, toIso);
   // Only still-to-do plans get an accent marker; completed/skipped ones are shown
   // via their finished workout (green) or not at all.

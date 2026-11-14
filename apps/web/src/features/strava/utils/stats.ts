@@ -1,6 +1,7 @@
 import { format, parseISO, startOfWeek, subWeeks } from 'date-fns';
 
 import type { StravaSessionItem } from '@gym-bro/shared';
+import { formatDate } from '@/lib/i18n/date-format';
 
 // Totals across a set of activities, for the dashboard summary tiles. Missing metrics
 // count as zero.
@@ -46,7 +47,7 @@ export function weeklyVolume(
     const start = startOfWeek(subWeeks(now, i), { weekStartsOn: 1 });
     const key = format(start, 'yyyy-MM-dd');
     index.set(key, buckets.length);
-    buckets.push({ weekStart: key, label: format(start, 'MMM d'), value: 0 });
+    buckets.push({ weekStart: key, label: formatDate(start, 'MMM d'), value: 0 });
   }
 
   for (const session of sessions) {

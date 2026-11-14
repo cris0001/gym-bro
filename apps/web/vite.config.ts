@@ -28,7 +28,7 @@ export default defineConfig({
     // drops that cache (USER_IMAGE_CACHE in src/lib/query-persistence.ts).
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png', 'logo.svg'],
+      includeAssets: ['favicon.ico', 'favicon.svg', 'apple-touch-icon-180x180.png', 'logo.svg'],
       workbox: {
         navigateFallbackDenylist: [/^\/api/],
         // The SPA can grow past the default 2 MiB precache ceiling; lift it a bit.
@@ -48,11 +48,11 @@ export default defineConfig({
         ],
       },
       manifest: {
-        name: 'Gym Bro',
-        short_name: 'Gym Bro',
+        name: 'Lift4Me',
+        short_name: 'Lift4Me',
         description: 'Personal fitness tracker — training, nutrition, and body metrics.',
-        theme_color: '#f6f3f0',
-        background_color: '#f6f3f0',
+        theme_color: '#fcfcfd',
+        background_color: '#fcfcfd',
         display: 'standalone',
         start_url: '/dashboard',
         scope: '/',

@@ -18,6 +18,7 @@ import type { BodyMeasurement, NutritionTarget } from '@gym-bro/shared';
 
 import { seriesLabel, useBodyTranslation } from '../i18n';
 import { buildTrendData, CALORIES_SERIES, type SeriesDef } from '../utils/trend-series';
+import { formatDate } from '@/lib/i18n/date-format';
 
 // On by default: body weight + target calories.
 const DEFAULT_SELECTED = ['weightKg', 'kcal'];
@@ -125,20 +126,29 @@ export function BodyTrendChart({
 
       <div className="h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={rows} margin={{ top: 8, right: 12, bottom: 0, left: -8 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--muted)" vertical={false} />
+          {/* Axes, grid and tooltip match the Stats progress chart. */}
+          <LineChart
+            data={rows}
+            margin={{ top: 8, right: caloriesOn ? 0 : 4, bottom: 0, left: -14 }}
+          >
+            <CartesianGrid stroke="var(--border)" vertical={false} />
             <XAxis
               dataKey="date"
-              tickFormatter={(value: string) => format(parseISO(value), 'MMM d')}
+              tickFormatter={(value: string) => formatDate(parseISO(value), 'MMM d')}
               tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
+              tickLine={false}
+              axisLine={{ stroke: 'var(--border)' }}
               tickMargin={8}
               minTickGap={24}
             />
             <YAxis
               yAxisId="left"
               domain={['auto', 'auto']}
+              padding={{ bottom: 14 }}
               tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
-              width={44}
+              tickLine={false}
+              axisLine={false}
+              width={40}
             />
             {caloriesOn && (
               <YAxis
@@ -146,7 +156,9 @@ export function BodyTrendChart({
                 orientation="right"
                 domain={caloriesDomain ?? ['auto', 'auto']}
                 tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
-                width={48}
+                tickLine={false}
+                axisLine={false}
+                width={44}
               />
             )}
             <Tooltip
@@ -155,7 +167,11 @@ export function BodyTrendChart({
                 border: '1px solid var(--border)',
                 borderRadius: 8,
                 color: 'var(--card-foreground)',
+                fontSize: 14,
+                padding: '8px 12px',
+                boxShadow: '0 1px 2px rgb(0 0 0 / 0.05)',
               }}
+              labelStyle={{ fontWeight: 500, marginBottom: 2 }}
               labelFormatter={(label) => format(parseISO(String(label)), 'PP')}
               formatter={(value, name, item) => {
                 if (value === null || value === undefined) return ['—', name];
@@ -163,7 +179,11 @@ export function BodyTrendChart({
                 return [item.dataKey === 'kcal' ? `${Math.round(n)} kcal` : n.toFixed(1), name];
               }}
             />
-            <Legend />
+            <Legend
+              iconType="plainline"
+              iconSize={14}
+              wrapperStyle={{ fontSize: 12, color: 'var(--subtle-foreground)', paddingTop: 8 }}
+            />
             {measures.map((s) => (
               <Line
                 key={s.key}
@@ -172,8 +192,8 @@ export function BodyTrendChart({
                 type="monotone"
                 dataKey={s.key}
                 stroke={s.color}
-                strokeWidth={2}
-                dot={{ r: 2 }}
+                strokeWidth={3}
+                dot={false}
                 activeDot={{ r: 5 }}
                 connectNulls
               />

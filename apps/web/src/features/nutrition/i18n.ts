@@ -77,6 +77,7 @@ export const useNutritionTranslation = createFeatureTranslation({
       unitShort: { grams: 'g', servings: 'serv', units: 'pcs' },
       fromCatalog: 'Catalog',
       editProduct: 'Edit product',
+      edit: 'Edit',
       catalogAddFailed: 'Couldn’t add this product. Check your connection and try again.',
     },
     portion: {
@@ -294,6 +295,7 @@ export const useNutritionTranslation = createFeatureTranslation({
       unitShort: { grams: 'g', servings: 'porc.', units: 'szt.' },
       fromCatalog: 'Katalog',
       editProduct: 'Edytuj produkt',
+      edit: 'Edytuj',
       catalogAddFailed: 'Nie udało się dodać produktu. Sprawdź połączenie i spróbuj ponownie.',
     },
     portion: {

@@ -12,10 +12,10 @@ export interface SeriesDef {
   isCalories?: boolean;
 }
 
-// Measurement series, in display order. Weight first (the primary metric) — the app
-// primary (blue) so it reads as the main line.
+// Measurement series, in display order. Weight first (the primary metric) — a teal
+// rather than the app primary, which blended into the primary-colored UI around it.
 export const MEASURE_SERIES: SeriesDef[] = [
-  { key: 'weightKg', label: 'Weight', unit: 'kg', axis: 'left', color: 'var(--primary)' },
+  { key: 'weightKg', label: 'Weight', unit: 'kg', axis: 'left', color: '#1a9e8f' },
   { key: 'bodyFatPct', label: 'Body fat', unit: '%', axis: 'left', color: 'var(--chart-3)' },
   { key: 'bicepsCm', label: 'Biceps', unit: 'cm', axis: 'left', color: 'var(--chart-4)' },
   { key: 'chestCm', label: 'Chest', unit: 'cm', axis: 'left', color: 'var(--chart-5)' },

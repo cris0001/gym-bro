@@ -74,6 +74,12 @@ export const useBodyTranslation = createFeatureTranslation({
       cancel: 'Cancel',
       delete: 'Delete',
       bodyFatShort: 'bf',
+      columns: {
+        date: 'Date',
+        weight: 'Weight',
+        bodyFat: 'Body fat',
+        circumferences: 'Circumferences',
+      },
     },
   },
   pl: {
@@ -145,6 +151,7 @@ export const useBodyTranslation = createFeatureTranslation({
       cancel: 'Anuluj',
       delete: 'Usuń',
       bodyFatShort: 'tł.',
+      columns: { date: 'Data', weight: 'Waga', bodyFat: 'Tłuszcz', circumferences: 'Obwody' },
     },
   },
 });

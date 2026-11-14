@@ -3,8 +3,8 @@ import type { ComponentProps } from 'react';
 
 import { cn } from '@/lib/utils';
 
-// Icon-only delete for list rows and card headers: grey at rest (so a list of rows
-// isn't a column of red), red on a soft tint when hovered. The visual box is 32×32;
+// Icon-only delete for list rows and card headers: a soft red at rest (lighter than
+// the hover, so a list of rows isn't a column of full red), red on a tint when hovered. The visual box is 32×32;
 // a ::before pad extends the touch target to 44×44 without changing the layout.
 export function DeleteIconButton({ className, ...props }: ComponentProps<'button'>) {
   return (

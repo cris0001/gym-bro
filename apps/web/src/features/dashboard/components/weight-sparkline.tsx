@@ -1,4 +1,5 @@
-import { format, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
+import { formatDate } from '@/lib/i18n/date-format';
 
 export interface WeightPoint {
   date: string;
@@ -52,8 +53,8 @@ export function WeightSparkline({ points }: { points: WeightPoint[] }) {
         />
       </svg>
       <div className="text-muted-foreground flex justify-between text-[11px]">
-        <span>{format(parseISO(first.date), 'MMM d')}</span>
-        <span>{format(parseISO(last.date), 'MMM d')}</span>
+        <span>{formatDate(parseISO(first.date), 'MMM d')}</span>
+        <span>{formatDate(parseISO(last.date), 'MMM d')}</span>
       </div>
     </div>
   );

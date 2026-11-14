@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { differenceInCalendarDays, format, parseISO } from 'date-fns';
+import { differenceInCalendarDays, parseISO } from 'date-fns';
 
 import { useStartWorkout } from '@/features/sessions';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import type { PlannedSessionWithTemplate } from '@gym-bro/shared';
 
 import { useDashboardTranslation } from '../i18n';
+import { formatDate } from '@/lib/i18n/date-format';
 
 interface NextSessionCardProps {
   session: PlannedSessionWithTemplate | null;
@@ -36,7 +37,7 @@ export function NextSessionCard({ session }: NextSessionCardProps) {
               {session.template.name}
             </p>
             <p className="text-muted-foreground text-sm">
-              {format(parseISO(session.scheduledDate), 'EEEE, MMM d')} ·{' '}
+              {formatDate(parseISO(session.scheduledDate), 'EEEE, MMM d')} ·{' '}
               {relativeDay(differenceInCalendarDays(parseISO(session.scheduledDate), new Date()))}
             </p>
           </div>

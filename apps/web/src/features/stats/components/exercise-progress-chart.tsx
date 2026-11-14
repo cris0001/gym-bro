@@ -13,9 +13,11 @@ import { SkeletonChart } from '@/components/skeletons';
 
 import type { StatsRange } from '../api/stats';
 import { useExerciseProgress } from '../hooks/use-stats';
+import { useStatsTranslation } from '../i18n';
 import { headline, latestText, modeOf, setLabel, tierValue } from '../utils/exercise-progress';
 import { ChartPlaceholder } from './chart-placeholder';
 import { ProgressFigure } from './progress-figure';
+import { formatDate } from '@/lib/i18n/date-format';
 
 const TOP_COLOR = 'var(--primary)';
 const NORMAL_COLOR = 'var(--soft)';
@@ -30,15 +32,16 @@ export function ExerciseProgressChart({
   exerciseId: string | null;
   range?: StatsRange | undefined;
 }) {
+  const t = useStatsTranslation();
   const { data: points = [], isPending } = useExerciseProgress(exerciseId, range);
   const { data: allTime = [] } = useExerciseProgress(exerciseId);
 
   if (exerciseId === null) {
-    return <ChartPlaceholder>Select an exercise to see its progress.</ChartPlaceholder>;
+    return <ChartPlaceholder>{t.chart.selectExercise}</ChartPlaceholder>;
   }
   if (isPending) return <SkeletonChart />;
   if (points.length === 0) {
-    return <ChartPlaceholder>No sessions with this exercise in this period.</ChartPlaceholder>;
+    return <ChartPlaceholder>{t.chart.noSessions}</ChartPlaceholder>;
   }
 
   const mode = modeOf(allTime.length > 0 ? allTime : points);
@@ -61,14 +64,14 @@ export function ExerciseProgressChart({
           <ProgressFigure
             value={latest.value}
             unit={latest.unit}
-            label={h.latestIsTop ? 'Latest top set' : 'Latest set'}
+            label={h.latestIsTop ? t.chart.latestTopSet : t.chart.latestSet}
           />
         )}
         {h.change !== null && (
           <ProgressFigure
             value={`${h.change > 0 ? '+' : ''}${h.change}`}
             unit={unit}
-            label="in this period"
+            label={t.chart.inThisPeriod}
             tone={h.change > 0 ? 'up' : h.change < 0 ? 'down' : undefined}
           />
         )}
@@ -76,7 +79,7 @@ export function ExerciseProgressChart({
           <ProgressFigure
             value={mode === 'kg' && h.best.value === 0 ? 'BW' : `${h.best.value}`}
             unit={mode === 'kg' && h.best.value === 0 ? '' : unit}
-            label={`Best ever · ${format(parseISO(h.best.date), 'MMM d')}`}
+            label={t.chart.bestEver(formatDate(parseISO(h.best.date), 'MMM d'))}
           />
         )}
       </div>
@@ -88,7 +91,7 @@ export function ExerciseProgressChart({
             <CartesianGrid stroke="var(--border)" vertical={false} />
             <XAxis
               dataKey="date"
-              tickFormatter={(value: string) => format(parseISO(value), 'MMM d')}
+              tickFormatter={(value: string) => formatDate(parseISO(value), 'MMM d')}
               tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
               tickLine={false}
               axisLine={{ stroke: 'var(--border)' }}
@@ -141,11 +144,11 @@ export function ExerciseProgressChart({
       <div className="text-subtle-foreground flex gap-5 text-xs">
         <span className="inline-flex items-center gap-1.5">
           <span className="bg-primary h-[3px] w-3.5 rounded-full" />
-          Top set
+          {t.chart.topSet}
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="bg-soft h-[2px] w-3.5 rounded-full" />
-          Normal sets
+          {t.chart.normalSets}
         </span>
       </div>
     </div>

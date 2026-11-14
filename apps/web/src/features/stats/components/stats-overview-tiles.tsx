@@ -4,6 +4,7 @@ import { useWorkoutsInRange } from '@/features/sessions';
 import { useStravaSessions } from '@/features/strava';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { useStatsTranslation } from '../i18n';
 
 const ISO = 'yyyy-MM-dd';
 
@@ -19,16 +20,24 @@ interface Tile {
 }
 
 // "+3 vs last month" style comparison line for a count.
-function versus(current: number, previous: number): Pick<Tile, 'sub' | 'tone'> {
+function versus(
+  current: number,
+  previous: number,
+  t: ReturnType<typeof useStatsTranslation>,
+): Pick<Tile, 'sub' | 'tone'> {
   const diff = current - previous;
-  if (diff === 0) return { sub: 'same as last month' };
-  return { sub: `${diff > 0 ? '+' : ''}${diff} vs last month`, tone: diff > 0 ? 'up' : 'down' };
+  if (diff === 0) return { sub: t.tiles.sameAsLastMonth };
+  return {
+    sub: t.tiles.vsLastMonth(`${diff > 0 ? '+' : ''}${diff}`),
+    tone: diff > 0 ? 'up' : 'down',
+  };
 }
 
 // The stats page's headline row: this month's strength workouts and Strava
 // activities (each against last month) and the average workout length. Phones show
 // just the first two; from md all three sit in one row.
 export function StatsOverviewTiles() {
+  const t = useStatsTranslation();
   const now = new Date();
   const month = { from: format(startOfMonth(now), ISO), to: format(endOfMonth(now), ISO) };
   const prev = subMonths(now, 1);
@@ -56,25 +65,25 @@ export function StatsOverviewTiles() {
   const tiles: Tile[] = [
     {
       key: 'workouts',
-      label: 'Workouts',
+      label: t.tiles.workouts,
       value: String(strength.length),
-      unit: ' this month',
-      ...versus(strength.length, lastStrength.length),
+      unit: ` ${t.tiles.thisMonth}`,
+      ...versus(strength.length, lastStrength.length, t),
     },
     {
       key: 'strava',
-      label: 'Strava',
+      label: t.tiles.strava,
       value: String(stravaThis.length),
-      unit: stravaThis.length === 1 ? ' activity' : ' activities',
-      ...versus(stravaThis.length, stravaLast.length),
+      unit: ` ${t.tiles.activities(stravaThis.length)}`,
+      ...versus(stravaThis.length, stravaLast.length, t),
     },
     {
       key: 'duration',
       desktopOnly: true,
-      label: 'Avg workout',
+      label: t.tiles.avgWorkout,
       value: avgMinutes === null ? '—' : String(avgMinutes),
-      unit: avgMinutes === null ? '' : ' min',
-      sub: 'this month',
+      unit: avgMinutes === null ? '' : ` ${t.tiles.min}`,
+      sub: t.tiles.thisMonth,
     },
   ];
 

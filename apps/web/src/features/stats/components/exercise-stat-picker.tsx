@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { SELECT_TRIGGER_CLASS } from '@/lib/form-styles';
 
 import { useStatExercises } from '../hooks/use-stats';
+import { useStatsTranslation } from '../i18n';
 
 import { EXERCISE_CATEGORIES, type StatExercise } from '@gym-bro/shared';
 
@@ -30,6 +31,7 @@ interface ExerciseStatPickerProps {
 // Exercises are grouped by category (in the canonical category order; names are
 // already sorted within each from the backend) so the list reads by muscle group.
 export function ExerciseStatPicker({ value, onSelect }: ExerciseStatPickerProps) {
+  const t = useStatsTranslation();
   const [open, setOpen] = useState(false);
   const { data: exercises = [], isPending } = useStatExercises();
 
@@ -60,15 +62,15 @@ export function ExerciseStatPicker({ value, onSelect }: ExerciseStatPickerProps)
             !value && 'text-muted-foreground',
           )}
         >
-          <span className="truncate">{value ? value.name : 'Select an exercise'}</span>
+          <span className="truncate">{value ? value.name : t.picker.placeholder}</span>
           <ChevronsUpDown className="size-4 shrink-0 opacity-60" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-(--radix-popover-trigger-width) min-w-64 p-0" align="start">
         <Command>
-          <CommandInput placeholder="Search exercises" />
+          <CommandInput placeholder={t.picker.search} />
           <CommandList>
-            <CommandEmpty>{isPending ? 'Loading…' : 'No logged exercises yet.'}</CommandEmpty>
+            <CommandEmpty>{isPending ? t.picker.loading : t.picker.empty}</CommandEmpty>
             {groups.map((group) => (
               <CommandGroup key={group.category} heading={group.category}>
                 {group.items.map((exercise) => (

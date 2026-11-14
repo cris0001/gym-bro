@@ -1,7 +1,6 @@
 import { Link } from '@tanstack/react-router';
 
-import { BrandMark } from '@/components/brand-mark';
-import { BrandWordmark } from '@/components/brand-wordmark';
+import { BrandLogo } from '@/components/brand-logo';
 import { SettingsButton } from '@/features/settings';
 import { LogoutButton } from '@/features/auth';
 import { useTranslation } from '@/lib/i18n/use-translation';
@@ -26,8 +25,7 @@ export function SidebarNav() {
   return (
     <aside className="bg-sidebar sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r lg:flex">
       <div className="flex h-14 items-center gap-2.5 border-b px-4">
-        <BrandMark className="size-8" />
-        <BrandWordmark />
+        <BrandLogo className="[--logo-knockout:var(--sidebar)]" />
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">

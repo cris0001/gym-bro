@@ -1,148 +1,101 @@
 import { useQueries, useQuery } from '@tanstack/react-query';
-import { CalendarDays, ChevronLeft, ChevronRight, ClipboardList, Play } from 'lucide-react';
-import { useState } from 'react';
+import { Star } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import {
-  activePlanQueryOptions,
-  planQueryOptions,
-  templateQueryOptions,
-  usePlans,
-} from '@/features/training';
+import { Skeleton } from '@/components/ui/skeleton';
+import { activePlanQueryOptions, planQueryOptions, usePlans } from '@/features/training';
+import { cn } from '@/lib/utils';
 
 import { useSessionsTranslation } from '../i18n';
+import { StartMobilePicker } from './start-mobile-picker';
+import { StartTemplateRow } from './start-template-row';
 
 interface StartWorkoutPickerProps {
   onSelectTemplate: (template: { id: string; name: string }) => void;
 }
 
-// Start-screen template browser (replaces the searchable select): lists the plans
-// with the active one first, and picking a plan drills into its templates. With a
-// single plan the plan list is skipped and its templates are the whole picker.
+// The start screen's template picker. From lg up: every plan's templates at once,
+// grouped under the plan name (active plan first, then alphabetical). On phones:
+// StartMobilePicker (plan pills over template cards). Plan details share the /plans cache.
 export function StartWorkoutPicker({ onSelectTemplate }: StartWorkoutPickerProps) {
   const { data: plans = [], isPending } = usePlans();
   const { data: activePlan } = useQuery(activePlanQueryOptions());
-  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const t = useSessionsTranslation();
 
-  // Active plan first, then the rest alphabetically.
   const ordered = [...plans].sort((a, b) => {
     if (a.id === activePlan?.id) return -1;
     if (b.id === activePlan?.id) return 1;
     return a.name.localeCompare(b.name);
   });
+  const details = useQueries({ queries: ordered.map((plan) => planQueryOptions(plan.id)) });
 
-  const singlePlan = ordered.length === 1;
-  const firstPlan = ordered[0];
-  // One plan: its templates are the whole picker; otherwise wait for a selection.
-  const effectivePlanId = singlePlan && firstPlan ? firstPlan.id : selectedPlanId;
-
-  if (isPending) {
-    return (
-      <p className="text-muted-foreground text-center text-sm">{t.startWorkout.loadingPlans}</p>
-    );
-  }
+  if (isPending) return <GroupsSkeleton />;
   if (ordered.length === 0) {
-    return <p className="text-muted-foreground text-center text-sm">{t.startWorkout.noPlans}</p>;
-  }
-
-  if (effectivePlanId) {
     return (
-      <TemplatePicker
-        planId={effectivePlanId}
-        showBack={!singlePlan}
-        onBack={() => setSelectedPlanId(null)}
-        onSelectTemplate={onSelectTemplate}
-      />
+      <p className="text-muted-foreground py-6 text-center text-sm">{t.startWorkout.noPlans}</p>
     );
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      {ordered.map((plan) => (
-        <button
-          key={plan.id}
-          type="button"
-          className="bg-card hover:bg-muted/50 flex items-center gap-3 rounded-xl border p-4 text-left transition-colors"
-          onClick={() => setSelectedPlanId(plan.id)}
-        >
-          <span className="bg-accent text-primary flex size-10 shrink-0 items-center justify-center rounded-xl">
-            <ClipboardList className="size-5" />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="font-heading block truncate text-[17px] font-semibold">
-              {plan.name}
-            </span>
-            <span className="text-muted-foreground block text-xs">
-              {t.startWorkout.templates(plan.templateCount)}
-              {plan.id === activePlan?.id && t.startWorkout.active}
-            </span>
-          </span>
-          <ChevronRight className="size-5 shrink-0 text-faint-foreground" />
-        </button>
-      ))}
-    </div>
+    <>
+      <div className="lg:hidden">
+        <StartMobilePicker
+          plans={ordered}
+          details={details.map((query) => query.data)}
+          activeId={activePlan?.id}
+          onSelectTemplate={onSelectTemplate}
+        />
+      </div>
+      <div className="hidden flex-col gap-4 lg:flex">
+        {ordered.map((plan, i) => {
+          const templates = details[i]?.data?.templates;
+          const active = plan.id === activePlan?.id;
+          return (
+            <section key={plan.id} className="flex flex-col gap-2">
+              {/* The active plan stands out: star, primary name, ACTIVE badge. */}
+              <h2
+                className={cn(
+                  'flex items-center gap-1.5 px-0.5 text-[11px] tracking-[0.08em] uppercase',
+                  active ? 'text-primary font-bold' : 'text-muted-foreground font-medium',
+                )}
+              >
+                {active && <Star className="size-3.5 fill-current" aria-hidden />}
+                {plan.name}
+                {active && (
+                  <span className="bg-primary text-primary-foreground rounded-full px-1.5 py-px text-[9.5px] font-bold tracking-[0.06em] uppercase">
+                    {t.startWorkout.activeBadge}
+                  </span>
+                )}
+              </h2>
+              {!templates ? (
+                <Skeleton className="h-16 rounded-xl" />
+              ) : templates.length === 0 ? (
+                <p className="bg-card text-muted-foreground rounded-xl border px-3.5 py-3 text-sm">
+                  {t.startWorkout.noTemplates}
+                </p>
+              ) : (
+                <ul className="bg-card overflow-hidden rounded-xl border">
+                  {templates.map((template) => (
+                    <StartTemplateRow
+                      key={template.id}
+                      template={template}
+                      onStart={() => onSelectTemplate({ id: template.id, name: template.name })}
+                    />
+                  ))}
+                </ul>
+              )}
+            </section>
+          );
+        })}
+      </div>
+    </>
   );
 }
 
-interface TemplatePickerProps {
-  planId: string;
-  showBack: boolean;
-  onBack: () => void;
-  onSelectTemplate: (template: { id: string; name: string }) => void;
-}
-
-// The chosen plan's templates as start-cards (icon, name, exercise count, start arrow).
-// Loaded on demand (shares the plan-detail cache); one detail query per template
-// resolves its exercise count (cached, so starting reuses it).
-function TemplatePicker({ planId, showBack, onBack, onSelectTemplate }: TemplatePickerProps) {
-  const { data: plan, isPending } = useQuery(planQueryOptions(planId));
-  const templates = plan?.templates ?? [];
-  const templateQueries = useQueries({
-    queries: templates.map((tpl) => templateQueryOptions(tpl.id)),
-  });
-  const t = useSessionsTranslation();
-
+function GroupsSkeleton() {
   return (
-    <div className="flex flex-col gap-2">
-      {showBack && (
-        <Button variant="ghost" size="sm" className="w-fit" onClick={onBack}>
-          <ChevronLeft className="size-4" />
-          {t.startWorkout.allPlans}
-        </Button>
-      )}
-      {isPending ? (
-        <p className="text-muted-foreground text-center text-sm">
-          {t.startWorkout.loadingTemplates}
-        </p>
-      ) : templates.length === 0 ? (
-        <p className="text-muted-foreground text-center text-sm">{t.startWorkout.noTemplates}</p>
-      ) : (
-        templates.map((template, i) => {
-          const count = templateQueries[i]?.data?.exercises.length;
-          return (
-            <button
-              key={template.id}
-              type="button"
-              className="bg-card hover:bg-muted/50 flex items-center gap-3 rounded-xl border p-4 text-left transition-colors"
-              onClick={() => onSelectTemplate({ id: template.id, name: template.name })}
-            >
-              <span className="bg-accent text-primary flex size-10 shrink-0 items-center justify-center rounded-xl">
-                <CalendarDays className="size-5" />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="font-heading block truncate text-[17px] font-semibold">
-                  {template.name}
-                </span>
-                <span className="text-muted-foreground block text-xs">
-                  {count === undefined ? '…' : t.startWorkout.exercises(count)}
-                </span>
-              </span>
-              <Play className="text-primary size-4 shrink-0 fill-current" />
-            </button>
-          );
-        })
-      )}
+    <div aria-hidden className="flex flex-col gap-2">
+      <Skeleton className="h-3 w-24" />
+      <Skeleton className="h-36 rounded-xl" />
     </div>
   );
 }

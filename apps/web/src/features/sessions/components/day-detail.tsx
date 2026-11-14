@@ -106,7 +106,7 @@ function PlannedTodoCard({ session }: { session: PlannedSessionWithTemplate }) {
       {session.status === 'planned' && (
         <div className="flex items-center gap-2">
           <Button
-            className="h-9 flex-1 rounded-full"
+            className="h-10 flex-1 rounded-full lg:h-9"
             onClick={() => {
               void startFromTemplate({
                 templateId: session.template.id,

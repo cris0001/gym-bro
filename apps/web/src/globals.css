@@ -3,7 +3,6 @@
 @import 'shadcn/tailwind.css';
 @import '@fontsource-variable/geist';
 @import '@fontsource-variable/newsreader';
-@import '@fontsource/caveat-brush';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -25,9 +24,6 @@
   --font-display: 'Newsreader Variable', serif;
 
   --font-sans: 'Geist Variable', sans-serif;
-
-  /* Caveat Brush: the Lift4Me wordmark only (the brand logo's face), never body text. */
-  --font-brand: 'Caveat Brush', cursive;
 
   --color-sidebar-ring: var(--sidebar-ring);
 
@@ -165,14 +161,14 @@
 
   /* Delete family: text/icon red, its hover, the soft hover tints, and the one solid
      fill (confirm dialog only). */
-  --destructive: #a4474f;
-  --destructive-hover: #8f3a42;
-  --destructive-tint: #f7e6e6;
-  --destructive-tint-2: #f0d6d7;
-  --destructive-solid: #a4474f;
-  --destructive-solid-hover: #8f3a42;
-  --destructive-solid-foreground: #fdf6f5;
-  --destructive-rest: #b3a6ac;
+  --destructive: #c8312f;
+  --destructive-hover: #a92624;
+  --destructive-tint: #fde8e7;
+  --destructive-tint-2: #f9d3d1;
+  --destructive-solid: #d23431;
+  --destructive-solid-hover: #b52926;
+  --destructive-solid-foreground: #ffffff;
+  --destructive-rest: #e07c79;
 
   --border: #e8e1da;
 
@@ -266,14 +262,14 @@
 
   --soft: #c98fa0;
 
-  --destructive: #e08a8f;
-  --destructive-hover: #f0a4a8;
-  --destructive-tint: #3a2226;
-  --destructive-tint-2: #45282c;
-  --destructive-solid: #c45a61;
-  --destructive-solid-hover: #d46b72;
-  --destructive-solid-foreground: #1f191c;
-  --destructive-rest: #7a6c72;
+  --destructive: #f26d68;
+  --destructive-hover: #ff8a85;
+  --destructive-tint: #3d1d1d;
+  --destructive-tint-2: #4c2322;
+  --destructive-solid: #dc3f3a;
+  --destructive-solid-hover: #e8554f;
+  --destructive-solid-foreground: #ffffff;
+  --destructive-rest: #b5524f;
 
   --border: #2f292d;
 
@@ -333,9 +329,11 @@
 /* Slate, the app default: a cool, near-white slate ground with the old slate accent
    (#3f5f86) nudged a little brighter and bluer. */
 html[data-palette='slate'] {
-  --primary: #3a60a0;
+  --primary: #023e8a;
+  /* The favicon keeps the original, slightly deeper slate blue. */
+  --favicon: #3a60a0;
   --primary-foreground: #ffffff;
-  --primary-hover: #2f4f86;
+  --primary-hover: #013270;
   --accent: #e8eef8;
   --accent-foreground: #2d4c80;
   --chart-4: #1f3559;
@@ -351,6 +349,7 @@ html[data-palette='slate'] {
 
 html.dark[data-palette='slate'] {
   --primary: #85aae6;
+  --favicon: #85aae6;
   --primary-foreground: #0d1626;
   --primary-hover: #9dbcec;
   --accent: #18233a;
@@ -610,6 +609,81 @@ html.dark[data-palette='violet'] {
 
 @utility animate-marquee {
   animation: gb-marquee 26s linear infinite;
+}
+
+/* Landing motion. `draw` traces an SVG stroke (set stroke-dasharray to the path
+   length); `rise` fades a block up into place; `pop` springs an icon in; `float`
+   bobs a decoration. Scroll-revealed blocks start them only once in view (the
+   paused state is set inline until then). All stop under reduced motion. */
+@keyframes gb-draw {
+  from {
+    stroke-dashoffset: var(--draw-length, 300);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes gb-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes gb-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes gb-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--float-rotate, 0deg));
+  }
+  50% {
+    transform: translateY(-7px) rotate(var(--float-rotate, 0deg));
+  }
+}
+
+@utility animate-draw {
+  stroke-dasharray: var(--draw-length, 300);
+  animation: gb-draw 1.3s cubic-bezier(0.4, 0, 0.2, 1) 0.35s both;
+}
+
+@utility animate-rise {
+  animation: gb-rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@utility animate-pop {
+  animation: gb-pop 0.7s ease-out 0.3s both;
+}
+
+@utility animate-float {
+  animation: gb-float 5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-draw,
+  .animate-rise,
+  .animate-pop,
+  .animate-float {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
 }
 
 @layer base {
