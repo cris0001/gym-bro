@@ -1,0 +1,62 @@
+#cloud-config
+# First-boot setup of the Lift4Me web server (Ubuntu 24.04), run once by cloud-init
+# when the instance is created — nobody logs in to prepare it by hand.
+# - all package updates, then automatic security updates from now on;
+# - 2 GB swap as a safety net for the 1 GB t3.micro;
+# - Docker Engine + Compose plugin from Docker's official repository, with rotated logs;
+# - AWS CLI (pull images from ECR, read secrets from Parameter Store at deploy time);
+# - /opt/lift4me, where the deploy puts docker-compose.yml, the Caddyfile and .env.
+# The SSM agent that Session Manager and deploys rely on ships with Ubuntu's AWS image.
+
+package_update: true
+package_upgrade: true
+
+packages:
+  - ca-certificates
+  - curl
+  - unattended-upgrades
+
+swap:
+  filename: /swapfile
+  size: 2G
+  maxsize: 2G
+
+write_files:
+  # Use swap only under real memory pressure.
+  - path: /etc/sysctl.d/99-swappiness.conf
+    content: |
+      vm.swappiness=10
+
+  # Container logs in Docker's compact format, capped at 3 x 10 MB per container.
+  - path: /etc/docker/daemon.json
+    content: |
+      {
+        "log-driver": "local",
+        "log-opts": { "max-size": "10m", "max-file": "3" }
+      }
+
+  # Security updates every day; when one needs a reboot, do it at night. Containers
+  # come back by themselves (restart: unless-stopped in docker-compose.yml).
+  - path: /etc/apt/apt.conf.d/52lift4me-unattended
+    content: |
+      Unattended-Upgrade::Automatic-Reboot "true";
+      Unattended-Upgrade::Automatic-Reboot-Time "04:30";
+      Unattended-Upgrade::Remove-Unused-Dependencies "true";
+
+  - path: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+
+runcmd:
+  - sysctl --system
+  # Docker's official apt repository (the Ubuntu-packaged docker.io lags behind).
+  - install -m 0755 -d /etc/apt/keyrings
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+  - chmod a+r /etc/apt/keyrings/docker.asc
+  - echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu noble stable" > /etc/apt/sources.list.d/docker.list
+  - apt-get update
+  - apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  - systemctl enable --now docker
+  - snap install aws-cli --classic
+  - install -d -m 0750 /opt/lift4me

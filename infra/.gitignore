@@ -1,0 +1,8 @@
+# Downloaded providers and local working files — recreated by `terraform init`.
+.terraform/
+# State lives in S3; a local copy (e.g. a manual `state pull`) must never be committed.
+*.tfstate
+*.tfstate.*
+# Variable files may hold environment-specific or secret values.
+*.tfvars
+crash.log
