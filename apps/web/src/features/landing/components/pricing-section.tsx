@@ -7,8 +7,9 @@ import { cn } from '@/lib/utils';
 import { useLandingTranslation } from '../i18n';
 import { CTA, HAND, SECTION } from '../utils/styles';
 
-// "Free. No catch.": the headline over a single plan card (what's included + sign
-// up), beside an FAQ accordion (first answer open).
+// "Free. For now.": the headline, a short note on possible future upkeep costs, then a
+// single plan card (what's included + sign up), beside an FAQ accordion (first answer
+// open).
 export function PricingSection() {
   const t = useLandingTranslation();
   const p = t.pricing;
@@ -25,6 +26,7 @@ export function PricingSection() {
           {p.title}
           <span className="block text-[#023e8a]">{p.accent}</span>
         </h2>
+        <p className="mt-5 max-w-[460px] text-[15px] leading-relaxed text-[#5b6170]">{p.note}</p>
         <div className="mt-8 rounded-[20px] border border-[#e4e1d8] bg-white p-6">
           <ul className="flex flex-col gap-3">
             {p.features.map((line) => (

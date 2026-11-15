@@ -6,9 +6,9 @@ import { useLandingTranslation } from '../i18n';
 import { H2, HAND, SECTION } from '../utils/styles';
 import { PhoneFrame } from './phone-frame';
 
-// "One timeline": training, runs and the plan for each day on one calendar. Copy on
-// the left; the demo account's calendar on a phone on the right, rising in when it
-// scrolls into view, with a hand-lettered note pointing at it.
+// "Plan ahead": put a template on a day, then start it with one tap. Copy on the left;
+// the demo account's planned session (the calendar day sheet) on a phone on the right,
+// rising in when it scrolls into view, with a hand-lettered note pointing at it.
 export function TimelineSection() {
   const t = useLandingTranslation();
   const shot = useScreenshot();
@@ -30,9 +30,9 @@ export function TimelineSection() {
       </div>
 
       <div ref={ref} className={cn('flex justify-center', inView ? 'animate-rise' : 'opacity-0')}>
-        <PhoneFrame inset className="w-[min(300px,80vw)]">
+        <PhoneFrame className="w-[min(300px,80vw)]">
           <img
-            src={shot('calendar')}
+            src={shot('planned')}
             alt={t.timeline.alt}
             loading="lazy"
             className="h-full w-full object-cover object-top"

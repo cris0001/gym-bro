@@ -23,7 +23,15 @@ export function LandingClosing() {
         </Link>
         <div className="mt-16 flex w-full flex-col items-center gap-3 border-t border-white/20 pt-6 text-[13px] text-[#b9cbe8] sm:flex-row sm:justify-between">
           <BrandLogo className="h-7 text-white [--logo-knockout:#023e8a] [--primary:#ffffff]" />
-          <span>{t.closing.footer}</span>
+          <span className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+            <Link to="/privacy" className="hover:text-white">
+              {t.closing.privacy}
+            </Link>
+            <Link to="/terms" className="hover:text-white">
+              {t.closing.terms}
+            </Link>
+            <span>{t.closing.footer}</span>
+          </span>
         </div>
       </div>
     </footer>

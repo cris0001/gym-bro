@@ -109,8 +109,8 @@ export function ModuleShowcase() {
           Centered via m-auto (not items-center) + overflow-y-auto so if the block
           is ever taller than the screen it scrolls instead of clipping top/bottom. */}
       <div className="no-scrollbar sticky top-0 flex h-dvh overflow-y-auto">
-        <div className="m-auto w-full max-w-[1200px] px-5 py-6 md:px-10 md:py-10">
-          <div className="mb-4 flex flex-col items-center gap-1 text-center md:mb-10 md:gap-2">
+        <div className="m-auto w-full max-w-[1200px] px-5 py-4 md:px-10 md:py-6">
+          <div className="mb-3 flex flex-col items-center gap-1 text-center md:mb-6">
             <span className={`${HAND} text-lg text-[#023e8a] md:text-[22px]`}>
               {t.inside.eyebrow}
             </span>
@@ -121,7 +121,7 @@ export function ModuleShowcase() {
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-16 lg:items-center">
             {/* Left — the card list; scroll progress or a click sets the active one. */}
-            <div className="flex flex-col gap-1.5 md:gap-2.5">
+            <div className="flex flex-col gap-1.5 md:gap-2">
               {LANDING_MODULES.map((module, index) => {
                 const Icon = module.icon;
                 const isActive = index === active;
@@ -132,7 +132,7 @@ export function ModuleShowcase() {
                     type="button"
                     onClick={() => goToModule(index)}
                     className={cn(
-                      'w-full rounded-2xl border p-3 text-left transition-all duration-300 md:p-[18px]',
+                      'w-full rounded-2xl border p-3 text-left transition-all duration-300 md:p-4',
                       isActive
                         ? 'border-transparent bg-[#14181f] shadow-lg'
                         : 'border-[#e4e1d8] bg-white opacity-55 hover:border-[#023e8a]/40 lg:opacity-65',
@@ -176,7 +176,9 @@ export function ModuleShowcase() {
                         >
                           {copy.desc}
                         </p>
-                        <div className="mt-2.5 flex flex-wrap gap-1.5 pl-[50px]">
+                        {/* Chips and the extra bullets give way on short screens so the pinned block
+                            always fits — no scroll inside the scroll. */}
+                        <div className="mt-2.5 flex flex-wrap gap-1.5 pl-[50px] [@media(max-height:700px)]:hidden">
                           {copy.chips.map((chip) => (
                             <span
                               key={chip}
@@ -193,7 +195,7 @@ export function ModuleShowcase() {
                         </div>
                         {/* Extra bullets are desktop-only so the pinned block fits a phone. */}
                         {isActive && (
-                          <ul className="mt-3 hidden flex-col gap-1.5 pl-[50px] lg:flex">
+                          <ul className="mt-3 hidden flex-col gap-1.5 pl-[50px] lg:[@media(min-height:860px)]:flex">
                             {copy.details.map((detail) => (
                               <li
                                 key={detail}
@@ -214,14 +216,14 @@ export function ModuleShowcase() {
 
             {/* Right — the preview panel (desktop only); stays put via the pin. */}
             <div className="hidden flex-col items-center gap-4 lg:flex">
-              <PhoneFrame className="w-[300px]">
+              {/* Sized from the viewport height so the phone never pushes past the screen. */}
+              <PhoneFrame className="w-[clamp(200px,calc((100dvh-230px)/2.25),300px)]">
                 {/* Stacked screens, crossfaded by opacity — the phone never blanks out. */}
                 {LANDING_MODULES.map((module, index) => (
                   <div
                     key={module.id}
                     className={cn(
-                      'absolute inset-x-0 bottom-0 transition-opacity duration-500 ease-out',
-                      module.tabbed ? 'top-3' : 'top-0',
+                      'absolute inset-0 transition-opacity duration-500 ease-out',
                       index === active ? 'opacity-100' : 'opacity-0',
                     )}
                     aria-hidden={index !== active}
