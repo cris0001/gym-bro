@@ -28,8 +28,11 @@ log() { printf '[deploy %s] %s\n' "$(date -u +%H:%M:%S)" "$*"; }
 # Every /lift4me/prod/* parameter becomes a line in .env, except the certificate pair,
 # which goes to certs/. Files are readable by root only (umask 077).
 log "fetching configuration from Parameter Store"
+# Piped, not redirected: the snap-packaged AWS CLI writes nothing (and still exits 0)
+# when its stdout is a file opened by the shell, but works through a pipe.
 aws ssm get-parameters-by-path --region "$REGION" --path "$PARAM_PATH" \
-  --with-decryption --output json --query 'Parameters[].[Name,Value]' > params.json
+  --with-decryption --output json --query 'Parameters[].[Name,Value]' | cat > params.json
+[[ -s params.json ]] || { echo "no parameters fetched from $PARAM_PATH" >&2; exit 1; }
 
 mkdir -p certs
 python3 - "$PARAM_PATH" <<'PY'
