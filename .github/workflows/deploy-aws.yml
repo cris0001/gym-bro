@@ -1,0 +1,128 @@
+name: Deploy to AWS
+
+# Push to main: test → build the Docker image → push it to ECR (tagged with the commit
+# SHA) → copy deploy/ to the EC2 server and run deploy.sh there through SSM.
+# Manual run ("Run workflow"): give an existing image tag (a past commit SHA) to roll
+# back to it without rebuilding.
+#
+# AWS access is keyless: GitHub's OIDC token is exchanged for the short-lived
+# lift4me-github-deploy role (infra/github-oidc.tf), allowed only for this repo's main
+# branch / production environment, and only to push to ECR and run the deploy on the
+# web server.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Redeploy an existing image tag (commit SHA) instead of building'
+        required: false
+        type: string
+
+concurrency:
+  group: deploy-aws
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-central-1
+  AWS_ROLE_ARN: arn:aws:iam::020737255414:role/lift4me-github-deploy
+  ECR_REPOSITORY: lift4me
+  INSTANCE_ID: i-0770101d72015ad34
+
+jobs:
+  test:
+    name: Test
+    if: inputs.image_tag == ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -r typecheck
+      - run: pnpm -r test
+
+  deploy:
+    name: Build and deploy
+    needs: test
+    # Runs after a green test job, or alone for a manual rollback (test is skipped then).
+    if: always() && (needs.test.result == 'success' || (needs.test.result == 'skipped' && inputs.image_tag != ''))
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Pick the image
+        id: image
+        run: |
+          TAG="${{ inputs.image_tag }}"
+          [ -z "$TAG" ] && TAG="${{ github.sha }}"
+          echo "uri=${{ steps.ecr.outputs.registry }}/${ECR_REPOSITORY}:${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        if: inputs.image_tag == ''
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push the image
+        if: inputs.image_tag == ''
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.image.outputs.uri }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy on the server (SSM)
+        run: |
+          set -euo pipefail
+          # The deploy files travel inside the command itself (a few KB), so the server
+          # needs no Git access and always runs the files from this exact commit.
+          BUNDLE=$(tar -czf - -C deploy docker-compose.yml nginx.conf deploy.sh | base64 -w0)
+          jq -n --arg bundle "$BUNDLE" --arg image "${{ steps.image.outputs.uri }}" '{commands: [
+            "set -euo pipefail",
+            "install -d -m 0750 /opt/lift4me",
+            ("echo " + $bundle + " | base64 -d | tar -xzf - -C /opt/lift4me"),
+            ("bash /opt/lift4me/deploy.sh " + $image)
+          ]}' > params.json
+
+          CMD_ID=$(aws ssm send-command \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name AWS-RunShellScript \
+            --comment "deploy ${GITHUB_SHA::7}" \
+            --timeout-seconds 600 \
+            --parameters file://params.json \
+            --query Command.CommandId --output text)
+          echo "SSM command: $CMD_ID"
+
+          # Wait for the result (deploys pull an image, so allow up to 10 minutes).
+          for _ in $(seq 1 120); do
+            STATUS=$(aws ssm get-command-invocation --command-id "$CMD_ID" --instance-id "$INSTANCE_ID" \
+              --query Status --output text 2>/dev/null || echo Pending)
+            case "$STATUS" in Pending|InProgress|Delayed) sleep 5 ;; *) break ;; esac
+          done
+
+          aws ssm get-command-invocation --command-id "$CMD_ID" --instance-id "$INSTANCE_ID" \
+            --query StandardOutputContent --output text
+          echo "--- stderr"
+          aws ssm get-command-invocation --command-id "$CMD_ID" --instance-id "$INSTANCE_ID" \
+            --query StandardErrorContent --output text
+          echo "Status: $STATUS"
+          [ "$STATUS" = "Success" ]

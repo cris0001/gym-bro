@@ -1,0 +1,40 @@
+# Production stack on the EC2 web server (/opt/lift4me). Two containers:
+# - app:   Lift4Me (Hono API + the built SPA) from ECR, listening on 8080 inside the
+#          Docker network only — never published to the host;
+# - nginx: the HTTPS front door on 80/443, terminating TLS with the Cloudflare Origin
+#          Certificate and proxying to app.
+# deploy.sh writes .env (secrets from Parameter Store, APP_IMAGE = the image to run)
+# and certs/ next to this file, then runs `docker compose up -d`.
+
+services:
+  app:
+    image: ${APP_IMAGE:?APP_IMAGE must be set by deploy.sh}
+    env_file: .env
+    restart: unless-stopped
+    # The t3.micro has ~900 MB RAM; cap Node's heap so a leak can't take the host down.
+    environment:
+      NODE_OPTIONS: --max-old-space-size=384
+    mem_limit: 640m
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://localhost:8080/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 15s
+      timeout: 5s
+      start_period: 40s
+      retries: 3
+
+  nginx:
+    image: nginx:1.28-alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./certs:/certs:ro
+    depends_on:
+      app:
+        condition: service_healthy
