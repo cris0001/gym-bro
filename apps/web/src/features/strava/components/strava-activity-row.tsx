@@ -18,6 +18,7 @@ import {
 } from '../utils/format';
 import { activityMetrics } from '../utils/metrics';
 import { RouteMap } from './route-map';
+import { activityTypeLabel, useStravaTranslation } from '../i18n';
 import { formatDate } from '@/lib/i18n/date-format';
 
 function Metric({ label, value }: { label: string; value: string }) {
@@ -56,12 +57,13 @@ export function StravaActivityRow({
 }) {
   const remove = useDeleteStravaSession();
   const confirm = useConfirm();
+  const t = useStravaTranslation();
 
   async function handleDelete() {
     const ok = await confirm({
-      title: `Remove "${session.name}"?`,
-      description: 'Removes it from the app only — your Strava activity is untouched.',
-      confirmText: 'Remove',
+      title: t.row.removeTitle(session.name),
+      description: t.row.removeBody,
+      confirmText: t.row.remove,
       destructive: true,
     });
     if (ok) remove.mutate(session.id);
@@ -100,12 +102,15 @@ export function StravaActivityRow({
               .join(' · ')}
           </span>
           <span className="text-muted-foreground hidden truncate text-xs md:block">
-            {date} · {session.activityType}
+            {date} · {activityTypeLabel(t, session.activityType)}
           </span>
         </span>
-        <Stat value={hasDistance ? formatDistance(session.distanceM) : '—'} caption="distance" />
-        <Stat value={time} caption="time" />
-        <Stat value={pace ?? '—'} caption={paced ? 'pace' : 'speed'} />
+        <Stat
+          value={hasDistance ? formatDistance(session.distanceM) : '—'}
+          caption={t.row.distance}
+        />
+        <Stat value={time} caption={t.row.time} />
+        <Stat value={pace ?? '—'} caption={paced ? t.row.pace : t.row.speed} />
 
         <ChevronDown
           className={cn(
@@ -118,7 +123,7 @@ export function StravaActivityRow({
       {expanded && (
         <div className="bg-muted/30 border-t p-3.5 md:px-4">
           <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
-            {activityMetrics(session).map((m) => (
+            {activityMetrics(session, t.metrics).map((m) => (
               <Metric key={m.label} label={m.label} value={m.value} />
             ))}
           </div>
@@ -134,10 +139,10 @@ export function StravaActivityRow({
               rel="noreferrer"
               className="text-sm font-medium text-[#d15b28] hover:underline dark:text-[#ff7a3d]"
             >
-              View on Strava ↗
+              {t.row.view}
             </a>
             <DeleteButton disabled={remove.isPending} onClick={() => void handleDelete()}>
-              Remove
+              {t.row.remove}
             </DeleteButton>
           </div>
         </div>

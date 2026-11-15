@@ -2,6 +2,7 @@ import { format, parseISO } from 'date-fns';
 
 import type { StravaSessionItem } from '@gym-bro/shared';
 
+import { useStravaTranslation } from '../i18n';
 import { formatDistance } from '../utils/format';
 import { summarize } from '../utils/stats';
 import { StravaActivityRow } from './strava-activity-row';
@@ -23,9 +24,9 @@ function groupByMonth(sessions: StravaSessionItem[]) {
 }
 
 // "14 activities · 186 km" — the month header's summary (distance only if any).
-function monthSummary(items: StravaSessionItem[]): string {
+function monthSummary(items: StravaSessionItem[], countLabel: (n: number) => string): string {
   const totals = summarize(items);
-  const count = `${totals.count} ${totals.count === 1 ? 'activity' : 'activities'}`;
+  const count = countLabel(totals.count);
   return totals.distanceM > 0 ? `${count} · ${formatDistance(totals.distanceM)}` : count;
 }
 
@@ -40,13 +41,14 @@ export function StravaMonthList({
   expandedId: string | null;
   onToggle: (id: string) => void;
 }) {
+  const t = useStravaTranslation();
   return (
     <div className="flex flex-col gap-4">
       {groupByMonth(sessions).map((group) => (
         <section key={group.key} className="flex flex-col gap-2">
           <div className="text-muted-foreground flex justify-between gap-2 px-0.5 text-[11px] font-medium tracking-[0.08em] uppercase">
             <h2>{group.label}</h2>
-            <span>{monthSummary(group.items)}</span>
+            <span>{monthSummary(group.items, t.activityCount)}</span>
           </div>
           <ul className="bg-card overflow-hidden rounded-xl border">
             {group.items.map((session) => (

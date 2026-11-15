@@ -4,6 +4,7 @@ import type { StravaSessionItem } from '@gym-bro/shared';
 
 import { StravaLogo } from '@/components/strava-logo';
 
+import { useStravaTranslation } from '../i18n';
 import { stravaActivityIcon } from '../utils/activity-icon';
 import {
   formatDistance,
@@ -22,11 +23,12 @@ const microLabel = 'text-muted-foreground text-[11px] font-medium tracking-[0.08
 // Indoor activities (stationary bike, gym, yoga) carry no route and often no distance —
 // the map is then left out, and so are any missing metrics.
 export function StravaLastActivityCard({ session }: { session: StravaSessionItem | null }) {
+  const t = useStravaTranslation();
   if (!session) {
     return (
       <div className="bg-card flex flex-col gap-2 rounded-xl border p-5">
-        <StravaLabel>Last activity</StravaLabel>
-        <span className="text-muted-foreground text-sm">No activities imported yet.</span>
+        <StravaLabel>{t.card.lastActivity}</StravaLabel>
+        <span className="text-muted-foreground text-sm">{t.card.noneYet}</span>
       </div>
     );
   }
@@ -38,15 +40,15 @@ export function StravaLastActivityCard({ session }: { session: StravaSessionItem
   const hasSpeed = hasDistance && (session.averageSpeedMs ?? 0) > 0;
   const metrics = [
     {
-      label: 'Distance',
+      label: t.card.distance,
       value: hasDistance ? formatDistance(session.distanceM) : null,
     },
     {
-      label: 'Time',
+      label: t.card.time,
       value: session.movingTimeS ? formatDuration(session.movingTimeS) : null,
     },
     {
-      label: isPaceType(session.activityType) ? 'Pace' : 'Speed',
+      label: isPaceType(session.activityType) ? t.card.pace : t.card.speed,
       value: hasSpeed
         ? isPaceType(session.activityType)
           ? formatPace(session.averageSpeedMs)
@@ -61,7 +63,7 @@ export function StravaLastActivityCard({ session }: { session: StravaSessionItem
     <div className="bg-card @container rounded-xl border p-5">
       <div className="flex flex-col gap-4 @lg:flex-row @lg:gap-5">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <StravaLabel>Last activity</StravaLabel>
+          <StravaLabel>{t.card.lastActivity}</StravaLabel>
           <div className="flex min-w-0 items-center gap-3">
             <span className="bg-secondary text-muted-foreground flex size-10 shrink-0 items-center justify-center rounded-lg">
               <Icon className="size-5" />

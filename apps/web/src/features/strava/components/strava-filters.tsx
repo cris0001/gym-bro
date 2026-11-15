@@ -1,7 +1,9 @@
 import { cn } from '@/lib/utils';
+import { useHScroll } from '@/hooks/use-h-scroll';
 
 import { stravaActivityIcon } from '../utils/activity-icon';
 import { type Period, PERIODS } from '../utils/period';
+import { activityTypeLabel, useStravaTranslation } from '../i18n';
 
 interface StravaFiltersProps {
   types: string[];
@@ -23,6 +25,8 @@ export function StravaFilters({
   period,
   onPeriodChange,
 }: StravaFiltersProps) {
+  const t = useStravaTranslation();
+  const scrollRef = useHScroll<HTMLDivElement>(type);
   const pillClass = (active: boolean) =>
     cn(
       PILL,
@@ -34,28 +38,31 @@ export function StravaFilters({
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       {types.length > 1 ? (
-        <div className="-mx-3 flex gap-1.5 overflow-x-auto px-3 sm:mx-0 sm:flex-wrap sm:px-0">
+        <div
+          ref={scrollRef}
+          className="no-scrollbar -mx-3 flex min-w-0 gap-1.5 overflow-x-auto px-3 sm:mx-0 sm:px-0"
+        >
           <button
             type="button"
             aria-pressed={type === null}
             onClick={() => onTypeChange(null)}
             className={pillClass(type === null)}
           >
-            All
+            {t.all}
           </button>
-          {types.map((t) => {
-            const Icon = stravaActivityIcon(t);
-            const active = type === t;
+          {types.map((sport) => {
+            const Icon = stravaActivityIcon(sport);
+            const active = type === sport;
             return (
               <button
-                key={t}
+                key={sport}
                 type="button"
                 aria-pressed={active}
-                onClick={() => onTypeChange(active ? null : t)}
+                onClick={() => onTypeChange(active ? null : sport)}
                 className={pillClass(active)}
               >
                 <Icon className="size-3.5" />
-                {t}
+                {activityTypeLabel(t, sport)}
               </button>
             );
           })}
@@ -78,7 +85,7 @@ export function StravaFilters({
                 : 'text-muted-foreground hover:text-foreground',
             )}
           >
-            {p.label}
+            {t.periods[p.key]}
           </button>
         ))}
       </div>

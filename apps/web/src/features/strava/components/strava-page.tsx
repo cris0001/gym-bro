@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 import { useStravaSessions } from '../hooks/use-strava-sessions';
 import { useStravaStatus } from '../hooks/use-strava-status';
+import { useStravaTranslation } from '../i18n';
 import type { Period } from '../utils/period';
 import { StravaConnectionCard } from './strava-connection-card';
 import { StravaContentSkeleton } from './strava-content-skeleton';
@@ -31,6 +32,7 @@ function distinctTypes(sessions: StravaSessionItem[]): string[] {
 // month-grouped activity list. Not connected: the connect card. A calendar deep-link
 // (`initialActivityId`) opens that activity and scrolls to it.
 export function StravaPage({ initialActivityId }: { initialActivityId?: string | undefined }) {
+  const t = useStravaTranslation();
   const { data: status } = useStravaStatus();
   const { data: sessions = [], isPending, isError, refetch } = useStravaSessions();
 
@@ -73,12 +75,12 @@ export function StravaPage({ initialActivityId }: { initialActivityId?: string |
         (isPending ? (
           <StravaContentSkeleton />
         ) : isError ? (
-          <ErrorState message="Couldn't load your activities." onRetry={() => void refetch()} />
+          <ErrorState message={t.page.loadError} onRetry={() => void refetch()} />
         ) : sessions.length === 0 ? (
           <EmptyState
             icon={<Activity className="size-6" />}
-            title="No activities yet"
-            description="Import recent activities from Strava to see them here and on your calendar."
+            title={t.page.emptyTitle}
+            description={t.page.emptyBody}
           />
         ) : (
           <>

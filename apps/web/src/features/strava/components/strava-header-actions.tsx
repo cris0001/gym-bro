@@ -8,6 +8,7 @@ import { useConfirm } from '@/stores/confirm.store';
 
 import { useDisconnectStrava } from '../hooks/use-disconnect-strava';
 import { useImportStrava } from '../hooks/use-import-strava';
+import { useStravaTranslation } from '../i18n';
 import { StravaSyncStatus } from './strava-sync-status';
 
 // Connected-state controls in the page header (replacing the old side panel): the
@@ -18,12 +19,13 @@ export function StravaHeaderActions({ status }: { status: StravaConnectionStatus
   const importActivities = useImportStrava();
   const disconnect = useDisconnectStrava();
   const confirm = useConfirm();
+  const t = useStravaTranslation();
 
   async function onDisconnect() {
     const ok = await confirm({
-      title: 'Disconnect Strava?',
-      description: 'Imported activities stay; new ones won’t sync until you reconnect.',
-      confirmText: 'Disconnect',
+      title: t.header.disconnectTitle,
+      description: t.header.disconnectBody,
+      confirmText: t.header.disconnectConfirm,
       destructive: true,
     });
     if (ok) disconnect.mutate();
@@ -41,13 +43,13 @@ export function StravaHeaderActions({ status }: { status: StravaConnectionStatus
         onClick={() => importActivities.mutate()}
       >
         <RotateCw className={importActivities.isPending ? 'size-4 animate-spin' : 'size-4'} />
-        {importActivities.isPending ? 'Importing…' : 'Import'}
+        {importActivities.isPending ? t.header.importing : t.header.import}
       </Button>
       <Popover>
         <PopoverTrigger asChild>
           <button
             type="button"
-            aria-label="Strava connection"
+            aria-label={t.header.menuAria}
             className="border-border text-muted-foreground hover:bg-muted flex size-9.5 items-center justify-center rounded-full border transition-colors"
           >
             <Ellipsis className="size-4" />
@@ -56,14 +58,14 @@ export function StravaHeaderActions({ status }: { status: StravaConnectionStatus
         <PopoverContent align="end" className="flex w-60 flex-col gap-2">
           {status.athleteId ? (
             <p className="text-muted-foreground text-sm">
-              Connected as{' '}
+              {t.header.connectedAs}{' '}
               <a
                 href={`https://www.strava.com/athletes/${status.athleteId}`}
                 target="_blank"
                 rel="noreferrer"
                 className="font-medium text-[#d15b28] underline underline-offset-2 dark:text-[#ff7a3d]"
               >
-                {status.athleteName ?? `athlete #${status.athleteId}`}
+                {status.athleteName ?? t.header.athlete(status.athleteId)}
               </a>
             </p>
           ) : null}
@@ -74,7 +76,7 @@ export function StravaHeaderActions({ status }: { status: StravaConnectionStatus
             disabled={disconnect.isPending}
             onClick={() => void onDisconnect()}
           >
-            Disconnect Strava
+            {t.header.disconnect}
           </Button>
         </PopoverContent>
       </Popover>

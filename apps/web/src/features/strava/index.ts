@@ -6,3 +6,4 @@ export { StravaPage } from './components/strava-page';
 export { StravaSection } from './components/strava-section';
 export { useStravaSessions, stravaSessionsQueryOptions } from './hooks/use-strava-sessions';
 export { stravaActivityIcon } from './utils/activity-icon';
+export { useActivityTypeLabel } from './i18n';

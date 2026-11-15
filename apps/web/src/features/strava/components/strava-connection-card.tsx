@@ -4,11 +4,13 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 import { STRAVA_CONNECT_URL } from '../api/strava';
+import { useStravaTranslation } from '../i18n';
 
 // Shown when Strava isn't connected: a "Connect Strava" link (a full-page OAuth
 // navigation). Once connected, the import/disconnect controls live in the page header
 // (StravaHeaderActions).
 export function StravaConnectionCard({ className }: { className?: string }) {
+  const t = useStravaTranslation();
   return (
     <div
       className={cn(
@@ -20,16 +22,14 @@ export function StravaConnectionCard({ className }: { className?: string }) {
         <Zap className="size-7" />
       </span>
       <div>
-        <p className="font-heading text-lg font-semibold">Connect Strava</p>
-        <p className="text-muted-foreground text-sm">
-          Link your Strava account to import your runs, rides, and other activities.
-        </p>
+        <p className="font-heading text-lg font-semibold">{t.connect.title}</p>
+        <p className="text-muted-foreground text-sm">{t.connect.body}</p>
       </div>
       <Button
         asChild
         className="h-9.5 rounded-full bg-[#d15b28] px-5 text-white hover:bg-[#d15b28]/90 dark:bg-[#ff7a3d]"
       >
-        <a href={STRAVA_CONNECT_URL}>Connect Strava</a>
+        <a href={STRAVA_CONNECT_URL}>{t.connect.cta}</a>
       </Button>
     </div>
   );

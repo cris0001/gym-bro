@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { formatDistance, formatDuration, formatElevation } from '../utils/format';
 import { inRange, type Period, periodWindow } from '../utils/period';
 import { summarize, weeklyVolume } from '../utils/stats';
+import { useStravaTranslation } from '../i18n';
 
 const MICRO_LABEL = 'text-muted-foreground text-[10.5px] font-medium tracking-[0.08em] uppercase';
 
@@ -38,7 +39,7 @@ function Tile({ label, value, delta }: TileProps) {
 function deltaOf(now: number, before: number, fmt: (n: number) => string, label: string) {
   if (now === before) return null;
   const diff = now - before;
-  return { text: `${diff > 0 ? '+' : '−'}${fmt(Math.abs(diff))} vs ${label}`, up: diff > 0 };
+  return { delta: `${diff > 0 ? '+' : '−'}${fmt(Math.abs(diff))}`, label, up: diff > 0 };
 }
 
 // The Strava stats block (top of the page): totals for the period, vs the same span
@@ -52,15 +53,17 @@ export function StravaStatsPanel({
   sessions: StravaSessionItem[];
   period: Period;
 }) {
+  const t = useStravaTranslation();
   const range = periodWindow(period);
   const totals = summarize(inRange(sessions, range.from));
   const prev = range.previous
     ? summarize(inRange(sessions, range.previous.from, range.previous.to))
     : null;
-  const vs = (now: number, before: number | undefined, fmt: (n: number) => string) =>
-    prev && range.previous && before !== undefined
-      ? deltaOf(now, before, fmt, range.previous.label)
-      : null;
+  const vs = (now: number, before: number | undefined, fmt: (n: number) => string) => {
+    if (!prev || !range.previous || before === undefined) return null;
+    const d = deltaOf(now, before, fmt, range.previous.label);
+    return d ? { text: t.stats.vs(d.delta, d.label), up: d.up } : null;
+  };
 
   const hasDistance = sessions.some((s) => s.distanceM !== null && s.distanceM > 0);
   const weeks = weeklyVolume(sessions, (s) =>
@@ -73,24 +76,24 @@ export function StravaStatsPanel({
     <div className="grid grid-cols-[minmax(0,1fr)] gap-3 lg:grid-cols-2">
       <div className="grid grid-cols-2 gap-2">
         <Tile
-          label="Activities"
+          label={t.stats.activities}
           value={String(totals.count)}
           delta={vs(totals.count, prev?.count, String)}
         />
         {hasDistance && (
           <Tile
-            label="Distance"
+            label={t.stats.distance}
             value={formatDistance(totals.distanceM)}
             delta={vs(totals.distanceM, prev?.distanceM, formatDistance)}
           />
         )}
         <Tile
-          label="Moving time"
+          label={t.stats.movingTime}
           value={formatDuration(totals.movingTimeS)}
           delta={vs(totals.movingTimeS, prev?.movingTimeS, formatDuration)}
         />
         <Tile
-          label="Elevation"
+          label={t.stats.elevation}
           value={formatElevation(totals.elevationM)}
           delta={vs(totals.elevationM, prev?.elevationM, formatElevation)}
         />
@@ -98,8 +101,8 @@ export function StravaStatsPanel({
 
       <div className="bg-card flex flex-col gap-2.5 rounded-xl border px-4 py-3.5">
         <div className="flex items-baseline justify-between">
-          <p className={MICRO_LABEL}>Weekly {hasDistance ? 'distance' : 'time'}</p>
-          <span className="text-muted-foreground text-xs">12 weeks</span>
+          <p className={MICRO_LABEL}>{t.stats.weekly(hasDistance)}</p>
+          <span className="text-muted-foreground text-xs">{t.stats.weeks(12)}</span>
         </div>
         {/* Grows to match the tiles beside it on desktop. */}
         <div className="flex h-24 items-end gap-1 border-b lg:h-auto lg:min-h-24 lg:flex-1">
@@ -113,14 +116,14 @@ export function StravaStatsPanel({
                   : 'bg-[#d15b28]/40 dark:bg-[#ff7a3d]/40',
               )}
               style={{ height: `${Math.max((w.value / maxWeek) * 100, 2)}%` }}
-              title={`Week of ${w.label}: ${fmtWeek(w.value)}`}
+              title={t.stats.weekOf(w.label, fmtWeek(w.value))}
             />
           ))}
         </div>
         <div className="text-faint-foreground flex justify-between text-[11px]">
           <span>{weeks[0]?.label}</span>
           <span>{weeks[Math.floor(weeks.length / 2)]?.label}</span>
-          <span>This week</span>
+          <span>{t.stats.thisWeek}</span>
         </div>
       </div>
     </div>

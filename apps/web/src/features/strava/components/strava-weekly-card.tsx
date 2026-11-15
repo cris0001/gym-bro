@@ -4,7 +4,8 @@ import type { StravaSessionItem } from '@gym-bro/shared';
 
 import { cn } from '@/lib/utils';
 
-import { SPORT_GROUP_LABEL, sportGroup, type SportGroup } from '../utils/sport-group';
+import { useStravaTranslation } from '../i18n';
+import { sportGroup, type SportGroup } from '../utils/sport-group';
 import { weeklyVolume } from '../utils/stats';
 
 const microLabel = 'text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase';
@@ -17,6 +18,7 @@ const WEEKS = 8;
 export function StravaWeeklyCard({ sessions }: { sessions: StravaSessionItem[] }) {
   const latest = sessions[0];
   const [picked, setPicked] = useState<SportGroup | null>(null);
+  const t = useStravaTranslation();
   if (!latest) return null;
 
   const groups = [...new Set(sessions.map((s) => sportGroup(s.activityType)))];
@@ -36,7 +38,7 @@ export function StravaWeeklyCard({ sessions }: { sessions: StravaSessionItem[] }
   return (
     <div className="bg-card flex flex-col gap-3 rounded-xl border p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className={microLabel}>Last {WEEKS} weeks</p>
+        <p className={microLabel}>{t.stats.lastWeeks(WEEKS)}</p>
         {groups.length > 1 ? (
           <div className="flex flex-wrap gap-1">
             {groups.map((g) => (
@@ -52,7 +54,7 @@ export function StravaWeeklyCard({ sessions }: { sessions: StravaSessionItem[] }
                     : 'text-muted-foreground hover:bg-muted',
                 )}
               >
-                {SPORT_GROUP_LABEL[g]}
+                {t.groups[g]}
               </button>
             ))}
           </div>
@@ -61,7 +63,7 @@ export function StravaWeeklyCard({ sessions }: { sessions: StravaSessionItem[] }
       <p className="font-heading text-lg leading-tight font-bold tabular-nums">
         {total.toFixed(1)} {unit}
         <span className="text-muted-foreground ml-1.5 text-[13px] font-normal">
-          {SPORT_GROUP_LABEL[group].toLowerCase()}
+          {t.groups[group].toLowerCase()}
         </span>
       </p>
       <div className="mt-auto grid h-24 grid-cols-8 items-end gap-2" aria-hidden>
@@ -77,7 +79,7 @@ export function StravaWeeklyCard({ sessions }: { sessions: StravaSessionItem[] }
       <div className="text-muted-foreground flex justify-between text-[11px]">
         <span>{weeks[0]?.label}</span>
         <span>
-          This week · {thisWeek.toFixed(1)} {unit}
+          {t.stats.thisWeek} · {thisWeek.toFixed(1)} {unit}
         </span>
       </div>
     </div>

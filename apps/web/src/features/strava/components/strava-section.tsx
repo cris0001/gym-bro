@@ -1,17 +1,22 @@
 import { StravaLogo } from '@/components/strava-logo';
 
 import { STRAVA_CONNECT_URL } from '../api/strava';
+import { useStravaTranslation } from '../i18n';
 import { useStravaSessions } from '../hooks/use-strava-sessions';
 import { useStravaStatus } from '../hooks/use-strava-status';
 import { StravaLastActivityCard } from './strava-last-activity-card';
+import { StravaSectionSkeleton } from './strava-section-skeleton';
 import { StravaWeeklyCard } from './strava-weekly-card';
 
 // The dashboard's Strava block. When linked: the latest activity (route map when it
 // has one) and a weekly-volume chart for its sport. When not linked: a connect CTA.
 export function StravaSection() {
-  const { data: status } = useStravaStatus();
-  const { data: sessions = [] } = useStravaSessions();
+  const t = useStravaTranslation();
+  const { data: status, isPending: statusPending } = useStravaStatus();
+  const { data: sessions = [], isPending: sessionsPending } = useStravaSessions();
   const connected = status?.connected ?? false;
+
+  if (statusPending || (connected && sessionsPending)) return <StravaSectionSkeleton />;
 
   if (!connected) {
     return (
@@ -20,14 +25,12 @@ export function StravaSection() {
           <StravaLogo className="size-3.5 text-[#fc4c02]" />
           Strava
         </p>
-        <span className="text-muted-foreground text-sm">
-          Link Strava to see your activities here.
-        </span>
+        <span className="text-muted-foreground text-sm">{t.connect.sectionHint}</span>
         <a
           href={STRAVA_CONNECT_URL}
           className="bg-primary text-primary-foreground mt-1 inline-flex h-9 w-fit items-center rounded-full px-4 text-sm font-semibold"
         >
-          Connect Strava
+          {t.connect.cta}
         </a>
       </div>
     );

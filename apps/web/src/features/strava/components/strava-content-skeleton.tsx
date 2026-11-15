@@ -1,13 +1,16 @@
 import { Skeleton } from '@/components/ui/skeleton';
 
+import { useStravaTranslation } from '../i18n';
+
 const BAR_HEIGHTS = [40, 65, 30, 80, 55, 20, 70, 45, 90, 35, 60, 50];
-const TILES = ['Activities', 'Distance', 'Moving time', 'Elevation'];
 const MICRO_LABEL = 'text-muted-foreground text-[10.5px] font-medium tracking-[0.08em] uppercase';
 
 // Loading state for the connected Strava page body, in its real shape: the filter bar
 // (sport pills + period switch), the stats — 2×2 tiles and the weekly bars — then the
 // month card of activity rows. Labels stay real.
 export function StravaContentSkeleton() {
+  const t = useStravaTranslation();
+  const tiles = [t.stats.activities, t.stats.distance, t.stats.movingTime, t.stats.elevation];
   return (
     <div aria-hidden className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -22,7 +25,7 @@ export function StravaContentSkeleton() {
       <div className="flex flex-col gap-4">
         <div className="grid grid-cols-[minmax(0,1fr)] gap-3 lg:grid-cols-2">
           <div className="grid grid-cols-2 gap-2">
-            {TILES.map((label) => (
+            {tiles.map((label) => (
               <div key={label} className="bg-card rounded-xl border px-3.5 py-3">
                 <p className={MICRO_LABEL}>{label}</p>
                 <div className="mt-1 flex h-7 items-center">

@@ -3,14 +3,6 @@
 // stravaActivityIcon, so new Strava types still land somewhere sensible.
 export type SportGroup = 'ride' | 'run' | 'walk' | 'swim' | 'other';
 
-export const SPORT_GROUP_LABEL: Record<SportGroup, string> = {
-  ride: 'Rides',
-  run: 'Runs',
-  walk: 'Walks & hikes',
-  swim: 'Swims',
-  other: 'Other',
-};
-
 export function sportGroup(activityType: string): SportGroup {
   const t = activityType.toLowerCase();
   if (/ride|bike|cycl/.test(t)) return 'ride';

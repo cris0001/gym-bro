@@ -14,30 +14,53 @@ import {
 // Only the metrics the activity actually recorded, richest first — so a ride shows
 // power/cadence, a run shows pace, and a sparse activity stays tidy. Shared by both
 // Strava activity layouts.
-export function activityMetrics(s: StravaSessionItem): { label: string; value: string }[] {
+export type MetricLabels = Record<
+  | 'distance'
+  | 'moving'
+  | 'elapsed'
+  | 'pace'
+  | 'avgSpeed'
+  | 'maxSpeed'
+  | 'elevation'
+  | 'avgHr'
+  | 'maxHr'
+  | 'cadence'
+  | 'avgPower'
+  | 'maxPower'
+  | 'calories'
+  | 'relativeEffort'
+  | 'kudos'
+  | 'achievements',
+  string
+>;
+
+export function activityMetrics(
+  s: StravaSessionItem,
+  m: MetricLabels,
+): { label: string; value: string }[] {
   const paced = isPaceType(s.activityType);
   const metrics: { label: string; value: string }[] = [];
   const add = (label: string, value: string) => metrics.push({ label, value });
 
-  if (s.distanceM !== null) add('Distance', formatDistance(s.distanceM));
-  if (s.movingTimeS !== null) add('Moving', formatDuration(s.movingTimeS));
-  if (s.elapsedTimeS !== null) add('Elapsed', formatDuration(s.elapsedTimeS));
+  if (s.distanceM !== null) add(m.distance, formatDistance(s.distanceM));
+  if (s.movingTimeS !== null) add(m.moving, formatDuration(s.movingTimeS));
+  if (s.elapsedTimeS !== null) add(m.elapsed, formatDuration(s.elapsedTimeS));
   if (s.averageSpeedMs !== null) {
     add(
-      paced ? 'Pace' : 'Avg speed',
+      paced ? m.pace : m.avgSpeed,
       paced ? formatPace(s.averageSpeedMs) : formatSpeed(s.averageSpeedMs),
     );
   }
-  if (s.maxSpeedMs !== null && !paced) add('Max speed', formatSpeed(s.maxSpeedMs));
-  if (s.elevationGainM !== null) add('Elevation', formatElevation(s.elevationGainM));
-  if (s.averageHeartrate !== null) add('Avg HR', formatHeartrate(s.averageHeartrate));
-  if (s.maxHeartrate !== null) add('Max HR', formatHeartrate(s.maxHeartrate));
-  if (s.averageCadence !== null) add('Cadence', String(Math.round(s.averageCadence)));
-  if (s.averageWatts !== null) add('Avg power', `${Math.round(s.averageWatts)} W`);
-  if (s.maxWatts !== null) add('Max power', `${Math.round(s.maxWatts)} W`);
-  if (s.calories !== null) add('Calories', formatCalories(s.calories));
-  if (s.sufferScore !== null) add('Relative effort', String(Math.round(s.sufferScore)));
-  if (s.kudosCount !== null) add('Kudos', String(s.kudosCount));
-  if (s.achievementCount !== null) add('Achievements', String(s.achievementCount));
+  if (s.maxSpeedMs !== null && !paced) add(m.maxSpeed, formatSpeed(s.maxSpeedMs));
+  if (s.elevationGainM !== null) add(m.elevation, formatElevation(s.elevationGainM));
+  if (s.averageHeartrate !== null) add(m.avgHr, formatHeartrate(s.averageHeartrate));
+  if (s.maxHeartrate !== null) add(m.maxHr, formatHeartrate(s.maxHeartrate));
+  if (s.averageCadence !== null) add(m.cadence, String(Math.round(s.averageCadence)));
+  if (s.averageWatts !== null) add(m.avgPower, `${Math.round(s.averageWatts)} W`);
+  if (s.maxWatts !== null) add(m.maxPower, `${Math.round(s.maxWatts)} W`);
+  if (s.calories !== null) add(m.calories, formatCalories(s.calories));
+  if (s.sufferScore !== null) add(m.relativeEffort, String(Math.round(s.sufferScore)));
+  if (s.kudosCount !== null) add(m.kudos, String(s.kudosCount));
+  if (s.achievementCount !== null) add(m.achievements, String(s.achievementCount));
   return metrics;
 }
