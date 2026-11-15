@@ -2,6 +2,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router';
 import { useEffect } from 'react';
 
+import { useSeoMeta } from '@/hooks/use-seo-meta';
 import { useThemedFavicon } from '@/hooks/use-themed-favicon';
 import { applyDateLocale } from '@/lib/i18n/date-locale';
 import { useLocaleStore } from '@/stores/locale.store';
@@ -25,6 +26,7 @@ function RootLayout() {
   // chosen language; components that format dates re-render on the locale change.
   applyDateLocale(locale);
   useThemedFavicon();
+  useSeoMeta();
   useEffect(() => {
     document.documentElement.lang = locale;
   }, [locale]);

@@ -4,6 +4,23 @@ import { createFeatureTranslation } from '@/lib/i18n/create-translation';
 export const useAuthTranslation = createFeatureTranslation({
   en: {
     backHome: 'Back to home',
+    panel: {
+      signin: {
+        title: 'The bar doesn’t care about your mood.',
+        accent: 'Show up anyway.',
+        lead: 'Your lifts, your macros, your measurements — one log, every session.',
+      },
+      register: {
+        title: 'Three months from now you’ll wish you started',
+        accent: 'today.',
+        lead: 'Plans, sessions, meals and measurements — tracked in one place.',
+        steps: [
+          'Create an account',
+          'Pick a plan or build your own',
+          'Log your first session tonight',
+        ],
+      },
+    },
     name: 'Name',
     email: 'Email',
     password: 'Password',
@@ -17,12 +34,21 @@ export const useAuthTranslation = createFeatureTranslation({
     },
     register: {
       title: 'Create your account',
-      subtitle: 'Free forever · no app store needed.',
+      subtitle: 'Free while we’re small · no app store needed.',
       minChars: 'min. 8 characters',
       createAccount: 'Create account',
       creating: 'Creating account…',
       haveAccount: 'Already have an account?',
       signIn: 'Sign in',
+      consent: {
+        termsBefore: 'I accept the ',
+        terms: 'Terms of service',
+        and: ' and the ',
+        privacy: 'Privacy policy',
+        health:
+          'I consent to Lift4Me processing my health data (body weight, body composition and measurements) to store and show it in the app. I can withdraw this consent at any time.',
+        required: 'Tick both boxes to create your account.',
+      },
     },
     onboarding: {
       title: 'Welcome! Set up your profile',
@@ -47,6 +73,23 @@ export const useAuthTranslation = createFeatureTranslation({
   },
   pl: {
     backHome: 'Strona główna',
+    panel: {
+      signin: {
+        title: 'Sztangi nie obchodzi Twój humor.',
+        accent: 'Przyjdź i tak.',
+        lead: 'Twoje ciężary, makro i pomiary — jeden dziennik, każdy trening.',
+      },
+      register: {
+        title: 'Za trzy miesiące pożałujesz, że nie zacząłeś',
+        accent: 'dziś.',
+        lead: 'Plany, treningi, posiłki i pomiary — w jednym miejscu.',
+        steps: [
+          'Załóż konto',
+          'Wybierz plan albo zbuduj własny',
+          'Zapisz pierwszy trening jeszcze dziś',
+        ],
+      },
+    },
     name: 'Imię',
     email: 'E-mail',
     password: 'Hasło',
@@ -60,12 +103,21 @@ export const useAuthTranslation = createFeatureTranslation({
     },
     register: {
       title: 'Załóż konto',
-      subtitle: 'Za darmo na zawsze · bez app store.',
+      subtitle: 'Za darmo, póki jesteśmy mali · bez sklepu z aplikacjami.',
       minChars: 'min. 8 znaków',
       createAccount: 'Załóż konto',
       creating: 'Tworzenie konta…',
       haveAccount: 'Masz już konto?',
       signIn: 'Zaloguj się',
+      consent: {
+        termsBefore: 'Akceptuję ',
+        terms: 'Regulamin',
+        and: ' i ',
+        privacy: 'Politykę prywatności',
+        health:
+          'Wyrażam zgodę na przetwarzanie przez Lift4Me moich danych o zdrowiu (waga, skład ciała, obwody) w celu ich zapisywania i prezentowania w aplikacji. Mogę ją w każdej chwili wycofać.',
+        required: 'Zaznacz oba pola, aby założyć konto.',
+      },
     },
     onboarding: {
       title: 'Witaj! Uzupełnij profil',

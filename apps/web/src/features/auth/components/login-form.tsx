@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { useLogin } from '../hooks/use-login';
 import { useAuthTranslation } from '../i18n';
 import { loginSchema, type LoginInput } from '../types';
+import { AUTH_FIELD, AUTH_SUBMIT } from '../utils/auth-styles';
 
 interface LoginFormProps {
   // Called after a successful login (e.g. to navigate away). The cache is
@@ -49,7 +50,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
                   inputMode="email"
                   autoComplete="email"
                   placeholder="you@example.com"
-                  className="h-12 rounded-xl border-[#e8e1da] bg-[#fdfbf9]"
+                  className={AUTH_FIELD}
                   {...field}
                 />
               </FormControl>
@@ -68,7 +69,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
                 <Input
                   type="password"
                   autoComplete="current-password"
-                  className="h-12 rounded-xl border-[#e8e1da] bg-[#fdfbf9]"
+                  className={AUTH_FIELD}
                   {...field}
                 />
               </FormControl>
@@ -85,7 +86,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
           </p>
         ) : null}
 
-        <Button type="submit" className="mt-1 h-12 w-full rounded-full" disabled={isPending}>
+        <Button type="submit" className={AUTH_SUBMIT} disabled={isPending}>
           {isPending ? t.login.signingIn : t.login.signIn}
         </Button>
       </form>

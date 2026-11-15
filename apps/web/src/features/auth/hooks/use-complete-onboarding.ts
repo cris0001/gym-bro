@@ -12,6 +12,10 @@ export function useCompleteOnboarding() {
     mutationFn: (input: UpdateProfileInput) => completeOnboarding(input),
     onSuccess: (user) => {
       queryClient.setQueryData<User>(CURRENT_USER_KEY, user);
+      // Onboarding also saved the first weight entry and nutrition target (body and
+      // nutrition features' keys), which the dashboard may already have cached empty.
+      void queryClient.invalidateQueries({ queryKey: ['body'] });
+      void queryClient.invalidateQueries({ queryKey: ['nutrition', 'targets'] });
     },
   });
 }

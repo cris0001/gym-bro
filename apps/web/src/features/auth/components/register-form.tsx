@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
@@ -15,14 +16,14 @@ import { Input } from '@/components/ui/input';
 import { useRegister } from '../hooks/use-register';
 import { useAuthTranslation } from '../i18n';
 import { registerSchema, type RegisterInput } from '../types';
+import { AUTH_FIELD, AUTH_SUBMIT } from '../utils/auth-styles';
+import { type Consents, RegisterConsents } from './register-consents';
 
 interface RegisterFormProps {
   // Called after a successful registration (e.g. to navigate away). useRegister
   // already seeds the cache, so the new account is signed in immediately.
   onSuccess?: () => void;
 }
-
-const FIELD = 'h-12 rounded-xl border-[#e8e1da] bg-[#fdfbf9]';
 
 export function RegisterForm({ onSuccess }: RegisterFormProps) {
   const form = useForm<RegisterInput>({
@@ -31,14 +32,26 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
   });
   const { mutate, isPending, error } = useRegister();
   const t = useAuthTranslation();
+  const [consents, setConsents] = useState<Consents>({ terms: false, health: false });
+  const [triedSubmit, setTriedSubmit] = useState(false);
 
   function onSubmit(values: RegisterInput) {
+    // Both consents are required to sign up (they aren't sent — ticking them is the
+    // act of consenting; the policy records what was agreed to).
+    if (!consents.terms || !consents.health) return;
     mutate(values, { onSuccess: () => onSuccess?.() });
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={(e) => void form.handleSubmit(onSubmit)(e)} className="grid gap-4" noValidate>
+      <form
+        onSubmit={(e) => {
+          setTriedSubmit(true);
+          void form.handleSubmit(onSubmit)(e);
+        }}
+        className="grid gap-4"
+        noValidate
+      >
         <FormField
           control={form.control}
           name="name"
@@ -46,7 +59,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             <FormItem>
               <FormLabel>{t.name}</FormLabel>
               <FormControl>
-                <Input type="text" autoComplete="name" className={FIELD} {...field} />
+                <Input type="text" autoComplete="name" className={AUTH_FIELD} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -65,7 +78,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
                   inputMode="email"
                   autoComplete="email"
                   placeholder="you@example.com"
-                  className={FIELD}
+                  className={AUTH_FIELD}
                   {...field}
                 />
               </FormControl>
@@ -81,13 +94,20 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             <FormItem>
               <FormLabel>{t.password}</FormLabel>
               <FormControl>
-                <Input type="password" autoComplete="new-password" className={FIELD} {...field} />
+                <Input
+                  type="password"
+                  autoComplete="new-password"
+                  className={AUTH_FIELD}
+                  {...field}
+                />
               </FormControl>
-              <p className="text-[11.5px] text-[#94858b]">{t.register.minChars}</p>
+              <p className="text-[11.5px] text-[#5b6170]">{t.register.minChars}</p>
               <FormMessage />
             </FormItem>
           )}
         />
+
+        <RegisterConsents value={consents} onChange={setConsents} showError={triedSubmit} />
 
         {/* Server-side failures (e.g. email already in use, network). Field-level
             Zod errors render via FormMessage above. */}
@@ -97,7 +117,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           </p>
         ) : null}
 
-        <Button type="submit" className="mt-1 h-12 w-full rounded-full" disabled={isPending}>
+        <Button type="submit" className={AUTH_SUBMIT} disabled={isPending}>
           {isPending ? t.register.creating : t.register.createAccount}
         </Button>
       </form>

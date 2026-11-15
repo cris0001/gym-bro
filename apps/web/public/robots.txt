@@ -1,0 +1,28 @@
+# Only the landing, sign-up and legal pages are public. The app itself sits behind a
+# login (and sends noindex), so crawlers are kept out of it entirely.
+User-agent: *
+Allow: /$
+Allow: /register
+Allow: /privacy
+Allow: /terms
+Allow: /landing/
+Allow: /og-image.jpg
+Disallow: /login
+Disallow: /dashboard
+Disallow: /calendar
+Disallow: /session
+Disallow: /history
+Disallow: /plans
+Disallow: /templates
+Disallow: /exercises
+Disallow: /tags
+Disallow: /diary
+Disallow: /foods
+Disallow: /recipes
+Disallow: /targets
+Disallow: /body
+Disallow: /stats
+Disallow: /strava
+Disallow: /api/
+
+Sitemap: https://lift4.me/sitemap.xml
