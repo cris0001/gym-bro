@@ -173,3 +173,5 @@ test-results/
 
 # Design handoff — local reference only, never commit
 apps/web/design/
+# TanStack Router generator temp files
+.tanstack/

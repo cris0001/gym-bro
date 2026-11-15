@@ -3,6 +3,42 @@ import { createFeatureTranslation } from '@/lib/i18n/create-translation';
 // Stats page copy, EN source with a key-for-key PL mirror.
 interface StatsCopy {
   title: string;
+  export: {
+    button: string;
+    pdf: string;
+    pdfHint: string;
+    csv: string;
+    csvHint: string;
+    working: string;
+    empty: string;
+    failed: string;
+    pdfLabels: {
+      title: string;
+      period: string;
+      allTime: string;
+      generated: string;
+      workouts: string;
+      sets: string;
+      volume: string;
+      avgRating: string;
+      best: string;
+      change: string;
+      sessions: (n: number) => string;
+      bodyweight: string;
+    };
+    csvColumns: {
+      date: string;
+      session: string;
+      exercise: string;
+      category: string;
+      set: string;
+      weight: string;
+      reps: string;
+      rir: string;
+      topSet: string;
+      volume: string;
+    };
+  };
   exerciseProgress: string;
   workoutRatings: string;
   tiles: {
@@ -32,6 +68,42 @@ interface StatsCopy {
 
 const en: StatsCopy = {
   title: 'Stats',
+  export: {
+    button: 'Export',
+    pdf: 'PDF report',
+    pdfHint: 'Results and progress charts',
+    csv: 'CSV data',
+    csvHint: 'Every set — for Excel or an AI chat',
+    working: 'Preparing…',
+    empty: 'No workouts in this period.',
+    failed: 'Export failed — try again.',
+    pdfLabels: {
+      title: 'Training report',
+      period: 'Period',
+      allTime: 'All time',
+      generated: 'Generated',
+      workouts: 'Workouts',
+      sets: 'Sets',
+      volume: 'Volume',
+      avgRating: 'Avg rating',
+      best: 'Best',
+      change: 'Change',
+      sessions: (n) => `${n} ${n === 1 ? 'session' : 'sessions'}`,
+      bodyweight: 'Bodyweight — chart shows reps per session',
+    },
+    csvColumns: {
+      date: 'date',
+      session: 'workout',
+      exercise: 'exercise',
+      category: 'category',
+      set: 'set',
+      weight: 'weight_kg',
+      reps: 'reps',
+      rir: 'rir',
+      topSet: 'top_set',
+      volume: 'volume_kg',
+    },
+  },
   exerciseProgress: 'Exercise progress',
   workoutRatings: 'Workout ratings',
   tiles: {
@@ -66,6 +138,43 @@ const en: StatsCopy = {
 
 const pl: StatsCopy = {
   title: 'Statystyki',
+  export: {
+    button: 'Eksport',
+    pdf: 'Raport PDF',
+    pdfHint: 'Wyniki i wykresy postępów',
+    csv: 'Dane CSV',
+    csvHint: 'Każda seria — do Excela albo czatu AI',
+    working: 'Przygotowuję…',
+    empty: 'Brak treningów w tym okresie.',
+    failed: 'Eksport się nie udał — spróbuj ponownie.',
+    pdfLabels: {
+      title: 'Raport treningowy',
+      period: 'Okres',
+      allTime: 'Cała historia',
+      generated: 'Wygenerowano',
+      workouts: 'Treningi',
+      sets: 'Serie',
+      volume: 'Objętość',
+      avgRating: 'Średnia ocena',
+      best: 'Rekord',
+      change: 'Zmiana',
+      sessions: (n) =>
+        `${n} ${n === 1 ? 'trening' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 'treningi' : 'treningów'}`,
+      bodyweight: 'Masa ciała — wykres pokazuje powtórzenia',
+    },
+    csvColumns: {
+      date: 'data',
+      session: 'trening',
+      exercise: 'cwiczenie',
+      category: 'kategoria',
+      set: 'seria',
+      weight: 'ciezar_kg',
+      reps: 'powtorzenia',
+      rir: 'rir',
+      topSet: 'top_set',
+      volume: 'objetosc_kg',
+    },
+  },
   exerciseProgress: 'Postęp w ćwiczeniu',
   workoutRatings: 'Oceny treningów',
   tiles: {

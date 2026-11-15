@@ -11,6 +11,7 @@ import { ExerciseProgressChart } from './exercise-progress-chart';
 import { ExerciseStatPicker } from './exercise-stat-picker';
 import { RatingSummaryCard } from './rating-summary';
 import { StatsDateRange } from './stats-date-range';
+import { StatsExportMenu } from './stats-export-menu';
 import { StatsOverviewTiles } from './stats-overview-tiles';
 
 const microLabel = 'text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase';
@@ -26,9 +27,12 @@ export function StatsPage() {
 
   return (
     <div className="lg:col-start-2 flex w-full max-w-6xl flex-col gap-4 p-3 md:p-4">
-      <PageTitle className="font-heading text-[28px] leading-none font-bold tracking-tight">
-        {t.title}
-      </PageTitle>
+      <div className="flex items-center justify-between gap-2">
+        <PageTitle className="font-heading text-[28px] leading-none font-bold tracking-tight">
+          {t.title}
+        </PageTitle>
+        <StatsExportMenu range={range} />
+      </div>
 
       <StatsOverviewTiles />
 
