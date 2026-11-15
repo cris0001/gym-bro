@@ -4,6 +4,7 @@ import type { PlanListItem, PlanWithTemplates } from '@gym-bro/shared';
 
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { useHScroll } from '@/hooks/use-h-scroll';
 
 import { useSessionsTranslation } from '../i18n';
 import { StartTemplateCard } from './start-template-card';
@@ -25,6 +26,7 @@ export function StartMobilePicker({
   onSelectTemplate,
 }: StartMobilePickerProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const scrollRef = useHScroll<HTMLDivElement>(selectedId);
   const t = useSessionsTranslation();
 
   const index = Math.max(
@@ -40,7 +42,7 @@ export function StartMobilePicker({
           <p className="text-muted-foreground px-0.5 text-[11px] font-medium tracking-[0.08em] uppercase">
             {t.startWorkout.plans}
           </p>
-          <div className="-mx-3 flex gap-1.5 overflow-x-auto px-3">
+          <div ref={scrollRef} className="no-scrollbar -mx-3 flex gap-1.5 overflow-x-auto px-3">
             {plans.map((plan, i) => (
               <button
                 key={plan.id}

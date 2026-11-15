@@ -4,6 +4,7 @@ import type { UpdateFoodInput } from '@gym-bro/shared';
 
 import { updateFood } from '../api/foods';
 import { foodKeys } from './use-foods';
+import { recipeKeys } from './use-recipes';
 
 export function useUpdateFood() {
   const queryClient = useQueryClient();
@@ -11,6 +12,7 @@ export function useUpdateFood() {
     mutationFn: ({ id, input }: { id: string; input: UpdateFoodInput }) => updateFood(id, input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: foodKeys.all });
+      void queryClient.invalidateQueries({ queryKey: recipeKeys.all });
     },
   });
 }

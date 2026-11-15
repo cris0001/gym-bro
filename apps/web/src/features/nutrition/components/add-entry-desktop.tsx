@@ -129,42 +129,51 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
               ) : null}
             </div>
 
-            <div className="border-border bg-card overflow-hidden rounded-xl border">
-              <div className={cn('flex items-center justify-between border-b px-4 py-3', divider)}>
+            {/* Capped to the viewport (13rem ≈ page header + search above it) so the end
+                of the list and "Create food" stay on screen; only the rows scroll. */}
+            <div className="border-border bg-card flex max-h-[calc(100dvh-13rem)] min-h-80 flex-col overflow-hidden rounded-xl border">
+              <div
+                className={cn(
+                  'flex shrink-0 items-center justify-between border-b px-4 py-3',
+                  divider,
+                )}
+              >
                 <span className={microLabel}>{t.addEntry.allFoodsRecipes}</span>
                 <span className="text-muted-foreground text-[11px]">{t.addEntry.recentFirst}</span>
               </div>
-              {isListLoading ? (
-                <AddEntryListSkeleton dividerClassName={cn('border-t', divider)} />
-              ) : (
-                <>
-                  {rows.map((row, i) => (
-                    <div
-                      key={`${row.kind}-${row.id}`}
-                      className={i > 0 ? cn('border-t', divider) : ''}
-                    >
-                      <AddEntryResultRow
-                        row={row}
-                        disabled={isAdding}
-                        onAdd={() => logPortion(row, defaultPortion(row))}
-                        onEditPortion={() => setPortionRow(row)}
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+                {isListLoading ? (
+                  <AddEntryListSkeleton dividerClassName={cn('border-t', divider)} />
+                ) : (
+                  <>
+                    {rows.map((row, i) => (
+                      <div
+                        key={`${row.kind}-${row.id}`}
+                        className={i > 0 ? cn('border-t', divider) : ''}
+                      >
+                        <AddEntryResultRow
+                          row={row}
+                          disabled={isAdding}
+                          onAdd={() => logPortion(row, defaultPortion(row))}
+                          onEditPortion={() => setPortionRow(row)}
+                        />
+                      </div>
+                    ))}
+                    {isCatalogLoading ? (
+                      <AddEntryListSkeleton
+                        rows={2}
+                        dividedFromAbove={rows.length > 0}
+                        dividerClassName={cn('border-t', divider)}
                       />
-                    </div>
-                  ))}
-                  {isCatalogLoading ? (
-                    <AddEntryListSkeleton
-                      rows={2}
-                      dividedFromAbove={rows.length > 0}
-                      dividerClassName={cn('border-t', divider)}
-                    />
-                  ) : null}
-                </>
-              )}
+                    ) : null}
+                  </>
+                )}
+              </div>
               <button
                 type="button"
                 onClick={createNewFood}
                 className={cn(
-                  'text-primary flex w-full items-center justify-center gap-1.5 border-t py-3.5 text-[12.5px] font-bold',
+                  'text-primary flex w-full shrink-0 items-center justify-center gap-1.5 border-t py-3.5 text-[12.5px] font-bold',
                   divider,
                 )}
               >

@@ -104,11 +104,11 @@ export function ExercisePerformanceCard({ performance, onSwap }: ExercisePerform
             )}
           />
           <span className="min-w-0">
-            <span className="font-heading block truncate text-[18px] font-semibold">
+            <span className="font-heading block truncate text-[15px] font-semibold sm:text-[18px]">
               {performance.exerciseName}
             </span>
             <span className="text-muted-foreground block text-[11.5px]">
-              {performance.category}
+              {t.picker.categories[performance.category]}
               {isSwapped && t.exerciseCard.swapped}
               {setCount > 0 && ` · ${t.exerciseCard.sets(setCount)}`}
             </span>

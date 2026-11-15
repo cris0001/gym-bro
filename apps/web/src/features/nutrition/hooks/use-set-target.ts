@@ -11,6 +11,8 @@ export function useSetTarget() {
     mutationFn: (input: SetNutritionTargetInput) => setTarget(input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: targetKeys.all });
+      // Body feature's target-history key — the trend chart's calorie overlay.
+      void queryClient.invalidateQueries({ queryKey: ['body', 'target-history'] });
     },
   });
 }

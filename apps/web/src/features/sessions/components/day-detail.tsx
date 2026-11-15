@@ -7,7 +7,7 @@ import type { PlannedSessionWithTemplate } from '@gym-bro/shared';
 
 import { DeleteIconButton } from '@/components/delete-icon-button';
 import { Button } from '@/components/ui/button';
-import { RouteMap, stravaActivityIcon } from '@/features/strava';
+import { RouteMap, stravaActivityIcon, useActivityTypeLabel } from '@/features/strava';
 import { useTemplate } from '@/features/training';
 import { cn } from '@/lib/utils';
 
@@ -15,6 +15,7 @@ import { useSessionsTranslation } from '../i18n';
 import { useCalendarDay } from '../hooks/use-calendar-day';
 import { useDeletePlannedSession } from '../hooks/use-delete-planned-session';
 import { useStartWorkout } from '../hooks/use-start-workout';
+import { useAssignTemplateData } from '../hooks/use-assign-template-data';
 import { AssignTemplateForm } from './assign-template-form';
 import { DayDetailSkeleton } from './day-detail-skeleton';
 import { DayWorkoutItem } from './day-workout-item';
@@ -147,6 +148,10 @@ export function DayDetail({ date }: { date: string }) {
   const { planned, workouts, strava: stravaSessions, isLoading } = useCalendarDay(date);
   const navigate = useNavigate();
   const t = useSessionsTranslation();
+  const activityLabel = useActivityTypeLabel();
+  // Warm the "Add session" form's data while the day is on screen, so opening it is
+  // instant (one skeleton at most, on a cold cache) rather than four loads in a row.
+  useAssignTemplateData(null);
 
   const todos = planned.filter((session) => session.status !== 'completed');
   const nothingElse = workouts.length === 0 && stravaSessions.length === 0;
@@ -202,7 +207,7 @@ export function DayDetail({ date }: { date: string }) {
                   {session.name}
                 </p>
                 <p className="text-muted-foreground text-xs">
-                  <span className="capitalize">{session.activityType}</span> ·{' '}
+                  <span>{activityLabel(session.activityType)}</span> ·{' '}
                   {format(parseISO(session.startedAt), 'HH:mm')}
                 </p>
               </div>

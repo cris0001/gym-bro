@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { Search } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 
-import type { ExerciseCategory } from '@gym-bro/shared';
+import { EXERCISE_CATEGORIES, type ExerciseCategory } from '@gym-bro/shared';
 
 import { templateQueryOptions, useExercises } from '@/features/training';
 import { Input } from '@/components/ui/input';
@@ -18,55 +19,60 @@ import { FIELD_CLASS } from '@/lib/form-styles';
 import { useSessionsTranslation } from '../i18n';
 import { useWorkoutDraftStore } from '../stores/workout-draft.store';
 import type { PickerMode } from './active-session-page';
+import { ExerciseCategoryChips } from './exercise-category-chips';
+import { ExercisePickerList } from './exercise-picker-list';
+import type { PickableExercise } from './exercise-picker-row';
+import { PickerSourceToggle } from './picker-source-toggle';
 
 interface ExercisePickerSheetProps {
   mode: PickerMode | null;
   onClose: () => void;
 }
 
-interface PickableExercise {
-  id: string;
-  name: string;
-  category: ExerciseCategory;
-  isActive: boolean;
-}
-
-// Bottom sheet listing the exercise library to add a new exercise or swap an
-// existing one (same picker, behaviour chosen by `mode`). When the session was
-// started from a template, the picker can scope to that template's exercises
-// (default for "add") with a toggle back to the full library; "swap" defaults to
-// the full library. Inactive (soft-deleted) exercises are always hidden.
+// Sheet (bottom on phones, centred modal on desktop) to add an exercise or swap one
+// (same picker, behaviour chosen by `mode`). A session started from a template can
+// scope to that template's exercises (default for "add"; "swap" opens on the full
+// library). Search + category chips narrow the list; soft-deleted exercises are hidden.
 export function ExercisePickerSheet({ mode, onClose }: ExercisePickerSheetProps) {
-  const { data: exercises = [] } = useExercises();
-  const workoutTemplateId = useWorkoutDraftStore((s) => s.draft?.workoutTemplateId ?? null);
+  const t = useSessionsTranslation();
+  const { data: exercises = [], isPending: exercisesPending } = useExercises();
+  const draft = useWorkoutDraftStore((s) => s.draft);
   const addExercise = useWorkoutDraftStore((s) => s.addExercise);
   const swapExercise = useWorkoutDraftStore((s) => s.swapExercise);
+  const workoutTemplateId = draft?.workoutTemplateId ?? null;
 
-  const { data: template } = useQuery({
+  // isLoading, not isPending: a disabled query (no template) stays pending forever.
+  const { data: template, isLoading: templateLoading } = useQuery({
     ...templateQueryOptions(workoutTemplateId ?? ''),
     enabled: workoutTemplateId !== null,
   });
-
-  const hasTemplate = workoutTemplateId !== null;
   const [source, setSource] = useState<'template' | 'all'>('template');
   const [search, setSearch] = useState('');
-  const t = useSessionsTranslation();
+  const [category, setCategory] = useState<ExerciseCategory | null>(null);
 
   // Add scopes to the template by default; swap opens on the full library.
   useEffect(() => {
     setSource(mode?.type === 'swap' ? 'all' : 'template');
+    setCategory(null);
   }, [mode]);
 
   const isSwap = mode?.type === 'swap';
-  const effectiveSource = hasTemplate ? source : 'all';
-  const candidates: PickableExercise[] =
+  const effectiveSource = workoutTemplateId !== null ? source : 'all';
+  const listLoading = effectiveSource === 'template' ? templateLoading : exercisesPending;
+  const candidates: PickableExercise[] = (
     effectiveSource === 'template'
       ? (template?.exercises ?? []).map((te) => te.exercise)
-      : exercises;
-
+      : exercises
+  ).filter((exercise) => exercise.isActive);
+  // Chips only for categories that actually have exercises, in the canonical order.
+  const categories = EXERCISE_CATEGORIES.filter((c) => candidates.some((e) => e.category === c));
   const query = search.trim().toLowerCase();
   const filtered = candidates.filter(
-    (exercise) => exercise.isActive && exercise.name.toLowerCase().includes(query),
+    (e) => (category === null || e.category === category) && e.name.toLowerCase().includes(query),
+  );
+  const inWorkoutIds = useMemo(
+    () => new Set((draft?.performances ?? []).map((p) => p.actualExerciseId)),
+    [draft?.performances],
   );
 
   function handleClose() {
@@ -85,9 +91,11 @@ export function ExercisePickerSheet({ mode, onClose }: ExercisePickerSheetProps)
     handleClose();
   }
 
+  // Fixed height on phones too: a content-sized sheet would jump when the list grows
+  // (switching to all exercises) or shrinks (searching).
   return (
     <Sheet open={mode !== null} onOpenChange={(next) => !next && handleClose()}>
-      <SheetContent side="bottom" className="gap-0 sm:h-[70dvh]">
+      <SheetContent side="bottom" className="h-[88dvh] gap-0 sm:h-[75dvh] sm:max-w-xl lg:max-w-xl">
         <SheetHeader>
           <SheetTitle>{isSwap ? t.picker.swapTitle : t.picker.addTitle}</SheetTitle>
           <SheetDescription>
@@ -95,50 +103,45 @@ export function ExercisePickerSheet({ mode, onClose }: ExercisePickerSheetProps)
           </SheetDescription>
         </SheetHeader>
 
-        <div className="flex min-h-0 flex-1 flex-col gap-3 p-4">
-          {hasTemplate && (
-            <div className="bg-muted flex gap-1 rounded-md p-1 text-sm">
-              {(['template', 'all'] as const).map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => setSource(option)}
-                  className={cn(
-                    'h-9 flex-1 rounded',
-                    effectiveSource === option && 'bg-background font-medium shadow-sm',
-                  )}
-                >
-                  {option === 'template' ? t.picker.template : t.picker.all}
-                </button>
-              ))}
-            </div>
+        <div className="flex min-h-0 flex-1 flex-col gap-3 px-4 pb-4">
+          {workoutTemplateId !== null && (
+            <PickerSourceToggle
+              value={effectiveSource}
+              onChange={(next) => {
+                setSource(next);
+                setCategory(null);
+              }}
+              labels={{ template: t.picker.template, all: t.picker.all }}
+            />
           )}
 
-          <Input
-            placeholder={t.picker.searchPlaceholder}
-            className={FIELD_CLASS}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+          <div className="relative shrink-0">
+            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2" />
+            <Input
+              placeholder={t.picker.searchPlaceholder}
+              className={cn(FIELD_CLASS, 'pl-10')}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
+          {!listLoading && categories.length > 1 && (
+            <ExerciseCategoryChips
+              categories={categories}
+              value={category}
+              onChange={setCategory}
+              labels={t.picker.categories}
+              allLabel={t.picker.allCategories}
+            />
+          )}
+
+          <ExercisePickerList
+            loading={listLoading}
+            exercises={filtered}
+            inWorkoutIds={inWorkoutIds}
+            isSwap={isSwap}
+            onSelect={handleSelect}
           />
-
-          {filtered.length === 0 ? (
-            <p className="text-muted-foreground text-sm">{t.picker.noMatches}</p>
-          ) : (
-            <ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
-              {filtered.map((exercise) => (
-                <li key={exercise.id}>
-                  <button
-                    type="button"
-                    onClick={() => handleSelect(exercise)}
-                    className="hover:bg-accent flex min-h-11 w-full flex-col items-start rounded-md border px-3 py-2 text-left transition-colors"
-                  >
-                    <span className="font-medium">{exercise.name}</span>
-                    <span className="text-muted-foreground text-xs">{exercise.category}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
       </SheetContent>
     </Sheet>

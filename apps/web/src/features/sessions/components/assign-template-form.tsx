@@ -1,19 +1,14 @@
-import { useQueries, useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import {
-  activePlanQueryOptions,
-  planQueryOptions,
-  plansQueryOptions,
-  templateQueryOptions,
-} from '@/features/training';
 import { cn } from '@/lib/utils';
 
 import { useSessionsTranslation } from '../i18n';
+import { useAssignTemplateData } from '../hooks/use-assign-template-data';
 import { useCreatePlannedSession } from '../hooks/use-create-planned-session';
 import { AssignTemplateRow } from './assign-template-row';
+import { AssignTemplateSkeleton } from './assign-template-skeleton';
 
 interface AssignTemplateFormProps {
   date: string;
@@ -26,25 +21,12 @@ interface AssignTemplateFormProps {
 // without one, plan chips let any plan be picked (hidden with a single plan). Plain
 // useState rather than RHF: the inputs are choices constrained to server lists.
 export function AssignTemplateForm({ date, onDone }: AssignTemplateFormProps) {
-  const { data: plans = [] } = useQuery(plansQueryOptions());
-  const { data: activePlan } = useQuery(activePlanQueryOptions());
-
   const [planIdOverride, setPlanIdOverride] = useState<string | null>(null);
   const [templateId, setTemplateId] = useState<string | null>(null);
-
-  // Effective plan = the active plan, else an explicit pick, else the first plan.
-  const planId = activePlan?.id ?? planIdOverride ?? plans[0]?.id ?? null;
+  const { plans, activePlan, planId, templates, exerciseCounts, loading } =
+    useAssignTemplateData(planIdOverride);
   const ordered = [...plans].sort((a, b) => a.name.localeCompare(b.name));
   const showPlanChips = !activePlan && ordered.length > 1;
-
-  const { data: plan } = useQuery({
-    ...planQueryOptions(planId ?? ''),
-    enabled: planId !== null,
-  });
-  const templates = plan?.templates ?? [];
-  const templateQueries = useQueries({
-    queries: templates.map((tpl) => templateQueryOptions(tpl.id)),
-  });
 
   const createMutation = useCreatePlannedSession();
   const t = useSessionsTranslation();
@@ -69,7 +51,9 @@ export function AssignTemplateForm({ date, onDone }: AssignTemplateFormProps) {
         </div>
       </div>
 
-      {plans.length === 0 ? (
+      {loading ? (
+        <AssignTemplateSkeleton />
+      ) : plans.length === 0 ? (
         <p className="text-muted-foreground text-sm">{t.assign.noPlans}</p>
       ) : (
         <>
@@ -101,7 +85,7 @@ export function AssignTemplateForm({ date, onDone }: AssignTemplateFormProps) {
           ) : (
             <ul className="flex flex-col">
               {templates.map((template, index) => {
-                const count = templateQueries[index]?.data?.exercises.length;
+                const count = exerciseCounts[index];
                 return (
                   <AssignTemplateRow
                     key={template.id}

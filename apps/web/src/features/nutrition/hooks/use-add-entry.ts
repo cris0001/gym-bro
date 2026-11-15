@@ -75,7 +75,7 @@ export interface UseAddEntry {
   handleEan: (ean: string) => Promise<ScanOutcome>;
 }
 
-const RECENT_MAX_AGE_MS = 12 * 60 * 60 * 1000;
+const RECENT_MAX_AGE_MS = 5 * 60 * 1000;
 
 export function useAddEntry(loggedDate: string): UseAddEntry {
   const t = useNutritionTranslation();
@@ -120,10 +120,10 @@ export function useAddEntry(loggedDate: string): UseAddEntry {
   // already shows the current order.
   const queryClient = useQueryClient();
 
-  // Every 12 h at most, refresh all meals' recents in the background — when the diary
+  // Every 5 min at most, refresh all meals' recents in the background — when the diary
   // mounts and when the app returns to the foreground — so entries logged on another
   // device show up without opening each meal. prefetchQuery is a no-op while the cached
-  // list is younger than 12 h. It never reorders an open view (that order is frozen),
+  // list is younger than 5 min. It never reorders an open view (that order is frozen),
   // and identical data keeps the same reference, so nothing re-renders.
   useEffect(() => {
     const refreshOld = () => {

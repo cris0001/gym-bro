@@ -1,3 +1,5 @@
+import type { ExerciseCategory } from '@gym-bro/shared';
+
 import { createFeatureTranslation } from '@/lib/i18n/create-translation';
 
 // Sessions feature copy (calendar, active workout, finish/activity forms, workout
@@ -194,10 +196,24 @@ export const useSessionsTranslation = createFeatureTranslation({
       swapTitle: 'Swap exercise',
       addDescription: 'Pick an exercise to add.',
       swapDescription: 'Pick the exercise you did instead.',
-      template: 'Template',
-      all: 'All',
+      template: 'From template',
+      all: 'All exercises',
       searchPlaceholder: 'Search exercises',
       noMatches: 'No matching exercises.',
+      noMatchesHint: 'Try another name or category.',
+      allCategories: 'All',
+      inWorkout: 'In workout',
+      categories: {
+        Chest: 'Chest',
+        Back: 'Back',
+        Legs: 'Legs',
+        Shoulders: 'Shoulders',
+        Biceps: 'Biceps',
+        Triceps: 'Triceps',
+        Abs: 'Abs',
+        Cardio: 'Cardio',
+        Other: 'Other',
+      } satisfies Record<ExerciseCategory, string>,
     },
     workoutDetail: {
       notFound: 'Workout not found.',
@@ -400,10 +416,24 @@ export const useSessionsTranslation = createFeatureTranslation({
       swapTitle: 'Zamień ćwiczenie',
       addDescription: 'Wybierz ćwiczenie do dodania.',
       swapDescription: 'Wybierz ćwiczenie, które wykonałeś zamiast tego.',
-      template: 'Szablon',
-      all: 'Wszystkie',
+      template: 'Z szablonu',
+      all: 'Wszystkie ćwiczenia',
       searchPlaceholder: 'Szukaj ćwiczeń',
       noMatches: 'Brak pasujących ćwiczeń.',
+      noMatchesHint: 'Spróbuj innej nazwy albo kategorii.',
+      allCategories: 'Wszystkie',
+      inWorkout: 'W treningu',
+      categories: {
+        Chest: 'Klatka',
+        Back: 'Plecy',
+        Legs: 'Nogi',
+        Shoulders: 'Barki',
+        Biceps: 'Biceps',
+        Triceps: 'Triceps',
+        Abs: 'Brzuch',
+        Cardio: 'Cardio',
+        Other: 'Inne',
+      } satisfies Record<ExerciseCategory, string>,
     },
     workoutDetail: {
       notFound: 'Nie znaleziono treningu.',

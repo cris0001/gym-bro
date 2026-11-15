@@ -5,13 +5,14 @@
 // - Sheet wires up useSheetBackClose so the phone Back button closes an open sheet
 //   instead of navigating away to another URL (applies to every sheet in the app);
 // - Warm-editorial: --card surface, xl (12px) radius on the sheet/modal, a SheetTitle,
-//   and a grab-handle affordance on mobile bottom sheets;
+//   and a grab handle on mobile bottom sheets that drags the sheet down to dismiss;
 // - SheetContent takes a closeClassName so a caller can restyle the × button.
 import * as React from 'react';
 import { Dialog as SheetPrimitive } from 'radix-ui';
 import { XIcon } from 'lucide-react';
 
 import { useSheetBackClose } from '@/hooks/use-sheet-back-close';
+import { useSheetDragDismiss } from '@/hooks/use-sheet-drag-dismiss';
 import { cn } from '@/lib/utils';
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
@@ -58,6 +59,7 @@ function SheetContent({
   side?: 'top' | 'right' | 'bottom' | 'left';
   closeClassName?: string;
 }) {
+  const dragDismiss = useSheetDragDismiss();
   return (
     <SheetPortal>
       <SheetOverlay />
@@ -89,17 +91,22 @@ function SheetContent({
         )}
         {...props}
       >
-        {/* Grab-handle affordance on mobile bottom sheets (warm-editorial). */}
+        {/* Grab handle on mobile bottom sheets: a thin primary bar inside a full-width,
+            28px-tall drag zone — drag it down to dismiss (useSheetDragDismiss). */}
         {side === 'bottom' ? (
           <div
             aria-hidden
-            className="mx-auto mt-2.5 h-1 w-9 shrink-0 rounded-full bg-muted-strong sm:hidden"
-          />
+            className="relative z-10 -mb-3.5 flex h-7 shrink-0 cursor-grab touch-none items-center justify-center sm:hidden"
+            {...dragDismiss}
+          >
+            <div className="h-1 w-11 rounded-full bg-primary/30" />
+          </div>
         ) : null}
         {children}
         <SheetPrimitive.Close
+          data-slot="sheet-close-x"
           className={cn(
-            'ring-offset-background focus:ring-ring hover:bg-muted absolute top-3 right-3 flex size-9 items-center justify-center rounded-md opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none',
+            'ring-offset-background focus:ring-ring hover:bg-muted absolute top-3 right-3 z-20 flex size-9 items-center justify-center rounded-md opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none',
             closeClassName,
           )}
         >

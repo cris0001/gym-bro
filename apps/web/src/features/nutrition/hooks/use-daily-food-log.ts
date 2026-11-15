@@ -1,4 +1,5 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
 
 import type { DailyFoodLog } from '@gym-bro/shared';
 
@@ -20,6 +21,16 @@ export function dailyFoodLogQueryOptions(date: string) {
   });
 }
 
+// Today's diary is the one most likely to change on another device while this one
+// stays open (logging on the phone, the laptop showing the diary), so it also polls
+// every minute — only while the app is on screen.
+const TODAY_POLL_MS = 60_000;
+
 export function useDailyFoodLog(date: string) {
-  return useQuery(dailyFoodLogQueryOptions(date));
+  const isToday = date === format(new Date(), 'yyyy-MM-dd');
+  return useQuery({
+    ...dailyFoodLogQueryOptions(date),
+    refetchInterval: isToday ? TODAY_POLL_MS : false,
+    refetchIntervalInBackground: false,
+  });
 }

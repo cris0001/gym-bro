@@ -126,6 +126,8 @@
 }
 
 :root {
+  color-scheme: light;
+
   /* Plum & Parchment — muted plum accent on warm parchment, border-based (no shadows). */
   --background: #f6f3f0;
 
@@ -226,6 +228,9 @@
 }
 
 .dark {
+  /* Native UI (scrollbars, date pickers, checkboxes) follows the theme. */
+  color-scheme: dark;
+
   /* Plum & Parchment — dark. Near-black, faintly plum neutrals with a light rose
      primary and a pale-pink accent (text/icons on a dark rose tint); same rules
      (bordered cards, no shadows). The page sits a shade below the card so bordered
@@ -242,11 +247,12 @@
 
   --popover-foreground: var(--foreground);
 
-  --primary: #d68aa0; /* rose — bright enough to read on the near-black ground */
+  --primary: #c8436a; /* mid tone: carries white button text */
+  --primary-text: #d68aa0; /* lighter: primary-coloured text/charts on the dark ground */
 
-  --primary-foreground: #fdf6f5;
+  --primary-foreground: #ffffff;
 
-  --primary-hover: #e09bb0;
+  --primary-hover: #b9365c;
 
   --secondary: #282326;
 
@@ -284,7 +290,7 @@
 
   --ring: var(--primary);
 
-  --chart-1: var(--primary);
+  --chart-1: var(--primary-text);
 
   --chart-2: #d9a441;
 
@@ -297,7 +303,7 @@
   --macro-protein: var(--primary);
   --macro-carbs: #f0b95a;
   --macro-fat: #4fc4b4;
-  --macro-protein-text: var(--primary);
+  --macro-protein-text: var(--primary-text);
   --macro-carbs-text: #f0b95a;
   --macro-fat-text: #4fc4b4;
 
@@ -348,10 +354,11 @@ html[data-palette='slate'] {
 }
 
 html.dark[data-palette='slate'] {
-  --primary: #85aae6;
+  --primary: #3371d5; /* mid tone: carries white button text */
+  --primary-text: #85aae6; /* lighter: primary-coloured text/charts on the dark ground */
   --favicon: #85aae6;
-  --primary-foreground: #0d1626;
-  --primary-hover: #9dbcec;
+  --primary-foreground: #ffffff;
+  --primary-hover: #2864c5;
   --accent: #18233a;
   --accent-foreground: #c5d6f2;
   --chart-4: #c5d6f2;
@@ -383,9 +390,10 @@ html[data-palette='crimson'] {
 }
 
 html.dark[data-palette='crimson'] {
-  --primary: #f2708f;
-  --primary-foreground: #22070e;
-  --primary-hover: #f68ba5;
+  --primary: #e31546; /* mid tone: carries white button text */
+  --primary-text: #f2708f; /* lighter: primary-coloured text/charts on the dark ground */
+  --primary-foreground: #ffffff;
+  --primary-hover: #cc133f;
   --accent: #321820;
   --accent-foreground: #f9b8c8;
   --chart-4: #f9b8c8;
@@ -417,9 +425,10 @@ html[data-palette='forest'] {
 }
 
 html.dark[data-palette='forest'] {
-  --primary: #7fbf9b;
-  --primary-foreground: #0d1a12;
-  --primary-hover: #96cdae;
+  --primary: #26834f; /* mid tone: carries white button text */
+  --primary-text: #7fbf9b; /* lighter: primary-coloured text/charts on the dark ground */
+  --primary-foreground: #ffffff;
+  --primary-hover: #227546;
   --accent: #1a2a20;
   --accent-foreground: #bfe2cd;
   --chart-4: #bfe2cd;
@@ -451,9 +460,10 @@ html[data-palette='lagoon'] {
 }
 
 html.dark[data-palette='lagoon'] {
-  --primary: #4fd1c0;
-  --primary-foreground: #04211d;
-  --primary-hover: #6fdccd;
+  --primary: #228175; /* mid tone: carries white button text */
+  --primary-text: #4fd1c0; /* lighter: primary-coloured text/charts on the dark ground */
+  --primary-foreground: #ffffff;
+  --primary-hover: #1e7368;
   --accent: #102e2b;
   --accent-foreground: #9eeadf;
   --chart-4: #9eeadf;
@@ -486,6 +496,7 @@ html[data-palette='mono'] {
 
 html.dark[data-palette='mono'] {
   --primary: #f2f2f2;
+  --primary-text: var(--primary); /* one tone: white button, white text */
   --primary-foreground: #111111;
   --primary-hover: #ffffff;
   --accent: #262626;
@@ -519,9 +530,10 @@ html[data-palette='signal'] {
 }
 
 html.dark[data-palette='signal'] {
-  --primary: #ff8a4c;
-  --primary-foreground: #1f0d03;
-  --primary-hover: #ffa06e;
+  --primary: #cb4600; /* mid tone: carries white button text */
+  --primary-text: #ff8a4c; /* lighter: primary-coloured text/charts on the dark ground */
+  --primary-foreground: #ffffff;
+  --primary-hover: #b73f00;
   --accent: #2e1c12;
   --accent-foreground: #ffc4a3;
   --chart-4: #ffc4a3;
@@ -553,9 +565,10 @@ html[data-palette='violet'] {
 }
 
 html.dark[data-palette='violet'] {
-  --primary: #b391f7;
-  --primary-foreground: #1a0b33;
-  --primary-hover: #c4a9f9;
+  --primary: #8650f2; /* mid tone: carries white button text */
+  --primary-text: #b391f7; /* lighter: primary-coloured text/charts on the dark ground */
+  --primary-foreground: #ffffff;
+  --primary-hover: #783cf1;
   --accent: #261c3a;
   --accent-foreground: #d9c8fb;
   --chart-4: #d9c8fb;
@@ -705,4 +718,25 @@ html.dark[data-palette='violet'] {
       font-size: 16px;
     }
   }
+}
+
+/* Dark mode splits the primary in two: --primary is a mid tone deep enough to carry
+   white button text, but too dim for small text and chart strokes on the near-black
+   ground, so those read the lighter --primary-text. Unlayered, so it outranks the
+   Tailwind utilities. */
+.dark .text-primary {
+  color: var(--primary-text, var(--primary));
+}
+.dark .stroke-primary {
+  stroke: var(--primary-text, var(--primary));
+}
+.dark .fill-primary {
+  fill: var(--primary-text, var(--primary));
+}
+
+/* One scrollbar look across the whole app (inherited by every scroll container): a
+   muted thumb on a transparent track, so it sits on whatever surface it scrolls —
+   dark in dark mode, light in light mode. */
+html {
+  scrollbar-color: color-mix(in oklab, var(--muted-foreground) 45%, transparent) transparent;
 }

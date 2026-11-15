@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, Link, Outlet, redirect, useNavigate } from '@tanstack/react-router';
 
 import { BrandLogo } from '@/components/brand-logo';
 import { BottomNav } from '@/components/nav/bottom-nav';
@@ -50,7 +50,10 @@ function AppLayout() {
       <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
         {/* Mobile-only top bar; on lg the sidebar carries the logo + logout. */}
         <header className="bg-background/80 sticky top-0 z-10 flex h-14 items-center justify-between border-b px-4 backdrop-blur lg:hidden">
-          <BrandLogo />
+          {/* The logo is the way home, like in most apps. */}
+          <Link to="/dashboard" className="rounded-md">
+            <BrandLogo />
+          </Link>
           <div className="flex items-center gap-1">
             <SettingsButton />
             <LogoutButton />

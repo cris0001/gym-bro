@@ -5,6 +5,7 @@ import type { CreateStrengthSessionInput, WorkoutSession } from '@gym-bro/shared
 import { createStrengthSession } from '../api/workout-sessions';
 import { useWorkoutDraftStore } from '../stores/workout-draft.store';
 import { plannedSessionKeys } from './use-planned-sessions';
+import { exerciseHistoryKeys } from './use-exercise-history';
 import { workoutSessionKeys } from './use-workout-sessions';
 
 export const CREATE_STRENGTH_SESSION_KEY = ['workout-sessions', 'create-strength'] as const;
@@ -20,6 +21,7 @@ export function registerStrengthSessionMutationDefaults(queryClient: QueryClient
     onSuccess: (session: WorkoutSession) => {
       void queryClient.invalidateQueries({ queryKey: workoutSessionKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: plannedSessionKeys.all });
+      void queryClient.invalidateQueries({ queryKey: exerciseHistoryKeys.all });
       // Stats feature's root key — a finished workout is a new data point on the charts.
       void queryClient.invalidateQueries({ queryKey: ['stats'] });
       const { draft, discard } = useWorkoutDraftStore.getState();

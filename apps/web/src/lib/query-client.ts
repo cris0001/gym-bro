@@ -31,13 +31,16 @@ function retryDelay(failureCount: number, error: unknown): number {
 }
 
 // Single shared QueryClient. Defaults tuned for a personal app:
-// - staleTime 60s: data stays fresh briefly, avoiding refetch storms on navigation.
+// - staleTime 30s: data stays fresh briefly, avoiding refetch storms on navigation,
+//   yet short enough that switching devices (phone ↔ laptop) shows current data.
 // - gcTime = the persisted snapshot's max age, so unused queries stay in the cache
 //   (and therefore in the offline snapshot) instead of being dropped after 5 minutes.
 // - retry: the bounded, transient-only policy above (queries and mutations). With the
 //   default networkMode 'online', requests and pending retries pause while the device
 //   is offline and resume when it reconnects instead of burning the retry budget.
-// - refetchOnWindowFocus off: no surprise refetches when tabbing back at the gym.
+// - refetchOnWindowFocus on: returning to the tab, or the installed app coming back
+//   from the background (visibilitychange), refetches the on-screen queries that are
+//   stale — so edits made on another device appear as soon as you look.
 //
 // A MutationCache onError surfaces EVERY failed mutation (after its retries) as an
 // error toast, so no write silently fails. A mutation can opt out with
@@ -53,11 +56,11 @@ export const queryClient = new QueryClient({
   }),
   defaultOptions: {
     queries: {
-      staleTime: 60_000,
+      staleTime: 30_000,
       gcTime: PERSIST_MAX_AGE_MS,
       retry: (failureCount, error) => failureCount < MAX_QUERY_RETRIES && isRetryable(error),
       retryDelay,
-      refetchOnWindowFocus: false,
+      refetchOnWindowFocus: true,
     },
     mutations: {
       retry: (failureCount, error) => failureCount < MAX_MUTATION_RETRIES && isRetryable(error),

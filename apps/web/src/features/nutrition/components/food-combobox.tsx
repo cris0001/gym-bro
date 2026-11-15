@@ -19,6 +19,7 @@ import type { Food } from '@gym-bro/shared';
 import { useFoods } from '../hooks/use-foods';
 import { useNutritionTranslation } from '../i18n';
 import { CatalogCommandGroup } from './catalog-command-group';
+import { FoodComboboxSkeleton } from './food-combobox-skeleton';
 
 interface FoodComboboxProps {
   selectedId: string | null;
@@ -44,7 +45,7 @@ export function FoodCombobox({
   const t = useNutritionTranslation();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const { data: foods = [] } = useFoods('');
+  const { data: foods = [], isPending: foodsPending } = useFoods('');
   const ownedGlobalIds = useMemo(() => new Set(foods.map((f) => f.globalProductId)), [foods]);
   const triggerLabel = placeholder ?? t.foods.selectFood;
 
@@ -91,9 +92,13 @@ export function FoodCombobox({
             className="h-11 text-[14px] placeholder:text-[#7a6c72] dark:placeholder:text-[#9c9097]"
           />
           <CommandList className="max-h-72">
-            <CommandEmpty className="text-muted-foreground py-6 text-center text-[13px]">
-              {t.foods.noFoodsYet}
-            </CommandEmpty>
+            {foodsPending ? (
+              <FoodComboboxSkeleton />
+            ) : (
+              <CommandEmpty className="text-muted-foreground py-6 text-center text-[13px]">
+                {t.foods.noFoodsYet}
+              </CommandEmpty>
+            )}
             <CommandGroup>
               {foods.map((food) => (
                 <CommandItem

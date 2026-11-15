@@ -1,6 +1,7 @@
 import { Link, useRouterState } from '@tanstack/react-router';
 
 import { useTranslation } from '@/lib/i18n/use-translation';
+import { useHScroll } from '@/hooks/use-h-scroll';
 
 import { findActiveSection } from './nav-items';
 
@@ -12,6 +13,7 @@ export function SectionTabs() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const section = findActiveSection(pathname);
   const { t } = useTranslation();
+  const scrollRef = useHScroll<HTMLElement>(pathname);
 
   if (section.children.length === 0) {
     return null;
@@ -19,7 +21,7 @@ export function SectionTabs() {
 
   return (
     <div className="bg-background/80 sticky top-14 z-10 border-b backdrop-blur lg:hidden">
-      <nav className="no-scrollbar flex gap-1 overflow-x-auto px-3 py-2">
+      <nav ref={scrollRef} className="no-scrollbar flex gap-1 overflow-x-auto px-3 py-2">
         {section.children.map((child) => (
           <Link
             key={child.to}
