@@ -5,7 +5,11 @@
 # server through SSM. Nothing else — no console access, no other resources.
 
 locals {
-  github_repo = "cris0001/lift4me"
+  # GitHub's immutable subject format for this repo: owner and repo names WITH their
+  # numeric ids (from `gh api repos/cris0001/lift4me/actions/oidc/customization/sub`).
+  # The ids can't be reused by someone who later takes over a freed name, and the
+  # claim survives a repo rename.
+  github_repo = "cris0001@45604352/lift4me@1268205790"
 }
 
 resource "aws_iam_openid_connect_provider" "github" {

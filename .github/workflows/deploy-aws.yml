@@ -96,8 +96,10 @@ jobs:
           # The deploy files travel inside the command itself (a few KB), so the server
           # needs no Git access and always runs the files from this exact commit.
           BUNDLE=$(tar -czf - -C deploy docker-compose.yml nginx.conf deploy.sh | base64 -w0)
+          # SSM runs these with /bin/sh (dash), which has no `pipefail` — deploy.sh itself
+          # runs under bash with full strict mode.
           jq -n --arg bundle "$BUNDLE" --arg image "${{ steps.image.outputs.uri }}" '{commands: [
-            "set -euo pipefail",
+            "set -eu",
             "install -d -m 0750 /opt/lift4me",
             ("echo " + $bundle + " | base64 -d | tar -xzf - -C /opt/lift4me"),
             ("bash /opt/lift4me/deploy.sh " + $image)
