@@ -74,14 +74,15 @@
         html.android-pwa #boot-splash svg {
           display: none;
         }
-        /* The maskable icon's safe zone is its inner 80%, which is what the system
-           circle shows — so the image is drawn at 125% of the circle. */
+        /* Android 12+ splash spec (no icon background, which a WebAPK doesn't set):
+           the icon is drawn at 288dp and masked to a 192dp circle — the inner two-thirds,
+           as with adaptive icons. CSS px = dp on Android, so this matches on any phone. */
         html.android-pwa #boot-splash .boot-icon {
           display: block;
           width: var(--boot-icon);
           height: var(--boot-icon);
           border-radius: 50%;
-          background: #ffffff url('/maskable-icon-512x512.png') center / 125% no-repeat;
+          background: #ffffff url('/maskable-icon-512x512.png') center / 150% no-repeat;
         }
         #boot-splash {
           position: fixed;
