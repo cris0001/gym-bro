@@ -56,8 +56,34 @@ resource "aws_default_security_group" "default" {
   tags = { Name = "lift4me-default-locked" }
 }
 
-# The server's firewall: only HTTP and HTTPS come in. No SSH (port 22) — the server is
-# reached through SSM Session Manager. Outbound is open (Neon, ECR, Strava, updates).
+# Cloudflare's published IPv4 ranges (https://www.cloudflare.com/ips-v4/, checked
+# 2026-11-15). lift4.me is proxied by Cloudflare, so only Cloudflare ever needs to
+# reach the server: anyone who learns its IP can't bypass Cloudflare's DDoS/bot
+# protection and rate limits. Re-check the list now and then — Cloudflare announces
+# changes well in advance and rarely changes it.
+locals {
+  cloudflare_ipv4 = [
+    "173.245.48.0/20",
+    "103.21.244.0/22",
+    "103.22.200.0/22",
+    "103.31.4.0/22",
+    "141.101.64.0/18",
+    "108.162.192.0/18",
+    "190.93.240.0/20",
+    "188.114.96.0/20",
+    "197.234.240.0/22",
+    "198.41.128.0/17",
+    "162.158.0.0/15",
+    "104.16.0.0/13",
+    "104.24.0.0/14",
+    "172.64.0.0/13",
+    "131.0.72.0/22",
+  ]
+}
+
+# The server's firewall: HTTP and HTTPS in, from Cloudflare only. No SSH (port 22) —
+# the server is reached through SSM Session Manager. Outbound is open (Neon, ECR,
+# Strava, updates).
 resource "aws_security_group" "web" {
   name        = "lift4me-web"
   description = "Web server: HTTP/HTTPS in, everything out"
@@ -67,18 +93,22 @@ resource "aws_security_group" "web" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "http" {
+  for_each = toset(local.cloudflare_ipv4)
+
   security_group_id = aws_security_group.web.id
-  description       = "HTTP (redirected to HTTPS by Caddy)"
-  cidr_ipv4         = "0.0.0.0/0"
+  description       = "HTTP from Cloudflare (redirected to HTTPS by nginx)"
+  cidr_ipv4         = each.value
   ip_protocol       = "tcp"
   from_port         = 80
   to_port           = 80
 }
 
 resource "aws_vpc_security_group_ingress_rule" "https" {
+  for_each = toset(local.cloudflare_ipv4)
+
   security_group_id = aws_security_group.web.id
-  description       = "HTTPS"
-  cidr_ipv4         = "0.0.0.0/0"
+  description       = "HTTPS from Cloudflare"
+  cidr_ipv4         = each.value
   ip_protocol       = "tcp"
   from_port         = 443
   to_port           = 443
