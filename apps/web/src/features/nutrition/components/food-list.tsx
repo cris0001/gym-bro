@@ -7,6 +7,7 @@ import { SkeletonList } from '@/components/skeletons';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useConfirm } from '@/stores/confirm.store';
+import { foldText, matchesQuery } from '@/utils/fold-text';
 
 import type { Food } from '@gym-bro/shared';
 
@@ -38,8 +39,8 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
   const remove = useDeleteFood();
   const confirm = useConfirm();
 
-  const query = search.trim().toLowerCase();
-  const filtered = query ? foods.filter((f) => f.name.toLowerCase().includes(query)) : foods;
+  const query = foldText(search.trim());
+  const filtered = query ? foods.filter((f) => matchesQuery(f.name, query)) : foods;
 
   async function onDelete(food: Food) {
     const ok = await confirm({

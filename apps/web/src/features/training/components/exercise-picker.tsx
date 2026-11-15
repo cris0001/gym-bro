@@ -14,6 +14,7 @@ import { useTrainingTranslation } from '../i18n';
 import { CategoryIcon } from '../utils/category-icon';
 import { CategoryFilter } from './category-filter';
 import { PickedExerciseCard } from './picked-exercise-card';
+import { foldText, matchesQuery } from '@/utils/fold-text';
 
 interface ExercisePickerProps {
   // Currently selected exercise id, or '' if none.
@@ -75,12 +76,9 @@ export function ExercisePicker({ value, onChange }: ExercisePickerProps) {
     );
   }
 
-  const q = query.trim().toLowerCase();
+  const q = foldText(query.trim());
   const filtered = exercises.filter(
-    (e) =>
-      e.isActive &&
-      (category === null || e.category === category) &&
-      e.name.toLowerCase().includes(q),
+    (e) => e.isActive && (category === null || e.category === category) && matchesQuery(e.name, q),
   );
 
   const pick = (exerciseId: string) => {

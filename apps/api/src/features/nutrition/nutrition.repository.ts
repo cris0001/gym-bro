@@ -1,4 +1,16 @@
-import { and, asc, count, desc, eq, ilike, inArray, max, or, sql } from 'drizzle-orm';
+import {
+  type AnyColumn,
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  inArray,
+  max,
+  or,
+  type SQL,
+  sql,
+} from 'drizzle-orm';
 
 import type { CreateRecipeInput, FoodLogSource, FoodLogUnit, MealType } from '@gym-bro/shared';
 
@@ -15,6 +27,12 @@ import { toImageRef } from './nutrition.utils';
 // numeric macro columns come back as strings from the driver and are coerced to
 // numbers at this boundary (same as sets.weight). Every query is scoped by userId.
 // Grown per resource, foods first.
+
+// Case- and accent-insensitive substring match: "ryz bialy" finds "Ryż biały" and
+// "zoltko" finds "Żółtko" (unaccent extension, migration 0023).
+function nameMatches(column: AnyColumn, query: string): SQL {
+  return sql`unaccent(${column}) ILIKE unaccent(${`%${query}%`})`;
+}
 
 // --- Foods ---
 
@@ -61,7 +79,7 @@ export async function listFoods(userId: string, search?: string): Promise<FoodRo
       and(
         eq(foods.userId, userId),
         eq(foods.isActive, true),
-        search ? ilike(foods.name, `%${search}%`) : undefined,
+        search ? nameMatches(foods.name, search) : undefined,
       ),
     )
     .orderBy(asc(sql`lower(${foods.name})`));
@@ -215,15 +233,14 @@ export async function searchGlobalProducts(
   query: string,
   limit: number,
 ): Promise<GlobalProductRow[]> {
-  const pattern = `%${query}%`;
   const rows = await db
     .select()
     .from(globalProducts)
     .where(
       or(
-        ilike(globalProducts.name, pattern),
-        ilike(globalProducts.namePl, pattern),
-        ilike(globalProducts.nameEn, pattern),
+        nameMatches(globalProducts.name, query),
+        nameMatches(globalProducts.namePl, query),
+        nameMatches(globalProducts.nameEn, query),
       ),
     )
     .orderBy(sql`${globalProducts.ean} IS NOT NULL`, asc(sql`lower(${globalProducts.name})`))

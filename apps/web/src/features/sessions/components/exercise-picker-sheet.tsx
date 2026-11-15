@@ -23,6 +23,7 @@ import { ExerciseCategoryChips } from './exercise-category-chips';
 import { ExercisePickerList } from './exercise-picker-list';
 import type { PickableExercise } from './exercise-picker-row';
 import { PickerSourceToggle } from './picker-source-toggle';
+import { foldText, matchesQuery } from '@/utils/fold-text';
 
 interface ExercisePickerSheetProps {
   mode: PickerMode | null;
@@ -66,9 +67,9 @@ export function ExercisePickerSheet({ mode, onClose }: ExercisePickerSheetProps)
   ).filter((exercise) => exercise.isActive);
   // Chips only for categories that actually have exercises, in the canonical order.
   const categories = EXERCISE_CATEGORIES.filter((c) => candidates.some((e) => e.category === c));
-  const query = search.trim().toLowerCase();
+  const query = foldText(search.trim());
   const filtered = candidates.filter(
-    (e) => (category === null || e.category === category) && e.name.toLowerCase().includes(query),
+    (e) => (category === null || e.category === category) && matchesQuery(e.name, query),
   );
   const inWorkoutIds = useMemo(
     () => new Set((draft?.performances ?? []).map((p) => p.actualExerciseId)),

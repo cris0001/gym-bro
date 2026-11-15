@@ -15,6 +15,7 @@ import { useExerciseUiStore } from '../stores/exercise-ui.store';
 import { CategoryIcon } from '../utils/category-icon';
 import { ExerciseListSkeleton } from './exercise-list-skeleton';
 import { useTrainingTranslation } from '../i18n';
+import { foldText, matchesQuery } from '@/utils/fold-text';
 
 interface ExerciseListProps {
   // null = all categories.
@@ -75,8 +76,8 @@ export function ExerciseList({ category, search }: ExerciseListProps) {
     if (ok) remove.mutate(exercise.id, { onSuccess: () => toast.success(t.exercises.deleted) });
   }
 
-  const query = search.trim().toLowerCase();
-  const filtered = exercises.filter((exercise) => exercise.name.toLowerCase().includes(query));
+  const query = foldText(search.trim());
+  const filtered = exercises.filter((exercise) => matchesQuery(exercise.name, query));
 
   if (filtered.length === 0) {
     return (

@@ -5,6 +5,7 @@ import type {
   RecentDiaryItem,
   RecipeListItem,
 } from '@gym-bro/shared';
+import { foldText, matchesQuery } from '@/utils/fold-text';
 
 // A portion to log: which unit and how many of it.
 export interface Portion {
@@ -142,14 +143,12 @@ export function buildAddEntryList(
   query: string,
   catalog: AddEntryRow[] = [],
 ): AddEntryRow[] {
-  const q = query.trim().toLowerCase();
+  const q = foldText(query.trim());
 
   if (q) {
     const rows = [
-      ...foods.filter((f) => f.name.toLowerCase().includes(q)).map((f) => foodRow(f, false, null)),
-      ...recipes
-        .filter((r) => r.name.toLowerCase().includes(q))
-        .map((r) => recipeRow(r, false, null)),
+      ...foods.filter((f) => matchesQuery(f.name, q)).map((f) => foodRow(f, false, null)),
+      ...recipes.filter((r) => matchesQuery(r.name, q)).map((r) => recipeRow(r, false, null)),
     ];
     const owned = new Set(foods.map((f) => f.globalProductId));
     const fromCatalog = catalog.filter((row) => !owned.has(row.id));
