@@ -204,7 +204,7 @@ export function AddEntryDesktop({ loggedDate, meal }: { loggedDate: string; meal
               ) : mealEntries.length > 0 || pending.length > 0 ? (
                 <ul className={cn('mt-2 flex flex-col divide-y', divider)}>
                   {mealEntries.map((entry) => (
-                    <DiaryEntryRow key={entry.id} entry={entry} showImage />
+                    <DiaryEntryRow key={entry.id} entry={entry} />
                   ))}
                   {pending.map((variables) => (
                     <PendingFoodLogRow key={variables.id} variables={variables} />

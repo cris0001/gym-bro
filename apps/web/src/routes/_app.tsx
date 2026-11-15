@@ -52,7 +52,7 @@ function AppLayout() {
         <header className="bg-background/80 sticky top-0 z-10 flex h-14 items-center justify-between border-b px-4 backdrop-blur lg:hidden">
           {/* The logo is the way home, like in most apps. */}
           <Link to="/dashboard" className="rounded-md">
-            <BrandLogo />
+            <BrandLogo className="h-8" />
           </Link>
           <div className="flex items-center gap-1">
             <SettingsButton />

@@ -8,6 +8,7 @@ import type { FoodLogEntry } from '@gym-bro/shared';
 import { useDeleteFoodLogEntry } from '../hooks/use-delete-food-log-entry';
 import { useNutritionTranslation } from '../i18n';
 import { EntryEditForm } from './entry-edit-form';
+import { FoodThumb } from './food-thumb';
 
 // Short unit label for the compact portion prefix.
 function unitLabel(unit: FoodLogEntry['unit']): string {
@@ -17,21 +18,17 @@ function unitLabel(unit: FoodLogEntry['unit']): string {
 }
 
 // One diary entry: name over its portion on the left, serif kcal on the right. Tapping
-// the item edits it — by default via the inline portion editor; when `onEdit` is given
+// the item edits it (its photo, or a placeholder tile, on the far left) — by default via the inline portion editor; when `onEdit` is given
 // (e.g. in the add sheet) the tap is delegated there. Delete is low-stakes, no confirm.
 export function DiaryEntryRow({
   entry,
   onEdit,
   highlighted = false,
-  showImage = false,
 }: {
   entry: FoodLogEntry;
   onEdit?: (entry: FoodLogEntry) => void;
   // Tints the row when it's the one currently loaded into an external edit form.
   highlighted?: boolean;
-  // Always reserve a thumbnail slot (placeholder when the item has no photo). Used in
-  // the add sheet, where rows read as cards; the main diary list leaves it off.
-  showImage?: boolean;
 }) {
   const t = useNutritionTranslation();
   const remove = useDeleteFoodLogEntry();
@@ -53,19 +50,11 @@ export function DiaryEntryRow({
         highlighted && 'bg-accent -mx-2 rounded-lg px-2',
       )}
     >
-      {showImage ? (
-        <span className="bg-muted flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-lg border">
-          {entry.imageUrl ? (
-            <img src={entry.imageUrl} alt="" className="size-full object-cover" />
-          ) : null}
-        </span>
-      ) : entry.imageUrl ? (
-        <img
-          src={entry.imageUrl}
-          alt=""
-          className="bg-muted size-11 shrink-0 rounded-lg border object-cover"
-        />
-      ) : null}
+      <FoodThumb
+        imageUrl={entry.imageUrl}
+        kind={entry.recipeId ? 'recipe' : 'food'}
+        className="size-11"
+      />
       <button
         type="button"
         className="min-w-0 flex-1 text-left"

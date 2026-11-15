@@ -6,6 +6,7 @@ import {
   defaultPortion,
   portionLabel as formatPortion,
 } from '../utils/add-entry-list';
+import { FoodThumb } from './food-thumb';
 
 // One row of the results list: photo, name, meta line, and a split pill — the left half
 // logs the portion it names (the one this item was last logged at, else its default),
@@ -31,15 +32,11 @@ export function AddEntryResultRow({
         className="flex min-w-0 flex-1 items-center gap-2.5 text-left min-[400px]:gap-3"
         onClick={onEditPortion}
       >
-        {row.imageUrl ? (
-          <img
-            src={row.imageUrl}
-            alt=""
-            className="border-border size-[38px] shrink-0 rounded-lg border object-cover"
-          />
-        ) : (
-          <span className="size-[38px] shrink-0 rounded-lg bg-gradient-to-br from-[#efe0e4] to-[#cbaab3] dark:from-[#2c1f25] dark:to-[#3d363a]" />
-        )}
+        <FoodThumb
+          imageUrl={row.imageUrl}
+          kind={row.kind === 'recipe' ? 'recipe' : 'food'}
+          className="size-[38px]"
+        />
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[13.5px] leading-tight font-semibold">
             {row.name}

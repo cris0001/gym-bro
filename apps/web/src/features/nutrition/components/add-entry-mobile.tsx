@@ -150,7 +150,7 @@ export function AddEntryMobile({
               </div>
               <ul className="border-border bg-card flex flex-col divide-y divide-border rounded-xl border px-4">
                 {mealEntries.map((entry) => (
-                  <DiaryEntryRow key={entry.id} entry={entry} showImage />
+                  <DiaryEntryRow key={entry.id} entry={entry} />
                 ))}
                 {pending.map((variables) => (
                   <PendingFoodLogRow key={variables.id} variables={variables} />
