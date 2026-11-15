@@ -12,12 +12,14 @@ import { useSetActivePlan } from '../hooks/use-set-active-plan';
 import { usePlanUiStore } from '../stores/plan-ui.store';
 import { PlanCardsSkeleton } from './plan-cards-skeleton';
 import { formatDate } from '@/lib/i18n/date-format';
+import { useTrainingTranslation } from '../i18n';
 
 // The plans grid: every plan is an equal card (active first, marked with a badge),
 // the whole card linking to its detail page for templates and edit/delete. "Set active" flips the
 // active plan inline. One column on phones, up to three on desktop. Create lives in
 // the page header.
 export function PlanList() {
+  const t = useTrainingTranslation();
   const { data: plans, isPending, isError, error, refetch } = usePlans();
   const { data: activePlan } = useActivePlan();
   const setActive = useSetActivePlan();
@@ -35,12 +37,12 @@ export function PlanList() {
     return (
       <EmptyState
         icon={<ClipboardList className="size-6" />}
-        title="No plans yet"
-        description="Create a plan (e.g. PPL, Upper/Lower) to organize your workout templates."
+        title={t.plans.emptyTitle}
+        description={t.plans.emptyBody}
         action={
           <Button type="button" className="h-9.5 rounded-full px-5" onClick={openCreate}>
             <Plus className="size-4" />
-            New plan
+            {t.plans.newPlan}
           </Button>
         }
       />
@@ -75,7 +77,7 @@ export function PlanList() {
               </Link>
               {isActive ? (
                 <span className="shrink-0 rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold tracking-[0.06em] text-accent-foreground uppercase">
-                  Active
+                  {t.common.active}
                 </span>
               ) : (
                 <button
@@ -84,7 +86,7 @@ export function PlanList() {
                   disabled={setActive.isPending}
                   onClick={() => setActive.mutate(plan.id)}
                 >
-                  Set active
+                  {t.plans.setActive}
                 </button>
               )}
             </div>

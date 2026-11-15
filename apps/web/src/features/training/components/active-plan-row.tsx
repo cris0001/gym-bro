@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 
 import { usePlan } from '../hooks/use-plan';
 import { templateQueryOptions } from '../hooks/use-template';
+import { useTrainingTranslation } from '../i18n';
 
 interface ActivePlanRowProps {
   planId: string;
@@ -17,6 +18,7 @@ interface ActivePlanRowProps {
 // templates as rows (drag handle, name, exercise count, chevron → the template builder).
 // Edit reaches the plan detail. Read-only reorder here — reordering lives on the detail.
 export function ActivePlanRow({ planId, name }: ActivePlanRowProps) {
+  const t = useTrainingTranslation();
   const [expanded, setExpanded] = useState(true);
   const { data: plan } = usePlan(planId);
   const templates = plan?.templates ?? [];
@@ -37,7 +39,7 @@ export function ActivePlanRow({ planId, name }: ActivePlanRowProps) {
         >
           <span className="font-heading truncate text-lg font-semibold">{name}</span>
           <span className="bg-accent text-accent-foreground shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-[0.08em] uppercase">
-            Active
+            {t.common.active}
           </span>
         </button>
         <Link
@@ -51,7 +53,7 @@ export function ActivePlanRow({ planId, name }: ActivePlanRowProps) {
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          aria-label={expanded ? 'Collapse' : 'Expand'}
+          aria-label={expanded ? t.common.collapse : t.common.expand}
           className="text-muted-foreground flex size-8 shrink-0 items-center justify-center"
         >
           <ChevronDown className={cn('size-4 transition-transform', !expanded && '-rotate-90')} />
@@ -61,7 +63,7 @@ export function ActivePlanRow({ planId, name }: ActivePlanRowProps) {
       {expanded &&
         (templates.length === 0 ? (
           <p className="text-muted-foreground border-t border-border px-4 py-3 text-sm">
-            This plan has no templates yet.
+            {t.plans.noTemplates}
           </p>
         ) : (
           <ul className="divide-y divide-border border-t border-border">

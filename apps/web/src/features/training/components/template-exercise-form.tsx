@@ -22,6 +22,7 @@ import { ExercisePicker } from './exercise-picker';
 import { NumberField } from './number-field';
 import { OptionalHint } from './optional-hint';
 import { PickedExerciseCard } from './picked-exercise-card';
+import { useTrainingTranslation } from '../i18n';
 
 interface TemplateExerciseFormValues {
   exerciseId: string;
@@ -51,6 +52,7 @@ export function TemplateExerciseForm({
   onSuccess,
   onCancel,
 }: TemplateExerciseFormProps) {
+  const t = useTrainingTranslation();
   const form = useForm<TemplateExerciseFormValues>({
     defaultValues: {
       exerciseId: editing?.exerciseId ?? '',
@@ -86,7 +88,7 @@ export function TemplateExerciseForm({
     }
 
     if (!values.exerciseId) {
-      form.setError('exerciseId', { message: 'Pick an exercise' });
+      form.setError('exerciseId', { message: t.templateExercises.pickExercise });
       return;
     }
     const parsed = createTemplateExerciseSchema.safeParse({
@@ -114,25 +116,25 @@ export function TemplateExerciseForm({
       >
         {editing ? (
           <>
-            <PickedExerciseCard name={editing.exercise.name} />
+            <PickedExerciseCard name={editing.exercise.name} category={editing.exercise.category} />
             {/* Editing: the three targets side by side, values centred. */}
             <div className="grid grid-cols-3 gap-2">
               <NumberField
                 control={form.control}
                 name="targetSets"
-                label="Sets"
+                label={t.templateExercises.sets}
                 className="text-center"
               />
               <NumberField
                 control={form.control}
                 name="targetRepsMin"
-                label="Reps min"
+                label={t.templateExercises.repsMin}
                 className="text-center"
               />
               <NumberField
                 control={form.control}
                 name="targetRepsMax"
-                label="Reps max"
+                label={t.templateExercises.repsMax}
                 className="text-center"
               />
             </div>
@@ -144,7 +146,7 @@ export function TemplateExerciseForm({
               name="exerciseId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className={LABEL_CLASS}>Exercise</FormLabel>
+                  <FormLabel className={LABEL_CLASS}>{t.templateExercises.exercise}</FormLabel>
                   <ExercisePicker value={field.value} onChange={field.onChange} />
                   <FormMessage />
                 </FormItem>
@@ -155,13 +157,21 @@ export function TemplateExerciseForm({
               name="targetSets"
               label={
                 <>
-                  Sets <OptionalHint />
+                  {t.templateExercises.sets} <OptionalHint />
                 </>
               }
             />
             <div className="grid grid-cols-2 gap-2">
-              <NumberField control={form.control} name="targetRepsMin" label="Reps min" />
-              <NumberField control={form.control} name="targetRepsMax" label="Reps max" />
+              <NumberField
+                control={form.control}
+                name="targetRepsMin"
+                label={t.templateExercises.repsMin}
+              />
+              <NumberField
+                control={form.control}
+                name="targetRepsMax"
+                label={t.templateExercises.repsMax}
+              />
             </div>
           </>
         )}
@@ -172,11 +182,11 @@ export function TemplateExerciseForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel className={LABEL_CLASS}>
-                Notes <OptionalHint />
+                {t.templateExercises.notes} <OptionalHint />
               </FormLabel>
               <FormControl>
                 <textarea
-                  placeholder="e.g. last set to failure"
+                  placeholder={t.templateExercises.notesPlaceholder}
                   className={TEXTAREA_CLASS}
                   {...field}
                 />
@@ -193,7 +203,7 @@ export function TemplateExerciseForm({
         ) : null}
 
         <FormSheetActions
-          submitLabel={editing ? 'Save changes' : 'Add exercise'}
+          submitLabel={editing ? t.common.saveChanges : t.templateExercises.add}
           isPending={isPending}
           onCancel={onCancel}
         />

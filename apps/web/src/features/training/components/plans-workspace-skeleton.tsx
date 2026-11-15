@@ -2,11 +2,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 import { PlanTemplatesColumnSkeleton } from './plan-templates-column-skeleton';
 import { TemplateExercisesPanelSkeleton } from './template-exercises-panel-skeleton';
+import { useTrainingTranslation } from '../i18n';
 
 // Loading state for the desktop plans workspace, in its real three-column card: the
 // plans list, the selected plan's header + template cards, and the open template's
 // header + exercise cards. Section labels stay real text; values pulse.
 export function PlansWorkspaceSkeleton() {
+  const t = useTrainingTranslation();
   return (
     <div
       aria-hidden
@@ -14,7 +16,7 @@ export function PlansWorkspaceSkeleton() {
     >
       <div className="border-border flex flex-col gap-1 border-r p-3">
         <span className="text-muted-foreground px-2 pb-2 text-[11px] font-medium tracking-[0.08em] uppercase">
-          Plans
+          {t.plans.title}
         </span>
         {['w-3/5', 'w-1/2', 'w-2/3'].map((width) => (
           <div key={width} className="flex flex-col gap-0.5 py-2.5 pl-2.5">

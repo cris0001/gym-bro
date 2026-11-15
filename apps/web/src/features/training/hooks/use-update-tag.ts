@@ -12,6 +12,8 @@ export function useUpdateTag() {
     mutationFn: ({ id, input }: { id: string; input: UpdateTagInput }) => updateTag(id, input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: tagKeys.all });
+      // Sessions feature's root key — workouts embed their tags (calendar badges, history).
+      void queryClient.invalidateQueries({ queryKey: ['sessions'] });
     },
   });
 }

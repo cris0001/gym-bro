@@ -11,30 +11,33 @@ import type { TemplateExerciseWithExercise } from '@gym-bro/shared';
 
 import { useDeleteTemplateExercise } from '../hooks/use-delete-template-exercise';
 import { useTemplateExerciseUiStore } from '../stores/template-exercise-ui.store';
+import { useTrainingTranslation } from '../i18n';
+
+type TrainingT = ReturnType<typeof useTrainingTranslation>;
 
 // Human-readable target summary, e.g. "4 sets · 8–12 reps". Returns '' when no
 // targets are set so the row just shows the exercise name.
-function formatTargets(te: TemplateExerciseWithExercise): string {
+function formatTargets(te: TemplateExerciseWithExercise, t: TrainingT): string {
   const parts: string[] = [];
-  if (te.targetSets != null) parts.push(`${te.targetSets} sets`);
+  if (te.targetSets != null) parts.push(t.templateExercises.setsCount(te.targetSets));
   if (te.targetRepsMin != null && te.targetRepsMax != null) {
-    parts.push(`${te.targetRepsMin}–${te.targetRepsMax} reps`);
+    parts.push(t.templateExercises.repsCount(`${te.targetRepsMin}–${te.targetRepsMax}`));
   } else if (te.targetRepsMin != null) {
-    parts.push(`${te.targetRepsMin} reps`);
+    parts.push(t.templateExercises.repsCount(String(te.targetRepsMin)));
   } else if (te.targetRepsMax != null) {
-    parts.push(`${te.targetRepsMax} reps`);
+    parts.push(t.templateExercises.repsCount(String(te.targetRepsMax)));
   }
   return parts.join(' · ');
 }
 
 // The desktop table's Target cell: "3 × 6–10", "3 sets", "8–12 reps", or "—".
-function compactTarget(te: TemplateExerciseWithExercise): string {
+function compactTarget(te: TemplateExerciseWithExercise, t: TrainingT): string {
   const min = te.targetRepsMin;
   const max = te.targetRepsMax;
   const reps = min != null && max != null && min !== max ? `${min}–${max}` : (min ?? max);
   if (te.targetSets != null && reps != null) return `${te.targetSets} × ${reps}`;
-  if (te.targetSets != null) return `${te.targetSets} sets`;
-  if (reps != null) return `${reps} reps`;
+  if (te.targetSets != null) return t.templateExercises.setsCount(te.targetSets);
+  if (reps != null) return t.templateExercises.repsCount(String(reps));
   return '—';
 }
 
@@ -48,6 +51,7 @@ export function TemplateExerciseRow({
   templateExercise,
   variant = 'list',
 }: TemplateExerciseRowProps) {
+  const t = useTrainingTranslation();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: templateExercise.id,
   });
@@ -56,20 +60,20 @@ export function TemplateExerciseRow({
   const confirm = useConfirm();
 
   const { exercise } = templateExercise;
-  const targets = formatTargets(templateExercise);
+  const targets = formatTargets(templateExercise, t);
   const meta = [exercise.category, variant === 'list' ? targets : ''].filter(Boolean).join(' · ');
 
   async function onDelete() {
     const ok = await confirm({
-      title: `Remove "${exercise.name}"?`,
-      description: 'It will be removed from this template.',
-      confirmText: 'Remove',
+      title: t.common.removeTitle(exercise.name),
+      description: t.templateExercises.removeBody,
+      confirmText: t.common.remove,
       destructive: true,
     });
     if (ok) {
       remove.mutate(
         { id: templateExercise.id, templateId: templateExercise.workoutTemplateId },
-        { onSuccess: () => toast.success('Exercise removed') },
+        { onSuccess: () => toast.success(t.templateExercises.removed) },
       );
     }
   }
@@ -116,7 +120,7 @@ export function TemplateExerciseRow({
       {variant === 'table' ? (
         // Hidden under 1250px: the column is narrow there and would truncate names.
         <span className="font-heading hidden w-24 shrink-0 text-[15px] font-semibold tabular-nums min-[1250px]:block">
-          {compactTarget(templateExercise)}
+          {compactTarget(templateExercise, t)}
         </span>
       ) : null}
 

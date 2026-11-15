@@ -2,11 +2,13 @@ import { FormSheet } from '@/components/form-sheet';
 
 import { usePlanUiStore } from '../stores/plan-ui.store';
 import { PlanForm } from './plan-form';
+import { useTrainingTranslation } from '../i18n';
 
 // Sheet hosting the create/edit form. Open state and the target row come from the UI
 // store. The form is keyed by the editing id so it remounts with fresh defaults each
 // time the sheet opens for a different plan.
 export function PlanSheet() {
+  const t = useTrainingTranslation();
   const open = usePlanUiStore((s) => s.open);
   const editing = usePlanUiStore((s) => s.editing);
   const close = usePlanUiStore((s) => s.close);
@@ -15,8 +17,8 @@ export function PlanSheet() {
     <FormSheet
       open={open}
       onClose={close}
-      title={editing ? 'Edit plan' : 'New plan'}
-      description={editing ? 'Update the name or description.' : 'Create a training plan.'}
+      title={editing ? t.plans.editTitle : t.plans.newTitle}
+      description={editing ? t.plans.editDescription : t.plans.newDescription}
     >
       <PlanForm key={editing?.id ?? 'new'} editing={editing} onSuccess={close} onCancel={close} />
     </FormSheet>

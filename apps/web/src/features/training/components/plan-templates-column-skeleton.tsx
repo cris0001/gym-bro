@@ -1,10 +1,12 @@
 import { Skeleton } from '@/components/ui/skeleton';
 
 import { TemplateRowsSkeleton } from './template-rows-skeleton';
+import { useTrainingTranslation } from '../i18n';
 
 // The workspace's middle column while its plan loads, in the real column's shape:
 // title, the active / set-active line, the Templates label, and template cards.
 export function PlanTemplatesColumnSkeleton() {
+  const t = useTrainingTranslation();
   return (
     <div aria-hidden className="border-border bg-background/60 flex flex-col gap-3 border-r p-4">
       <div className="flex flex-col gap-1">
@@ -16,7 +18,7 @@ export function PlanTemplatesColumnSkeleton() {
         </div>
       </div>
       <span className="text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase">
-        Templates
+        {t.templates.title}
       </span>
       <TemplateRowsSkeleton rows={3} />
     </div>

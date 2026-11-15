@@ -19,6 +19,7 @@ import { PlansWorkspaceSkeleton } from './plans-workspace-skeleton';
 import { TemplateExercisesPanel } from './template-exercises-panel';
 import { TemplateExercisesPanelSkeleton } from './template-exercises-panel-skeleton';
 import { TemplateSheet } from './template-sheet';
+import { useTrainingTranslation } from '../i18n';
 
 interface PlansWorkspaceProps {
   // From the URL: /plans/$planId or /templates/$templateId (neither on /plans).
@@ -32,6 +33,7 @@ interface PlansWorkspaceProps {
 // falls back to the active, else first, plan), and every pick is a link, so Back,
 // refresh and shared links match the mobile pages, which stay one column per route.
 export function PlansWorkspace({ planId, templateId }: PlansWorkspaceProps) {
+  const t = useTrainingTranslation();
   const { data: plans, isPending, isError, error, refetch } = usePlans();
   const { data: activePlan } = useActivePlan();
   const { data: template } = useQuery({
@@ -74,8 +76,8 @@ export function PlansWorkspace({ planId, templateId }: PlansWorkspaceProps) {
     body = (
       <EmptyState
         icon={<ClipboardList className="size-6" />}
-        title="No plans yet"
-        description="Create a plan (e.g. PPL, Upper/Lower) to organize your workout templates."
+        title={t.plans.emptyTitle}
+        description={t.plans.emptyBody}
       />
     );
   } else {
@@ -102,7 +104,7 @@ export function PlansWorkspace({ planId, templateId }: PlansWorkspaceProps) {
             <TemplateExercisesPanelSkeleton />
           ) : (
             <p className="text-muted-foreground flex h-full items-center justify-center text-[14px]">
-              Pick a template to see its exercises
+              {t.templates.pickTemplate}
             </p>
           )}
         </div>
@@ -114,11 +116,11 @@ export function PlansWorkspace({ planId, templateId }: PlansWorkspaceProps) {
     <div className="flex w-full flex-col gap-4 p-3 md:p-4 max-w-6xl lg:col-start-2">
       <div className="flex items-center justify-between gap-2">
         <PageTitle className="font-heading text-[28px] leading-none font-bold tracking-tight">
-          Plans
+          {t.plans.title}
         </PageTitle>
         <Button type="button" className="h-9.5 rounded-full px-5" onClick={openCreate}>
           <Plus className="size-4" />
-          New plan
+          {t.plans.newPlan}
         </Button>
       </div>
       {body}

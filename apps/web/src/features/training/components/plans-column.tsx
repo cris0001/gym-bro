@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 
 import { useDeletePlanFlow } from '../hooks/use-delete-plan-flow';
 import { usePlanUiStore } from '../stores/plan-ui.store';
+import { useTrainingTranslation } from '../i18n';
 
 interface PlansColumnProps {
   plans: PlanListItem[];
@@ -22,6 +23,7 @@ interface PlansColumnProps {
 // name, so names can wrap at full width and the list stays calm. Create lives in the
 // page header.
 export function PlansColumn({ plans, activePlanId, selectedPlanId }: PlansColumnProps) {
+  const t = useTrainingTranslation();
   const openEdit = usePlanUiStore((s) => s.openEdit);
   const { deletePlan, isPending: deleting } = useDeletePlanFlow();
   const ordered = [
@@ -32,11 +34,11 @@ export function PlansColumn({ plans, activePlanId, selectedPlanId }: PlansColumn
   return (
     <div className="border-border flex flex-col gap-1 border-r p-3">
       <span className="text-muted-foreground px-2 pb-2 text-[11px] font-medium tracking-[0.08em] uppercase">
-        Plans
+        {t.plans.title}
       </span>
 
       {ordered.length === 0 ? (
-        <p className="text-muted-foreground px-2 text-[13px]">No plans yet.</p>
+        <p className="text-muted-foreground px-2 text-[13px]">{t.plans.emptyShort}</p>
       ) : (
         ordered.map((plan) => {
           const isActive = plan.id === activePlanId;
@@ -61,7 +63,7 @@ export function PlansColumn({ plans, activePlanId, selectedPlanId }: PlansColumn
                   {isActive ? (
                     <Star
                       className="text-primary mt-1 size-3.5 shrink-0 fill-current"
-                      aria-label="Active plan"
+                      aria-label={t.plans.activePlan}
                     />
                   ) : null}
                   <span

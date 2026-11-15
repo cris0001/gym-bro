@@ -5,6 +5,7 @@ import { useSetActivePlan } from '../hooks/use-set-active-plan';
 import { useTemplateUiStore } from '../stores/template-ui.store';
 import { PlanTemplatesColumnSkeleton } from './plan-templates-column-skeleton';
 import { TemplateList } from './template-list';
+import { useTrainingTranslation } from '../i18n';
 
 interface PlanTemplatesColumnProps {
   planId: string;
@@ -21,6 +22,7 @@ export function PlanTemplatesColumn({
   isActive,
   selectedTemplateId,
 }: PlanTemplatesColumnProps) {
+  const t = useTrainingTranslation();
   const { data: plan, isPending } = usePlan(planId);
   const setActive = useSetActivePlan();
   const openCreateTemplate = useTemplateUiStore((s) => s.openCreate);
@@ -41,7 +43,7 @@ export function PlanTemplatesColumn({
         {isActive ? (
           <span className="text-primary inline-flex items-center gap-1 text-[12px] font-semibold">
             <Star className="size-3.5 fill-current" />
-            Active plan
+            {t.plans.activePlan}
           </span>
         ) : (
           <button
@@ -51,26 +53,26 @@ export function PlanTemplatesColumn({
             onClick={() => setActive.mutate(plan.id)}
           >
             <Star className="size-3.5" />
-            Set as active
+            {t.plans.setAsActive}
           </button>
         )}
       </header>
 
       <div className="flex items-center justify-between">
         <span className="text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase">
-          Templates
+          {t.templates.title}
         </span>
         <button
           type="button"
           onClick={() => openCreateTemplate(plan.id)}
           className="bg-accent text-accent-foreground hover:bg-accent/70 h-8 rounded-full px-3 text-[12.5px] font-semibold transition-colors"
         >
-          + Add
+          {t.common.addShort}
         </button>
       </div>
 
       {plan.templates.length === 0 ? (
-        <p className="text-muted-foreground text-[13px]">No templates yet.</p>
+        <p className="text-muted-foreground text-[13px]">{t.templates.emptyShort}</p>
       ) : (
         <TemplateList
           planId={plan.id}

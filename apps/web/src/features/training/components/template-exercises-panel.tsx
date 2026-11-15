@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { useTemplateExerciseUiStore } from '../stores/template-exercise-ui.store';
 import { TemplateExerciseList } from './template-exercise-list';
 import { TemplateExerciseSheet } from './template-exercise-sheet';
+import { useTrainingTranslation } from '../i18n';
 
 interface TemplateExercisesPanelProps {
   template: TemplateWithExercises;
@@ -24,6 +25,7 @@ export function TemplateExercisesPanel({
   asPageTitle = false,
   variant = 'card',
 }: TemplateExercisesPanelProps) {
+  const t = useTrainingTranslation();
   const openCreate = useTemplateExerciseUiStore((s) => s.openCreate);
   const Heading = asPageTitle ? 'h1' : 'h2';
   const isColumn = variant === 'column';
@@ -59,27 +61,29 @@ export function TemplateExercisesPanel({
           // target (1250px+ only, like the rows) | edit + delete.
           <div className="text-muted-foreground flex items-center gap-2.5 px-[9px] pb-1.5 text-[10.5px] font-medium tracking-[0.08em] uppercase">
             <span className="w-[23px] shrink-0" />
-            <span className="flex-1">Exercise</span>
-            <span className="hidden w-24 shrink-0 min-[1250px]:block">Target</span>
+            <span className="flex-1">{t.templateExercises.exercise}</span>
+            <span className="hidden w-24 shrink-0 min-[1250px]:block">
+              {t.templateExercises.target}
+            </span>
             <span className="w-[66px] shrink-0" />
           </div>
         ) : (
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase">
-              Exercises
+              {t.templateExercises.title}
             </span>
             <button
               type="button"
               onClick={() => openCreate(template.id)}
               className="bg-accent text-accent-foreground hover:bg-accent/70 h-8 rounded-full px-3 text-[12.5px] font-semibold transition-colors"
             >
-              + Add
+              {t.common.addShort}
             </button>
           </div>
         )}
 
         {template.exercises.length === 0 ? (
-          <p className="text-muted-foreground mt-2 text-[13px]">No exercises yet.</p>
+          <p className="text-muted-foreground mt-2 text-[13px]">{t.templateExercises.emptyShort}</p>
         ) : (
           <TemplateExerciseList
             templateId={template.id}
@@ -97,12 +101,12 @@ export function TemplateExercisesPanel({
           isColumn ? 'rounded-lg' : 'rounded-xl',
         )}
       >
-        + Add exercise from library
+        {t.templateExercises.addFromLibrary}
       </button>
 
       {template.exercises.length > 1 ? (
         <p className="text-muted-foreground text-center text-[12.5px]">
-          Drag rows to reorder — order is used during the workout
+          {t.templateExercises.reorderHint}
         </p>
       ) : null}
 

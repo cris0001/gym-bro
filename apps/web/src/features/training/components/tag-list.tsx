@@ -12,10 +12,12 @@ import type { WorkoutTag } from '@gym-bro/shared';
 import { useDeleteTag } from '../hooks/use-delete-tag';
 import { useTags } from '../hooks/use-tags';
 import { useTagUiStore } from '../stores/tag-ui.store';
+import { useTrainingTranslation } from '../i18n';
 
 // The workout-tag list: read state via TanStack Query, tap a row to edit it in the
 // UI store's Sheet, delete with a confirm. Add is owned by the page header.
 export function TagList() {
+  const t = useTrainingTranslation();
   const { data: tags, isPending, isError, error, refetch } = useTags();
   const openEdit = useTagUiStore((s) => s.openEdit);
   const openCreate = useTagUiStore((s) => s.openCreate);
@@ -34,12 +36,12 @@ export function TagList() {
     return (
       <EmptyState
         icon={<Tag className="size-6" />}
-        title="No tags yet"
-        description="Add tags to label and color-code your workouts on the calendar."
+        title={t.tags.emptyTitle}
+        description={t.tags.emptyBody}
         action={
           <Button type="button" className="h-9.5 rounded-full px-5" onClick={openCreate}>
             <Plus className="size-4" />
-            Add tag
+            {t.tags.add}
           </Button>
         }
       />
@@ -48,12 +50,12 @@ export function TagList() {
 
   async function onDelete(tag: WorkoutTag) {
     const ok = await confirm({
-      title: `Delete "${tag.name}"?`,
-      description: 'It will be removed from your tags.',
-      confirmText: 'Delete',
+      title: t.common.deleteTitle(tag.name),
+      description: t.tags.deleteBody,
+      confirmText: t.common.delete,
       destructive: true,
     });
-    if (ok) remove.mutate(tag.id, { onSuccess: () => toast.success('Tag deleted') });
+    if (ok) remove.mutate(tag.id, { onSuccess: () => toast.success(t.tags.deleted) });
   }
 
   return (

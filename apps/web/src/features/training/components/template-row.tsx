@@ -12,6 +12,7 @@ import type { WorkoutTemplate } from '@gym-bro/shared';
 
 import { useDeleteTemplate } from '../hooks/use-delete-template';
 import { useTemplateUiStore } from '../stores/template-ui.store';
+import { useTrainingTranslation } from '../i18n';
 
 interface TemplateRowProps {
   template: WorkoutTemplate;
@@ -26,6 +27,7 @@ interface TemplateRowProps {
 // One sortable template row. The grip is the only drag affordance (so taps and
 // list scrolling on touch don't start a drag); edit/delete sit on the right.
 export function TemplateRow({ template, selected = false, variant = 'list' }: TemplateRowProps) {
+  const t = useTrainingTranslation();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: template.id,
   });
@@ -35,12 +37,12 @@ export function TemplateRow({ template, selected = false, variant = 'list' }: Te
 
   async function onDelete() {
     const ok = await confirm({
-      title: `Delete "${template.name}"?`,
-      description: 'This removes its exercises too.',
-      confirmText: 'Delete',
+      title: t.common.deleteTitle(template.name),
+      description: t.templates.deleteBody,
+      confirmText: t.common.delete,
       destructive: true,
     });
-    if (ok) remove.mutate(template.id, { onSuccess: () => toast.success('Template deleted') });
+    if (ok) remove.mutate(template.id, { onSuccess: () => toast.success(t.templates.deleted) });
   }
 
   return (

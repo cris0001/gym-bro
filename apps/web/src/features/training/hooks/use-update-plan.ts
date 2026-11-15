@@ -4,6 +4,7 @@ import type { UpdatePlanInput } from '@gym-bro/shared';
 
 import { updatePlan } from '../api/plans';
 import { planKeys } from './use-plans';
+import { activePlanKeys } from './use-active-plan';
 
 // Updates a plan (rename/re-describe), then invalidates plan queries so both
 // the list and any open detail reflect the change.
@@ -13,6 +14,7 @@ export function useUpdatePlan() {
     mutationFn: ({ id, input }: { id: string; input: UpdatePlanInput }) => updatePlan(id, input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: planKeys.all });
+      void queryClient.invalidateQueries({ queryKey: activePlanKeys.all });
     },
   });
 }

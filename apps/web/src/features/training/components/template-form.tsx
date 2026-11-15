@@ -22,6 +22,7 @@ import {
 import { useCreateTemplate } from '../hooks/use-create-template';
 import { useUpdateTemplate } from '../hooks/use-update-template';
 import { OptionalHint } from './optional-hint';
+import { useTrainingTranslation } from '../i18n';
 
 interface TemplateFormProps {
   // The row being edited, or null for create mode.
@@ -34,6 +35,7 @@ interface TemplateFormProps {
 }
 
 export function TemplateForm({ editing, planId, onSuccess, onCancel }: TemplateFormProps) {
+  const t = useTrainingTranslation();
   const form = useForm<CreateTemplateInput>({
     resolver: zodResolver(createTemplateSchema),
     defaultValues: {
@@ -73,9 +75,13 @@ export function TemplateForm({ editing, planId, onSuccess, onCancel }: TemplateF
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className={LABEL_CLASS}>Name</FormLabel>
+              <FormLabel className={LABEL_CLASS}>{t.common.name}</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. Push" className={FIELD_CLASS} {...field} />
+                <Input
+                  placeholder={t.templates.namePlaceholder}
+                  className={FIELD_CLASS}
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -88,11 +94,11 @@ export function TemplateForm({ editing, planId, onSuccess, onCancel }: TemplateF
           render={({ field }) => (
             <FormItem>
               <FormLabel className={LABEL_CLASS}>
-                Short name <OptionalHint />
+                {t.templates.shortName} <OptionalHint />
               </FormLabel>
               <FormControl>
                 <Input
-                  placeholder="e.g. PSH"
+                  placeholder={t.templates.shortNamePlaceholder}
                   maxLength={5}
                   autoCapitalize="characters"
                   className={FIELD_CLASS}
@@ -105,10 +111,7 @@ export function TemplateForm({ editing, planId, onSuccess, onCancel }: TemplateF
                   ref={field.ref}
                 />
               </FormControl>
-              <FormDescription className="text-[12px]">
-                Up to 5 characters, shown on the calendar instead of the full name. Leave empty to
-                use the name.
-              </FormDescription>
+              <FormDescription className="text-[12px]">{t.templates.shortNameHint}</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -120,11 +123,11 @@ export function TemplateForm({ editing, planId, onSuccess, onCancel }: TemplateF
           render={({ field }) => (
             <FormItem>
               <FormLabel className={LABEL_CLASS}>
-                Description <OptionalHint />
+                {t.common.description} <OptionalHint />
               </FormLabel>
               <FormControl>
                 <textarea
-                  placeholder="e.g. Chest, shoulders, triceps"
+                  placeholder={t.templates.descriptionPlaceholder}
                   className={TEXTAREA_CLASS}
                   value={field.value ?? ''}
                   onChange={field.onChange}
@@ -145,7 +148,7 @@ export function TemplateForm({ editing, planId, onSuccess, onCancel }: TemplateF
         ) : null}
 
         <FormSheetActions
-          submitLabel={editing ? 'Save changes' : 'Add template'}
+          submitLabel={editing ? t.common.saveChanges : t.templates.add}
           isPending={isPending}
           onCancel={onCancel}
         />

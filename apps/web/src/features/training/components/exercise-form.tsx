@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -18,22 +19,26 @@ import { EXERCISE_CATEGORIES, type CreateExerciseInput, type Exercise } from '@g
 
 import { useCreateExercise } from '../hooks/use-create-exercise';
 import { useUpdateExercise } from '../hooks/use-update-exercise';
+import { useTrainingTranslation } from '../i18n';
 
 // Local form schema: same name rules as the shared create schema, but a
 // friendly "pick a category" message. Category allows '' so nothing is
 // pre-selected; the refine rejects '' until the user taps a category. Keeping
-// '' in the type makes the form's input and resolver-output types line up.
-const exerciseFormSchema = z.object({
-  name: z.string().trim().min(1, 'Name is required').max(100, 'Name is too long'),
-  category: z
-    .union([z.literal(''), z.enum(EXERCISE_CATEGORIES)])
-    .refine((value) => value !== '', { message: 'Pick a category' }),
-});
+// '' in the type makes the form's input and resolver-output types line up. Built per
+// render language so the validation messages are translated.
+function exerciseFormSchema(t: ReturnType<typeof useTrainingTranslation>) {
+  return z.object({
+    name: z.string().trim().min(1, t.exercises.nameRequired).max(100, t.exercises.nameTooLong),
+    category: z
+      .union([z.literal(''), z.enum(EXERCISE_CATEGORIES)])
+      .refine((value) => value !== '', { message: t.exercises.pickCategory }),
+  });
+}
 
 // Input allows '' (for the initial empty category / defaults); output is the
 // validated result the resolver hands to the submit handler.
-type ExerciseFormInput = z.input<typeof exerciseFormSchema>;
-type ExerciseFormValues = z.output<typeof exerciseFormSchema>;
+type ExerciseFormInput = z.input<ReturnType<typeof exerciseFormSchema>>;
+type ExerciseFormValues = z.output<ReturnType<typeof exerciseFormSchema>>;
 
 interface ExerciseFormProps {
   // The row being edited, or null for create mode.
@@ -44,8 +49,10 @@ interface ExerciseFormProps {
 }
 
 export function ExerciseForm({ editing, onSuccess, onCancel }: ExerciseFormProps) {
+  const t = useTrainingTranslation();
+  const schema = useMemo(() => exerciseFormSchema(t), [t]);
   const form = useForm<ExerciseFormInput, unknown, ExerciseFormValues>({
-    resolver: zodResolver(exerciseFormSchema),
+    resolver: zodResolver(schema),
     defaultValues: editing
       ? { name: editing.name, category: editing.category }
       : { name: '', category: '' },
@@ -78,9 +85,13 @@ export function ExerciseForm({ editing, onSuccess, onCancel }: ExerciseFormProps
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className={LABEL_CLASS}>Name</FormLabel>
+              <FormLabel className={LABEL_CLASS}>{t.common.name}</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. Bench Press" className={FIELD_CLASS} {...field} />
+                <Input
+                  placeholder={t.exercises.namePlaceholder}
+                  className={FIELD_CLASS}
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -92,7 +103,7 @@ export function ExerciseForm({ editing, onSuccess, onCancel }: ExerciseFormProps
           name="category"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className={LABEL_CLASS}>Category</FormLabel>
+              <FormLabel className={LABEL_CLASS}>{t.exercises.category}</FormLabel>
               <div className="grid grid-cols-3 gap-2">
                 {EXERCISE_CATEGORIES.map((category) => (
                   <button
@@ -107,7 +118,7 @@ export function ExerciseForm({ editing, onSuccess, onCancel }: ExerciseFormProps
                     )}
                     onClick={() => field.onChange(category)}
                   >
-                    {category}
+                    {t.categories[category]}
                   </button>
                 ))}
               </div>
@@ -123,7 +134,7 @@ export function ExerciseForm({ editing, onSuccess, onCancel }: ExerciseFormProps
         ) : null}
 
         <FormSheetActions
-          submitLabel={editing ? 'Save changes' : 'Add exercise'}
+          submitLabel={editing ? t.common.saveChanges : t.exercises.add}
           isPending={isPending}
           onCancel={onCancel}
         />

@@ -16,6 +16,7 @@ import { PlanSheet } from './plan-sheet';
 import { TemplateRowsSkeleton } from './template-rows-skeleton';
 import { TemplateList } from './template-list';
 import { TemplateSheet } from './template-sheet';
+import { useTrainingTranslation } from '../i18n';
 
 interface PlanDetailProps {
   planId: string;
@@ -24,6 +25,7 @@ interface PlanDetailProps {
 // Plan detail: header (name/description + edit/delete) and the plan's templates
 // with create/edit/delete and drag-to-reorder.
 export function PlanDetail({ planId }: PlanDetailProps) {
+  const t = useTrainingTranslation();
   const { data: plan, isPending, isError, error, refetch } = usePlan(planId);
   const { data: activePlan } = useActivePlan();
   const setActive = useSetActivePlan();
@@ -53,7 +55,7 @@ export function PlanDetail({ planId }: PlanDetailProps) {
         </div>
         <div className="border-border bg-card rounded-xl border px-[18px] py-4">
           <span className="text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase">
-            Templates
+            {t.templates.title}
           </span>
           <TemplateRowsSkeleton rows={3} variant="list" />
         </div>
@@ -73,7 +75,7 @@ export function PlanDetail({ planId }: PlanDetailProps) {
         className="text-muted-foreground inline-flex items-center gap-1 self-start text-[13px] font-semibold"
       >
         <ChevronLeft className="size-[15px]" />
-        Plans
+        {t.plans.title}
       </Link>
 
       <header className="flex flex-col gap-2.5">
@@ -91,14 +93,14 @@ export function PlanDetail({ planId }: PlanDetailProps) {
             className="bg-primary text-primary-foreground hover:bg-primary-hover h-9.5 shrink-0 rounded-full px-5 text-[13px] font-semibold transition-colors"
             onClick={() => openEdit(plan)}
           >
-            Edit
+            {t.common.edit}
           </button>
         </div>
 
         {activePlan?.id === plan.id ? (
           <span className="text-primary inline-flex items-center gap-1.5 self-start text-[13px] font-semibold">
             <Star className="size-4 fill-current" />
-            Active plan
+            {t.plans.activePlan}
           </span>
         ) : (
           <button
@@ -108,7 +110,7 @@ export function PlanDetail({ planId }: PlanDetailProps) {
             onClick={() => setActive.mutate(plan.id)}
           >
             <Star className="size-4" />
-            Set as active plan
+            {t.plans.setAsActivePlan}
           </button>
         )}
       </header>
@@ -116,19 +118,19 @@ export function PlanDetail({ planId }: PlanDetailProps) {
       <section className="border-border bg-card rounded-xl border px-[18px] py-4">
         <div className="flex items-center justify-between">
           <span className="text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase">
-            Templates
+            {t.templates.title}
           </span>
           <button
             type="button"
             onClick={() => openCreateTemplate(plan.id)}
             className="bg-accent text-accent-foreground hover:bg-accent/70 h-8 rounded-full px-3 text-[12.5px] font-semibold transition-colors"
           >
-            + Add
+            {t.common.addShort}
           </button>
         </div>
 
         {plan.templates.length === 0 ? (
-          <p className="text-muted-foreground mt-2 text-[13px]">No templates yet.</p>
+          <p className="text-muted-foreground mt-2 text-[13px]">{t.templates.emptyShort}</p>
         ) : (
           <TemplateList planId={plan.id} templates={plan.templates} />
         )}
@@ -139,11 +141,11 @@ export function PlanDetail({ planId }: PlanDetailProps) {
         onClick={() => openCreateTemplate(plan.id)}
         className="bg-accent text-accent-foreground hover:bg-accent/70 rounded-xl px-[13px] py-2.5 text-center text-[13px] font-semibold transition-colors"
       >
-        + Add template
+        {t.templates.addTemplate}
       </button>
 
       {plan.templates.length > 1 ? (
-        <p className="text-muted-foreground text-center text-[12.5px]">Drag rows to reorder</p>
+        <p className="text-muted-foreground text-center text-[12.5px]">{t.common.dragToReorder}</p>
       ) : null}
 
       <DeleteButton
@@ -151,7 +153,7 @@ export function PlanDetail({ planId }: PlanDetailProps) {
         disabled={deleting}
         onClick={() => void deletePlan(plan)}
       >
-        Delete plan
+        {t.plans.deletePlan}
       </DeleteButton>
 
       <PlanSheet />

@@ -1,6 +1,8 @@
 import { EXERCISE_CATEGORIES, type ExerciseCategory } from '@gym-bro/shared';
 
 import { cn } from '@/lib/utils';
+import { useHScroll } from '@/hooks/use-h-scroll';
+import { useTrainingTranslation } from '../i18n';
 
 interface CategoryFilterProps {
   value: ExerciseCategory | null;
@@ -15,23 +17,34 @@ const chipClass = (active: boolean): string =>
       : 'bg-secondary text-subtle-foreground hover:bg-muted',
   );
 
-// Category chips for the exercise library: a swipeable row on touch screens (bleeding
-// to the page edge), wrapped onto extra lines on desktop (a mouse can't swipe a
-// hidden-scrollbar row). Leading "All" clears the filter (the default).
+// Category chips for the exercise library: one hidden-scrollbar row on every width —
+// swipe on touch, wheel or drag with a mouse (useHScroll), the active chip centred.
+// Leading "All" clears the filter (the default).
 export function CategoryFilter({ value, onChange }: CategoryFilterProps) {
+  const t = useTrainingTranslation();
+  const scrollRef = useHScroll<HTMLDivElement>(value);
   return (
-    <div className="no-scrollbar -mx-3 flex gap-1.5 overflow-x-auto px-3 md:mx-0 md:flex-wrap md:overflow-visible md:px-0">
-      <button type="button" onClick={() => onChange(null)} className={chipClass(value === null)}>
-        All
+    <div
+      ref={scrollRef}
+      className="no-scrollbar -mx-3 flex gap-1.5 overflow-x-auto px-3 md:mx-0 md:px-0"
+    >
+      <button
+        type="button"
+        aria-pressed={value === null}
+        onClick={() => onChange(null)}
+        className={chipClass(value === null)}
+      >
+        {t.common.all}
       </button>
       {EXERCISE_CATEGORIES.map((category) => (
         <button
           key={category}
           type="button"
+          aria-pressed={value === category}
           onClick={() => onChange(category)}
           className={chipClass(value === category)}
         >
-          {category}
+          {t.categories[category]}
         </button>
       ))}
     </div>

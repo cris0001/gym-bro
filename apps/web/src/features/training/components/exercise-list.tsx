@@ -14,6 +14,7 @@ import { useExercises } from '../hooks/use-exercises';
 import { useExerciseUiStore } from '../stores/exercise-ui.store';
 import { CategoryIcon } from '../utils/category-icon';
 import { ExerciseListSkeleton } from './exercise-list-skeleton';
+import { useTrainingTranslation } from '../i18n';
 
 interface ExerciseListProps {
   // null = all categories.
@@ -25,6 +26,7 @@ interface ExerciseListProps {
 // page's category), then name-filtered client-side by the search box. Edit through
 // the UI store's Sheet, delete with a confirm. Add is owned by the page header.
 export function ExerciseList({ category, search }: ExerciseListProps) {
+  const t = useTrainingTranslation();
   const {
     data: exercises,
     isPending,
@@ -49,12 +51,14 @@ export function ExerciseList({ category, search }: ExerciseListProps) {
     return (
       <EmptyState
         icon={<Dumbbell className="size-6" />}
-        title={category ? `No ${category} exercises yet` : 'No exercises yet'}
-        description="Add exercises to your library to start building workout templates."
+        title={
+          category ? t.exercises.emptyCategoryTitle(t.categories[category]) : t.exercises.emptyTitle
+        }
+        description={t.exercises.emptyBody}
         action={
           <Button type="button" className="h-9.5 rounded-full px-5" onClick={openCreate}>
             <Plus className="size-4" />
-            Add exercise
+            {t.exercises.add}
           </Button>
         }
       />
@@ -63,12 +67,12 @@ export function ExerciseList({ category, search }: ExerciseListProps) {
 
   async function onDelete(exercise: Exercise) {
     const ok = await confirm({
-      title: `Delete "${exercise.name}"?`,
-      description: 'It will be removed from your library.',
-      confirmText: 'Delete',
+      title: t.common.deleteTitle(exercise.name),
+      description: t.exercises.deleteBody,
+      confirmText: t.common.delete,
       destructive: true,
     });
-    if (ok) remove.mutate(exercise.id, { onSuccess: () => toast.success('Exercise deleted') });
+    if (ok) remove.mutate(exercise.id, { onSuccess: () => toast.success(t.exercises.deleted) });
   }
 
   const query = search.trim().toLowerCase();
@@ -77,7 +81,7 @@ export function ExerciseList({ category, search }: ExerciseListProps) {
   if (filtered.length === 0) {
     return (
       <p className="bg-card text-muted-foreground rounded-xl border p-4 text-sm">
-        No exercises match your search.
+        {t.exercises.noMatches}
       </p>
     );
   }
@@ -100,7 +104,7 @@ export function ExerciseList({ category, search }: ExerciseListProps) {
         <section key={group.category} className="flex flex-col gap-2">
           <p className="text-subtle-foreground flex items-center gap-2 px-1 text-[13px] font-semibold tracking-[0.06em] uppercase">
             <CategoryIcon category={group.category} className="size-[18px]" />
-            {group.category}
+            {t.categories[group.category]}
             <span className="text-muted-foreground font-medium">· {group.items.length}</span>
           </p>
           {/* Each exercise its own light row, spaced apart rather than divided. */}

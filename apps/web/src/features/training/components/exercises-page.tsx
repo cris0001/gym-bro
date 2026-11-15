@@ -13,11 +13,13 @@ import { useExerciseUiStore } from '../stores/exercise-ui.store';
 import { CategoryFilter } from './category-filter';
 import { ExerciseList } from './exercise-list';
 import { ExerciseSheet } from './exercise-sheet';
+import { useTrainingTranslation } from '../i18n';
 
 // The Exercise Library screen: a header with the Add action, search + category chips,
 // the list (grouped by muscle under "All"), and the create/edit Sheet (which reads its
 // own open state from the UI store). null category = show all (the default).
 export function ExercisesPage() {
+  const t = useTrainingTranslation();
   const openCreate = useExerciseUiStore((s) => s.openCreate);
   const [category, setCategory] = useState<ExerciseCategory | null>(null);
   const [search, setSearch] = useState('');
@@ -26,11 +28,11 @@ export function ExercisesPage() {
     <div className="flex w-full flex-col gap-4 p-3 md:p-4 max-w-6xl lg:col-start-2">
       <div className="flex items-center justify-between gap-2">
         <PageTitle className="font-heading text-[28px] leading-none font-bold tracking-tight">
-          Exercises
+          {t.exercises.title}
         </PageTitle>
         <Button type="button" className="h-9.5 rounded-full px-5" onClick={openCreate}>
           <Plus className="size-4" />
-          Add
+          {t.common.add}
         </Button>
       </div>
 
@@ -40,8 +42,8 @@ export function ExercisesPage() {
           <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
           <Input
             type="search"
-            placeholder="Search exercises"
-            aria-label="Search exercises"
+            placeholder={t.exercises.search}
+            aria-label={t.exercises.search}
             className={cn(FIELD_CLASS, 'pl-9')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}

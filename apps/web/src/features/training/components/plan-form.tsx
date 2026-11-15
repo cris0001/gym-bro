@@ -17,6 +17,7 @@ import { createPlanSchema, type CreatePlanInput, type TrainingPlan } from '@gym-
 import { useCreatePlan } from '../hooks/use-create-plan';
 import { useUpdatePlan } from '../hooks/use-update-plan';
 import { OptionalHint } from './optional-hint';
+import { useTrainingTranslation } from '../i18n';
 
 interface PlanFormProps {
   // The row being edited, or null for create mode.
@@ -27,6 +28,7 @@ interface PlanFormProps {
 }
 
 export function PlanForm({ editing, onSuccess, onCancel }: PlanFormProps) {
+  const t = useTrainingTranslation();
   const form = useForm<CreatePlanInput>({
     resolver: zodResolver(createPlanSchema),
     defaultValues: {
@@ -66,9 +68,9 @@ export function PlanForm({ editing, onSuccess, onCancel }: PlanFormProps) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className={LABEL_CLASS}>Name</FormLabel>
+              <FormLabel className={LABEL_CLASS}>{t.common.name}</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. Push/Pull/Legs" className={FIELD_CLASS} {...field} />
+                <Input placeholder={t.plans.namePlaceholder} className={FIELD_CLASS} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -81,11 +83,11 @@ export function PlanForm({ editing, onSuccess, onCancel }: PlanFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel className={LABEL_CLASS}>
-                Description <OptionalHint />
+                {t.common.description} <OptionalHint />
               </FormLabel>
               <FormControl>
                 <textarea
-                  placeholder="e.g. 6-day split, hypertrophy focus"
+                  placeholder={t.plans.descriptionPlaceholder}
                   className={TEXTAREA_CLASS}
                   value={field.value ?? ''}
                   onChange={field.onChange}
@@ -106,7 +108,7 @@ export function PlanForm({ editing, onSuccess, onCancel }: PlanFormProps) {
         ) : null}
 
         <FormSheetActions
-          submitLabel={editing ? 'Save changes' : 'Add plan'}
+          submitLabel={editing ? t.common.saveChanges : t.plans.add}
           isPending={isPending}
           onCancel={onCancel}
         />

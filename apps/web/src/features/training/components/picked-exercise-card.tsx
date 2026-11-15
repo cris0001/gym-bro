@@ -1,27 +1,35 @@
+import type { ExerciseCategory } from '@gym-bro/shared';
+
+import { useTrainingTranslation } from '../i18n';
+import { CategoryIcon } from '../utils/category-icon';
+
 interface PickedExerciseCardProps {
   name: string;
+  category: ExerciseCategory;
   // Reopens the picker; omitted when the exercise is fixed (editing targets).
   onChange?: () => void;
 }
 
-// The chosen exercise shown as a read-only card: a small "Exercise" caption over the
-// serif name, with an optional "Change" link back to the picker.
-export function PickedExerciseCard({ name, onChange }: PickedExerciseCardProps) {
+// The chosen exercise as a read-only card — its body-part tile, name and category,
+// with an optional "Change" back to the picker.
+export function PickedExerciseCard({ name, category, onChange }: PickedExerciseCardProps) {
+  const t = useTrainingTranslation();
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-field px-4 py-2.5">
-      <div className="min-w-0">
-        <p className="text-muted-foreground text-[10px] font-bold tracking-[0.08em] uppercase">
-          Exercise
-        </p>
-        <p className="font-heading truncate text-base font-semibold">{name}</p>
+    <div className="bg-card flex items-center gap-3 rounded-xl border px-3 py-2.5">
+      <span className="bg-accent text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+        <CategoryIcon category={category} className="size-5" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-[15px] font-semibold">{name}</p>
+        <p className="text-muted-foreground text-xs">{t.categories[category]}</p>
       </div>
       {onChange ? (
         <button
           type="button"
-          className="text-primary shrink-0 text-[12.5px] font-semibold"
+          className="bg-secondary text-foreground h-8 shrink-0 rounded-full px-3.5 text-[12.5px] font-semibold"
           onClick={onChange}
         >
-          Change
+          {t.common.change}
         </button>
       ) : null}
     </div>

@@ -10,6 +10,8 @@ export function useDeleteTag() {
     mutationFn: (id: string) => deleteTag(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: tagKeys.all });
+      // Sessions feature's root key — workouts embed their tags (calendar badges, history).
+      void queryClient.invalidateQueries({ queryKey: ['sessions'] });
     },
   });
 }

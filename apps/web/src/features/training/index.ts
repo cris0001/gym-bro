@@ -37,3 +37,5 @@ export { useCreateTemplateExercise } from './hooks/use-create-template-exercise'
 export { useUpdateTemplateExercise } from './hooks/use-update-template-exercise';
 export { useDeleteTemplateExercise } from './hooks/use-delete-template-exercise';
 export { useReorderTemplateExercises } from './hooks/use-reorder-template-exercises';
+
+export { CategoryIcon } from './utils/category-icon';

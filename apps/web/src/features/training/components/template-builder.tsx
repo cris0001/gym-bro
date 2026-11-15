@@ -10,6 +10,7 @@ import { useDeleteTemplate } from '../hooks/use-delete-template';
 import { useTemplate } from '../hooks/use-template';
 import { TemplateExercisesPanel } from './template-exercises-panel';
 import { TemplateExercisesPanelSkeleton } from './template-exercises-panel-skeleton';
+import { useTrainingTranslation } from '../i18n';
 
 interface TemplateBuilderProps {
   templateId: string;
@@ -19,6 +20,7 @@ interface TemplateBuilderProps {
 // (desktop renders the same panel as the third column of PlansWorkspace), and a quiet
 // Delete at the bottom that confirms, removes the template and returns to its plan.
 export function TemplateBuilder({ templateId }: TemplateBuilderProps) {
+  const t = useTrainingTranslation();
   const { data: template, isPending, isError, error } = useTemplate(templateId);
   const remove = useDeleteTemplate();
   const confirm = useConfirm();
@@ -27,15 +29,15 @@ export function TemplateBuilder({ templateId }: TemplateBuilderProps) {
   async function handleDelete() {
     if (!template) return;
     const ok = await confirm({
-      title: `Delete "${template.name}"?`,
-      description: 'This removes its exercises too.',
-      confirmText: 'Delete',
+      title: t.common.deleteTitle(template.name),
+      description: t.templates.deleteBody,
+      confirmText: t.common.delete,
       destructive: true,
     });
     if (!ok) return;
     remove.mutate(template.id, {
       onSuccess: () => {
-        toast.success('Template deleted');
+        toast.success(t.templates.deleted);
         void navigate({ to: '/plans/$planId', params: { planId: template.trainingPlanId } });
       },
     });
@@ -68,7 +70,7 @@ export function TemplateBuilder({ templateId }: TemplateBuilderProps) {
         className="text-muted-foreground inline-flex items-center gap-1 self-start text-[13px] font-semibold"
       >
         <ChevronLeft className="size-[15px]" />
-        Plan
+        {t.templates.plan}
       </Link>
 
       <TemplateExercisesPanel template={template} asPageTitle />
@@ -78,7 +80,7 @@ export function TemplateBuilder({ templateId }: TemplateBuilderProps) {
         disabled={remove.isPending}
         onClick={() => void handleDelete()}
       >
-        Delete template
+        {t.templates.deleteTemplate}
       </DeleteButton>
     </div>
   );

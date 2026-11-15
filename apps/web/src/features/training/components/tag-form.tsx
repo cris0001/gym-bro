@@ -18,6 +18,7 @@ import { createTagSchema, type CreateTagInput, type WorkoutTag } from '@gym-bro/
 
 import { useCreateTag } from '../hooks/use-create-tag';
 import { useUpdateTag } from '../hooks/use-update-tag';
+import { useTrainingTranslation } from '../i18n';
 
 // Curated tag palette (lowercase to match the native color input's output and
 // the selected-swatch comparison). The native <input type=color> covers any
@@ -60,6 +61,7 @@ interface TagFormProps {
 }
 
 export function TagForm({ editing, onSuccess, onCancel }: TagFormProps) {
+  const t = useTrainingTranslation();
   const form = useForm<CreateTagInput>({
     resolver: zodResolver(createTagSchema),
     defaultValues: editing
@@ -95,15 +97,15 @@ export function TagForm({ editing, onSuccess, onCancel }: TagFormProps) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className={LABEL_CLASS}>Name</FormLabel>
+              <FormLabel className={LABEL_CLASS}>{t.common.name}</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. PR, Deload" className={FIELD_CLASS} {...field} />
+                <Input placeholder={t.tags.namePlaceholder} className={FIELD_CLASS} {...field} />
               </FormControl>
               <FormMessage />
               <div className="mt-1 flex min-w-0 items-center gap-2">
                 <TagPreview name={name} color={color} />
                 <span className="text-muted-foreground shrink-0 text-[11.5px]">
-                  Preview of how the tag appears.
+                  {t.tags.preview}
                 </span>
               </div>
             </FormItem>
@@ -115,7 +117,7 @@ export function TagForm({ editing, onSuccess, onCancel }: TagFormProps) {
           name="color"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className={LABEL_CLASS}>Color</FormLabel>
+              <FormLabel className={LABEL_CLASS}>{t.tags.color}</FormLabel>
               <div className="grid grid-cols-6 justify-items-center gap-y-3">
                 {TAG_COLORS.map((swatch) => {
                   const selected = field.value.toLowerCase() === swatch;
@@ -145,7 +147,7 @@ export function TagForm({ editing, onSuccess, onCancel }: TagFormProps) {
                       'ring-foreground ring-offset-background border-0 ring-2 ring-offset-2',
                   )}
                   style={isCustom ? { backgroundColor: field.value } : undefined}
-                  aria-label="Custom color"
+                  aria-label={t.tags.customColor}
                 >
                   {isCustom ? null : <Plus className="size-4" />}
                   <input
@@ -168,7 +170,7 @@ export function TagForm({ editing, onSuccess, onCancel }: TagFormProps) {
         ) : null}
 
         <FormSheetActions
-          submitLabel={editing ? 'Save changes' : 'Add tag'}
+          submitLabel={editing ? t.common.saveChanges : t.tags.add}
           isPending={isPending}
           onCancel={onCancel}
         />

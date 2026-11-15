@@ -1,6 +1,7 @@
 import { Skeleton } from '@/components/ui/skeleton';
 
 import { TemplateRowsSkeleton } from './template-rows-skeleton';
+import { useTrainingTranslation } from '../i18n';
 
 // The open template's exercises while it loads, in the panel's shape: the title, then
 // exercise rows — cards in the workspace, divided rows inside one card on the mobile
@@ -10,6 +11,7 @@ export function TemplateExercisesPanelSkeleton({
 }: {
   variant?: 'column' | 'page';
 }) {
+  const t = useTrainingTranslation();
   const isColumn = variant === 'column';
   return (
     <div aria-hidden className="flex flex-col gap-[14px]">
@@ -23,7 +25,7 @@ export function TemplateExercisesPanelSkeleton({
       ) : (
         <div className="border-border bg-card rounded-xl border px-[18px] py-4">
           <span className="text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase">
-            Exercises
+            {t.templateExercises.title}
           </span>
           <TemplateRowsSkeleton rows={4} variant="list" />
         </div>
