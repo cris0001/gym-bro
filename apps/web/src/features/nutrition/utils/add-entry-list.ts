@@ -2,6 +2,7 @@ import type {
   Food,
   FoodLogUnit,
   GlobalProduct,
+  MacroTotals,
   RecentDiaryItem,
   RecipeListItem,
 } from '@gym-bro/shared';
@@ -119,6 +120,73 @@ export function catalogRow(product: GlobalProduct, name: string): AddEntryRow {
 // "1 serv"), with the unit abbreviations of the active locale.
 export function portionLabel(portion: Portion, unitShort: Record<FoodLogUnit, string>): string {
   return `${Number(portion.quantity.toFixed(2))} ${unitShort[portion.unit]}`;
+}
+
+// Macros of a portion of this row's item, or null when the unit has no weight (a food
+// without a serving / unit size, a recipe without ingredients). Same math as the portion
+// sheet: foods scale their per-100 g values; recipes go per serving or per gram of the
+// whole recipe.
+export function portionTotals(row: AddEntryRow, portion: Portion): MacroTotals | null {
+  const { unit, quantity } = portion;
+  let base: MacroTotals;
+  let factor: number;
+  if (row.kind === 'recipe') {
+    const { recipe } = row;
+    base = recipe.perServing;
+    if (unit === 'servings') factor = quantity;
+    else if (recipe.totalGrams > 0) factor = (recipe.servings * quantity) / recipe.totalGrams;
+    else return null;
+  } else {
+    const food = row.kind === 'food' ? row.food : row.product;
+    base = food;
+    const grams =
+      unit === 'servings'
+        ? food.servingGrams !== null
+          ? food.servingGrams * quantity
+          : null
+        : unit === 'units'
+          ? food.unitGrams !== null
+            ? food.unitGrams * quantity
+            : null
+          : quantity;
+    if (grams === null) return null;
+    factor = grams / 100;
+  }
+  return {
+    kcal: base.kcal * factor,
+    proteinG: base.proteinG * factor,
+    carbsG: base.carbsG * factor,
+    fatG: base.fatG * factor,
+  };
+}
+
+export function portionKcal(row: AddEntryRow, portion: Portion): number | null {
+  return portionTotals(row, portion)?.kcal ?? null;
+}
+
+// What the meta line under a name describes: the portion this item was last logged at
+// (`fromLast`, so the row can mark it as "the same again"), else 100 g — one serving for
+// a recipe — with its kcal and macros. `macros` is null when the portion can't be weighed.
+export interface RowMeta {
+  fromLast: boolean;
+  portion: string;
+  kcal: string | null;
+  macros: string | null;
+}
+
+export function rowMeta(row: AddEntryRow, unitShort: Record<FoodLogUnit, string>): RowMeta {
+  const portion: Portion =
+    row.lastUsed ??
+    (row.kind === 'recipe' ? { unit: 'servings', quantity: 1 } : { unit: 'grams', quantity: 100 });
+  const totals = portionTotals(row, portion);
+  return {
+    fromLast: row.lastUsed !== null,
+    portion: portionLabel(portion, unitShort),
+    kcal: totals ? `${Math.round(totals.kcal)} kcal` : null,
+    macros: totals
+      ? `P ${fmtMacro(totals.proteinG)} · C ${fmtMacro(totals.carbsG)} · F ${fmtMacro(totals.fatG)}`
+      : null,
+  };
 }
 
 // The default portion to log on a one-tap "+": the portion this item was last logged at

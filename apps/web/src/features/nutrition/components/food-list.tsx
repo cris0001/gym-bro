@@ -80,11 +80,11 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
   // 768px) so rows never blur together. 1280px+: a table (column header + aligned
   // kcal/P/C/F cells) sitting next to the detail panel.
   return (
-    <div>
+    <div className="xl:flex xl:min-h-0 xl:flex-1 xl:flex-col">
       <div
         className={cn(
           TABLE_COLUMNS,
-          'text-muted-foreground hidden border-b border-border py-3 pr-2 pl-3.5 text-[10.5px] font-bold tracking-[0.08em] uppercase xl:grid',
+          'text-muted-foreground hidden border-b border-border py-3 pr-2 pl-3.5 text-[10.5px] font-bold tracking-[0.08em] uppercase xl:grid xl:shrink-0',
         )}
       >
         <span className="pl-14">{t.common.name}</span>
@@ -94,7 +94,7 @@ export function FoodList({ search, selectedId = null }: FoodListProps) {
         <span className="text-macro-fat-text text-right">{t.common.macroShort.fat}</span>
         <span aria-hidden />
       </div>
-      <ul className="grid grid-cols-1 gap-2 md:grid-cols-2 md:gap-3 xl:block">
+      <ul className="grid grid-cols-1 gap-2 md:grid-cols-2 md:gap-3 xl:block xl:min-h-0 xl:overflow-y-auto xl:overscroll-contain">
         {filtered.map((food) => {
           const selected = food.id === selectedId;
           return (

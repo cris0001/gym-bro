@@ -97,9 +97,18 @@ export function AddEntryMobile({
           </div>
 
           <div className="border-border bg-card overflow-hidden rounded-xl border">
-            {/* Capped height with its own scroll so the "Added" list and the total bar
-                stay in view without scrolling past the whole dictionary. */}
-            <div className="max-h-[42vh] overflow-y-auto">
+            {/* Own scroll with a capped height: while the meal is empty the list fills the
+                screen down to the total bar (18rem ≈ title + search + create button +
+                bar); once something is added it shrinks to 42vh so the "Added" list
+                below stays in view. */}
+            <div
+              className={cn(
+                'overflow-y-auto',
+                mealEntries.length > 0 || pending.length > 0
+                  ? 'max-h-[42vh]'
+                  : 'max-h-[calc(100dvh-18rem)]',
+              )}
+            >
               {isListLoading ? (
                 <AddEntryListSkeleton dividerClassName={'border-t border-border'} />
               ) : (

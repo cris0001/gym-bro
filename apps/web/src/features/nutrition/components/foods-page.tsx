@@ -63,9 +63,10 @@ export function FoodsPage() {
             <p className="text-muted-foreground text-[12.5px]">{t.foods.macrosPer100g}</p>
             <MacroLegend className="xl:hidden" />
           </div>
-          {/* Below xl the rows are their own cards; at xl the table sits in one card
-              next to the panel. */}
-          <div className=" xl:overflow-hidden xl:rounded-xl xl:border xl:border-border xl:bg-card">
+          {/* Below xl the rows are their own cards and the page scrolls; at xl the
+              table sits in one card next to the panel, capped to the viewport (15rem ≈
+              page header + search above it) so only its rows scroll. */}
+          <div className="xl:border-border xl:bg-card xl:flex xl:max-h-[calc(100dvh-15rem)] xl:min-h-80 xl:flex-col xl:overflow-hidden xl:rounded-xl xl:border">
             <FoodList search={search} selectedId={isDesktop ? (editing?.id ?? null) : null} />
           </div>
         </div>
